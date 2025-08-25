@@ -362,7 +362,7 @@
     <div class="container">
         <div class="header">
             <h1>Simulador de Inversiones</h1>
-            <p>Herramienta completa para simular créditos, cuotas extraordinarias e inversiones</p>
+            <p>Herramienta completa para simular créditos, cuotas extraordinarias e inversiones por @manuelrarias</p>
         </div>
 
         <div class="tabs">
@@ -425,7 +425,7 @@
                                 <th>Cuota</th>
                                 <th>Fecha</th>
                                 <th>Capital</th>
-                                <th>Interés</th>
+                                <th>Interes</th>
                                 <th>Cuota Total</th>
                                 <th>Saldo</th>
                             </tr>
@@ -665,8 +665,10 @@
         }
 
         function formatDate(date) {
-            const options = { year: 'numeric', month: 'short', day: 'numeric' };
-            return date.toLocaleDateString('es-CO', options);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
         function getNextDate(startDate, monthsToAdd) {
@@ -680,13 +682,21 @@
         function downloadCSV(tableId, filename) {
             const table = document.getElementById(tableId);
             const headers = Array.from(table.querySelectorAll('th')).map(th => th.innerText);
+            
             const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => {
                 return Array.from(tr.querySelectorAll('td')).map(td => {
                     let text = td.innerText;
-                    if (text.startsWith('$')) {
-                        text = text.replace(/[^0-9,-]/g, '').replace('.', '').replace(',', '.');
+                    // Si es la columna de fecha, mantener el formato
+                    if (td.cellIndex === 1) { // La segunda columna (índice 1) es la de Fecha
+                        return `"${text}"`;
                     }
-                    return `"${text}"`;
+                    
+                    // Para las columnas de números, limpiar el formato y mantener el punto decimal
+                    let cleanedText = text.replace(/[^0-9,.]/g, ''); // Deja solo números, comas y puntos
+                    cleanedText = cleanedText.replace(/\./g, ''); // Elimina los puntos (separadores de miles)
+                    cleanedText = cleanedText.replace(/,/g, '.'); // Reemplaza la coma (decimal) por punto (decimal CSV)
+                    
+                    return `"${cleanedText}"`;
                 }).join(',');
             });
 
@@ -838,7 +848,7 @@
                     <option value="bimonthly">Cada 2 meses</option>
                     <option value="quarterly">Cada 3 meses (trimestral)</option>
                     <option value="semiannual">Cada 6 meses (semestral)</option>
-                    <option value="annual">Cada 12 meses (anual)</option>
+                    <option value="annual" ${frequency === 'annual' ? 'selected' : ''}>Cada 12 meses (anual)</option>
                     <option value="custom" ${frequency === 'custom' ? 'selected' : ''}>Personalizado</option>
                 </select>
                 <input type="number" placeholder="Mes de inicio" min="1" max="12" class="start-month" value="${startMonth !== null ? startMonth : ''}">
