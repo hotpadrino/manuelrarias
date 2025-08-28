@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Inversiones</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --accent-color: #007bff;
+            --border-color: #dddddd;
+            --input-bg: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+        .dark {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --accent-color: #0d6efd;
+            --border-color: #444444;
+            --input-bg: #1e1e1e;
+            --card-bg: #1e1e1e;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+        }
+        section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: grid;
+            gap: 15px;
+            max-width: 600px;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        button {
+            padding: 10px 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .theme-toggle {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+        .theme-toggle:hover {
+            background-color: var(--input-bg);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: right;
+        }
+        th {
+            background-color: var(--input-bg);
+            font-weight: 600;
+        }
+        canvas {
+            max-width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .extra-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .extra-item {
+            padding: 5px 10px;
+            background-color: var(--input-bg);
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 600px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+            .extra-inputs {
+                flex-direction: column;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Simulador de Inversiones</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">Cambiar Tema</button>
+    </header>
+
+    <!-- Sección 1: Simulador de Crédito -->
+    <section id="credito">
+        <h2>Simulador de Crédito</h2>
+        <form id="credito-form">
+            <div>
+                <label for="monto">Monto del Préstamo:</label>
+                <input type="number" id="monto" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label for="cuotas">Número de Cuotas (meses):</label>
+                <input type="number" id="cuotas" min="1" step="1" required>
+                <span id="años"></span>
+            </div>
+            <div>
+                <label for="tasa">Tasa de Interés Nominal Mensual (%):</label>
+                <input type="number" id="tasa" min="0" step="0.01" required>
+            </div>
+            <button type="button" onclick="calcularCredito()">Calcular</button>
+        </form>
+        <p id="credito-error" class="error"></p>
+        <table id="amortizacion-table">
+            <thead>
+                <tr>
+                    <th>Cuota</th>
+                    <th>Capital</th>
+                    <th>Intereses</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <canvas id="amortizacion-chart"></canvas>
+        <p id="intereses-totales"></p>
+    </section>
+
+    <!-- Sección 2: Comparación con Cuotas Extraordinarias -->
+    <section id="comparacion">
+        <h2>Comparación con Cuotas Extraordinarias</h2>
+        <form id="comparacion-form">
+            <div>
+                <label for="monto-extra">Monto del Préstamo:</label>
+                <input type="number" id="monto-extra" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label for="cuotas-extra">Número de Cuotas (meses):</label>
+                <input type="number" id="cuotas-extra" min="1" step="1" required>
+                <span id="años-extra"></span>
+            </div>
+            <div>
+                <label for="tasa-extra">Tasa de Interés Nominal Mensual (%):</label>
+                <input type="number" id="tasa-extra" min="0" step="0.01" required>
+            </div>
+            <div class="extra-inputs">
+                <label for="extra-amount">Cuota Extraordinaria:</label>
+                <input type="number" id="extra-amount" min="0" step="0.01">
+                <label for="extra-month">Mes Inicial:</label>
+                <input type="number" id="extra-month" min="1" step="1">
+                <button type="button" onclick="addExtra()">Añadir</button>
+            </div>
+            <p><small>Las cuotas extraordinarias se repetirán cada 12 meses (ej. mes 6, 18, 30...).</small></p>
+            <div id="extras-list"></div>
+            <button type="button" onclick="calcularComparacion()">Calcular</button>
+        </form>
+        <p id="comparacion-error" class="error"></p>
+        <table id="amortizacion-extra-table">
+            <thead>
+                <tr>
+                    <th>Cuota</th>
+                    <th>Capital</th>
+                    <th>Intereses</th>
+                    <th>Extra</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <canvas id="comparacion-chart"></canvas>
+        <p id="comparacion-resumen"></p>
+    </section>
+
+    <!-- Sección 3: Simulador de Inversión Recurrente -->
+    <section id="inversion">
+        <h2>Simulador de Inversión Recurrente</h2>
+        <form id="inversion-form">
+            <div>
+                <label for="aporte">Aporte Mensual:</label>
+                <input type="number" id="aporte" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label for="tasa-inv">Tasa de Interés Compuesto Mensual (%):</label>
+                <input type="number" id="tasa-inv" min="0" step="0.01" required>
+            </div>
+            <div>
+                <label for="periodo">Periodo de Inversión (meses):</label>
+                <input type="number" id="periodo" min="1" step="1" required>
+            </div>
+            <button type="button" onclick="calcularInversion()">Calcular</button>
+        </form>
+        <p id="inversion-error" class="error"></p>
+        <canvas id="crecimiento-chart"></canvas>
+        <p id="inversion-resumen"></p>
+    </section>
+
+    <script>
+        // Cambiar tema claro/oscuro
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+        }
+
+        // Actualizar conversión a años
+        function updateAños(inputId, spanId) {
+            const cuotas = parseInt(document.getElementById(inputId).value) || 0;
+            const años = cuotas / 12;
+            document.getElementById(spanId).textContent = cuotas ? ` = ${años.toFixed(1)} años` : '';
+        }
+
+        document.getElementById('cuotas').addEventListener('input', () => updateAños('cuotas', 'años'));
+        document.getElementById('cuotas-extra').addEventListener('input', () => updateAños('cuotas-extra', 'años-extra'));
+
+        // Función para dibujar gráficos con Canvas
+        function drawLineChart(canvasId, labels, datasets) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.clientWidth;
+            canvas.height = 300;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const colors = ['#007bff', '#dc3545', '#28a745', '#ffc107'];
+            const maxY = Math.max(...datasets.flatMap(d => d.length ? Math.max(...d) : 0), 1);
+            const minY = 0;
+            const padding = 40;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+            const stepX = datasets[0].length > 1 ? chartWidth / (datasets[0].length - 1) : chartWidth;
+            const stepY = chartHeight / (maxY - minY);
+
+            // Dibujar ejes
+            ctx.beginPath();
+            ctx.strokeStyle = 'gray';
+            ctx.moveTo(padding, canvas.height - padding);
+            ctx.lineTo(padding, padding);
+            ctx.lineTo(canvas.width - padding, padding);
+            ctx.stroke();
+
+            // Dibujar líneas
+            datasets.forEach((data, index) => {
+                if (data.length === 0) return;
+                ctx.beginPath();
+                ctx.strokeStyle = colors[index % colors.length];
+                ctx.lineWidth = 2;
+                data.forEach((point, i) => {
+                    const x = padding + i * stepX;
+                    const y = canvas.height - padding - (point - minY) * stepY;
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                ctx.stroke();
+            });
+
+            // Dibujar leyenda
+            ctx.font = '12px Arial';
+            labels.forEach((label, index) => {
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fillRect(canvas.width - 120, padding + index * 20, 10, 10);
+                ctx.fillStyle = 'gray';
+                ctx.fillText(label, canvas.width - 100, padding + 10 + index * 20);
+            });
+        }
+
+        // Sección 1: Simulador de Crédito
+        function calcularCredito() {
+            const error = document.getElementById('credito-error');
+            error.textContent = '';
+            const monto = parseFloat(document.getElementById('monto').value);
+            const cuotas = parseInt(document.getElementById('cuotas').value);
+            const tasa = parseFloat(document.getElementById('tasa').value) / 100;
+
+            if (isNaN(monto) || monto <= 0 || isNaN(cuotas) || cuotas <= 0 || isNaN(tasa) || tasa < 0) {
+                error.textContent = 'Por favor, ingrese valores válidos y positivos.';
+                return;
+            }
+
+            // Cálculo de la cuota mensual (fórmula de amortización)
+            const pagoMensual = monto * (tasa * Math.pow(1 + tasa, cuotas)) / (Math.pow(1 + tasa, cuotas) - 1);
+
+            let saldo = monto;
+            let totalIntereses = 0;
+            const tbody = document.querySelector('#amortizacion-table tbody');
+            tbody.innerHTML = '';
+
+            const capitalPagado = [];
+            const interesesPagados = [];
+
+            for (let i = 1; i <= cuotas; i++) {
+                const interes = saldo * tasa;
+                const capital = pagoMensual - interes;
+                saldo -= capital;
+                totalIntereses += interes;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${i}</td>
+                    <td>${capital.toFixed(2)}</td>
+                    <td>${interes.toFixed(2)}</td>
+                    <td>${saldo.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+
+                capitalPagado.push((capitalPagado[i-2] || 0) + capital);
+                interesesPagados.push((interesesPagados[i-2] || 0) + interes);
+            }
+
+            document.getElementById('intereses-totales').textContent = `Intereses Totales Pagados: ${totalIntereses.toFixed(2)}`;
+
+            drawLineChart('amortizacion-chart', ['Capital Pagado', 'Intereses Pagados'], [capitalPagado, interesesPagados]);
+        }
+
+        // Sección 2: Comparación con Cuotas Extraordinarias
+        let extras = [];
+
+        function addExtra() {
+            const amount = parseFloat(document.getElementById('extra-amount').value);
+            const month = parseInt(document.getElementById('extra-month').value);
+            const cuotas = parseInt(document.getElementById('cuotas-extra').value) || Infinity;
+
+            if (isNaN(amount) || amount <= 0 || isNaN(month) || month <= 0 || month > cuotas) {
+                document.getElementById('comparacion-error').textContent = 'Por favor, ingrese un monto y mes válidos.';
+                return;
+            }
+
+            extras.push({ month, amount });
+            const list = document.getElementById('extras-list');
+            const item = document.createElement('div');
+            item.className = 'extra-item';
+            item.textContent = `Extra: ${amount.toFixed(2)} cada 12 meses empezando en mes ${month}`;
+            list.appendChild(item);
+            document.getElementById('extra-amount').value = '';
+            document.getElementById('extra-month').value = '';
+            document.getElementById('comparacion-error').textContent = '';
+        }
+
+        function calcularComparacion() {
+            const error = document.getElementById('comparacion-error');
+            error.textContent = '';
+            const monto = parseFloat(document.getElementById('monto-extra').value);
+            const cuotasMax = parseInt(document.getElementById('cuotas-extra').value);
+            const tasa = parseFloat(document.getElementById('tasa-extra').value) / 100;
+
+            if (isNaN(monto) || monto <= 0 || isNaN(cuotasMax) || cuotasMax <= 0 || isNaN(tasa) || tasa < 0) {
+                error.textContent = 'Por favor, ingrese valores válidos y positivos.';
+                return;
+            }
+
+            const pagoMensual = monto * (tasa * Math.pow(1 + tasa, cuotasMax)) / (Math.pow(1 + tasa, cuotasMax) - 1);
+
+            // Escenario base
+            let saldoBase = monto;
+            let totalInteresesBase = 0;
+            const capitalBase = [];
+            const interesesBase = [];
+            for (let i = 1; i <= cuotasMax; i++) {
+                const interes = saldoBase * tasa;
+                const capital = pagoMensual - interes;
+                saldoBase -= capital;
+                totalInteresesBase += interes;
+                capitalBase.push((capitalBase[i-2] || 0) + capital);
+                interesesBase.push((interesesBase[i-2] || 0) + interes);
+            }
+
+            // Escenario con extras (repetidas cada 12 meses)
+            let saldoExtra = monto;
+            let totalInteresesExtra = 0;
+            let cuotaActual = 1;
+            const tbody = document.querySelector('#amortizacion-extra-table tbody');
+            tbody.innerHTML = '';
+            const capitalExtra = [];
+            const interesesExtra = [];
+
+            while (saldoExtra > 0 && cuotaActual <= cuotasMax * 2) {
+                const interes = saldoExtra * tasa;
+                let capital = Math.min(pagoMensual - interes, saldoExtra);
+                let extra = 0;
+
+                // Aplicar cuotas extraordinarias cada 12 meses
+                extras.forEach(({ month, amount }) => {
+                    if ((cuotaActual - month) % 12 === 0 && cuotaActual >= month) {
+                        extra += amount;
+                    }
+                });
+
+                saldoExtra -= extra;
+                if (saldoExtra < 0) {
+                    capital += saldoExtra; // Ajustar capital si extra excede saldo
+                    saldoExtra = 0;
+                }
+                saldoExtra -= capital;
+                if (saldoExtra < 0) saldoExtra = 0;
+                totalInteresesExtra += interes;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cuotaActual}</td>
+                    <td>${capital.toFixed(2)}</td>
+                    <td>${interes.toFixed(2)}</td>
+                    <td>${extra.toFixed(2)}</td>
+                    <td>${saldoExtra.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+
+                capitalExtra.push((capitalExtra[cuotaActual-2] || 0) + capital + extra);
+                interesesExtra.push((interesesExtra[cuotaActual-2] || 0) + interes);
+
+                cuotaActual++;
+                if (saldoExtra <= 0) break;
+            }
+
+            document.getElementById('comparacion-resumen').textContent = `Intereses Base: ${totalInteresesBase.toFixed(2)} | Intereses con Extras: ${totalInteresesExtra.toFixed(2)} | Cuotas con Extras: ${cuotaActual - 1}`;
+
+            drawLineChart('comparacion-chart', ['Capital Base', 'Intereses Base', 'Capital Extra', 'Intereses Extra'], [capitalBase, interesesBase, capitalExtra, interesesExtra]);
+
+            extras = [];
+            document.getElementById('extras-list').innerHTML = '';
+        }
+
+        // Sección 3: Simulador de Inversión Recurrente
+        function calcularInversion() {
+            const error = document.getElementById('inversion-error');
+            error.textContent = '';
+            const aporte = parseFloat(document.getElementById('aporte').value);
+            const tasa = parseFloat(document.getElementById('tasa-inv').value) / 100;
+            const periodo = parseInt(document.getElementById('periodo').value);
+
+            if (isNaN(aporte) || aporte <= 0 || isNaN(tasa) || tasa < 0 || isNaN(periodo) || periodo <= 0) {
+                error.textContent = 'Por favor, ingrese valores válidos y positivos.';
+                return;
+            }
+
+            let capital = 0;
+            let totalAportes = 0;
+            const capitalData = [];
+            const aportesData = [];
+
+            for (let i = 1; i <= periodo; i++) {
+                capital = (capital + aporte) * (1 + tasa);
+                totalAportes += aporte;
+                capitalData.push(capital);
+                aportesData.push(totalAportes);
+            }
+
+            const totalIntereses = capital - totalAportes;
+
+            document.getElementById('inversion-resumen').textContent = `Capital Total: ${capital.toFixed(2)} | Aportes Totales: ${totalAportes.toFixed(2)} | Intereses Ganados: ${totalIntereses.toFixed(2)}`;
+
+            drawLineChart('crecimiento-chart', ['Capital Total', 'Aportes'], [capitalData, aportesData]);
+        }
+    </script>
+</body>
+</html>

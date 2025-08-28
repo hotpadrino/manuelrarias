@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Inversiones</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #222222;
+      --card: #f5f5f5;
+      --accent: #007bff;
+    }
+    [data-theme="dark"] {
+      --bg: #121212;
+      --text: #e5e5e5;
+      --card: #1e1e1e;
+      --accent: #66b2ff;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.5;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--card);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    main {
+      padding: 1rem;
+      display: grid;
+      gap: 2rem;
+    }
+    section {
+      background: var(--card);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+    label { display: block; margin: 0.5rem 0 0.2rem; }
+    input {
+      width: 100%;
+      padding: 0.4rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      margin-bottom: 0.5rem;
+    }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.4rem;
+      text-align: right;
+      font-size: 0.9rem;
+    }
+    th { background: var(--bg); }
+    canvas { width: 100% !important; height: 300px !important; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simulador de Inversiones</h1>
+    <button onclick="toggleTheme()">🌗 Tema</button>
+  </header>
+  <main>
+    <section id="credito">
+      <h2>Simulador de Crédito</h2>
+      <label>Monto del Préstamo</label>
+      <input type="number" id="monto" value="1000000">
+      <label>Número de Cuotas (meses)</label>
+      <input type="number" id="cuotas" value="24" oninput="mostrarAnios()">
+      <div id="conversion"></div>
+      <label>Tasa de Interés Nominal (MV %)</label>
+      <input type="number" id="tasa" value="1.5" step="0.01">
+      <button onclick="simularCredito()">Simular Crédito</button>
+      <div id="resultCredito"></div>
+      <canvas id="graficoCredito"></canvas>
+    </section>
+
+    <section id="extra">
+      <h2>Comparación con Cuotas Extraordinarias</h2>
+      <label>Monto del Préstamo</label>
+      <input type="number" id="montoExtra" value="1000000">
+      <label>Número de Cuotas (meses)</label>
+      <input type="number" id="cuotasExtra" value="24">
+      <label>Tasa de Interés Nominal (MV %)</label>
+      <input type="number" id="tasaExtra" value="1.5" step="0.01">
+      <h3>Definir Cuotas Extraordinarias (se repiten cada período)</h3>
+      <div id="extraInputs"></div>
+      <button onclick="agregarExtra()">Añadir Cuota Extra</button><br>
+      <button onclick="simularExtra()">Simular con Extras</button>
+      <div id="resultExtra"></div>
+      <canvas id="graficoExtra"></canvas>
+    </section>
+
+    <section id="inversion">
+      <h2>Simulador de Inversión Recurrente</h2>
+      <label>Aporte Mensual</label>
+      <input type="number" id="aporte" value="50000">
+      <label>Tasa de Interés Compuesto (MV %)</label>
+      <input type="number" id="tasaInv" value="1" step="0.01">
+      <label>Periodo de Inversión (meses)</label>
+      <input type="number" id="periodo" value="36">
+      <button onclick="simularInversion()">Simular Inversión</button>
+      <div id="resultInversion"></div>
+      <canvas id="graficoInversion"></canvas>
+    </section>
+  </main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function toggleTheme(){
+  document.body.dataset.theme = document.body.dataset.theme === "dark" ? "" : "dark";
+}
+function mostrarAnios(){
+  const meses = document.getElementById('cuotas').value;
+  document.getElementById('conversion').innerText = meses + " meses = " + (meses/12).toFixed(2) + " años";
+}
+function simularCredito(){
+  const P = parseFloat(document.getElementById('monto').value);
+  const n = parseInt(document.getElementById('cuotas').value);
+  const i = parseFloat(document.getElementById('tasa').value)/100;
+  const cuota = (P*i)/(1-Math.pow(1+i,-n));
+  let saldo = P;
+  let tabla = "<table><tr><th>#</th><th>Capital</th><th>Interés</th><th>Saldo</th></tr>";
+  let totalInteres = 0;
+  let labels=[],cap=[],inter=[];
+  for(let k=1;k<=n;k++){
+    let interes = saldo*i;
+    let capital = cuota-interes;
+    saldo -= capital;
+    totalInteres += interes;
+    tabla += `<tr><td>${k}</td><td>${capital.toFixed(2)}</td><td>${interes.toFixed(2)}</td><td>${saldo.toFixed(2)}</td></tr>`;
+    labels.push(k);
+    cap.push(capital);
+    inter.push(interes);
+  }
+  tabla+="</table><p>Intereses Totales: "+totalInteres.toFixed(2)+"</p>";
+  document.getElementById('resultCredito').innerHTML = tabla;
+  new Chart(document.getElementById('graficoCredito'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'Capital',data:cap,borderColor:'green',fill:false},
+      {label:'Interés',data:inter,borderColor:'red',fill:false}
+    ]}
+  });
+}
+let extras = [];
+function agregarExtra(){
+  const idx = extras.length;
+  const cont = document.getElementById('extraInputs');
+  const div = document.createElement('div');
+  div.innerHTML = `<label>Mes inicio</label><input type='number' id='mes${idx}' value='6'>
+                   <label>Monto</label><input type='number' id='montoExtra${idx}' value='100000'>`;
+  cont.appendChild(div);
+  extras.push(idx);
+}
+function simularExtra(){
+  const P = parseFloat(document.getElementById('montoExtra').value);
+  const n = parseInt(document.getElementById('cuotasExtra').value);
+  const i = parseFloat(document.getElementById('tasaExtra').value)/100;
+  const cuota = (P*i)/(1-Math.pow(1+i,-n));
+  let saldo = P;
+  let tabla = "<table><tr><th>#</th><th>Capital</th><th>Interés</th><th>Saldo</th></tr>";
+  let totalInteres = 0;
+  let labels=[],saldosBase=[],saldosExtra=[];
+  // escenario base
+  let saldoBase=P;
+  for(let k=1;k<=n;k++){
+    let interes=saldoBase*i;
+    let capital=cuota-interes;
+    saldoBase-=capital;
+    saldosBase.push(saldoBase);
+  }
+  // escenario con extras
+  for(let k=1;k<=n && saldo>0;k++){
+    let interes=saldo*i;
+    let capital=cuota-interes;
+    saldo-=capital;
+    // aplicar extras recurrentes
+    extras.forEach(idx=>{
+      let mesIni=parseInt(document.getElementById('mes'+idx).value);
+      let monto=parseFloat(document.getElementById('montoExtra'+idx).value);
+      if((k-mesIni)%12===0 && k>=mesIni){
+        saldo-=monto;
+        if(saldo<0) saldo=0;
+      }
+    });
+    totalInteres+=interes;
+    tabla+=`<tr><td>${k}</td><td>${capital.toFixed(2)}</td><td>${interes.toFixed(2)}</td><td>${saldo.toFixed(2)}</td></tr>`;
+    labels.push(k);
+    saldosExtra.push(saldo);
+    if(saldo<=0) break;
+  }
+  tabla+="</table><p>Intereses Totales: "+totalInteres.toFixed(2)+"</p>";
+  document.getElementById('resultExtra').innerHTML = tabla;
+  new Chart(document.getElementById('graficoExtra'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'Saldo Base',data:saldosBase,borderColor:'blue',fill:false},
+      {label:'Saldo con Extras',data:saldosExtra,borderColor:'orange',fill:false}
+    ]}
+  });
+}
+function simularInversion(){
+  const aporte=parseFloat(document.getElementById('aporte').value);
+  const tasa=parseFloat(document.getElementById('tasaInv').value)/100;
+  const n=parseInt(document.getElementById('periodo').value);
+  let labels=[],aportado=[],total=[],intereses=[];
+  let saldo=0, acumAportes=0;
+  for(let k=1;k<=n;k++){
+    saldo=(saldo+aporte)*(1+tasa);
+    acumAportes+=aporte;
+    labels.push(k);
+    total.push(saldo);
+    aportado.push(acumAportes);
+    intereses.push(saldo-acumAportes);
+  }
+  document.getElementById('resultInversion').innerHTML=`<p>Total acumulado: ${saldo.toFixed(2)}</p>
+    <p>Aportes: ${acumAportes.toFixed(2)}</p><p>Intereses: ${(saldo-acumAportes).toFixed(2)}</p>`;
+  new Chart(document.getElementById('graficoInversion'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'Capital aportado',data:aportado,borderColor:'blue',fill:false},
+      {label:'Total acumulado',data:total,borderColor:'green',fill:false},
+      {label:'Intereses',data:intereses,borderColor:'red',fill:false}
+    ]}
+  });
+}
+</script>
+</body>
+</html>

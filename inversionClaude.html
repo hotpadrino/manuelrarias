@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Inversiones</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --accent: #007bff;
+            --accent-hover: #0056b3;
+            --border: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent: #4dabf7;
+            --accent-hover: #339af0;
+            --border: #404040;
+            --shadow: rgba(255, 255, 255, 0.1);
+            --success: #51cf66;
+            --warning: #ffd43b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-hover);
+            transform: scale(1.1);
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .section {
+            display: none;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        input, select {
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card h3 {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .chart-container {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px var(--shadow);
+            height: 400px;
+            position: relative;
+        }
+
+        .table-container {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px var(--shadow);
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .extraordinary-payments {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .payment-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .payment-item input {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .payment-item button {
+            background: #dc3545;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .payment-item button:hover {
+            background: #c82333;
+        }
+
+        .conversion-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 15px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                text-align: center;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Simulador de Inversiones</h1>
+            <p>Herramienta completa para simular créditos, cuotas extraordinarias e inversiones</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showSection(0)">Simulador de Crédito</button>
+            <button class="tab" onclick="showSection(1)">Cuotas Extraordinarias</button>
+            <button class="tab" onclick="showSection(2)">Inversión Recurrente</button>
+        </div>
+
+        <!-- Sección 1: Simulador de Crédito -->
+        <div class="section active" id="section-0">
+            <h2>Simulador de Crédito</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="loanAmount">Monto del Préstamo ($)</label>
+                    <input type="number" id="loanAmount" value="100000" min="1000" step="1000">
+                </div>
+                <div class="form-group">
+                    <label for="loanTerms">Número de Cuotas (meses)</label>
+                    <input type="number" id="loanTerms" value="24" min="1" max="480" onchange="updateYearsConversion()">
+                    <div class="conversion-text" id="yearsConversion">24 meses = 2 años</div>
+                </div>
+                <div class="form-group">
+                    <label for="interestRate">Tasa de Interés Mensual (%)</label>
+                    <input type="number" id="interestRate" value="1.5" min="0.1" step="0.1">
+                </div>
+            </div>
+            <button class="btn" onclick="calculateLoan()">Calcular Crédito</button>
+
+            <div class="results" id="loanResults" style="display: none;">
+                <div class="summary-cards">
+                    <div class="card">
+                        <h3>Cuota Mensual</h3>
+                        <div class="value" id="monthlyPayment">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Total Intereses</h3>
+                        <div class="value" id="totalInterest">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Total a Pagar</h3>
+                        <div class="value" id="totalPayment">$0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="loanChart"></canvas>
+                </div>
+
+                <div class="table-container">
+                    <table id="amortizationTable">
+                        <thead>
+                            <tr>
+                                <th>Cuota</th>
+                                <th>Capital</th>
+                                <th>Interés</th>
+                                <th>Cuota Total</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 2: Cuotas Extraordinarias -->
+        <div class="section" id="section-1">
+            <h2>Comparación con Cuotas Extraordinarias</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="loanAmount2">Monto del Préstamo ($)</label>
+                    <input type="number" id="loanAmount2" value="100000" min="1000" step="1000">
+                </div>
+                <div class="form-group">
+                    <label for="loanTerms2">Número de Cuotas (meses)</label>
+                    <input type="number" id="loanTerms2" value="24" min="1" max="480" onchange="updateYearsConversion2()">
+                    <div class="conversion-text" id="yearsConversion2">24 meses = 2 años</div>
+                </div>
+                <div class="form-group">
+                    <label for="interestRate2">Tasa de Interés Mensual (%)</label>
+                    <input type="number" id="interestRate2" value="1.5" min="0.1" step="0.1">
+                </div>
+            </div>
+
+            <div class="extraordinary-payments">
+                <h3>Cuotas Extraordinarias Recurrentes</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 0.9rem;">
+                    Define pagos adicionales que se repetirán cada cierto período durante todo el crédito.
+                </p>
+                <div id="extraPaymentsList">
+                    <div class="payment-item">
+                        <input type="number" placeholder="Monto ($)" min="1000" step="1000">
+                        <select>
+                            <option value="">Seleccionar frecuencia</option>
+                            <option value="monthly">Todos los meses</option>
+                            <option value="bimonthly">Cada 2 meses</option>
+                            <option value="quarterly">Cada 3 meses (trimestral)</option>
+                            <option value="semiannual">Cada 6 meses (semestral)</option>
+                            <option value="annual">Cada 12 meses (anual)</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                        <input type="number" placeholder="Mes de inicio" min="1" max="12" style="display: none;" class="start-month">
+                        <input type="number" placeholder="Cada X meses" min="1" max="48" style="display: none;" class="custom-frequency">
+                        <input type="text" placeholder="Descripción (ej: Prima de junio)">
+                        <button type="button" onclick="removePayment(this)" style="display: none;">Eliminar</button>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="addExtraPayment()">Agregar Cuota Extraordinaria</button>
+            </div>
+
+            <button class="btn" onclick="calculateLoanWithExtra()">Calcular con Cuotas Extraordinarias</button>
+
+            <div class="results" id="extraResults" style="display: none;">
+                <div class="summary-cards">
+                    <div class="card">
+                        <h3>Ahorro en Intereses</h3>
+                        <div class="value" id="interestSavings">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Meses Ahorrados</h3>
+                        <div class="value" id="monthsSaved">0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Nuevo Total</h3>
+                        <div class="value" id="newTotalPayment">$0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+
+                <div class="table-container">
+                    <table id="extraAmortizationTable">
+                        <thead>
+                            <tr>
+                                <th>Cuota</th>
+                                <th>Capital</th>
+                                <th>Interés</th>
+                                <th>Cuota Normal</th>
+                                <th>Pago Extra</th>
+                                <th>Total Pagado</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección 3: Inversión Recurrente -->
+        <div class="section" id="section-2">
+            <h2>Simulador de Inversión Recurrente</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="monthlyContribution">Aporte Mensual ($)</label>
+                    <input type="number" id="monthlyContribution" value="5000" min="1000" step="1000">
+                </div>
+                <div class="form-group">
+                    <label for="investmentRate">Tasa de Interés Mensual (%)</label>
+                    <input type="number" id="investmentRate" value="1.2" min="0.1" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="investmentPeriod">Periodo de Inversión</label>
+                    <select id="periodType" onchange="updatePeriodLabel()">
+                        <option value="months">Meses</option>
+                        <option value="years">Años</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="periodValue" id="periodLabel">Duración (meses)</label>
+                    <input type="number" id="periodValue" value="60" min="1">
+                </div>
+            </div>
+            <button class="btn" onclick="calculateInvestment()">Calcular Inversión</button>
+
+            <div class="results" id="investmentResults" style="display: none;">
+                <div class="summary-cards">
+                    <div class="card">
+                        <h3>Total Aportado</h3>
+                        <div class="value" id="totalContributions">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Intereses Ganados</h3>
+                        <div class="value" id="totalEarnings">$0</div>
+                    </div>
+                    <div class="card">
+                        <h3>Capital Final</h3>
+                        <div class="value" id="finalCapital">$0</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="investmentChart"></canvas>
+                </div>
+
+                <div class="table-container">
+                    <table id="investmentTable">
+                        <thead>
+                            <tr>
+                                <th>Mes</th>
+                                <th>Aporte</th>
+                                <th>Intereses</th>
+                                <th>Total Aportado</th>
+                                <th>Capital Acumulado</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTheme = 'light';
+        let charts = {};
+
+        // Gestión de temas
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', currentTheme);
+            document.querySelector('.theme-toggle').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+            
+            // Actualizar gráficos existentes
+            Object.values(charts).forEach(chart => {
+                if (chart) {
+                    updateChartTheme(chart);
+                }
+            });
+        }
+
+        function updateChartTheme(chart) {
+            const textColor = currentTheme === 'dark' ? '#ffffff' : '#212529';
+            const gridColor = currentTheme === 'dark' ? '#404040' : '#dee2e6';
+            
+            chart.options.scales.x.ticks.color = textColor;
+            chart.options.scales.y.ticks.color = textColor;
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.y.grid.color = gridColor;
+            chart.options.plugins.legend.labels.color = textColor;
+            chart.update();
+        }
+
+        // Gestión de secciones
+        function showSection(index) {
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.section').forEach((section, i) => {
+                section.classList.toggle('active', i === index);
+            });
+        }
+
+        // Conversiones de tiempo
+        function updateYearsConversion() {
+            const months = parseInt(document.getElementById('loanTerms').value) || 0;
+            const years = (months / 12).toFixed(1);
+            document.getElementById('yearsConversion').textContent = `${months} meses = ${years} años`;
+        }
+
+        function updateYearsConversion2() {
+            const months = parseInt(document.getElementById('loanTerms2').value) || 0;
+            const years = (months / 12).toFixed(1);
+            document.getElementById('yearsConversion2').textContent = `${months} meses = ${years} años`;
+        }
+
+        function updatePeriodLabel() {
+            const periodType = document.getElementById('periodType').value;
+            document.getElementById('periodLabel').textContent = 
+                periodType === 'months' ? 'Duración (meses)' : 'Duración (años)';
+        }
+
+        // Utilidades de formato
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Sección 1: Simulador de Crédito
+        function calculateLoan() {
+            const principal = parseFloat(document.getElementById('loanAmount').value);
+            const terms = parseInt(document.getElementById('loanTerms').value);
+            const monthlyRate = parseFloat(document.getElementById('interestRate').value) / 100;
+
+            if (!principal || !terms || !monthlyRate) {
+                alert('Por favor, complete todos los campos');
+                return;
+            }
+
+            // Calcular cuota mensual usando fórmula de amortización francesa
+            const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, terms)) / 
+                                 (Math.pow(1 + monthlyRate, terms) - 1);
+
+            let balance = principal;
+            let totalInterest = 0;
+            const amortizationSchedule = [];
+
+            // Generar tabla de amortización
+            for (let month = 1; month <= terms; month++) {
+                const interestPayment = balance * monthlyRate;
+                const principalPayment = monthlyPayment - interestPayment;
+                balance -= principalPayment;
+                totalInterest += interestPayment;
+
+                if (balance < 0) balance = 0;
+
+                amortizationSchedule.push({
+                    month,
+                    principal: principalPayment,
+                    interest: interestPayment,
+                    payment: monthlyPayment,
+                    balance
+                });
+            }
+
+            // Mostrar resultados
+            document.getElementById('monthlyPayment').textContent = formatCurrency(monthlyPayment);
+            document.getElementById('totalInterest').textContent = formatCurrency(totalInterest);
+            document.getElementById('totalPayment').textContent = formatCurrency(principal + totalInterest);
+
+            // Generar tabla HTML
+            generateAmortizationTable(amortizationSchedule, 'amortizationTable');
+
+            // Generar gráfico
+            generateLoanChart(amortizationSchedule);
+
+            document.getElementById('loanResults').style.display = 'block';
+        }
+
+        function generateAmortizationTable(schedule, tableId) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            tbody.innerHTML = '';
+
+            schedule.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${formatCurrency(row.principal)}</td>
+                    <td>${formatCurrency(row.interest)}</td>
+                    <td>${formatCurrency(row.payment)}</td>
+                    <td>${formatCurrency(row.balance)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function generateLoanChart(schedule) {
+            const ctx = document.getElementById('loanChart').getContext('2d');
+            
+            if (charts.loanChart) {
+                charts.loanChart.destroy();
+            }
+
+            const labels = schedule.map(row => `Mes ${row.month}`);
+            const principalData = schedule.map(row => row.principal);
+            const interestData = schedule.map(row => row.interest);
+
+            charts.loanChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Capital',
+                        data: principalData,
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Interés',
+                        data: interestData,
+                        backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        },
+                        y: {
+                            stacked: true,
+                            ticks: {
+                                color: currentTheme === 'dark' ? '#ffffff' : '#212529',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sección 2: Cuotas Extraordinarias
+        function addExtraPayment() {
+            const container = document.getElementById('extraPaymentsList');
+            const newPayment = document.createElement('div');
+            newPayment.className = 'payment-item';
+            newPayment.innerHTML = `
+                <input type="number" placeholder="Monto ($)" min="1000" step="1000">
+                <select onchange="handleFrequencyChange(this)">
+                    <option value="">Seleccionar frecuencia</option>
+                    <option value="monthly">Todos los meses</option>
+                    <option value="bimonthly">Cada 2 meses</option>
+                    <option value="quarterly">Cada 3 meses (trimestral)</option>
+                    <option value="semiannual">Cada 6 meses (semestral)</option>
+                    <option value="annual">Cada 12 meses (anual)</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+                <input type="number" placeholder="Mes de inicio" min="1" max="12" style="display: none;" class="start-month">
+                <input type="number" placeholder="Cada X meses" min="1" max="48" style="display: none;" class="custom-frequency">
+                <input type="text" placeholder="Descripción (ej: Prima de junio)">
+                <button type="button" onclick="removePayment(this)">Eliminar</button>
+            `;
+            container.appendChild(newPayment);
+        }
+
+        function handleFrequencyChange(selectElement) {
+            const paymentItem = selectElement.closest('.payment-item');
+            const startMonthInput = paymentItem.querySelector('.start-month');
+            const customFrequencyInput = paymentItem.querySelector('.custom-frequency');
+            
+            if (selectElement.value === 'custom') {
+                startMonthInput.style.display = 'block';
+                customFrequencyInput.style.display = 'block';
+                startMonthInput.placeholder = 'Mes de inicio (1-12)';
+                startMonthInput.max = '12';
+            } else if (['semiannual', 'annual'].includes(selectElement.value)) {
+                startMonthInput.style.display = 'block';
+                customFrequencyInput.style.display = 'none';
+                startMonthInput.placeholder = 'Mes del año (1-12)';
+                startMonthInput.max = '12';
+            } else if (selectElement.value === 'monthly') {
+                startMonthInput.style.display = 'none';
+                customFrequencyInput.style.display = 'none';
+            } else if (['bimonthly', 'quarterly'].includes(selectElement.value)) {
+                startMonthInput.style.display = 'block';
+                customFrequencyInput.style.display = 'none';
+                startMonthInput.placeholder = 'Mes de inicio (1-12)';
+                startMonthInput.max = '12';
+            } else {
+                startMonthInput.style.display = 'none';
+                customFrequencyInput.style.display = 'none';
+            }
+        }
+
+        // Agregar el manejador de eventos para el primer elemento
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstSelect = document.querySelector('#extraPaymentsList select');
+            if (firstSelect) {
+                firstSelect.onchange = function() { handleFrequencyChange(this); };
+            }
+        });
+
+        function removePayment(button) {
+            button.parentElement.remove();
+        }
+
+        function getExtraPaymentsForMonth(extraPayments, month) {
+            const payments = [];
+            
+            extraPayments.forEach(payment => {
+                let shouldPay = false;
+                
+                switch (payment.frequency) {
+                    case 'monthly':
+                        shouldPay = true;
+                        break;
+                    case 'bimonthly':
+                        shouldPay = ((month - payment.startMonth) % 2 === 0) && (month >= payment.startMonth);
+                        break;
+                    case 'quarterly':
+                        shouldPay = ((month - payment.startMonth) % 3 === 0) && (month >= payment.startMonth);
+                        break;
+                    case 'semiannual':
+                        shouldPay = ((month - payment.startMonth) % 6 === 0) && (month >= payment.startMonth);
+                        break;
+                    case 'annual':
+                        shouldPay = ((month - payment.startMonth) % 12 === 0) && (month >= payment.startMonth);
+                        break;
+                    case 'custom':
+                        shouldPay = ((month - payment.startMonth) % payment.customFreq === 0) && (month >= payment.startMonth);
+                        break;
+                }
+                
+                if (shouldPay) {
+                    payments.push(payment);
+                }
+            });
+            
+            return payments;
+        }
+
+        function calculateLoanWithExtra() {
+            const principal = parseFloat(document.getElementById('loanAmount2').value);
+            const terms = parseInt(document.getElementById('loanTerms2').value);
+            const monthlyRate = parseFloat(document.getElementById('interestRate2').value) / 100;
+
+            if (!principal || !terms || !monthlyRate) {
+                alert('Por favor, complete todos los campos');
+                return;
+            }
+
+            // Obtener pagos extraordinarios recurrentes
+            const extraPayments = [];
+            document.querySelectorAll('#extraPaymentsList .payment-item').forEach(item => {
+                const inputs = item.querySelectorAll('input');
+                const select = item.querySelector('select');
+                
+                const amount = parseFloat(inputs[0].value);
+                const frequency = select.value;
+                const startMonth = parseInt(inputs[1].value) || 1;
+                const customFreq = parseInt(inputs[2].value) || 1;
+                const description = inputs[3].value || getFrequencyDescription(frequency);
+
+                if (amount && frequency) {
+                    extraPayments.push({ 
+                        amount, 
+                        frequency, 
+                        startMonth, 
+                        customFreq, 
+                        description 
+                    });
+                }
+            });
+
+            // Calcular crédito normal
+            const monthlyPayment = principal * (monthlyRate * Math.pow(1 + monthlyRate, terms)) / 
+                                 (Math.pow(1 + monthlyRate, terms) - 1);
+
+            let balance = principal;
+            let totalInterest = 0;
+            let totalExtraPayments = 0;
+            let actualTerms = 0;
+            const scheduleWithExtra = [];
+
+            // Generar tabla con pagos extraordinarios recurrentes
+            for (let month = 1; month <= terms && balance > 0; month++) {
+                const interestPayment = balance * monthlyRate;
+                let principalPayment = monthlyPayment - interestPayment;
+                
+                // Calcular pagos extraordinarios para este mes
+                const extraPaymentsThisMonth = getExtraPaymentsForMonth(extraPayments, month);
+                const totalExtraThisMonth = extraPaymentsThisMonth.reduce((sum, ep) => sum + ep.amount, 0);
+                
+                principalPayment += totalExtraThisMonth;
+                totalExtraPayments += totalExtraThisMonth;
+
+                // Asegurar que no se pague más del saldo restante
+                if (principalPayment > balance) {
+                    principalPayment = balance;
+                }
+
+                balance -= principalPayment;
+                totalInterest += interestPayment;
+                actualTerms = month;
+
+                scheduleWithExtra.push({
+                    month,
+                    principal: principalPayment - totalExtraThisMonth,
+                    interest: interestPayment,
+                    normalPayment: monthlyPayment,
+                    extraPayment: totalExtraThisMonth,
+                    extraDescriptions: extraPaymentsThisMonth.map(ep => ep.description).join(', '),
+                    totalPaid: monthlyPayment + totalExtraThisMonth,
+                    balance: Math.max(0, balance)
+                });
+
+                if (balance <= 0) break;
+            }
+
+            // Calcular ahorros comparando con crédito normal
+            const normalTotalInterest = (monthlyPayment * terms) - principal;
+            const interestSavings = normalTotalInterest - totalInterest;
+            const monthsSaved = terms - actualTerms;
+
+            // Mostrar resultados
+            document.getElementById('interestSavings').textContent = formatCurrency(interestSavings);
+            document.getElementById('monthsSaved').textContent = monthsSaved;
+            document.getElementById('newTotalPayment').textContent = formatCurrency(principal + totalInterest);
+
+            // Generar tabla HTML
+            generateExtraAmortizationTable(scheduleWithExtra);
+
+            // Generar gráfico de comparación
+            generateComparisonChart(scheduleWithExtra, monthlyPayment, terms);
+
+            document.getElementById('extraResults').style.display = 'block';
+        }
+
+        function getFrequencyDescription(frequency) {
+            const descriptions = {
+                'monthly': 'Pago mensual adicional',
+                'bimonthly': 'Pago bimensual',
+                'quarterly': 'Pago trimestral',
+                'semiannual': 'Pago semestral',
+                'annual': 'Pago anual',
+                'custom': 'Pago personalizado'
+            };
+            return descriptions[frequency] || 'Pago extraordinario';
+        }
+
+        function generateExtraAmortizationTable(schedule) {
+            const tbody = document.querySelector('#extraAmortizationTable tbody');
+            tbody.innerHTML = '';
+
+            schedule.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${formatCurrency(row.principal)}</td>
+                    <td>${formatCurrency(row.interest)}</td>
+                    <td>${formatCurrency(row.normalPayment)}</td>
+                    <td>${formatCurrency(row.extraPayment)}</td>
+                    <td>${formatCurrency(row.totalPaid)}</td>
+                    <td>${formatCurrency(row.balance)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function generateComparisonChart(scheduleWithExtra, monthlyPayment, originalTerms) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (charts.comparisonChart) {
+                charts.comparisonChart.destroy();
+            }
+
+            // Datos para comparación
+            const labels = [];
+            const normalBalance = [];
+            const extraBalance = [];
+            
+            let normalBal = parseFloat(document.getElementById('loanAmount2').value);
+            const monthlyRate = parseFloat(document.getElementById('interestRate2').value) / 100;
+
+            for (let month = 1; month <= Math.max(originalTerms, scheduleWithExtra.length); month++) {
+                labels.push(`Mes ${month}`);
+                
+                // Balance normal
+                if (month <= originalTerms && normalBal > 0) {
+                    const interestPayment = normalBal * monthlyRate;
+                    const principalPayment = monthlyPayment - interestPayment;
+                    normalBal = Math.max(0, normalBal - principalPayment);
+                }
+                normalBalance.push(normalBal);
+
+                // Balance con pagos extra
+                const extraRow = scheduleWithExtra.find(row => row.month === month);
+                extraBalance.push(extraRow ? extraRow.balance : 0);
+            }
+
+            charts.comparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Crédito Normal',
+                        data: normalBalance,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        tension: 0.1
+                    }, {
+                        label: 'Con Cuotas Extraordinarias',
+                        data: extraBalance,
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        },
+                        y: {
+                            ticks: {
+                                color: currentTheme === 'dark' ? '#ffffff' : '#212529',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sección 3: Inversión Recurrente
+        function calculateInvestment() {
+            const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value);
+            const monthlyRate = parseFloat(document.getElementById('investmentRate').value) / 100;
+            const periodType = document.getElementById('periodType').value;
+            let periodValue = parseInt(document.getElementById('periodValue').value);
+
+            if (!monthlyContribution || !monthlyRate || !periodValue) {
+                alert('Por favor, complete todos los campos');
+                return;
+            }
+
+            // Convertir años a meses si es necesario
+            const totalMonths = periodType === 'years' ? periodValue * 12 : periodValue;
+
+            let balance = 0;
+            let totalContributions = 0;
+            const investmentSchedule = [];
+
+            // Calcular crecimiento mes a mes
+            for (let month = 1; month <= totalMonths; month++) {
+                // Agregar interés sobre saldo actual
+                const interestEarned = balance * monthlyRate;
+                
+                // Agregar aporte mensual
+                balance += interestEarned + monthlyContribution;
+                totalContributions += monthlyContribution;
+
+                investmentSchedule.push({
+                    month,
+                    contribution: monthlyContribution,
+                    interest: interestEarned,
+                    totalContributions,
+                    balance
+                });
+            }
+
+            const totalEarnings = balance - totalContributions;
+
+            // Mostrar resultados
+            document.getElementById('totalContributions').textContent = formatCurrency(totalContributions);
+            document.getElementById('totalEarnings').textContent = formatCurrency(totalEarnings);
+            document.getElementById('finalCapital').textContent = formatCurrency(balance);
+
+            // Generar tabla
+            generateInvestmentTable(investmentSchedule);
+
+            // Generar gráfico
+            generateInvestmentChart(investmentSchedule);
+
+            document.getElementById('investmentResults').style.display = 'block';
+        }
+
+        function generateInvestmentTable(schedule) {
+            const tbody = document.querySelector('#investmentTable tbody');
+            tbody.innerHTML = '';
+
+            schedule.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.month}</td>
+                    <td>${formatCurrency(row.contribution)}</td>
+                    <td>${formatCurrency(row.interest)}</td>
+                    <td>${formatCurrency(row.totalContributions)}</td>
+                    <td>${formatCurrency(row.balance)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function generateInvestmentChart(schedule) {
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+            
+            if (charts.investmentChart) {
+                charts.investmentChart.destroy();
+            }
+
+            const labels = schedule.map(row => `Mes ${row.month}`);
+            const contributionsData = schedule.map(row => row.totalContributions);
+            const balanceData = schedule.map(row => row.balance);
+
+            charts.investmentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Total Aportado',
+                        data: contributionsData,
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }, {
+                        label: 'Capital Acumulado',
+                        data: balanceData,
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        },
+                        y: {
+                            ticks: {
+                                color: currentTheme === 'dark' ? '#ffffff' : '#212529',
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            },
+                            grid: { color: currentTheme === 'dark' ? '#404040' : '#dee2e6' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: currentTheme === 'dark' ? '#ffffff' : '#212529' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateYearsConversion();
+            updateYearsConversion2();
+            updatePeriodLabel();
+        });
+    </script>
+</body>
+</html>

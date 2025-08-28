@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Inversiones y Créditos</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --input-border: #ccc;
+            --button-bg: #007bff;
+            --button-text: #fff;
+            --primary-color: #007bff;
+            --accent-color: #28a745;
+        }
+        body.dark-mode {
+            --bg-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --card-bg: #34495e;
+            --input-border: #555;
+            --button-bg: #3498db;
+            --button-text: #fff;
+            --primary-color: #3498db;
+            --accent-color: #2ecc71;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #amortizationTable, #extraordinaryTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+        }
+        #amortizationTable th, #amortizationTable td, #extraordinaryTable th, #extraordinaryTable td {
+            border: 1px solid var(--input-border);
+            padding: 10px;
+            text-align: left;
+        }
+        #amortizationTable th, #extraordinaryTable th {
+            background-color: var(--primary-color);
+            color: var(--button-text);
+        }
+        .results p {
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .extraordinary-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .extraordinary-input-group input {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="themeToggle" class="theme-switcher">Modo Oscuro</button>
+
+    <div class="container">
+        
+        <div class="card" id="credit-simulator">
+            <h2>Simulador de Crédito</h2>
+            <div class="form-group">
+                <label for="loanAmount">Monto del Préstamo:</label>
+                <input type="number" id="loanAmount" placeholder="Ej: 10000000">
+            </div>
+            <div class="form-group">
+                <label for="loanMonths">Número de Cuotas (meses):</label>
+                <input type="number" id="loanMonths" placeholder="Ej: 36">
+                <small id="yearsConversion"></small>
+            </div>
+            <div class="form-group">
+                <label for="interestRate">Tasa de Interés Mensual (% MV):</label>
+                <input type="number" id="interestRate" placeholder="Ej: 1.5">
+            </div>
+            <button onclick="calculateLoan()">Calcular Crédito</button>
+            <div class="results">
+                <p>Intereses Totales Pagados: <span id="totalInterest">-</span></p>
+            </div>
+            <canvas id="amortizationChart"></canvas>
+            <table id="amortizationTable">
+                <thead>
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Capital</th>
+                        <th>Intereses</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card" id="extra-payment-simulator">
+            <h2>Comparación con Cuotas Extraordinarias</h2>
+            <div class="form-group">
+                <label for="loanAmountExtra">Monto del Préstamo:</label>
+                <input type="number" id="loanAmountExtra" placeholder="Ej: 10000000">
+            </div>
+            <div class="form-group">
+                <label for="loanMonthsExtra">Número de Cuotas (meses):</label>
+                <input type="number" id="loanMonthsExtra" placeholder="Ej: 36">
+            </div>
+            <div class="form-group">
+                <label for="interestRateExtra">Tasa de Interés Mensual (% MV):</label>
+                <input type="number" id="interestRateExtra" placeholder="Ej: 1.5">
+            </div>
+            <h3>Cuotas Extraordinarias</h3>
+            <div id="extraordinaryPaymentsContainer">
+                <div class="extraordinary-input-group">
+                    <label>Mes:</label>
+                    <input type="number" class="extra-month" placeholder="Ej: 6">
+                    <label>Valor:</label>
+                    <input type="number" class="extra-value" placeholder="Ej: 500000">
+                </div>
+            </div>
+            <button onclick="addExtraPayment()">Añadir Cuota Extraordinaria</button>
+            <button onclick="calculateExtraordinaryLoan()">Calcular con Cuotas Extra</button>
+            <div class="results">
+                <p>Intereses Totales (Extra): <span id="totalInterestExtra">-</span></p>
+                <p>Meses Ahorrados: <span id="monthsSaved">-</span></p>
+            </div>
+            <canvas id="extraordinaryChart"></canvas>
+            <table id="extraordinaryTable">
+                <thead>
+                    <tr>
+                        <th>Cuota</th>
+                        <th>Capital</th>
+                        <th>Intereses</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="card" id="investment-simulator">
+            <h2>Simulador de Inversión Recurrente</h2>
+            <div class="form-group">
+                <label for="monthlyContribution">Aporte Mensual:</label>
+                <input type="number" id="monthlyContribution" placeholder="Ej: 200000">
+            </div>
+            <div class="form-group">
+                <label for="investmentRate">Tasa de Interés Compuesto Mensual (%):</label>
+                <input type="number" id="investmentRate" placeholder="Ej: 0.8">
+            </div>
+            <div class="form-group">
+                <label for="investmentPeriod">Período de Inversión (meses):</label>
+                <input type="number" id="investmentPeriod" placeholder="Ej: 120">
+            </div>
+            <button onclick="calculateInvestment()">Calcular Inversión</button>
+            <div class="results">
+                <p>Capital Acumulado: <span id="totalCapital">-</span></p>
+                <p>Total Aportes: <span id="totalContributions">-</span></p>
+                <p>Total Intereses Ganados: <span id="totalInvestmentInterest">-</span></p>
+            </div>
+            <canvas id="investmentChart"></canvas>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Funcionalidad de modo claro/oscuro
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            document.getElementById('themeToggle').textContent = isDarkMode ? 'Modo Claro' : 'Modo Oscuro';
+        });
+
+        // Cargar el modo guardado
+        window.onload = () => {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').textContent = 'Modo Claro';
+            }
+        };
+
+        // Gráficos (instancias globales para poder actualizarlas)
+        let amortizationChart, extraordinaryChart, investmentChart;
+
+        // SECCIÓN 1: LÓGICA DE SIMULADOR DE CRÉDITO
+        const loanMonthsInput = document.getElementById('loanMonths');
+        const yearsConversionSpan = document.getElementById('yearsConversion');
+        
+        loanMonthsInput.addEventListener('input', () => {
+            const months = parseInt(loanMonthsInput.value);
+            if (months > 0) {
+                const years = months / 12;
+                yearsConversionSpan.textContent = `(${months} meses = ${years.toFixed(2)} años)`;
+            } else {
+                yearsConversionSpan.textContent = '';
+            }
+        });
+
+        function calculateLoan() {
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            const months = parseInt(document.getElementById('loanMonths').value);
+            const rate = parseFloat(document.getElementById('interestRate').value) / 100;
+
+            if (isNaN(amount) || isNaN(months) || isNaN(rate) || amount <= 0 || months <= 0 || rate < 0) {
+                alert('Por favor, ingresa valores válidos para el crédito.');
+                return;
+            }
+
+            const monthlyPayment = (amount * rate) / (1 - Math.pow(1 + rate, -months));
+            let balance = amount;
+            let totalInterestPaid = 0;
+            const tableBody = document.getElementById('amortizationTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            const chartLabels = [];
+            const capitalData = [];
+            const interestData = [];
+
+            for (let i = 1; i <= months; i++) {
+                const interestPayment = balance * rate;
+                const principalPayment = monthlyPayment - interestPayment;
+                balance -= principalPayment;
+                totalInterestPaid += interestPayment;
+
+                chartLabels.push(`Mes ${i}`);
+                capitalData.push(principalPayment);
+                interestData.push(interestPayment);
+
+                const row = `<tr>
+                    <td>${i}</td>
+                    <td>$${principalPayment.toFixed(2)}</td>
+                    <td>$${interestPayment.toFixed(2)}</td>
+                    <td>$${balance > 0 ? balance.toFixed(2) : 0}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            }
+
+            document.getElementById('totalInterest').textContent = `$${totalInterestPaid.toFixed(2)}`;
+            document.getElementById('amortizationTable').style.display = 'table';
+            
+            // Actualizar o crear gráfico
+            if (amortizationChart) {
+                amortizationChart.destroy();
+            }
+            const ctx = document.getElementById('amortizationChart').getContext('2d');
+            amortizationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Capital Pagado',
+                        data: capitalData,
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                    }, {
+                        label: 'Intereses Pagados',
+                        data: interestData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: { display: true, text: 'Mes' }
+                        },
+                        y: {
+                            stacked: true,
+                            title: { display: true, text: 'Monto ($)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // SECCIÓN 2: LÓGICA DE CUOTAS EXTRAORDINARIAS
+        function addExtraPayment() {
+            const container = document.getElementById('extraordinaryPaymentsContainer');
+            const newGroup = document.createElement('div');
+            newGroup.className = 'extraordinary-input-group';
+            newGroup.innerHTML = `
+                <label>Mes:</label>
+                <input type="number" class="extra-month" placeholder="Ej: 6">
+                <label>Valor:</label>
+                <input type="number" class="extra-value" placeholder="Ej: 500000">
+            `;
+            container.appendChild(newGroup);
+        }
+
+        function calculateExtraordinaryLoan() {
+            const amount = parseFloat(document.getElementById('loanAmountExtra').value);
+            const monthsBase = parseInt(document.getElementById('loanMonthsExtra').value);
+            const rate = parseFloat(document.getElementById('interestRateExtra').value) / 100;
+
+            if (isNaN(amount) || isNaN(monthsBase) || isNaN(rate) || amount <= 0 || monthsBase <= 0 || rate < 0) {
+                alert('Por favor, ingresa valores válidos.');
+                return;
+            }
+
+            const monthlyPaymentBase = (amount * rate) / (1 - Math.pow(1 + rate, -monthsBase));
+            const extraPayments = Array.from(document.querySelectorAll('.extraordinary-input-group')).map(group => ({
+                month: parseInt(group.querySelector('.extra-month').value),
+                value: parseFloat(group.querySelector('.extra-value').value)
+            })).filter(p => !isNaN(p.month) && !isNaN(p.value) && p.month > 0 && p.value > 0);
+            
+            let balance = amount;
+            let totalInterestPaidExtra = 0;
+            const tableBody = document.getElementById('extraordinaryTable').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            const chartLabels = [];
+            const totalPaymentData = [];
+            let currentMonth = 0;
+
+            while (balance > 0 && currentMonth < monthsBase * 2) {
+                currentMonth++;
+                let monthlyPayment = monthlyPaymentBase;
+                let extraPaymentThisMonth = 0;
+
+                extraPayments.forEach(p => {
+                    if (currentMonth === p.month) {
+                        extraPaymentThisMonth = p.value;
+                    }
+                });
+
+                const interestPayment = balance * rate;
+                let principalPayment = monthlyPayment - interestPayment + extraPaymentThisMonth;
+                
+                if (principalPayment >= balance + interestPayment) {
+                    principalPayment = balance;
+                    balance = 0;
+                } else {
+                    balance -= principalPayment;
+                }
+                
+                totalInterestPaidExtra += interestPayment;
+                
+                chartLabels.push(`Mes ${currentMonth}`);
+                totalPaymentData.push(monthlyPayment + extraPaymentThisMonth);
+
+                const row = `<tr>
+                    <td>${currentMonth}</td>
+                    <td>$${principalPayment.toFixed(2)}</td>
+                    <td>$${interestPayment.toFixed(2)}</td>
+                    <td>$${balance > 0 ? balance.toFixed(2) : 0}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            }
+            
+            const totalMonthsExtra = currentMonth;
+            const monthsSaved = monthsBase - totalMonthsExtra;
+            document.getElementById('totalInterestExtra').textContent = `$${totalInterestPaidExtra.toFixed(2)}`;
+            document.getElementById('monthsSaved').textContent = monthsSaved;
+            document.getElementById('extraordinaryTable').style.display = 'table';
+            
+            // Actualizar o crear gráfico de comparación
+            if (extraordinaryChart) {
+                extraordinaryChart.destroy();
+            }
+            const ctxExtra = document.getElementById('extraordinaryChart').getContext('2d');
+            
+            const baseLabels = Array.from({ length: monthsBase }, (_, i) => `Mes ${i + 1}`);
+            const basePayments = Array.from({ length: monthsBase }, () => monthlyPaymentBase);
+
+            extraordinaryChart = new Chart(ctxExtra, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Crédito con Cuotas Extraordinarias',
+                        data: totalPaymentData,
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        fill: false
+                    }, {
+                        label: 'Crédito Base',
+                        data: basePayments,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Mes' } },
+                        y: { title: { display: true, text: 'Monto Pagado ($)' } }
+                    },
+                    tooltips: { mode: 'index', intersect: false }
+                }
+            });
+        }
+
+        // SECCIÓN 3: LÓGICA DE SIMULADOR DE INVERSIÓN
+        function calculateInvestment() {
+            const contribution = parseFloat(document.getElementById('monthlyContribution').value);
+            const rate = parseFloat(document.getElementById('investmentRate').value) / 100;
+            const period = parseInt(document.getElementById('investmentPeriod').value);
+
+            if (isNaN(contribution) || isNaN(rate) || isNaN(period) || contribution <= 0 || period <= 0 || rate < 0) {
+                alert('Por favor, ingresa valores válidos para la inversión.');
+                return;
+            }
+
+            let totalCapital = 0;
+            let totalContributions = 0;
+            const chartLabels = [];
+            const capitalData = [];
+            const contributionsData = [];
+
+            for (let i = 1; i <= period; i++) {
+                totalCapital = (totalCapital + contribution) * (1 + rate);
+                totalContributions += contribution;
+                
+                chartLabels.push(`Mes ${i}`);
+                capitalData.push(totalCapital);
+                contributionsData.push(totalContributions);
+            }
+            
+            const totalInvestmentInterest = totalCapital - totalContributions;
+            
+            document.getElementById('totalCapital').textContent = `$${totalCapital.toFixed(2)}`;
+            document.getElementById('totalContributions').textContent = `$${totalContributions.toFixed(2)}`;
+            document.getElementById('totalInvestmentInterest').textContent = `$${totalInvestmentInterest.toFixed(2)}`;
+
+            // Actualizar o crear gráfico de inversión
+            if (investmentChart) {
+                investmentChart.destroy();
+            }
+            const ctxInv = document.getElementById('investmentChart').getContext('2d');
+            investmentChart = new Chart(ctxInv, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Capital Total',
+                        data: capitalData,
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                        fill: true
+                    }, {
+                        label: 'Aportes Totales',
+                        data: contributionsData,
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { title: { display: true, text: 'Mes' } },
+                        y: { title: { display: true, text: 'Monto ($)' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
