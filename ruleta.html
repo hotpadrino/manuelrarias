@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruleta de Nombres</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #111827;
+      --text-primary: #e5e7eb;
+      --text-secondary: #94a3b8;
+      --accent-1: #22d3ee;
+      --accent-2: #a78bfa;
+      --sector-1: #006a71; /* Nuevo color: verde oscuro */
+      --success: #34d399;
+      --warning: #f59e0b;
+      --danger: #f87171;
+      --border: #1f2a3a;
+      --card-bg: #0b1220;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f8fafc;
+      --bg-secondary: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --accent-1: #0ea5e9;
+      --accent-2: #8b5cf6;
+      --sector-1: #008080; /* Color para el sector en tema claro */
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --border: #e2e8f0;
+      --card-bg: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial;
+      background: radial-gradient(1200px 800px at 20% -10%, var(--bg-secondary) 0%, var(--bg-primary) 60%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3);
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(34, 211, 238, 0.4);
+    }
+
+    .app {
+      width: min(1200px, 95vw);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 920px) {
+      .app { 
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--card-bg), var(--card-bg)) padding-box,
+                    linear-gradient(160deg, var(--accent-1), var(--accent-2)) border-box;
+      border: 1px solid transparent;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      resize: vertical;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--accent-1);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+    }
+
+    textarea.hidden {
+      display: none;
+    }
+
+    .hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+      color: white;
+      font-weight: 700;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    button:disabled {
+      background: var(--text-secondary);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .secondary {
+      background: var(--card-bg) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--border) !important;
+      font-weight: 600 !important;
+    }
+
+    .secondary:hover:not(:disabled) {
+      border-color: var(--accent-1) !important;
+      box-shadow: 0 4px 15px rgba(34, 211, 238, 0.2) !important;
+    }
+
+    .stat {
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .ruleta-section {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-height: 500px;
+    }
+
+    .ruleta-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .ruleta {
+      width: 280px;
+      height: 280px;
+      border: 8px solid var(--accent-1);
+      border-radius: 50%;
+      position: relative;
+      background: conic-gradient(
+        from 0deg,
+        var(--sector-1) 0deg 72deg,
+        var(--accent-2) 72deg 144deg,
+        var(--success) 144deg 216deg,
+        var(--warning) 216deg 288deg,
+        var(--danger) 288deg 360deg
+      );
+      transition: transform 4.2s cubic-bezier(0.23, 1, 0.320, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      margin: 0 auto;
+    }
+
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 30px solid var(--text-primary);
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+
+    .center-circle {
+      width: 80px;
+      height: 80px;
+      background: var(--card-bg);
+      border: 4px solid var(--accent-1);
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      font-weight: bold;
+      font-size: 16px;
+      z-index: 5;
+    }
+
+    .spinning-names {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 15px;
+      padding: 16px 24px;
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--text-primary);
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .spinning-names.highlight {
+      transform: scale(1.02);
+      border-color: var(--accent-1);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+    }
+
+    .spinning-names.winner {
+      border-color: var(--success);
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+    }
+
+    .result {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--success);
+      min-height: 25px;
+    }
+
+    .winners-section {
+      margin-top: 16px;
+    }
+
+    .winners-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      justify-content: center;
+    }
+
+    .winner-badge {
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 15px;
+    }
+
+    .confetti span {
+      position: absolute;
+      font-size: 24px;
+      animation: confetti-fall 2s linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      to {
+        transform: translateY(400px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .keyboard-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+      opacity: 0.8;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 480px) {
+      .ruleta {
+        width: 220px;
+        height: 220px;
+      }
+      
+      .spinning-names {
+        font-size: 20px;
+        padding: 12px 16px;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Tema</button>
+  
+  <div class="app">
+    <section class="card">
+      <h1>🎯 Ruleta de Nombres</h1>
+      
+      <h2 class="section-title">Lista de participantes</h2>
+      <textarea id="namesList" placeholder="Escribe un nombre por línea.
+
+Ejemplo:
+Ana 
+Bruno
+Carla 
+Diego
+…"></textarea>
+      
+      <div class="hint">
+        <strong>Tip:</strong> La tecla Espacio sirve para girar la ruleta.
+      </div>
+      
+      <div class="controls">
+        <button id="spinBtn" onclick="startSpin(false)">🎡 Girar ruleta</button>
+        <button id="stopBtn" class="secondary" onclick="stopSpin()" disabled>✋ Detener</button>
+        <button class="secondary" onclick="clearAll()">🧹 Limpiar</button>
+        <button class="secondary" onclick="toggleList()">👁️ Mostrar/Ocultar</button>
+        <span class="stat" id="stats">0 participantes</span>
+      </div>
+      
+      <div class="keyboard-hint">
+        <strong>ESPACIO:</strong> Iniciar sorteo
+      </div>
+    </section>
+
+    <section class="card ruleta-section">
+      <div class="ruleta-container">
+        <div class="pointer"></div>
+        <div class="ruleta" id="ruleta">
+          <div class="center-circle">GIRAR</div>
+        </div>
+        <div class="confetti" id="confetti"></div>
+      </div>
+      
+      <div class="spinning-names" id="spinningNames">Listo para tu sorteo</div>
+      
+      <div class="result" id="result"></div>
+
+      <div class="winners-section">
+        <h3 class="section-title">🏆 Últimos 3 ganadores</h3>
+        <div class="winners-grid" id="lastWinners"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let names = [];
+    let eligible = [];
+    let isSpinning = false;
+    let spinTimer = null;
+    let autoStopTimer = null;
+    let winners = [];
+    const SPIN_DURATION = 4200; // 4.2 segundos
+
+    // Cargar ganadores del localStorage
+    function loadWinners() {
+      try {
+        const stored = localStorage.getItem('rouletteWinners');
+        winners = stored ? JSON.parse(stored) : [];
+      } catch (error) {
+        winners = [];
+      }
+    }
+
+    // Tema
+    function toggleTheme() {
+      const body = document.body;
+      const themeBtn = document.querySelector('.theme-toggle');
+      
+      if (body.getAttribute('data-theme') === 'light') {
+        body.removeAttribute('data-theme');
+        themeBtn.textContent = '🌙 Tema';
+        try {
+          localStorage.setItem('theme', 'dark');
+        } catch (error) {}
+      } else {
+        body.setAttribute('data-theme', 'light');
+        themeBtn.textContent = '☀️ Tema';
+        try {
+          localStorage.setItem('theme', 'light');
+        } catch (error) {}
+      }
+    }
+
+    // Cargar tema guardado
+    function loadTheme() {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+          document.body.setAttribute('data-theme', 'light');
+          document.querySelector('.theme-toggle').textContent = '☀️ Tema';
+        }
+      } catch (error) {}
+    }
+
+    function updateStats() {
+      const text = document.getElementById('namesList').value.trim();
+      names = text ? text.split('\n').filter(name => name.trim() !== '') : [];
+      eligible = names.filter(name => name.endsWith(' '));
+      document.getElementById('stats').textContent = `${names.length} participantes`;
+    }
+
+    function showNextName() {
+      if (!names.length) {
+        document.getElementById('spinningNames').textContent = 'Agrega nombres para empezar';
+        return;
+      }
+      
+      const randomIndex = Math.floor(Math.random() * names.length);
+      const currentName = names[randomIndex];
+      const spinningElement = document.getElementById('spinningNames');
+      
+      spinningElement.textContent = currentName.trim();
+      spinningElement.classList.add('highlight');
+      setTimeout(() => spinningElement.classList.remove('highlight'), 100);
+    }
+
+    function startSpin(preferential = false) {
+      if (isSpinning) return;
+      
+      updateStats();
+      
+      if (names.length === 0) {
+        document.getElementById('spinningNames').textContent = '⚠️ No hay participantes';
+        return;
+      }
+
+      // Determinar candidatos según el tipo de sorteo
+      let candidates = [];
+      if (preferential && eligible.length > 0) {
+        candidates = eligible; // Solo los que terminan en espacio
+      } else {
+        candidates = names; // Todos los nombres
+      }
+
+      if (candidates.length === 0) {
+        document.getElementById('spinningNames').textContent = '🚫 No hay candidatos disponibles';
+        return;
+      }
+
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      document.getElementById('result').textContent = '';
+      document.getElementById('spinningNames').classList.remove('winner');
+      
+      const ruleta = document.getElementById('ruleta');
+      const spins = 5 + Math.random() * 5;
+      const finalRotation = spins * 360;
+      ruleta.style.transitionDuration = (SPIN_DURATION / 1000) + 's';
+      ruleta.style.transform = `rotate(${finalRotation}deg)`;
+
+      // Guardar candidatos para el resultado final
+      window.currentCandidates = candidates;
+
+      spinTimer = setInterval(showNextName, 60);
+      autoStopTimer = setTimeout(stopSpin, SPIN_DURATION);
+    }
+
+    function stopSpin() {
+      if (!isSpinning) return;
+      
+      if (spinTimer) {
+        clearInterval(spinTimer);
+        spinTimer = null;
+      }
+      
+      if (autoStopTimer) {
+        clearTimeout(autoStopTimer);
+        autoStopTimer = null;
+      }
+
+      const candidates = window.currentCandidates || names;
+      
+      // Suspense final
+      let suspenseSteps = 12;
+      const suspenseTimer = setInterval(() => {
+        showNextName();
+        suspenseSteps--;
+        
+        if (suspenseSteps <= 0) {
+          clearInterval(suspenseTimer);
+          
+          // Seleccionar ganador
+          const winner = candidates[Math.floor(Math.random() * candidates.length)];
+          const spinningElement = document.getElementById('spinningNames');
+          
+          spinningElement.textContent = winner.trim();
+          spinningElement.classList.add('winner');
+          
+          document.getElementById('result').textContent = `🎉 ¡${winner.trim()} es el ganador!`;
+          
+          // Confetti
+          createConfetti();
+          
+          // Agregar a ganadores
+          addWinner(winner.trim());
+          
+          isSpinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          document.getElementById('stopBtn').disabled = true;
+          
+          setTimeout(() => {
+            spinningElement.classList.remove('winner');
+          }, 3000);
+        }
+      }, 120);
+    }
+
+    function createConfetti() {
+      const confetti = document.getElementById('confetti');
+      if (!confetti) return;
+      
+      confetti.innerHTML = '';
+      
+      const emojis = ['🎉', '✨', '🎊', '⭐', '💫', '🏆', '🎯', '🔥'];
+      
+      for (let i = 0; i < 20; i++) {
+        const span = document.createElement('span');
+        span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        span.style.left = Math.random() * 100 + '%';
+        span.style.top = '-10px';
+        span.style.animationDelay = Math.random() * 0.5 + 's';
+        span.style.animationDuration = (1.5 + Math.random() * 1) + 's';
+        confetti.appendChild(span);
+      }
+      
+      setTimeout(() => {
+        if (confetti) confetti.innerHTML = '';
+      }, 3000);
+    }
+
+    function addWinner(winner) {
+      try {
+        winners.unshift(winner);
+        if (winners.length > 3) {
+          winners = winners.slice(0, 3);
+        }
+        localStorage.setItem('rouletteWinners', JSON.stringify(winners));
+        updateWinnersDisplay();
+      } catch (error) {
+        updateWinnersDisplay();
+      }
+    }
+
+    function updateWinnersDisplay() {
+      const container = document.getElementById('lastWinners');
+      if (!container) return;
+      
+      container.innerHTML = '';
+      
+      winners.forEach((winner) => {
+        const badge = document.createElement('div');
+        badge.className = 'winner-badge';
+        badge.innerHTML = `<span>🏆</span> ${winner}`;
+        container.appendChild(badge);
+      });
+    }
+
+    function clearAll() {
+      document.getElementById('namesList').value = '';
+      document.getElementById('spinningNames').textContent = 'Listo para tu sorteo';
+      document.getElementById('spinningNames').classList.remove('winner', 'highlight');
+      document.getElementById('result').textContent = '';
+      document.getElementById('lastWinners').innerHTML = '';
+      winners = [];
+      try {
+        localStorage.removeItem('rouletteWinners');
+      } catch (error) {}
+      updateStats();
+    }
+
+    function toggleList() {
+      const textarea = document.getElementById('namesList');
+      textarea.classList.toggle('hidden');
+    }
+
+    // Event listeners para teclado
+    document.addEventListener('keydown', function(event) {
+      // Solo si no está escribiendo en textarea
+      if (event.target.tagName === 'TEXTAREA') return;
+      
+      if (event.code === 'Space') {
+        event.preventDefault();
+        if (!isSpinning) {
+          startSpin(true); // Sorteo preferencial (solo los que terminan en espacio)
+        } else {
+          stopSpin();
+        }
+      } else if (event.code === 'Enter') {
+        event.preventDefault();
+        if (!isSpinning) {
+          startSpin(false); // Sorteo normal (todos)
+        } else {
+          stopSpin();
+        }
+      }
+    });
+
+    // Inicialización
+    function initializeApp() {
+      loadWinners();
+      loadTheme();
+      updateStats();
+      updateWinnersDisplay();
+      
+      // Event listener para textarea
+      document.getElementById('namesList').addEventListener('input', updateStats);
+    }
+
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+  </script>
+</body>
+</html>
