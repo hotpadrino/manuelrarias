@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Test de Herrmann</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111111;
+      --card-bg: #f9f9f9;
+    }
+    [data-theme="dark"] {
+      --bg: #181818;
+      --text: #f1f1f1;
+      --card-bg: #222222;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+      padding: 20px;
+    }
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 60px;
+    }
+    .word {
+      padding: 10px;
+      border: 1px solid var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .word.selected {
+      background: var(--text);
+      color: var(--bg);
+      font-weight: bold;
+    }
+    #counter {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 6px 12px;
+      background: var(--card-bg);
+      border-radius: 8px;
+    }
+    #nextBtn, #restartBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background: #007bff;
+      color: white;
+      display: none;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    .radar-container {
+      position: relative;
+      display: inline-block;
+      width: 400px;
+      height: 400px;
+    }
+    #radarCanvas {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 100%; height: 100%;
+      transform: translate(-50%, -50%) translate(-5px, -20px);
+    }
+    #scores {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    /* Tarjetas descriptivas */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+    }
+    .card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      text-align: left;
+    }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+    .blue { border-left: 6px solid #007bff; }
+    .yellow { border-left: 6px solid #ffc107; }
+    .green { border-left: 6px solid #28a745; }
+    .red { border-left: 6px solid #dc3545; }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙/☀️</button>
+  <div id="counter">0 / 16</div>
+  <h1>Test de Herrmann</h1>
+  <div id="wordSelection" class="word-grid"></div>
+  <button id="nextBtn" onclick="showResults()">Ver Resultados</button>
+
+  <div id="results" style="display:none;">
+    <h2>Tu Perfil Cerebral</h2>
+    <div class="radar-container">
+      <img src="https://herrmann.com.au/wp-content/uploads/2021/09/whole-brain-thinking.png" width="100%" height="100%">
+      <canvas id="radarCanvas"></canvas>
+    </div>
+    <div id="scores"></div>
+
+    <!-- Tarjetas descriptivas en orden A-D-B-C -->
+    <div class="cards">
+      <div class="card blue">
+        <h3>Azul (A) – Pensamiento Analítico (el que piensa)</h3>
+        <p>Lógico, basado en hechos, cuantitativo</p>
+      </div>
+      <div class="card yellow">
+        <h3>Amarillo (D) – Pensamiento Experimental (el que sueña)</h3>
+        <p>Holístico, intuitivo, integrador</p>
+      </div>
+      <div class="card green">
+        <h3>Verde (B) – Pensamiento Práctico (el que controla)</h3>
+        <p>Organizado, secuencial, planeado</p>
+      </div>
+      <div class="card red">
+        <h3>Rojo (C) – Pensamiento Relacional (el que siente)</h3>
+        <p>Interpersonal, basado en sentimientos, kinestésico</p>
+      </div>
+    </div>
+
+    <button id="restartBtn" onclick="restartTest()">🔄 Reiniciar Test</button>
+  </div>
+
+  <script>
+    const words = {
+      // Azul (A)
+      'Analítico': 'blue','Científico': 'blue','Crítico': 'blue','Cuantitativo': 'blue','Efectivo': 'blue',
+      'Estadístico': 'blue','Lógico': 'blue','Matemático': 'blue','Racional': 'blue','Técnico': 'blue',
+      // Amarillo (D)
+      'Artístico': 'yellow','Creativo': 'yellow','Espacial': 'yellow','Experimental': 'yellow','Flexible': 'yellow',
+      'Holístico': 'yellow','Imaginativo': 'yellow','Intuitivo': 'yellow','Metafórico': 'yellow','Visual': 'yellow',
+      // Verde (B)
+      'Conservador': 'green','Controlador': 'green','Detallado': 'green','Disciplinado': 'green','Estructurado': 'green',
+      'Metódico': 'green','Organizado': 'green','Persistente': 'green','Planeado': 'green','Secuencial': 'green',
+      // Rojo (C)
+      'Conciliador': 'red','Emocional': 'red','Expresivo': 'red','Filántropo': 'red','Musical': 'red',
+      'Sensorial': 'red','Sentimental': 'red','Servicial': 'red','Simbólico': 'red','Social': 'red',
+    };
+
+    const wordSelection = document.getElementById("wordSelection");
+    const counter = document.getElementById("counter");
+    const nextBtn = document.getElementById("nextBtn");
+    const results = document.getElementById("results");
+    const scoresDiv = document.getElementById("scores");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let selected = [];
+    let chart;
+
+    function initWords() {
+      wordSelection.innerHTML = "";
+      selected = [];
+      counter.textContent = "0 / 16";
+      nextBtn.style.display = "none";
+      results.style.display = "none";
+      restartBtn.style.display = "none";
+      wordSelection.style.display = "grid";
+
+      const shuffledWords = Object.keys(words).sort(() => 0.5 - Math.random());
+      shuffledWords.forEach(word => {
+        const div = document.createElement("div");
+        div.className = "word";
+        div.textContent = word;
+        div.onclick = () => toggleWord(word, div);
+        wordSelection.appendChild(div);
+      });
+    }
+
+    function toggleWord(word, div) {
+      if (selected.includes(word)) {
+        selected = selected.filter(w => w !== word);
+        div.classList.remove("selected");
+      } else {
+        if (selected.length < 16) {
+          selected.push(word);
+          div.classList.add("selected");
+        }
+      }
+      counter.textContent = `${selected.length} / 16`;
+      nextBtn.style.display = selected.length === 16 ? "inline-block" : "none";
+    }
+
+    function showResults() {
+      const counts = { blue: 0, yellow: 0, green: 0, red: 0 };
+      selected.forEach(word => counts[words[word]]++);
+
+      scoresDiv.innerHTML = `
+        <span style="color:#007bff;">Azul (A): ${counts.blue}</span> |
+        <span style="color:#ffc107;">Amarillo (D): ${counts.yellow}</span> |
+        <span style="color:#28a745;">Verde (B): ${counts.green}</span> |
+        <span style="color:#dc3545;">Rojo (C): ${counts.red}</span>
+      `;
+
+      wordSelection.style.display = "none";
+      nextBtn.style.display = "none";
+      results.style.display = "block";
+      restartBtn.style.display = "inline-block";
+
+      const ctx = document.getElementById('radarCanvas').getContext('2d');
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ["Azul (A)", "Amarillo (D)", "Verde (B)", "Rojo (C)"],
+          datasets: [{
+            data: [counts.blue, counts.yellow, counts.green, counts.red],
+            backgroundColor: 'rgba(0,123,255,0.18)',
+            borderColor: 'rgba(0,123,255,0.9)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(0,123,255,0.95)',
+            pointRadius: 4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: {
+              beginAtZero: true, min: 0, max: 16,
+              ticks: { display: false },
+              grid: { color: 'rgba(0,0,0,0.15)' },
+              angleLines: { color: 'rgba(0,0,0,0.15)' },
+              pointLabels: {
+                color: getComputedStyle(document.body).getPropertyValue('--text') || '#111'
+              },
+              startAngle: -45
+            }
+          }
+        }
+      });
+    }
+
+    function restartTest() {
+      if (chart) chart.destroy();
+      initWords();
+    }
+
+    function toggleTheme() {
+      if (document.body.getAttribute("data-theme") === "dark") {
+        document.body.removeAttribute("data-theme");
+      } else {
+        document.body.setAttribute("data-theme", "dark");
+      }
+    }
+
+    // Inicializa las palabras al cargar
+    initWords();
+  </script>
+</body>
+</html>

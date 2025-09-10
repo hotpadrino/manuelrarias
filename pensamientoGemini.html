@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Herrmann - Estilos de Pensamiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .light {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .dark {
+            background-color: #111827;
+            color: #d1d5db;
+        }
+        .card {
+            background-color: white;
+            color: #1f2937;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark .card {
+            background-color: #1f2937;
+            color: #d1d5db;
+        }
+        .bg-blue-a { background-color: #2e6db4; }
+        .bg-green-b { background-color: #92b451; }
+        .bg-red-c { background-color: #c4404c; }
+        .bg-yellow-d { background-color: #ffd002; }
+        .word-button {
+            background-color: #e5e7eb;
+            color: #1f2937;
+        }
+        .dark .word-button {
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        .word-button.selected {
+            border: 3px solid;
+            background-color: #d1d5db;
+        }
+        .dark .word-button.selected {
+            background-color: #4b5563;
+        }
+        .light .word-button.selected { border-color: #000; }
+        .dark .word-button.selected { border-color: #fff; }
+        .bar-container {
+            height: 250px;
+        }
+    </style>
+</head>
+<body class="light">
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="flex justify-between items-center mb-6 md:mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold">Test de Herrmann</h1>
+            <button id="theme-toggle" class="p-2 rounded-full focus:outline-none transition-transform duration-300 transform hover:scale-110">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main content area -->
+        <main>
+            <!-- Stage 1: Word Selection -->
+            <section id="stage-1" class="card p-6 md:p-8 rounded-xl shadow-lg mb-8 transition-opacity duration-500 opacity-100 block">
+                <h2 class="text-2xl font-semibold mb-4">Parte 1: Selecciona 16 palabras</h2>
+                <p class="mb-6 text-sm md:text-base">De la siguiente lista de 40 palabras, por favor, selecciona exactamente **16** que te describan mejor. Puedes ver el contador a continuación.</p>
+                <div class="flex items-center mb-6">
+                    <span id="word-count" class="text-lg md:text-xl font-bold">0</span>
+                    <span class="text-sm md:text-base ml-1">/ 16 palabras seleccionadas</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                </div>
+                <button id="next-stage-btn" class="mt-8 w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition-colors duration-300 cursor-not-allowed opacity-50" disabled>
+                    Continuar
+                </button>
+            </section>
+
+            <!-- Stage 2: Color Visualization -->
+            <section id="stage-2" class="card p-6 md:p-8 rounded-xl shadow-lg mb-8 transition-opacity duration-500 opacity-0 hidden">
+                <h2 class="text-2xl font-semibold mb-4">Parte 2: Tus palabras por cuadrante</h2>
+                <p class="mb-6 text-sm md:text-base">Estas son las 16 palabras que has elegido, organizadas por el color de su cuadrante correspondiente.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="p-5 rounded-lg text-white bg-blue-a shadow-md">
+                        <h3 class="text-xl font-semibold mb-3">Cuadrante A - Lógico</h3>
+                        <ul id="words-a" class="list-none space-y-2"></ul>
+                    </div>
+                    <div class="p-5 rounded-lg text-white bg-green-b shadow-md">
+                        <h3 class="text-xl font-semibold mb-3">Cuadrante B - Organizado</h3>
+                        <ul id="words-b" class="list-none space-y-2"></ul>
+                    </div>
+                    <div class="p-5 rounded-lg text-white bg-red-c shadow-md">
+                        <h3 class="text-xl font-semibold mb-3">Cuadrante C - Relacional</h3>
+                        <ul id="words-c" class="list-none space-y-2"></ul>
+                    </div>
+                    <div class="p-5 rounded-lg text-white bg-yellow-d shadow-md">
+                        <h3 class="text-xl font-semibold mb-3">Cuadrante D - Estratégico</h3>
+                        <ul id="words-d" class="list-none space-y-2"></ul>
+                    </div>
+                </div>
+                <button id="next-stage-2-btn" class="mt-8 w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-md transition-colors duration-300">
+                    Ver Resultados
+                </button>
+            </section>
+
+            <!-- Stage 3: Results Chart -->
+            <section id="stage-3" class="card p-6 md:p-8 rounded-xl shadow-lg transition-opacity duration-500 opacity-0 hidden">
+                <h2 class="text-2xl font-semibold mb-4">Parte 3: Tu Perfil de Pensamiento</h2>
+                <p class="mb-6 text-sm md:text-base">El siguiente gráfico de barras muestra la distribución de tus palabras seleccionadas, revelando tus preferencias de pensamiento.</p>
+                <div class="flex items-end justify-around w-full max-w-lg mx-auto bar-container mb-6 border-b-2 border-gray-300 dark:border-gray-600">
+                    <div class="w-1/4 h-full flex flex-col-reverse items-center justify-end p-2 transition-all duration-500 ease-in-out">
+                        <div id="bar-a" class="w-full rounded-t-lg bg-blue-a transition-all duration-500"></div>
+                        <span id="label-a" class="text-center font-bold mt-2"></span>
+                    </div>
+                    <div class="w-1/4 h-full flex flex-col-reverse items-center justify-end p-2 transition-all duration-500 ease-in-out">
+                        <div id="bar-b" class="w-full rounded-t-lg bg-green-b transition-all duration-500"></div>
+                        <span id="label-b" class="text-center font-bold mt-2"></span>
+                    </div>
+                    <div class="w-1/4 h-full flex flex-col-reverse items-center justify-end p-2 transition-all duration-500 ease-in-out">
+                        <div id="bar-c" class="w-full rounded-t-lg bg-red-c transition-all duration-500"></div>
+                        <span id="label-c" class="text-center font-bold mt-2"></span>
+                    </div>
+                    <div class="w-1/4 h-full flex flex-col-reverse items-center justify-end p-2 transition-all duration-500 ease-in-out">
+                        <div id="bar-d" class="w-full rounded-t-lg bg-yellow-d transition-all duration-500"></div>
+                        <span id="label-d" class="text-center font-bold mt-2"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="p-3 rounded-lg text-white bg-blue-a shadow-md">
+                        <span class="block text-2xl font-bold" id="count-a">0</span>
+                        <span class="block text-xs md:text-sm">Analítico (A)</span>
+                    </div>
+                    <div class="p-3 rounded-lg text-white bg-green-b shadow-md">
+                        <span class="block text-2xl font-bold" id="count-b">0</span>
+                        <span class="block text-xs md:text-sm">Organizado (B)</span>
+                    </div>
+                    <div class="p-3 rounded-lg text-white bg-red-c shadow-md">
+                        <span class="block text-2xl font-bold" id="count-c">0</span>
+                        <span class="block text-xs md:text-sm">Relacional (C)</span>
+                    </div>
+                    <div class="p-3 rounded-lg text-white bg-yellow-d shadow-md">
+                        <span class="block text-2xl font-bold" id="count-d">0</span>
+                        <span class="block text-xs md:text-sm">Estratégico (D)</span>
+                    </div>
+                </div>
+                <img src="https://herrmann.com.au/wp-content/uploads/2021/09/whole-brain-thinking.png" alt="Diagrama de Pensamiento del Cerebro Completo de Herrmann" class="mx-auto my-8 rounded-lg shadow-lg max-w-full h-auto">
+                <button id="restart-btn" class="mt-8 w-full py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-md transition-colors duration-300">
+                    Empezar de Nuevo
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const words = {
+                // Cuadrante A (Azul)
+                'Analítico': 'blue', 'Científico': 'blue', 'Crítico': 'blue', 'Cuantitativo': 'blue', 'Efectivo': 'blue',
+                'Estadístico': 'blue', 'Lógico': 'blue', 'Matemático': 'blue', 'Racional': 'blue', 'Técnico': 'blue',
+                // Cuadrante B (Verde)
+                'Conservador': 'green', 'Controlador': 'green', 'Detallado': 'green', 'Disciplinado': 'green', 'Estructurado': 'green',
+                'Metódico': 'green', 'Organizado': 'green', 'Persistente': 'green', 'Planeado': 'green', 'Secuencial': 'green',
+                // Cuadrante C (Rojo)
+                'Conciliador': 'red', 'Emocional': 'red', 'Expresivo': 'red', 'Filántropo': 'red', 'Musical': 'red',
+                'Sentimental': 'red', 'Sensorial': 'red', 'Servicial': 'red', 'Social': 'red', 'Simbólico': 'red',
+                // Cuadrante D (Amarillo)
+                'Artístico': 'yellow', 'Creativo': 'yellow', 'Espacial': 'yellow', 'Experimental': 'yellow', 'Flexible': 'yellow',
+                'Holístico': 'yellow', 'Imaginativo': 'yellow', 'Intuitivo': 'yellow', 'Metafórico': 'yellow', 'Visual': 'yellow',
+            };
+
+            const wordGrid = document.querySelector('#stage-1 .grid');
+            const wordCountSpan = document.getElementById('word-count');
+            const nextStageBtn = document.getElementById('next-stage-btn');
+            const nextStage2Btn = document.getElementById('next-stage-2-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const stage1 = document.getElementById('stage-1');
+            const stage2 = document.getElementById('stage-2');
+            const stage3 = document.getElementById('stage-3');
+            const themeToggleBtn = document.getElementById('theme-toggle');
+
+            let selectedWords = [];
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+            
+            function renderWords() {
+                wordGrid.innerHTML = '';
+                const shuffledWords = Object.keys(words);
+                shuffleArray(shuffledWords);
+                shuffledWords.forEach(word => {
+                    const button = document.createElement('button');
+                    button.textContent = word;
+                    button.className = `word-button px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full`;
+                    button.dataset.word = word;
+                    button.addEventListener('click', () => {
+                        if (button.classList.contains('selected')) {
+                            button.classList.remove('selected');
+                            selectedWords = selectedWords.filter(w => w !== word);
+                        } else if (selectedWords.length < 16) {
+                            button.classList.add('selected');
+                            selectedWords.push(word);
+                        }
+                        wordCountSpan.textContent = selectedWords.length;
+                        nextStageBtn.disabled = selectedWords.length !== 16;
+                        nextStageBtn.classList.toggle('cursor-not-allowed', selectedWords.length !== 16);
+                        nextStageBtn.classList.toggle('opacity-50', selectedWords.length !== 16);
+                    });
+                    wordGrid.appendChild(button);
+                });
+            }
+
+            function resetTest() {
+                selectedWords = [];
+                wordCountSpan.textContent = 0;
+                nextStageBtn.disabled = true;
+                nextStageBtn.classList.add('cursor-not-allowed', 'opacity-50');
+                
+                stage2.classList.remove('opacity-100', 'block');
+                stage2.classList.add('opacity-0', 'hidden');
+                stage3.classList.remove('opacity-100', 'block');
+                stage3.classList.add('opacity-0', 'hidden');
+                
+                setTimeout(() => {
+                    stage1.classList.remove('opacity-0', 'hidden');
+                    stage1.classList.add('opacity-100', 'block');
+                    renderWords();
+                }, 500);
+            }
+
+            // Stage 1 to 2 transition
+            nextStageBtn.addEventListener('click', () => {
+                if (selectedWords.length === 16) {
+                    stage1.classList.remove('opacity-100', 'block');
+                    stage1.classList.add('opacity-0', 'hidden');
+                    setTimeout(() => {
+                        stage2.classList.remove('opacity-0', 'hidden');
+                        stage2.classList.add('opacity-100', 'block');
+                        displaySelectedWords();
+                    }, 500);
+                }
+            });
+
+            // Stage 2 to 3 transition
+            nextStage2Btn.addEventListener('click', () => {
+                stage2.classList.remove('opacity-100', 'block');
+                stage2.classList.add('opacity-0', 'hidden');
+                setTimeout(() => {
+                    stage3.classList.remove('opacity-0', 'hidden');
+                    stage3.classList.add('opacity-100', 'block');
+                    showResults();
+                }, 500);
+            });
+            
+            // Restart button
+            restartBtn.addEventListener('click', () => {
+                resetTest();
+            });
+
+            // Theme toggle
+            themeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                document.documentElement.classList.toggle('light');
+            });
+
+            // Stage 2: Display selected words by color
+            function displaySelectedWords() {
+                const wordsA = document.getElementById('words-a');
+                const wordsB = document.getElementById('words-b');
+                const wordsC = document.getElementById('words-c');
+                const wordsD = document.getElementById('words-d');
+                wordsA.innerHTML = '';
+                wordsB.innerHTML = '';
+                wordsC.innerHTML = '';
+                wordsD.innerHTML = '';
+
+                selectedWords.forEach(word => {
+                    const color = words[word];
+                    const li = document.createElement('li');
+                    li.textContent = word;
+                    switch (color) {
+                        case 'blue': li.className = 'text-white'; wordsA.appendChild(li); break;
+                        case 'green': li.className = 'text-white'; wordsB.appendChild(li); break;
+                        case 'red': li.className = 'text-white'; wordsC.appendChild(li); break;
+                        case 'yellow': li.className = 'text-white'; wordsD.appendChild(li); break;
+                    }
+                });
+            }
+
+            // Stage 3: Show results
+            function showResults() {
+                const counts = { 'blue': 0, 'green': 0, 'red': 0, 'yellow': 0 };
+                selectedWords.forEach(word => {
+                    const color = words[word];
+                    counts[color]++;
+                });
+
+                document.getElementById('count-a').textContent = counts['blue'];
+                document.getElementById('count-b').textContent = counts['green'];
+                document.getElementById('count-c').textContent = counts['red'];
+                document.getElementById('count-d').textContent = counts['yellow'];
+                
+                const maxCount = Math.max(counts['blue'], counts['green'], counts['red'], counts['yellow'], 1);
+
+                const barA = document.getElementById('bar-a');
+                const barB = document.getElementById('bar-b');
+                const barC = document.getElementById('bar-c');
+                const barD = document.getElementById('bar-d');
+
+                barA.style.height = `${(counts['blue'] / maxCount) * 100}%`;
+                barB.style.height = `${(counts['green'] / maxCount) * 100}%`;
+                barC.style.height = `${(counts['red'] / maxCount) * 100}%`;
+                barD.style.height = `${(counts['yellow'] / maxCount) * 100}%`;
+
+                document.getElementById('label-a').textContent = counts['blue'];
+                document.getElementById('label-b').textContent = counts['green'];
+                document.getElementById('label-c').textContent = counts['red'];
+                document.getElementById('label-d').textContent = counts['yellow'];
+            }
+
+            // Initial render
+            renderWords();
+        });
+    </script>
+</body>
+</html>
