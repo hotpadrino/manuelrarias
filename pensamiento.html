@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 <!--https://hotpadrino.github.io/manuelrarias/pensamiento.html-->
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -36,7 +36,7 @@
     [data-theme="dark"] {
       --primary-bg: #0f172a;
       --secondary-bg: #1e293b;
-      --text-primary: #f1f5f9;
+      --text-primary: #f1f5e9;
       --text-secondary: #cbd5e1;
       --border-light: #334155;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
@@ -125,7 +125,7 @@
       border-radius: 4px;
     }
 
-    .counter {
+    .counter-info {
       text-align: center;
       margin-bottom: 2rem;
     }
@@ -143,6 +143,24 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+    
+    .floating-counter {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 50;
+      background: var(--secondary-bg);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: var(--shadow-lg);
+      border: 2px solid var(--border-light);
     }
 
     .words-grid {
@@ -391,28 +409,11 @@
       .words-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
       .colored-words { grid-template-columns: 1fr; }
     }
-    
-    .floating-counter {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--secondary-bg);
-        padding: 0.5rem 1rem;
-        border-radius: 12px;
-        box-shadow: var(--shadow-lg);
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: opacity 0.3s ease;
-    }
   </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
-  <div class="floating-counter" id="floatingCounter">
-      <div class="font-bold text-lg" id="counter">0</div>
-      <div class="text-sm">/ 16</div>
-  </div>
+
+  <div class="floating-counter" id="floatingCounter">0/16</div>
 
   <div class="container">
     <header class="header">
@@ -425,13 +426,10 @@
 
     <!-- Paso 1: Selección de palabras -->
     <div id="step1" class="card fade-in">
-      <div class="counter" style="display: none;">
+      <div class="counter-info" id="counterInfo">
         <div class="counter-text">Selecciona 16 palabras que mejor te representen</div>
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="counter-number">
-          <span id="counter">0</span> / 16
         </div>
       </div>
       <div class="words-grid" id="wordsContainer"></div>
@@ -457,8 +455,7 @@
         <h2 style="margin-bottom: 2rem; font-size: 2rem;">Tu Perfil Cerebral</h2>
         <div class="relative w-full max-w-sm mx-auto shadow-2xl rounded-xl overflow-hidden">
             <div class="w-full h-full">
-              <!--img src="https://herrmann.com.au/wp-content/uploads/2021/09/whole-brain-thinking.png" alt="Fondo de colores del cerebro" class="w-full h-auto block object-cover rounded-xl"-->
-                <img src="whole-brain-thinking.png" alt="Fondo de colores del cerebro" class="w-full h-auto block object-cover rounded-xl">
+                <img src="https://herrmann.com.au/wp-content/uploads/2021/09/whole-brain-thinking.png" alt="Fondo de colores del cerebro" class="w-full h-auto block object-cover rounded-xl">
             </div>
             <div class="centered-chart-container">
                 <canvas id="radarChart" class="rotated-chart"></canvas>
@@ -574,12 +571,20 @@
       updateCounter();
     }
 
-    // Actualizar contador
+    // Actualizar contador y barra de progreso
     function updateCounter() {
-      const counterElement = document.getElementById("counter");
+      const floatingCounter = document.getElementById("floatingCounter");
+      const counterInfo = document.getElementById("counterInfo");
+      const progressFill = document.getElementById("progressFill");
       const continueBtn = document.getElementById("continueBtn");
       
-      counterElement.textContent = selected.length;
+      floatingCounter.textContent = `${selected.length}/16`;
+
+      floatingCounter.style.display = 'flex';
+      counterInfo.style.display = 'block';
+      
+      const progress = (selected.length / 16) * 100;
+      progressFill.style.width = `${progress}%`;
       
       if (selected.length === 16) {
         continueBtn.classList.remove("hidden");
@@ -594,7 +599,6 @@
       document.getElementById("step1").classList.add("hidden");
       document.getElementById("step2").classList.remove("hidden");
       document.getElementById("step2").classList.add("fade-in");
-      document.getElementById("floatingCounter").style.opacity = '0';
       
       createColoredWordsView();
     }
@@ -788,5 +792,3 @@
   </script>
 </body>
 </html>
-
-
