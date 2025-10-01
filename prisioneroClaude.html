@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dilema del Prisionero Interactivo</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --container-bg: white;
+            --text-color: #333;
+            --border-color: #333;
+            --card-shadow: rgba(0,0,0,0.1);
+            --status-bg: #e8f4fd;
+            --status-border: #2196F3;
+            --status-text: #1976D2;
+            --payoff-bg: #fff3cd;
+            --payoff-border: #ffeaa7;
+            --summary-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #555;
+            --card-shadow: rgba(0,0,0,0.3);
+            --status-bg: #1e3a5f;
+            --status-border: #4a90e2;
+            --status-text: #87ceeb;
+            --payoff-bg: #3d3520;
+            --payoff-border: #8b7355;
+            --summary-bg: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        #theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px var(--card-shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #theme-toggle:hover {
+            transform: scale(1.05);
+        }
+        
+        #game-container { 
+            display: flex; 
+            justify-content: space-around; 
+            width: 900px; 
+            margin-bottom: 30px; 
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px var(--card-shadow);
+        }
+        
+        .player-panel { 
+            text-align: center; 
+            border: 2px solid var(--border-color); 
+            padding: 20px; 
+            border-radius: 12px; 
+            width: 38%; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .player-panel h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .selection-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #FFD700;
+            margin-left: 10px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            animation: pulse-indicator 1s infinite;
+        }
+
+        @keyframes pulse-indicator {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .score-box { 
+            font-size: 3.5em; 
+            font-weight: bold; 
+            margin: 15px 0; 
+            border: 3px solid #fff; 
+            padding: 15px; 
+            border-radius: 10px; 
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            min-width: 120px;
+            display: inline-block;
+        }
+        
+        .controls, .actions { 
+            margin: 15px 0; 
+        }
+        
+        .controls select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 200px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+        }
+        
+        .btn-action { 
+            padding: 12px 18px; 
+            font-weight: bold; 
+            border: none; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            margin: 8px; 
+            width: 120px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .btn-action:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-green { 
+            background-color: #4CAF50; 
+            color: white; 
+        }
+        
+        .btn-red { 
+            background-color: #F44336; 
+            color: white; 
+        }
+        
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-action.selected {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            border: 3px solid gold;
+        }
+
+        .btn-action.hidden-selection {
+            opacity: 0.7;
+        }
+
+        .btn-action.waiting {
+            animation: pulse-gold 1s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); }
+            100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        }
+
+        .keyboard-hint {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        #center-controls { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            width: 20%; 
+        }
+        
+        #center-controls button {
+            padding: 12px 16px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        #center-controls button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .control-group {
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .control-group input, .control-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 80px;
+            text-align: center;
+        }
+
+        #game-status {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--status-bg);
+            border: 2px solid var(--status-border);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            color: var(--status-text);
+            min-height: 20px;
+            text-align: center;
+        }
+
+        #current-round {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--text-color);
+        }
+
+        #visual-history-container { 
+            width: 900px; 
+            margin-top: 20px; 
+            border-top: 3px solid var(--border-color); 
+            padding-top: 20px; 
+            background: var(--container-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px var(--card-shadow);
+        }
+        
+        .history-row { 
+            display: flex; 
+            flex-wrap: nowrap; 
+            overflow-x: auto; 
+            margin-bottom: 10px; 
+            padding: 8px 0; 
+            border-bottom: 1px dashed #ddd; 
+        }
+        
+        .history-row-label { 
+            font-weight: bold; 
+            margin-right: 10px; 
+            min-width: 50px; 
+            color: var(--text-color);
+        }
+        
+        .round-indicator { 
+            width: 18px; 
+            height: 18px; 
+            border-radius: 50%; 
+            margin-right: 4px; 
+            display: inline-block; 
+            flex-shrink: 0;
+            border: 2px solid var(--border-color);
+        }
+        
+        .cooperate { 
+            background-color: #4CAF50; 
+        }
+        
+        .betray { 
+            background-color: #F44336; 
+        }
+
+        #summary-history { 
+            width: 900px; 
+            margin-top: 30px; 
+        }
+        
+        #summary-list { 
+            list-style: none; 
+            padding: 0; 
+        }
+        
+        .match-summary-item { 
+            padding: 15px; 
+            border-bottom: 1px solid #ddd; 
+            background: var(--summary-bg);
+            margin-bottom: 8px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 4px var(--card-shadow);
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .payoff-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--payoff-bg);
+            border: 1px solid var(--payoff-border);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="theme-toggle">🌙 Tema Oscuro</button>
+
+    <h1>🎭 Simulador del Dilema del Prisionero</h1>
+
+    <div class="payoff-info">
+        <strong>Matriz de Pagos:</strong> Ambos Cooperan: +3/+3 | Traición vs Cooperación: +5/+0 | Ambos Traicionan: +1/+1
+    </div>
+
+    <div id="game-status">Selecciona las estrategias y presiona INICIAR JUEGO</div>
+    
+    <div id="current-round"></div>
+
+    <div id="game-container">
+        <div id="player-1-panel" class="player-panel">
+            <h2>🎮 Jugador 1</h2>
+            <div id="score-1" class="score-box">000</div>
+
+            <div class="controls">
+                <label for="strategy-1">Estrategia:</label>
+                <select id="strategy-1">
+                    <option value="Human" selected>🧑 Humano</option>
+                    <option value="TitForTat">🔄 Tit-for-Tat</option>
+                    <option value="TitForTwoTats">🔄🔄 Tit-for-Two-Tats</option>
+                    <option value="GrimTrigger">⚡ Gatillo Siniestro</option>
+                    <option value="Pavlov">🧠 Pavlov</option>
+                    <option value="Majority">📊 Mayoría</option>
+                    <option value="AlwaysCooperate">😇 Siempre Coopera</option>
+                    <option value="AlwaysBetray">😈 Siempre Traiciona</option>
+                    <option value="Random">🎲 Aleatoria (50/50)</option>
+                    <option value="Random70">🎲 Aleatoria (70/30)</option>
+                    <option value="Random30">🎲 Aleatoria (30/70)</option>
+                </select>
+            </div>
+
+            <div id="actions-1" class="actions">
+                <button class="btn-action btn-green" id="coop-btn-1">Cooperar (C)</button>
+                <button class="btn-action btn-red" id="betray-btn-1">Traicionar (T)</button>
+                <div class="keyboard-hint">Teclas: A (Cooperar) - D (Traicionar)</div>
+            </div>
+        </div>
+
+        <div id="center-controls">
+            <div class="control-group">
+                <label for="max-rounds">Máx. Rondas:</label>
+                <input type="number" id="max-rounds" value="10" min="5" max="100">
+            </div>
+            
+            <div class="control-group">
+                <label for="machine-delay">Velocidad IA:</label>
+                <select id="machine-delay">
+                    <option value="2000">Lenta (2s)</option>
+                    <option value="1000" selected>Normal (1s)</option>
+                    <option value="500">Rápida (0.5s)</option>
+                    <option value="200">Muy Rápida (0.2s)</option>
+                    <option value="50">Ultra Rápida (0.05s)</option>
+                </select>
+            </div>
+            
+            <button id="start-btn">🚀 INICIAR JUEGO</button>
+            <button id="pause-btn" style="display:none;">⏸️ PAUSAR</button>
+            <button id="reset-btn">🔄 REINICIAR</button>
+        </div>
+
+        <div id="player-2-panel" class="player-panel">
+            <h2>🎮 Jugador 2</h2>
+            <div id="score-2" class="score-box">000</div>
+
+            <div class="controls">
+                <label for="strategy-2">Estrategia:</label>
+                <select id="strategy-2">
+                    <option value="Human">🧑 Humano</option>
+                    <option value="TitForTat" selected>🔄 Tit-for-Tat</option>
+                    <option value="TitForTwoTats">🔄🔄 Tit-for-Two-Tats</option>
+                    <option value="GrimTrigger">⚡ Gatillo Siniestro</option>
+                    <option value="Pavlov">🧠 Pavlov</option>
+                    <option value="Majority">📊 Mayoría</option>
+                    <option value="AlwaysCooperate">😇 Siempre Coopera</option>
+                    <option value="AlwaysBetray">😈 Siempre Traiciona</option>
+                    <option value="Random">🎲 Aleatoria (50/50)</option>
+                    <option value="Random70">🎲 Aleatoria (70/30)</option>
+                    <option value="Random30">🎲 Aleatoria (30/70)</option>
+                </select>
+            </div>
+
+            <div id="actions-2" class="actions">
+                <button class="btn-action btn-green" id="coop-btn-2">Cooperar (C)</button>
+                <button class="btn-action btn-red" id="betray-btn-2">Traicionar (T)</button>
+                <div class="keyboard-hint">Teclas: J (Cooperar) - L (Traicionar)</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="visual-history-container">
+        <h3>📈 Historial de Jugadas</h3>
+        <div id="p1-history-row" class="history-row">
+            <span class="history-row-label">J1:</span>
+        </div>
+        <div id="p2-history-row" class="history-row">
+            <span class="history-row-label">J2:</span>
+        </div>
+    </div>
+
+    <div id="summary-history">
+        <h3>📋 Historial de Partidas</h3>
+        <ul id="summary-list"></ul>
+    </div>
+
+    <script>
+        let currentRound = 0;
+        let maxRounds = 10;
+        let scores = [0, 0];
+        let history = [];
+        let gameActive = false;
+        let gamePaused = false;
+        let machineGameLoop = null;
+        let pendingMoves = {};
+        let selectedButtons = {};
+        let completedGames = [];
+        let processingRound = false; // Para evitar múltiples entradas simultáneas
+
+        const PAYOFF_MATRIX = {
+            'CC': [3, 3],
+            'CT': [0, 5],
+            'TC': [5, 0],
+            'TT': [1, 1]
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeToggle.textContent = '🌙 Tema Oscuro';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '☀️ Tema Claro';
+            }
+        }
+
+        function startGame() {
+            currentRound = 0;
+            scores = [0, 0];
+            history = [];
+            pendingMoves = {};
+            selectedButtons = {};
+            processingRound = false;
+            maxRounds = parseInt(document.getElementById('max-rounds').value);
+            gameActive = true;
+            gamePaused = false;
+
+            updateGameStatus("🎮 Juego iniciado");
+            updateCurrentRound();
+            updateScores(0, 0);
+            clearButtonStyles();
+            
+            document.getElementById('p1-history-row').innerHTML = '<span class="history-row-label">J1:</span>';
+            document.getElementById('p2-history-row').innerHTML = '<span class="history-row-label">J2:</span>';
+
+            if (machineGameLoop) {
+                clearTimeout(machineGameLoop);
+                machineGameLoop = null;
+            }
+
+            const strategy1 = document.getElementById('strategy-1').value;
+            const strategy2 = document.getElementById('strategy-2').value;
+
+            toggleHumanControls(1);
+            toggleHumanControls(2);
+
+            if (strategy1 !== 'Human' && strategy2 !== 'Human') {
+                updateGameStatus("🤖 Máquinas jugando automáticamente...");
+                document.getElementById('pause-btn').style.display = 'inline-block';
+                runMachineVsMachine();
+            } else if (strategy1 === 'Human' && strategy2 === 'Human') {
+                updateGameStatus("👥 Esperando jugadas de ambos jugadores...");
+            } else {
+                updateGameStatus("🎯 Esperando jugada del humano...");
+            }
+        }
+
+        function pauseGame() {
+            if (gamePaused) {
+                gamePaused = false;
+                document.getElementById('pause-btn').textContent = "⏸️ PAUSAR";
+                runMachineVsMachine();
+                updateGameStatus("🎮 Juego reanudado");
+            } else {
+                gamePaused = true;
+                document.getElementById('pause-btn').textContent = "▶️ REANUDAR";
+                if (machineGameLoop) {
+                    clearTimeout(machineGameLoop);
+                    machineGameLoop = null;
+                }
+                updateGameStatus("⏸️ Juego pausado");
+            }
+        }
+
+        function resetGame() {
+            gameActive = false;
+            gamePaused = false;
+            pendingMoves = {};
+            selectedButtons = {};
+            processingRound = false;
+            if (machineGameLoop) {
+                clearTimeout(machineGameLoop);
+                machineGameLoop = null;
+            }
+            document.getElementById('pause-btn').style.display = 'none';
+            updateGameStatus("🔄 Juego reiniciado - Presiona INICIAR JUEGO");
+            updateCurrentRound();
+            updateScores(0, 0);
+            clearButtonStyles();
+            
+            document.getElementById('p1-history-row').innerHTML = '<span class="history-row-label">J1:</span>';
+            document.getElementById('p2-history-row').innerHTML = '<span class="history-row-label">J2:</span>';
+            
+            toggleHumanControls(1);
+            toggleHumanControls(2);
+        }
+
+        function toggleHumanControls(playerNum) {
+            const strategy = document.getElementById(`strategy-${playerNum}`).value;
+            const actionsDiv = document.getElementById(`actions-${playerNum}`);
+            const buttons = actionsDiv.querySelectorAll('button');
+            
+            if (strategy === 'Human') {
+                actionsDiv.style.display = 'block';
+                if (gameActive) {
+                    buttons.forEach(btn => btn.disabled = false);
+                } else {
+                    buttons.forEach(btn => btn.disabled = true);
+                }
+            } else {
+                actionsDiv.style.display = 'none';
+            }
+        }
+
+        function runMachineVsMachine() {
+            if (!gameActive || gamePaused) {
+                return;
+            }
+            
+            if (currentRound >= maxRounds) {
+                endGame();
+                return;
+            }
+
+            const move1 = getMachineMove(1);
+            const move2 = getMachineMove(2);
+            
+            processMoves(move1, move2);
+            
+            // Solo continuar si no hemos alcanzado el máximo
+            if (currentRound < maxRounds) {
+                const delay = parseInt(document.getElementById('machine-delay').value);
+                machineGameLoop = setTimeout(runMachineVsMachine, delay);
+            }
+        }
+
+        function playRound(playerWhoClicked, move) {
+            if (!gameActive || currentRound >= maxRounds) return;
+            
+            // Si estamos procesando una ronda, ignorar nuevas entradas
+            if (processingRound) return;
+
+            const strategy1 = document.getElementById('strategy-1').value;
+            const strategy2 = document.getElementById('strategy-2').value;
+
+            let move1, move2;
+
+            if (strategy1 === 'Human' && strategy2 === 'Human') {
+                // Permitir cambiar selección si el otro jugador no ha elegido aún
+                const otherPlayer = playerWhoClicked === 1 ? 2 : 1;
+                
+                // Si este jugador ya había elegido, limpiar su selección anterior
+                if (pendingMoves[playerWhoClicked]) {
+                    clearPlayerButtonStyles(playerWhoClicked);
+                }
+                
+                // Registrar la nueva selección
+                pendingMoves[playerWhoClicked] = move;
+                selectedButtons[playerWhoClicked] = move;
+                
+                // Mostrar indicador visual sutil de que seleccionó (sin revelar qué eligió)
+                updatePlayerSelectionIndicator(playerWhoClicked, true);
+                
+                if (pendingMoves[1] && pendingMoves[2]) {
+                    // Ambos han elegido - procesar la ronda
+                    processingRound = true;
+                    showBothSelections();
+                    move1 = pendingMoves[1];
+                    move2 = pendingMoves[2];
+                    
+                    setTimeout(() => {
+                        processMoves(move1, move2);
+                        clearButtonStyles();
+                        clearPlayerSelectionIndicators();
+                        pendingMoves = {};
+                        selectedButtons = {};
+                        processingRound = false;
+                    }, 1500);
+                } else {
+                    const waitingPlayer = pendingMoves[1] ? 2 : 1;
+                    updateGameStatus(`⏳ Jugador ${playerWhoClicked} ha elegido. Esperando al Jugador ${waitingPlayer}...`);
+                }
+                return;
+
+            } else if (strategy1 === 'Human' || strategy2 === 'Human') {
+                if (strategy1 === 'Human' && playerWhoClicked === 1) {
+                    move1 = move;
+                    move2 = getMachineMove(2);
+                } else if (strategy2 === 'Human' && playerWhoClicked === 2) {
+                    move1 = getMachineMove(1);
+                    move2 = move;
+                } else {
+                    return;
+                }
+                processMoves(move1, move2);
+            }
+        }
+
+        function processMoves(move1, move2) {
+            const payoff = PAYOFF_MATRIX[move1 + move2];
+            const score1 = payoff[0];
+            const score2 = payoff[1];
+
+            scores[0] += score1;
+            scores[1] += score2;
+
+            history.push({ 
+                round: currentRound + 1,
+                p1: move1, 
+                p2: move2, 
+                score1: score1, 
+                score2: score2,
+                totalScore1: scores[0],
+                totalScore2: scores[1]
+            });
+
+            currentRound++;
+
+            updateScores(scores[0], scores[1]);
+            updateVisualHistory(move1, move2);
+            updateCurrentRound();
+            
+            const moveNames = {'C': 'Cooperó', 'T': 'Traicionó'};
+            updateGameStatus(`🎯 Ronda ${currentRound}: J1 ${moveNames[move1]} (+${score1}), J2 ${moveNames[move2]} (+${score2})`);
+
+            // Verificar fin del juego SOLO una vez
+            if (currentRound >= maxRounds && !gamePaused) {
+                setTimeout(() => endGame(), 100);
+            }
+        }
+
+        function highlightSelectedButton(playerNum, move) {
+            clearPlayerButtonStyles(playerNum);
+            
+            const buttonId = move === 'C' ? `coop-btn-${playerNum}` : `betray-btn-${playerNum}`;
+            const button = document.getElementById(buttonId);
+            button.classList.add('waiting');
+        }
+
+        function showBothSelections() {
+            document.querySelectorAll('.btn-action').forEach(btn => {
+                btn.classList.remove('waiting');
+            });
+            
+            for (let player = 1; player <= 2; player++) {
+                if (selectedButtons[player]) {
+                    const move = selectedButtons[player];
+                    const buttonId = move === 'C' ? `coop-btn-${player}` : `betray-btn-${player}`;
+                    const button = document.getElementById(buttonId);
+                    button.classList.add('selected');
+                }
+            }
+            
+            updateGameStatus("✨ ¡Ambos jugadores han elegido! Procesando...");
+        }
+
+        function clearPlayerButtonStyles(playerNum) {
+            document.getElementById(`coop-btn-${playerNum}`).classList.remove('selected', 'waiting');
+            document.getElementById(`betray-btn-${playerNum}`).classList.remove('selected', 'waiting');
+        }
+
+        function clearButtonStyles() {
+            document.querySelectorAll('.btn-action').forEach(btn => {
+                btn.classList.remove('selected', 'waiting');
+            });
+        }
+
+        function updatePlayerSelectionIndicator(playerNum, hasSelected) {
+            const header = document.querySelector(`#player-${playerNum}-panel h2`);
+            const existingIndicator = header.querySelector('.selection-indicator');
+            
+            if (hasSelected && !existingIndicator) {
+                const indicator = document.createElement('span');
+                indicator.className = 'selection-indicator';
+                indicator.title = 'Ha realizado su selección';
+                header.appendChild(indicator);
+            } else if (!hasSelected && existingIndicator) {
+                existingIndicator.remove();
+            }
+        }
+
+        function clearPlayerSelectionIndicators() {
+            document.querySelectorAll('.selection-indicator').forEach(indicator => {
+                indicator.remove();
+            });
+        }
+
+        function getMachineMove(playerNum) {
+            const strategy = document.getElementById(`strategy-${playerNum}`).value;
+            const opponentNum = playerNum === 1 ? 2 : 1;
+            
+            const playerHistory = history.map(r => r[`p${playerNum}`]);
+            const opponentHistory = history.map(r => r[`p${opponentNum}`]);
+            const playerScores = history.map(r => r[`score${playerNum}`]);
+
+            switch (strategy) {
+                case 'AlwaysCooperate':
+                    return 'C';
+                case 'AlwaysBetray':
+                    return 'T';
+                case 'Random':
+                    return Math.random() < 0.5 ? 'C' : 'T';
+                case 'Random70':
+                    return Math.random() < 0.7 ? 'C' : 'T';
+                case 'Random30':
+                    return Math.random() < 0.3 ? 'C' : 'T';
+                case 'TitForTat':
+                    if (history.length === 0) return 'C';
+                    return opponentHistory[opponentHistory.length - 1];
+                case 'GrimTrigger':
+                    if (opponentHistory.includes('T')) return 'T';
+                    return 'C';
+                case 'TitForTwoTats':
+                    if (history.length < 2) return 'C';
+                    const lastTwo = opponentHistory.slice(-2);
+                    if (lastTwo.every(move => move === 'T')) return 'T';
+                    return 'C';
+                case 'Pavlov':
+                    if (history.length === 0) return 'C';
+                    const lastScore = playerScores[playerScores.length - 1];
+                    const lastMove = playerHistory[playerHistory.length - 1];
+                    if (lastScore >= 3) return lastMove;
+                    return lastMove === 'C' ? 'T' : 'C';
+                case 'Majority':
+                    if (history.length === 0) return 'C';
+                    const betrayals = opponentHistory.filter(m => m === 'T').length;
+                    const cooperations = opponentHistory.filter(m => m === 'C').length;
+                    return cooperations >= betrayals ? 'C' : 'T';
+                default:
+                    return 'C';
+            }
+        }
+
+        function updateScores(score1, score2) {
+            document.getElementById('score-1').textContent = String(score1).padStart(3, '0');
+            document.getElementById('score-2').textContent = String(score2).padStart(3, '0');
+        }
+
+        function updateVisualHistory(move1, move2) {
+            const circle1 = document.createElement('span');
+            circle1.className = 'round-indicator ' + (move1 === 'C' ? 'cooperate' : 'betray');
+            circle1.title = `Ronda ${currentRound}: ${move1 === 'C' ? 'Cooperó' : 'Traicionó'}`;
+            document.getElementById('p1-history-row').appendChild(circle1);
+
+            const circle2 = document.createElement('span');
+            circle2.className = 'round-indicator ' + (move2 === 'C' ? 'cooperate' : 'betray');
+            circle2.title = `Ronda ${currentRound}: ${move2 === 'C' ? 'Cooperó' : 'Traicionó'}`;
+            document.getElementById('p2-history-row').appendChild(circle2);
+        }
+
+        function updateGameStatus(message) {
+            document.getElementById('game-status').textContent = message;
+        }
+
+        function updateCurrentRound() {
+            const roundDisplay = gameActive ? `Ronda: ${currentRound}/${maxRounds}` : '';
+            document.getElementById('current-round').textContent = roundDisplay;
+        }
+
+        function endGame() {
+            // Prevenir múltiples llamadas
+            if (!gameActive) return;
+            
+            gameActive = false;
+            gamePaused = false;
+            if (machineGameLoop) {
+                clearTimeout(machineGameLoop);
+                machineGameLoop = null;
+            }
+            document.getElementById('pause-btn').style.display = 'none';
+
+            const finalScore1 = scores[0];
+            const finalScore2 = scores[1];
+            const strategy1 = document.getElementById('strategy-1').value;
+            const strategy2 = document.getElementById('strategy-2').value;
+
+            let winner = '';
+            if (finalScore1 > finalScore2) {
+                winner = '🏆 Ganó Jugador 1';
+            } else if (finalScore2 > finalScore1) {
+                winner = '🏆 Ganó Jugador 2';
+            } else {
+                winner = '🤝 Empate';
+            }
+
+            updateGameStatus(`🎊 Juego terminado - ${winner}`);
+
+            // Crear identificador único para este juego basado en timestamp
+            const gameId = `game-${Date.now()}`;
+            
+            // Solo agregar si no existe
+            if (!completedGames.includes(gameId)) {
+                completedGames.push(gameId);
+                const summaryText = `${strategy1} vs ${strategy2} | ${finalScore1} - ${finalScore2} | ${winner}`;
+                const summaryItem = document.createElement('li');
+                summaryItem.className = 'match-summary-item';
+                summaryItem.textContent = summaryText;
+                document.getElementById('summary-list').prepend(summaryItem);
+            }
+
+            toggleHumanControls(1);
+            toggleHumanControls(2);
+        }
+
+        // Event Listeners
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('pause-btn').addEventListener('click', pauseGame);
+        document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+        document.getElementById('strategy-1').addEventListener('change', () => toggleHumanControls(1));
+        document.getElementById('strategy-2').addEventListener('change', () => toggleHumanControls(2));
+
+        document.getElementById('coop-btn-1').addEventListener('click', () => playRound(1, 'C'));
+        document.getElementById('betray-btn-1').addEventListener('click', () => playRound(1, 'T'));
+        document.getElementById('coop-btn-2').addEventListener('click', () => playRound(2, 'C'));
+        document.getElementById('betray-btn-2').addEventListener('click', () => playRound(2, 'T'));
+
+        document.addEventListener('keydown', function(event) {
+            if (!gameActive || processingRound) return;
+            
+            const key = event.key.toLowerCase();
+            const strategy1 = document.getElementById('strategy-1').value;
+            const strategy2 = document.getElementById('strategy-2').value;
+            
+            if (strategy1 === 'Human') {
+                if (key === 'a') {
+                    playRound(1, 'C');
+                    event.preventDefault();
+                } else if (key === 'd') {
+                    playRound(1, 'T');
+                    event.preventDefault();
+                }
+            }
+            
+            if (strategy2 === 'Human') {
+                if (key === 'j') {
+                    playRound(2, 'C');
+                    event.preventDefault();
+                } else if (key === 'l') {
+                    playRound(2, 'T');
+                    event.preventDefault();
+                }
+            }
+        });
+
+        // Inicialización
+        window.addEventListener('DOMContentLoaded', function() {
+            toggleHumanControls(1);
+            toggleHumanControls(2);
+        });
+    </script>
+</body>
+</html>

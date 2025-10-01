@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dilema del Prisionero</title>
+<style>
+:root{--bg:#f3f6fb;--panel:#fff;--muted:#666;--accent:#2b8be6;--good:#4caf50;--bad:#e74c3c}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial;margin:18px;background:var(--bg);color:#1b1b1b}
+.container{max-width:980px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.title{font-size:1.4rem;font-weight:700}
+.controls{display:flex;gap:10px;align-items:center}
+.panel{background:var(--panel);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(10,20,40,0.06)}
+.flex{display:flex;gap:12px}
+.player{flex:1;padding:12px;border-radius:8px;border:1px solid #eee}
+.player h3{margin:0 0 8px 0}
+.score{font-size:2rem;font-weight:700;background:#f7fafc;padding:8px;border-radius:6px;text-align:center}
+.actions{margin-top:10px;display:flex;gap:8px;justify-content:center}
+.btn{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+.btn.coop{background:var(--good);color:#fff}
+.btn.betray{background:var(--bad);color:#fff}
+.select{padding:8px;border-radius:8px;border:1px solid #ddd}
+.center{width:260px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.small{font-size:0.9rem;color:var(--muted)}
+.status{margin-top:14px;padding:10px;border-radius:8px;background:linear-gradient(90deg,#eef6ff,#ffffff);border:1px solid #dbeefc}
+.history{margin-top:14px}
+.history-wrapper{overflow-x:auto;display:block;padding:6px;border-radius:8px;border:1px solid #eee;background:#fff}
+.history-row{display:flex;gap:4px;align-items:flex-start}
+.history-cell{min-width:12px;padding:1px;text-align:center;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.round-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin:1px 0;border:1px solid #ccc}
+.coop-dot{background:var(--good)}
+.betray-dot{background:var(--bad)}
+.summary{margin-top:12px}
+.footer{margin-top:18px;font-size:0.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <div class="title">🎭 Dilema del Prisionero</div>
+      <div class="small">Soporte: Humano vs Humano, Humano vs Máquina, Máquina vs Máquina. Usa el teclado para jugar.</div>
+    </div>
+    <div class="controls">
+      <label class="small">Rondas</label>
+      <input id="max-rounds" type="number" value="20" min="1" max="500" style="width:70px;padding:6px;border-radius:6px;border:1px solid #ddd">
+      <label class="small">Vel. IA</label>
+      <select id="machine-delay" class="select">
+        <option value="50" selected>Extrema (0.05s)</option>
+        <option value="100">Ultra (0.1s)</option>
+        <option value="300">Muy rápida (0.3s)</option>
+        <option value="700">Rápida (0.7s)</option>
+        <option value="1200">Normal (1.2s)</option>
+      </select>
+      <button id="start-btn" class="btn" style="background:#2b8be6;color:#fff">Iniciar</button>
+      <button id="pause-btn" class="btn" style="display:none">Pausar</button>
+      <button id="reset-btn" class="btn" style="background:#f0f0f0">Reiniciar</button>
+    </div>
+  </div>
+
+  <div class="panel flex">
+    <div class="player panel" id="player1-panel">
+      <h3>Jugador 1</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="strategy-1" class="select">
+          <option value="Human">Humano</option>
+          <option value="TitForTat">Tit-for-Tat</option>
+          <option value="GenerousTFT">Generous TFT</option>
+          <option value="GrimTrigger">Grim Trigger</option>
+          <option value="AlwaysCooperate">Siempre Cooperar</option>
+          <option value="AlwaysBetray">Siempre Traicionar</option>
+          <option value="Random50">Aleatoria 50/50</option>
+          <option value="Random70C">Aleatoria 70/30</option>
+          <option value="Random30C">Aleatoria 30/70</option>
+          <option value="Pavlov">Pavlov</option>
+        </select>
+        <div class="score" id="score-1">0</div>
+      </div>
+      <div class="actions" id="actions-1">
+        <button class="btn coop" id="coop-btn-1">Cooperar (A)</button>
+        <button class="btn betray" id="betray-btn-1">Traicionar (D)</button>
+      </div>
+    </div>
+
+    <div class="center panel">
+      <div class="small">Estado</div>
+      <div id="game-status" class="status">Presiona <strong>Iniciar</strong></div>
+      <div id="current-round" style="margin-top:6px;font-weight:700">Ronda: 0 / 0</div>
+      <!-- div style="margin-top:6px" class="small">Teclas: Jug1 A=Cooperar, D=Traicionar | Jug2 J=Cooperar, L=Traicionar</div -->
+      <div style="margin-top:8px">
+        <label class="small">Matriz (J1,J2)</label>
+        <div class="small">CC:3/3 | CT:0/5 | TC:5/0 | TT:1/1</div>
+      </div>
+    </div>
+
+    <div class="player panel" id="player2-panel">
+      <h3>Jugador 2</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="strategy-2" class="select">
+          <option value="Human">Humano</option>
+          <option value="TitForTat" selected>Tit-for-Tat</option>
+          <option value="GenerousTFT">Generous TFT</option>
+          <option value="GrimTrigger">Grim Trigger</option>
+          <option value="AlwaysCooperate">Siempre Cooperar</option>
+          <option value="AlwaysBetray">Siempre Traicionar</option>
+          <option value="Random50">Aleatoria 50/50</option>
+          <option value="Random70C">Aleatoria 70/30</option>
+          <option value="Random30C">Aleatoria 30/70</option>
+          <option value="Pavlov">Pavlov</option>
+        </select>
+        <div class="score" id="score-2">0</div>
+      </div>
+      <div class="actions" id="actions-2">
+        <button class="btn coop" id="coop-btn-2">Cooperar (J)</button>
+        <button class="btn betray" id="betray-btn-2">Traicionar (L)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="history panel">
+    <strong>Historial</strong>
+    <div class="history-wrapper" id="history-wrapper">
+      <div id="history-row" class="history-row"></div>
+    </div>
+  </div>
+
+  <div class="summary panel">
+    <strong>Resumen de Partida</strong>
+    <ul id="summary-list" style="margin-top:8px;padding-left:16px"></ul>
+  </div>
+
+  <div class="footer">Diseñado por tu asistente.</div>
+</div>
+
+<script>
+let currentRound = 0;
+let maxRounds = 20;
+let scores = [0,0];
+let history = [];
+let gameActive = false;
+let gamePaused = false;
+let machineLoop = null;
+let pendingMoves = {};
+const GENEROUS_PROB = 0.3;
+
+const PAYOFF = { 'CC':[3,3],'CT':[0,5],'TC':[5,0],'TT':[1,1] };
+
+const el = id => document.getElementById(id);
+function setStatus(msg){ el('game-status').innerHTML = msg; }
+function updateScoresUI(){ el('score-1').textContent = scores[0]; el('score-2').textContent = scores[1]; }
+function updateRoundUI(){ el('current-round').textContent = `Ronda: ${currentRound}/${maxRounds}`; }
+function resetHistoryUI(){ const row = el('history-row'); row.innerHTML = ''; el('history-wrapper').scrollLeft = 0; }
+function addHistoryRound(round,m1,m2){ const row = el('history-row'); const cell = document.createElement('div'); cell.className = 'history-cell'; const top = document.createElement('span'); top.className = `round-dot ${m1==='C'?'coop-dot':'betray-dot'}`; const bottom = document.createElement('span'); bottom.className = `round-dot ${m2==='C'?'coop-dot':'betray-dot'}`; cell.appendChild(top); cell.appendChild(bottom); row.appendChild(cell); const wrapper = el('history-wrapper'); wrapper.scrollLeft = wrapper.scrollWidth; }
+
+function startGame(){ if (gameActive) return; maxRounds = Math.max(1, parseInt(el('max-rounds').value)||20); currentRound = 0; scores = [0,0]; history = []; pendingMoves = {}; gameActive = true; gamePaused = false; resetHistoryUI(); updateScoresUI(); updateRoundUI(); setStatus('Juego iniciado.'); toggleHumanControls(1); toggleHumanControls(2); const s1 = el('strategy-1').value; const s2 = el('strategy-2').value; if (s1!=='Human' && s2!=='Human'){ setStatus('🤖 Máquinas jugando...'); el('pause-btn').style.display = 'inline-block'; runMachineLoop(); } else { setStatus('Listo. Esperando jugadas.'); el('pause-btn').style.display = 'none'; } }
+
+function pauseResume(){ if (!gameActive) return; gamePaused = !gamePaused; el('pause-btn').textContent = gamePaused ? 'Reanudar' : 'Pausar'; if (!gamePaused && el('strategy-1').value!=='Human' && el('strategy-2').value!=='Human') runMachineLoop(); }
+
+function resetGame(){ if (machineLoop){ clearTimeout(machineLoop); machineLoop = null; } gameActive = false; gamePaused=false; currentRound=0; scores=[0,0]; history=[]; pendingMoves={}; updateScoresUI(); updateRoundUI(); resetHistoryUI(); setStatus('Juego reiniciado. Pulsa Iniciar.'); el('pause-btn').style.display='none'; toggleHumanControls(1); toggleHumanControls(2); }
+
+function toggleHumanControls(player){ const s = el(`strategy-${player}`).value; const actions = el(`actions-${player}`); if (s==='Human'){ actions.style.display = 'flex'; actions.querySelectorAll('button').forEach(b=>b.disabled=false); } else { actions.style.display = 'none'; } }
+
+function playRoundLocal(playerClicked, move){ if (!gameActive || gamePaused || currentRound>=maxRounds) return; const s1 = el('strategy-1').value; const s2 = el('strategy-2').value; if (s1==='Human' && s2==='Human'){ pendingMoves[playerClicked] = move; setStatus(`Jugador ${playerClicked} seleccionó. Esperando al otro jugador...`); if (pendingMoves[1] && pendingMoves[2]){ const m1 = pendingMoves[1]; const m2 = pendingMoves[2]; pendingMoves = {}; processMoves(m1,m2); } return; } if (s1==='Human' && s2!=='Human'){ if (playerClicked!==1) return; const m1 = move; const m2 = getMachineMove(2); processMoves(m1,m2); return; } if (s2==='Human' && s1!=='Human'){ if (playerClicked!==2) return; const m2 = move; const m1 = getMachineMove(1); processMoves(m1,m2); return; } }
+
+function processMoves(m1,m2){ const payoff = PAYOFF[m1+m2]; const sc1 = payoff[0], sc2 = payoff[1]; scores[0]+=sc1; scores[1]+=sc2; currentRound++; history.push({round:currentRound,p1:m1,p2:m2,score1:sc1,score2:sc2}); updateScoresUI(); addHistoryRound(currentRound,m1,m2); updateRoundUI(); setStatus(`Ronda ${currentRound}: J1 ${m1==='C'?'Cooperó':'Traicionó'} (+${sc1}) — J2 ${m2==='C'?'Cooperó':'Traicionó'} (+${sc2})`); if (currentRound>=maxRounds){ endGame(); } }
+
+function endGame(){ if (!gameActive) return; gameActive=false; if (machineLoop){ clearTimeout(machineLoop); machineLoop=null; } el('pause-btn').style.display='none'; const s1 = el('strategy-1').value; const s2 = el('strategy-2').value; let result = ''; if (scores[0]>scores[1]) result='Ganó Jugador 1 🏆'; else if (scores[1]>scores[0]) result='Ganó Jugador 2 🏆'; else result='Empate 🤝'; setStatus(`Juego terminado — ${result}`); addSummaryItem(s1,s2,scores[0],scores[1],result); toggleHumanControls(1); toggleHumanControls(2); }
+
+function addSummaryItem(s1,s2,sc1,sc2,result){ const li = document.createElement('li'); li.textContent = `${s1} vs ${s2} — ${sc1} : ${sc2} — ${result}`; el('summary-list').prepend(li); }
+
+function getMachineMove(playerNum){ const strat = el(`strategy-${playerNum}`).value; const opp = playerNum===1?2:1; const oppHistory = history.map(r=> r[`p${opp}`]); switch (strat){ case 'AlwaysCooperate': return 'C'; case 'AlwaysBetray': return 'T'; case 'Random50': return Math.random()<0.5?'C':'T'; case 'Random70C': return Math.random()<0.7?'C':'T'; case 'Random30C': return Math.random()<0.3?'C':'T'; case 'TitForTat': return history.length===0? 'C' : oppHistory[oppHistory.length-1]; case 'GrimTrigger': return oppHistory.includes('T')? 'T' : 'C'; case 'GenerousTFT': if (history.length===0) return 'C'; const lastOpp = oppHistory[oppHistory.length-1]; if (lastOpp==='C') return 'C'; return Math.random()<GENEROUS_PROB? 'C' : 'T'; case 'Pavlov': if (history.length===0) return 'C'; const last = history[history.length-1]; const lastPlayerMove = last[`p${playerNum}`]; const lastPlayerScore = last[`score${playerNum}`]; return (lastPlayerScore>=3) ? lastPlayerMove : (lastPlayerMove==='C'?'T':'C'); default: return 'C'; } }
+
+function runMachineLoop(){ if (!gameActive || gamePaused) return; if (currentRound>=maxRounds){ endGame(); return; } let delay = parseInt(el('machine-delay').value) || 50; const selectedRounds = parseInt(el('max-rounds').value)||20; if (selectedRounds>=200 && delay>50){ delay = 50; } const m1 = getMachineMove(1); const m2 = getMachineMove(2); processMoves(m1,m2); if (!gameActive) return; machineLoop = setTimeout(runMachineLoop, delay); }
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('pause-btn').addEventListener('click', pauseResume);
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+document.getElementById('coop-btn-1').addEventListener('click',()=>playRoundLocal(1,'C'));
+document.getElementById('betray-btn-1').addEventListener('click',()=>playRoundLocal(1,'T'));
+
+(function(){
+  document.getElementById('coop-btn-2').addEventListener('click',()=>playRoundLocal(2,'C'));
+  document.getElementById('betray-btn-2').addEventListener('click',()=>playRoundLocal(2,'T'));
+  document.getElementById('strategy-1').addEventListener('change',()=>toggleHumanControls(1));
+  document.getElementById('strategy-2').addEventListener('change',()=>toggleHumanControls(2));
+  document.addEventListener('keydown',(e)=>{
+    if (!gameActive || gamePaused) return;
+    const k = e.key.toLowerCase();
+    if (el('strategy-1').value==='Human'){
+      if (k==='a') playRoundLocal(1,'C');
+      if (k==='d') playRoundLocal(1,'T');
+    }
+    if (el('strategy-2').value==='Human'){
+      if (k==='j') playRoundLocal(2,'C');
+      if (k==='l') playRoundLocal(2,'T');
+    }
+  });
+  // inicialización UI
+  resetHistoryUI(); updateScoresUI(); updateRoundUI(); toggleHumanControls(1); toggleHumanControls(2);
+})();
+</script>
+</body>
+</html>
