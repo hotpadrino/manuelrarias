@@ -22,10 +22,36 @@
         .custom-checkbox:checked::after { content: '\2713'; font-size: 0.875rem; color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; }
         .report-header-text { color: #1f2937; }
         
-        /* Estilos de impresión (Modo Reporte) */
+        /* Estilo para transición suave del sidebar (SIN transform: translateX(0) base) */
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+            /* En desktop, Tailwind y el flujo flex se encargan. No aplicar transform por defecto. */
+        }
+        
+        /* Ocultar en móvil y preparar para la animación */
+        @media (max-width: 767px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 50; /* Por encima del contenido principal */
+                transform: translateX(-100%); /* INICIALMENTE FUERA DE PANTALLA */
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+                /* Asegurar que el sidebar ocupe toda la altura cuando está fijo */
+                height: 100%; 
+            }
+            .sidebar.active {
+                transform: translateX(0); /* Mover a la vista al hacer clic */
+            }
+            .main-content {
+                padding-top: 1rem;
+            }
+        }
+        
+        /* Estilos de impresión (Modo Reporte) - Conservados */
         @media print {
             /* Ocultar elementos de la interfaz */
-            .no-print, .main-app-container .nav { display: none !important; }
+            .no-print, .main-app-container .sidebar, .floating-btn { display: none !important; }
             /* Liberar el contenedor principal */
             .main-app-container { 
                 display: block !important; 
@@ -79,8 +105,9 @@
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <div class="flex h-screen overflow-hidden main-app-container">
-        <!-- Sidebar -->
-        <nav class="w-64 h-full bg-slate-800 text-slate-200 p-6 flex flex-col flex-shrink-0 nav">
+        <!-- Sidebar: En móvil (max-w-767px) es 'fixed' y está fuera de la vista por defecto. -->
+        <!-- En desktop (md:), es parte del flujo flex. -->
+        <nav id="sidebar" class="w-64 h-full bg-slate-800 text-slate-200 p-6 flex flex-col flex-shrink-0 sidebar md:flex">
             <div class="flex flex-col items-center mb-6">
                 <img src="https://aaaes.fac.mil.co/sites/aaaes/files/IMAGENESAAAES/log_aaaes.png" alt="Logo AAAES" class="h-16 w-auto mb-2">
                 <h1 class="text-2xl font-bold text-white text-center">AAAES</h1>
@@ -100,7 +127,25 @@
         </main>
     </div>
 
-    <!-- Page Templates -->
+    <!-- Botón Flotante para Abrir/Cerrar la Navegación en Móviles -->
+    <!-- visible solo en móvil (md:hidden) -->
+    <button id="floating-nav-btn" 
+            class="md:hidden floating-btn fixed bottom-3 right-3 z-50 p-4 bg-amber-500 text-white rounded-full shadow-lg hover:bg-amber-600 transition duration-300 transform active:scale-95"
+            aria-label="Abrir navegación">
+        <!-- Ícono de menú (tres barras) -->
+        <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        <!-- Ícono de cerrar (X) - Se alternará en JS -->
+        <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+    
+    <!-- Overlay semitransparente para cerrar el menú al hacer clic fuera (solo en móvil) -->
+    <div id="sidebar-overlay" class="md:hidden fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+
+    <!-- Page Templates - Sin Cambios -->
     <template id="inicio-page">
         <div class="max-w-7xl mx-auto">
             <h2 class="text-3xl font-bold text-slate-800 mb-6">Dashboard de Cumplimiento</h2>
@@ -125,7 +170,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Estado General</h3>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Estado General </h3>
                     <div class="chart-container">
                         <canvas id="complianceChart"></canvas>
                     </div>
@@ -191,6 +236,7 @@
         </div>
     </template>
 
+    <!-- Plantilla de Metodología - Sin Cambios -->
     <template id="metodologia-page">
         <div class="max-w-7xl mx-auto">
             <h2 class="text-3xl font-bold text-slate-800 mb-6">Metodología NATO (AECTP-600)</h2>
@@ -213,7 +259,7 @@
         </div>
     </template>
 
-    <!-- Plantilla de Reporte Integrado -->
+    <!-- Plantilla de Reporte Integrado - Sin Cambios -->
     <template id="reporte-page">
         <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl report-page-content">
             <div class="mb-8 no-print">
@@ -294,8 +340,10 @@
 
 
     <script>
+        // ... (El objeto appState y las funciones de helper se mantienen iguales, solo se actualiza la parte de DOM y eventos)
         const appState = {
             currentPage: 'inicio',
+            isSidebarOpen: false, // Nuevo estado para controlar la visibilidad del sidebar en móvil
             checklistItems: [
                 { id: 'c1', text: 'Temperatura del depósito dentro del rango especificado (Ej. 15°C - 25°C).', category: 'Entorno y Clima', checked: false },
                 { id: 'c2', text: 'Humedad relativa (HR) por debajo del umbral máximo (Ej. 60%).', category: 'Entorno y Clima', checked: false },
@@ -333,9 +381,40 @@
         const mainAppContainer = document.querySelector('.main-app-container');
         const mainContent = document.querySelector('.main-content');
         const pageContent = document.getElementById('page-content');
+        const sidebar = document.getElementById('sidebar'); 
         const navLinks = document.querySelectorAll('.nav-link');
-        const navBar = document.querySelector('.nav');
+        const floatingBtn = document.getElementById('floating-nav-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
 
+        // Función para alternar el estado del menú en móvil
+        function toggleSidebar() {
+            appState.isSidebarOpen = !appState.isSidebarOpen;
+            sidebar.classList.toggle('active', appState.isSidebarOpen);
+            
+            // Alternar la visibilidad del overlay
+            sidebarOverlay.classList.toggle('opacity-0', !appState.isSidebarOpen);
+            sidebarOverlay.classList.toggle('pointer-events-none', !appState.isSidebarOpen);
+            
+            // Alternar los íconos del botón flotante
+            menuIcon.classList.toggle('hidden', appState.isSidebarOpen);
+            closeIcon.classList.toggle('hidden', !appState.isSidebarOpen);
+
+            // Bloquear el scroll del body cuando el menú está abierto
+            // Solo aplicar si estamos en móvil
+            if (window.innerWidth < 768) {
+                document.body.classList.toggle('overflow-hidden', appState.isSidebarOpen);
+            }
+        }
+
+        // Función para cerrar el menú (usada al navegar o al tocar el overlay)
+        function closeSidebar() {
+            if (appState.isSidebarOpen && window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+        
         function updateDashboardStats(total, completed, pending) {
             const percentage = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
             document.getElementById('stat-total').textContent = total;
@@ -510,19 +589,41 @@
         }
 
         function enableReportMode() {
-            // Ocultar el nav y liberar restricciones de altura
-            navBar.classList.add('hidden');
-            mainAppContainer.classList.remove('h-screen', 'overflow-hidden', 'flex');
+            // 1. Ocultar el nav y botón flotante
+            // En desktop, la clase 'hidden' y 'w-0' anularán el 'md:flex' y 'w-64'
+            sidebar.classList.add('hidden', 'w-0', 'md:w-0', 'md:flex-shrink-0'); 
+            sidebar.classList.remove('md:w-64', 'md:flex'); // Limpiar clases de desktop
+            floatingBtn.classList.add('hidden'); 
+            
+            // 2. Liberar el contenedor principal de su flujo flex (desktop)
+            mainAppContainer.classList.remove('flex');
             mainAppContainer.classList.add('block');
+            
+            // 3. Quitar restricciones de altura y scroll
+            mainAppContainer.classList.remove('h-screen', 'overflow-hidden');
             mainContent.classList.remove('overflow-y-auto');
         }
 
         function disableReportMode() {
-            // Restaurar la vista de aplicación normal
-            navBar.classList.remove('hidden');
+            // 1. Restaurar el flujo flex de la aplicación (sidebar + main)
             mainAppContainer.classList.remove('block');
             mainAppContainer.classList.add('flex', 'h-screen', 'overflow-hidden');
             mainContent.classList.add('overflow-y-auto');
+            
+            // 2. Mostrar sidebar (restaurar clases de desktop y remover ocultación)
+            sidebar.classList.remove('hidden', 'w-0', 'md:w-0', 'md:flex-shrink-0'); 
+            sidebar.classList.add('md:w-64', 'md:flex'); // Restaurar clases de desktop (w-64 está en el HTML, pero es buena práctica)
+
+            // 3. Mostrar el botón flotante solo si es móvil
+            if (window.innerWidth < 768) {
+                 // Asegurar que el botón esté visible en móvil al volver del reporte
+                 floatingBtn.classList.remove('hidden'); 
+            } else {
+                 floatingBtn.classList.add('hidden'); 
+            }
+            
+            // 4. Asegurarse de que esté cerrado al volver de reporte
+            closeSidebar(); 
         }
 
         function renderPage(pageId) {
@@ -537,6 +638,11 @@
             navLinks.forEach(link => {
                 link.classList.toggle('active', link.dataset.page === pageId);
             });
+            
+            // Cerrar el sidebar después de navegar en móvil
+            if (window.innerWidth < 768) {
+                closeSidebar();
+            }
             
             // Lógica para inicializar la página
             if (pageId === 'inicio') {
@@ -559,12 +665,44 @@
                 renderPage(pageId);
             }
         }
+        
+        // Función para manejar el cambio de tamaño de pantalla
+        function handleResize() {
+            const isMobile = window.innerWidth < 768;
+            
+            // Si es móvil, asegurar que el botón es visible (a menos que estemos en modo reporte, pero eso lo maneja disable/enableReportMode)
+            if (isMobile) {
+                if (appState.currentPage !== 'reporte') {
+                    floatingBtn.classList.remove('hidden');
+                }
+            } else {
+                // Si es desktop, asegurar que el botón esté siempre oculto
+                floatingBtn.classList.add('hidden');
+                
+                // Si es desktop, asegurar que el sidebar está 'abierto' (por defecto) y cerrar el overlay/scroll
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+                document.body.classList.remove('overflow-hidden');
+                appState.isSidebarOpen = false;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             renderPage('inicio');
             navLinks.forEach(link => {
                 link.addEventListener('click', handleNavClick);
             });
+            
+            // Inicializar la visibilidad del botón flotante en función del tamaño de pantalla
+            handleResize();
+            
+            // Añadir listener al botón flotante
+            floatingBtn.addEventListener('click', toggleSidebar);
+            // Añadir listener al overlay para cerrar el menú
+            sidebarOverlay.addEventListener('click', closeSidebar);
+            
+            // Listener para manejar cambios de tamaño de pantalla
+            window.addEventListener('resize', handleResize);
         });
 
     </script>
