@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Depósito de Misiles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Estilos generales de la aplicación */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .chart-container { position: relative; width: 100%; max-width: 450px; margin-left: auto; margin-right: auto; height: 40vh; max-height: 450px; }
+        .nav-link { display: flex; align-items: center; padding: 0.75rem 1.5rem; border-radius: 0.5rem; transition: background-color 0.2s; text-decoration: none; color: #e2e8f0; font-weight: 500; }
+        .nav-link:hover { background-color: #334155; }
+        .nav-link.active { background-color: #f59e0b; color: #1e293b; font-weight: 600; }
+        .nav-link .icon { margin-right: 0.75rem; font-size: 1.25rem; }
+        .custom-checkbox { appearance: none; width: 1.25rem; height: 1.25rem; border: 2px solid #64748b; border-radius: 0.25rem; background-color: #f1f5f9; cursor: pointer; position: relative; top: 4px; flex-shrink: 0; margin-right: 0.75rem; }
+        .custom-checkbox:checked { background-color: #16a34a; border-color: #16a34a; }
+        .custom-checkbox:checked::after { content: '\2713'; font-size: 0.875rem; color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: bold; }
+        .report-header-text { color: #1f2937; }
+        
+        /* Estilos de impresión (Modo Reporte) */
+        @media print {
+            /* Ocultar elementos de la interfaz */
+            .no-print, .main-app-container .nav { display: none !important; }
+            /* Liberar el contenedor principal */
+            .main-app-container { 
+                display: block !important; 
+                height: auto !important; 
+                overflow: visible !important; 
+            }
+            /* Liberar Main y Reporte */
+            .main-app-container .main-content, 
+            .report-page-content {
+                padding: 0 !important; 
+                margin: 0 !important; 
+                overflow: visible !important; 
+                height: auto !important;
+                flex: none !important;
+                width: 100% !important;
+                max-width: none !important;
+                box-shadow: none !important;
+                background-color: white !important;
+            }
+            /* Resetear la altura del cuerpo y HTML para permitir flujo */
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Reglas de tabla para paginación (Chrome) */
+            .report-table {
+                font-size: 0.8rem !important; /* Fuente muy compacta */
+                border-collapse: collapse !important;
+                width: 100% !important;
+                page-break-inside: auto !important;
+            }
+            .report-table th, .report-table td {
+                border: 1px solid #e2e8f0 !important;
+                padding: 0.3rem !important;
+                line-height: 1.2 !important; 
+            }
+            .report-table thead { display: table-header-group !important; }
+            .report-table tbody { display: table-row-group !important; }
+            .report-table tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            .header-container { page-break-after: avoid !important; }
+            .footer-signature { page-break-before: avoid !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans">
+    <!-- Chosen Palette: Slate and Amber -->
+    <!-- Application Structure Plan: SPA con modo de Reporte integrado. El flujo de usuario es: 1) Exploración (Inicio/Checklist), 2) Documentación (Reporte). El dashboard fue actualizado para mostrar el Nivel de Cumplimiento en un panel grande. -->
+    <!-- Visualization & Content Choices: 1. Estado (Donut Chart/Chart.js). 2. Checklist (Lista interactiva). 3. Reporte (Tabla HTML con iconos y estilos de impresión forzada). 4. Nuevo: Nivel de Cumplimiento (%) destacado en el dashboard. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div class="flex h-screen overflow-hidden main-app-container">
+        <!-- Sidebar -->
+        <nav class="w-64 h-full bg-slate-800 text-slate-200 p-6 flex flex-col flex-shrink-0 nav">
+            <div class="flex flex-col items-center mb-6">
+                <img src="https://aaaes.fac.mil.co/sites/aaaes/files/IMAGENESAAAES/log_aaaes.png" alt="Logo AAAES" class="h-16 w-auto mb-2">
+                <h1 class="text-2xl font-bold text-white text-center">AAAES</h1>
+            </div>
+            <ul class="space-y-3">
+                <li><a href="#" class="nav-link active" data-page="inicio"><span class="icon">📊</span>Inicio</a></li>
+                <li><a href="#" class="nav-link" data-page="checklist"><span class="icon">✅</span>Lista de Chequeo</a></li>
+                <li><a href="#" class="nav-link" data-page="sistemas"><span class="icon">🚀</span>Sistemas</a></li>
+                <li><a href="#" class="nav-link" data-page="metodologia"><span class="icon">📚</span>Metodología</a></li>
+                <li><a href="#" class="nav-link" data-page="reporte"><span class="icon">📄</span>Reporte</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 main-content">
+            <div id="page-content"></div>
+        </main>
+    </div>
+
+    <!-- Page Templates -->
+    <template id="inicio-page">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Dashboard de Cumplimiento</h2>
+            <p class="text-lg text-slate-600 mb-8">
+                Este panel proporciona un resumen en tiempo real del estado de cumplimiento del depósito de misiles, basado en la lista de chequeo.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-slate-500">
+                    <h3 class="text-sm font-medium text-slate-500 uppercase">Total de Ítems</h3>
+                    <p id="stat-total" class="text-3xl font-bold text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                    <h3 class="text-sm font-medium text-slate-500 uppercase">Completados</h3>
+                    <p id="stat-completed" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-amber-500">
+                    <h3 class="text-sm font-medium text-slate-500 uppercase">Pendientes</h3>
+                    <p id="stat-pending" class="text-3xl font-bold text-amber-600">0</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Estado General</h3>
+                    <div class="chart-container">
+                        <canvas id="complianceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Nuevo panel de Cumplimiento Destacado -->
+                <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-center items-center">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Nivel de Cumplimiento</h3>
+                    <div id="stat-percentage-display" class="text-6xl font-extrabold text-amber-500 transition-colors duration-500">
+                        0.0%
+                    </div>
+                    <p class="text-slate-500 mt-2">del total de requisitos</p>
+                </div>
+                <!-- Fin del nuevo panel -->
+            </div>
+
+        </div>
+    </template>
+
+    <template id="checklist-page">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Lista de Chequeo de Almacenamiento</h2>
+            <p class="text-lg text-slate-600 mb-6">
+                Utilice esta lista para verificar todos los puntos críticos para el almacenamiento seguro de los sistemas Python 5 y Derby. Marque cada ítem a medida que se verifica.
+            </p>
+            <div class="mb-6">
+                <input id="checklist-filter" type="text" placeholder="Filtrar ítems..." class="w-full max-w-lg p-3 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            </div>
+            <div id="checklist-container" class="space-y-8"></div>
+        </div>
+    </template>
+
+    <template id="sistemas-page">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Sistemas de Armas</h2>
+            <p class="text-lg text-slate-600 mb-8">
+                Información de referencia sobre los sistemas de misiles cubiertos por esta lista de chequeo. Las condiciones de almacenamiento se derivan de sus especificaciones técnicas.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-6 bg-slate-700">
+                        <h3 class="text-2xl font-semibold text-white">PYTHON 5</h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-slate-700"><strong class="text-slate-800">Tipo:</strong> Misil Aire-Aire de 5ª Generación (AAM).</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Guía:</strong> Doble banda de imágenes infrarrojas (IIR) y electro-óptica.</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Características:</strong> Alta maniobrabilidad (HOBS), capacidad de "enganche después del lanzamiento" (LOAL), esfera completa de ataque.</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Consideración Clave de Almacenamiento:</strong> Sensibilidad extrema del domo y los sensores IIR. Requiere control estricto de humedad y partículas.</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-6 bg-slate-700">
+                        <h3 class="text-2xl font-semibold text-white">DERBY / I-DERBY ER</h3>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <p class="text-slate-700"><strong class="text-slate-800">Tipo:</strong> Misil Aire-Aire Más Allá del Alcance Visual (BVR-AAM).</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Guía:</strong> Radar activo (seeker de radar definido por software en la versión ER).</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Características:</strong> Capacidad "dispara y olvida", enlace de datos, modo "enganche antes del lanzamiento" (LOBL) y "después" (LOAL).</p>
+                        <p class="text-slate-700"><strong class="text-slate-800">Consideración Clave de Almacenamiento:</strong> Protección del radomo y componentes electrónicos sensibles al radar. Control de estática (ESD) y temperatura.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="metodologia-page">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Metodología NATO (AECTP-600)</h2>
+            <p class="text-lg text-slate-600 mb-8">
+                Los parámetros de esta lista de chequeo se derivan de la metodología de 10 pasos de la NATO (AECTP-600), que asegura que las condiciones de almacenamiento simulan y protegen contra el ciclo de vida ambiental del material. Este método no es la lista en sí, sino el proceso científico para definir los criterios de la lista.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 1:</strong> Definir el Propósito y Alcance del material.</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 2:</strong> Analizar el Ciclo de Vida Ambiental (desde fábrica hasta uso).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 3:</strong> Seleccionar las Pruebas Ambientales relevantes (Ej. T°, Humedad, Vibración).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 4:</strong> Determinar la Secuencia de las Pruebas (Ej. T° antes de vibración).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 5:</strong> Definir Parámetros y Severidad de las Pruebas (Ej. -20°C a +50°C).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 6:</strong> Seleccionar el Equipo de Prueba (cámaras climáticas, mesas vibratorias).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 7:</strong> Preparar el Plan de Prueba detallado.</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 8:</strong> Conducir las Pruebas según el plan.</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 9:</strong> Analizar los Resultados y fallos (si los haya).</div>
+                <div class="bg-white p-5 rounded-lg shadow-md"><strong class="text-amber-600">Paso 10:</strong> Documentar y Reportar los hallazgos.</div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Plantilla de Reporte Integrado -->
+    <template id="reporte-page">
+        <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl report-page-content">
+            <div class="mb-8 no-print">
+                <button id="exit-report-btn" class="bg-slate-500 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300">
+                    ← Volver a la Aplicación
+                </button>
+                <button onclick="window.print()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition duration-300 ml-3">
+                    🖨️ Imprimir / Generar PDF
+                </button>
+            </div>
+
+            <!-- Contenedor principal del encabezado COMPACTO -->
+            <div class="header-container p-4 border-b-2 border-slate-300">
+                
+                <div class="flex items-center justify-between">
+                    
+                    <!-- Columna 1: Logo Izquierdo (h-16) -->
+                    <img 
+                        src="https://aaaes.fac.mil.co/sites/aaaes/files/IMAGENESAAAES/log_aaaes.png" 
+                        alt="Logo AAAES" 
+                        class="h-16 w-auto object-contain flex-shrink-0 mr-4">
+                    
+                    <!-- Columna 2: Texto Centrado y Estilizado (Fuentes pequeñas) -->
+                    <div class="text-center flex-grow mx-4 max-w-2xl">
+                        <h1 class="text-xl md:text-2xl font-extrabold text-[#1f2937] uppercase tracking-wide report-header-text">
+                            AUTORIDAD AERONÁUTICA DE AVIACIÓN DE ESTADO
+                        </h1>
+                        <p class="text-sm text-slate-600 font-medium mt-1">
+                            Lista de chequeo de las condiciones de almacenamiento del depósito de armamento
+                        </p>
+                    </div>
+                    
+                    <!-- Columna 3: Logo Derecho (h-16) -->
+                    <img 
+                        src="https://www.epfac.edu.co/sites/emavi/files/imagenesemavi/escudo%20fac%20simbolos.jpg" 
+                        alt="Logo FAC" 
+                        class="h-16 w-auto object-contain flex-shrink-0 ml-4">
+                        
+                </div>
+                
+                <!-- Separador decorativo al pie del encabezado -->
+                <div class="mt-4 pt-2 border-t-4 border-[#1f2937]">
+                    <p class="text-xs text-slate-400 text-right">
+                        Oficina de Certificación Aeronáutica
+                    </p>
+                </div>
+                
+            </div>
+
+            <!-- Tabla de Resultados -->
+            <h3 class="text-lg font-semibold mb-2 text-center pt-6 text-slate-800">Detalle de la Lista de Chequeo</h3>
+            <table class="report-table w-full border-collapse mb-8 text-left">
+                <thead>
+                    <tr class="bg-slate-200">
+                        <th class="p-1 w-1/12 text-xs text-center">ESTADO</th>
+                        <th class="p-1 w-2/12 text-xs">CATEGORÍA</th>
+                        <th class="p-1 w-9/12 text-xs">DESCRIPCIÓN DEL ÍTEM</th>
+                    </tr>
+                </thead>
+                <tbody id="reporte-table-body">
+                    <!-- Contenido llenado por JS -->
+                </tbody>
+            </table>
+
+            <!-- Pie de Firma -->
+            <div class="grid grid-cols-2 gap-20 mt-8 pt-6 border-t border-slate-300 footer-signature">
+                <div>
+                    <p class="border-b-2 border-slate-600 h-8 mb-2"></p>
+                    <p class="font-semibold text-left text-slate-800 text-sm">Nombre del Auditor</p>
+                </div>
+                <div>
+                    <p class="border-b-2 border-slate-600 h-8 mb-2"></p>
+                    <p class="font-semibold text-left text-slate-800 text-sm">Fecha</p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+
+    <script>
+        const appState = {
+            currentPage: 'inicio',
+            checklistItems: [
+                { id: 'c1', text: 'Temperatura del depósito dentro del rango especificado (Ej. 15°C - 25°C).', category: 'Entorno y Clima', checked: false },
+                { id: 'c2', text: 'Humedad relativa (HR) por debajo del umbral máximo (Ej. 60%).', category: 'Entorno y Clima', checked: false },
+                { id: 'c3', text: 'Sensores de Temperatura y HR operativos, calibrados y con registros.', category: 'Entorno y Clima', checked: false },
+                { id: 'c4', text: 'Depósito limpio, sin polvo, escombros o contaminantes.', category: 'Entorno y Clima', checked: false },
+                { id: 'c5', text: 'Ausencia de luz solar directa sobre los contenedores.', category: 'Entorno y Clima', checked: false },
+                
+                { id: 's1', text: 'Control de acceso restringido (biométrico, tarjeta, llave) funcionando.', category: 'Seguridad Física', checked: false },
+                { id: 's2', text: 'Sistemas de videovigilancia (CCTV) internos y externos operativos y grabando.', category: 'Seguridad Física', checked: false },
+                { id: 's3', text: 'Cerraduras, puertas y sellos de seguridad del depósito intactos y registrados.', category: 'Seguridad Física', checked: false },
+                { id: 's4', text: 'Sistema de alarma de intrusión armado y operativo.', category: 'Seguridad Física', checked: false },
+                { id: 's5', text: 'Rondas de seguridad perimetral e interna completadas y documentadas.', category: 'Seguridad Física', checked: false },
+                
+                { id: 'm1', text: 'Contenedores (CNU) de misiles sin daños, abolladuras o corrosión.', category: 'Manejo y Estiba', checked: false },
+                { id: 'm2', text: 'Indicadores de humedad y golpe (ShockWatch) en contenedores revisados y en estado OK.', category: 'Manejo y Estiba', checked: false },
+                { id: 'm3', text: 'Misiles estibados según manual: distancias entre sí, altura de apilamiento correcta.', category: 'Manejo y Estiba', checked: false },
+                { id: 'm4', text: 'Equipo de manejo (MONTACARGAS, grúas) certificado y con inspección diaria.', category: 'Manejo y Estiba', checked: false },
+                { id: 'm5', text: 'Personal utilizando EPP (botas antiestáticas, guantes) en el área.', category: 'Manejo y Estiba', checked: false },
+                { id: 'm6', text: 'Conexión a tierra (grounding) de estanterías y contenedores verificada.', category: 'Manejo y Estiba', checked: false },
+
+                { id: 'd1', text: 'Registros (bitácora) de T° y HR diarios revisados y firmados.', category: 'Documentación y Registros', checked: false },
+                { id: 'd2', text: 'Hojas de vida (logbooks) de cada misil y contenedor actualizadas.', category: 'Documentación y Registros', checked: false },
+                { id: 'd3', text: 'Inventario físico coincide al 100% con el sistema (KARDEX/ERP).', category: 'Documentación y Registros', checked: false },
+                { id: 'd4', text: 'Manuales de procedimiento (SOP) y emergencia accesibles y actualizados.', category: 'Documentación y Registros', checked: false },
+
+                { id: 'e1', text: 'Sistema de detección de incendios (humo, calor) con test funcional OK.', category: 'Sistemas de Emergencia', checked: false },
+                { id: 'e2', text: 'Extintores apropiados (Ej. Tipo D para metales) cargados, en ubicación y con inspección vigente.', category: 'Sistemas de Emergencia', checked: false },
+                { id: 'e3', text: 'Rutas de evacuación y salidas de emergencia despejadas y señalizadas.', category: 'Sistemas de Emergencia', checked: false },
+                { id: 'e4', text: 'Sistema de pararrayos (red de tierra) con medición de resistividad vigente.', category: 'Sistemas de Emergencia', checked: false },
+                { id: 'e5', text: 'Luces de emergencia operativas.', category: 'Sistemas de Emergencia', checked: false }
+            ],
+        };
+
+        let complianceChart = null;
+        const mainAppContainer = document.querySelector('.main-app-container');
+        const mainContent = document.querySelector('.main-content');
+        const pageContent = document.getElementById('page-content');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const navBar = document.querySelector('.nav');
+
+        function updateDashboardStats(total, completed, pending) {
+            const percentage = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-completed').textContent = completed;
+            document.getElementById('stat-pending').textContent = pending;
+
+            const percentageDisplay = document.getElementById('stat-percentage-display');
+            if (percentageDisplay) {
+                percentageDisplay.textContent = `${percentage}%`;
+                // Lógica de color para el % de cumplimiento
+                percentageDisplay.classList.remove('text-amber-500', 'text-orange-500', 'text-green-600');
+                if (percentage >= 80) {
+                    percentageDisplay.classList.add('text-green-600');
+                } else if (percentage >= 50) {
+                    percentageDisplay.classList.add('text-amber-500');
+                } else {
+                    percentageDisplay.classList.add('text-orange-500');
+                }
+            }
+            return { completed, pending, percentage };
+        }
+
+        function initDashboard() {
+            const total = appState.checklistItems.length;
+            const completed = appState.checklistItems.filter(item => item.checked).length;
+            const pending = total - completed;
+
+            updateDashboardStats(total, completed, pending);
+            
+            const canvas = document.getElementById('complianceChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (complianceChart) {
+                complianceChart.destroy();
+            }
+
+            complianceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completados', 'Pendientes'],
+                    datasets: [{
+                        data: [completed, pending],
+                        backgroundColor: [ '#16a34a', '#f59e0b' ],
+                        borderColor: '#ffffff',
+                        borderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 14, family: 'sans-serif' }, color: '#334155' } },
+                        tooltip: { enabled: true }
+                    }
+                }
+            });
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            if (!container) return;
+
+            const filterInput = document.getElementById('checklist-filter');
+            const filterValue = filterInput ? filterInput.value.toLowerCase() : '';
+            
+            const filteredItems = appState.checklistItems.filter(item => 
+                item.text.toLowerCase().includes(filterValue) || 
+                item.category.toLowerCase().includes(filterValue)
+            );
+
+            const categories = [...new Set(filteredItems.map(item => item.category))];
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<p class="text-slate-500">No se encontraron ítems con el filtro "${filterValue}".</p>`;
+                return;
+            }
+
+            let html = '';
+            categories.forEach(category => {
+                html += `<div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2">${category}</h3>
+                            <ul class="space-y-3">`;
+                
+                filteredItems.filter(item => item.category === category).forEach(item => {
+                    html += `<li>
+                                <label for="${item.id}" class="flex items-start text-slate-700 cursor-pointer">
+                                    <input type="checkbox" id="${item.id}" data-id="${item.id}" class="custom-checkbox" ${item.checked ? 'checked' : ''}>
+                                    <span class="flex-1">${item.text}</span>
+                                </label>
+                            </li>`;
+                });
+
+                html += `</ul></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function addChecklistListeners() {
+            const filterInput = document.getElementById('checklist-filter');
+            if (filterInput) {
+                filterInput.addEventListener('input', renderChecklist);
+            }
+
+            const checklistContainer = document.getElementById('checklist-container');
+            if (checklistContainer) {
+                checklistContainer.addEventListener('change', (event) => {
+                    if (event.target.type === 'checkbox') {
+                        const itemId = event.target.dataset.id;
+                        const item = appState.checklistItems.find(i => i.id === itemId);
+                        if (item) {
+                            item.checked = event.target.checked;
+                            if (appState.currentPage === 'inicio') {
+                                 const total = appState.checklistItems.length;
+                                 const completed = appState.checklistItems.filter(i => i.checked).length;
+                                 updateDashboardStats(total, completed, total - completed);
+                                 
+                                 if (complianceChart) {
+                                     complianceChart.data.datasets[0].data = [completed, total - completed];
+                                     complianceChart.update();
+                                 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function initChecklistPage() {
+            // Asegúrate de que el modo de reporte esté desactivado al cargar la checklist
+            disableReportMode();
+            renderChecklist();
+            addChecklistListeners();
+        }
+
+        function initReportePage() {
+            // Activar el modo de reporte para pantalla completa
+            enableReportMode();
+
+            const tableBody = document.getElementById('reporte-table-body');
+            if (!tableBody) return;
+            
+            let tableHTML = '';
+            
+            const sortedItems = appState.checklistItems.sort((a, b) => {
+                if (a.category < b.category) return -1;
+                if (a.category > b.category) return 1;
+                return 0;
+            });
+
+            sortedItems.forEach(item => {
+                const statusIcon = item.checked ? '☑️' : '☐';
+                
+                tableHTML += `
+                    <tr>
+                        <td class="p-1 text-center text-lg">${statusIcon}</td>
+                        <td class="p-1 text-sm">${item.category}</td>
+                        <td class="p-1 text-sm">${item.text}</td>
+                    </tr>
+                `;
+            });
+            tableBody.innerHTML = tableHTML;
+
+            const exitButton = document.getElementById('exit-report-btn');
+            if (exitButton) {
+                exitButton.addEventListener('click', () => {
+                    renderPage('inicio');
+                });
+            }
+        }
+
+        function enableReportMode() {
+            // Ocultar el nav y liberar restricciones de altura
+            navBar.classList.add('hidden');
+            mainAppContainer.classList.remove('h-screen', 'overflow-hidden', 'flex');
+            mainAppContainer.classList.add('block');
+            mainContent.classList.remove('overflow-y-auto');
+        }
+
+        function disableReportMode() {
+            // Restaurar la vista de aplicación normal
+            navBar.classList.remove('hidden');
+            mainAppContainer.classList.remove('block');
+            mainAppContainer.classList.add('flex', 'h-screen', 'overflow-hidden');
+            mainContent.classList.add('overflow-y-auto');
+        }
+
+        function renderPage(pageId) {
+            appState.currentPage = pageId;
+            const template = document.getElementById(`${pageId}-page`);
+            if (!template) return;
+            
+            pageContent.innerHTML = '';
+            const newPage = template.content.cloneNode(true);
+            pageContent.appendChild(newPage);
+
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.page === pageId);
+            });
+            
+            // Lógica para inicializar la página
+            if (pageId === 'inicio') {
+                disableReportMode();
+                initDashboard();
+            } else if (pageId === 'checklist') {
+                disableReportMode();
+                initChecklistPage();
+            } else if (pageId === 'reporte') {
+                initReportePage();
+            } else {
+                disableReportMode();
+            }
+        }
+
+        function handleNavClick(event) {
+            event.preventDefault();
+            const pageId = event.currentTarget.dataset.page;
+            if (pageId !== appState.currentPage) {
+                renderPage(pageId);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPage('inicio');
+            navLinks.forEach(link => {
+                link.addEventListener('click', handleNavClick);
+            });
+        });
+
+    </script>
+</body>
+</html>
