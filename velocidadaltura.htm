@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Impacto - Referencias Colombia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .building-container {
+            position: relative;
+            height: 750px;
+            width: 100%;
+            background: linear-gradient(to bottom, #7dd3fc 0%, #f0f9ff 100%);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
+
+        .building {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            background-color: #334155;
+            transition: height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column-reverse;
+            border: 3px solid #0f172a;
+            border-bottom: none;
+            z-index: 20;
+        }
+
+        .window {
+            height: 6px;
+            width: 5px;
+            background-color: #fef08a;
+            margin: 2px;
+            border-radius: 1px;
+            opacity: 0.9;
+        }
+
+        .landmark {
+            position: absolute;
+            left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.6;
+            width: calc(100% - 20px);
+        }
+
+        .landmark-line {
+            height: 1px;
+            border-top: 1px dashed #475569;
+            flex-grow: 1;
+        }
+
+        .landmark-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #1e293b;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .ground {
+            height: 15px;
+            background-color: #166534;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            z-index: 30;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            background: #e11d48;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-top: -10px;
+            border: 2px solid white;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-5xl mx-auto space-y-6">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+            <div class="p-6 md:p-8 border-b border-gray-100 bg-slate-50">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight text-center lg:text-left">Energía de Impacto: Colombia</h1>
+                <p class="text-slate-500 mt-2 text-center lg:text-left">Visualiza el riesgo comparando choques con monumentos nacionales.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <label for="speed" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+                            Velocidad de Impacto
+                        </label>
+                        <div class="text-center mb-4">
+                            <span id="speedValue" class="text-7xl font-black text-slate-900 leading-none tracking-tighter">50</span>
+                            <span class="text-3xl font-bold text-slate-300 ml-1">km/h</span>
+                        </div>
+                        <input type="range" id="speed" min="0" max="230" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-400 mt-4 tracking-widest uppercase">
+                            <span>0 km/h</span>
+                            <span>115 km/h</span>
+                            <span>230 km/h</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-center">
+                            <span class="block text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Altura Equivalente</span>
+                            <div class="flex justify-center items-baseline gap-1">
+                                <span id="metersResult" class="text-4xl font-black text-blue-900">9.8</span>
+                                <span class="text-blue-400 font-bold">m</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-orange-50 p-5 rounded-2xl border border-orange-100 text-center">
+                            <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Equivalente Pisos</span>
+                            <div class="flex justify-center items-baseline gap-1">
+                                <span id="floorsResult" class="text-4xl font-black text-orange-900">3.3</span>
+                                <span class="text-orange-500 font-bold">pisos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dynamicAlert" class="p-6 rounded-2xl bg-slate-900 text-white shadow-lg transition-all duration-300 min-h-[100px] flex items-center">
+                        <p id="factText" class="text-sm font-medium leading-relaxed italic opacity-95">
+                            Analizando datos...
+                        </p>
+                    </div>
+
+                    <div class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter bg-white p-3 border border-slate-100 rounded-xl">
+                        * Cálculo: h = v² / (2g). 1 piso ≈ 3 metros.
+                    </div>
+                </div>
+
+                <div class="flex flex-col">
+                    <div class="building-container" id="container">
+                        <!-- Landmarks Colombia Actualizados -->
+                        <div class="landmark" data-height="5">
+                            <span class="text-sm">🚦</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Semáforo (5m)</span>
+                        </div>
+                        <div class="landmark" data-height="26">
+                            <span class="text-sm">✝️</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Cristo Rey, Cali (26m)</span>
+                        </div>
+                        <div class="landmark" data-height="35">
+                            <span class="text-sm">⚽</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Estadio El Campín (35m)</span>
+                        </div>
+                        <div class="landmark" data-height="50">
+                            <span class="text-sm">🎡</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Rueda El Salitre (50m)</span>
+                        </div>
+                        <div class="landmark" data-height="60">
+                            <span class="text-sm">🌴</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Palma de Cera (60m)</span>
+                        </div>
+                        <div class="landmark" data-height="89">
+                            <span class="text-sm">✈️</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Torre Control El Dorado (89m)</span>
+                        </div>
+                        <div class="landmark" data-height="139">
+                            <span class="text-sm">🌊</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Salto Tequendama (139m)</span>
+                        </div>
+                        <div class="landmark" data-height="161">
+                            <span class="text-sm">🏢</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Torre Avianca (161m)</span>
+                        </div>
+                        <div class="landmark" data-height="183">
+                            <span class="text-sm">🏙️</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Torre de Cali (183m)</span>
+                        </div>
+                        <div class="landmark" data-height="196">
+                            <span class="text-sm">🌆</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Torre Colpatria (196m)</span>
+                        </div>
+                        <div class="landmark" data-height="216">
+                            <span class="text-sm">🏗️</span><div class="landmark-line"></div>
+                            <span class="landmark-label">BD Bacatá (216m)</span>
+                        </div>
+                        
+                        <div id="visualBuilding" class="building"></div>
+                        <div class="ground"></div>
+                    </div>
+                    <div class="flex justify-between mt-3 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        <span>Hitos de Colombia</span>
+                        <span>Escala Proporcional</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="w-2 h-6 bg-blue-600 rounded-full"></span>
+                Curva de Relación Velocidad-Altura
+            </h2>
+            <div class="h-64 md:h-96 w-full">
+                <canvas id="impactChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const speedInput = document.getElementById('speed');
+        const speedDisplay = document.getElementById('speedValue');
+        const metersDisplay = document.getElementById('metersResult');
+        const floorsDisplay = document.getElementById('floorsResult');
+        const visualBuilding = document.getElementById('visualBuilding');
+        const factText = document.getElementById('factText');
+        const dynamicAlert = document.getElementById('dynamicAlert');
+
+        const GRAVITY = 9.81; 
+        const METERS_PER_FLOOR = 3;
+        const MAX_HEIGHT_FOR_VISUAL = 240; 
+        let chartInstance = null;
+
+        function updateCalculations() {
+            const kmh = parseFloat(speedInput.value);
+            const ms = kmh / 3.6;
+            const height = (ms * ms) / (2 * GRAVITY);
+            const floors = height / METERS_PER_FLOOR;
+
+            speedDisplay.textContent = kmh;
+            metersDisplay.textContent = height.toFixed(1);
+            floorsDisplay.textContent = floors.toFixed(1);
+
+            updateFact(kmh, height, floors);
+            updateBuilding(height, floors);
+            updateChartHighlight(kmh, height);
+        }
+
+        function updateFact(kmh, height, floors) {
+            let message = "";
+            let bgColor = "bg-slate-900";
+
+            if (kmh === 0) {
+                message = "Vehículo detenido. No hay energía acumulada por movimiento.";
+                bgColor = "bg-slate-800";
+            } else if (height < 5) {
+                message = `A ${kmh} km/h, el impacto equivale a caer desde ${height.toFixed(1)}m. Aún no alcanzas la altura de un semáforo.`;
+                bgColor = "bg-emerald-600";
+            } else if (height < 26) {
+                message = `A ${kmh} km/h, el choque supera un semáforo (${height.toFixed(1)}m). Te acercas a la altura del Cristo Rey en Cali.`;
+                bgColor = "bg-teal-600";
+            } else if (height < 35) {
+                message = `A ${kmh} km/h, el impacto es como caer desde el Cristo Rey de Cali (${height.toFixed(1)}m).`;
+                bgColor = "bg-cyan-600";
+            } else if (height < 50) {
+                message = `A ${kmh} km/h, la altura de caída (${height.toFixed(1)}m) ya supera al Estadio El Campín.`;
+                bgColor = "bg-blue-600";
+            } else if (height < 60) {
+                message = `A ${kmh} km/h, el impacto equivale a caer desde la Rueda de El Salitre (${height.toFixed(1)}m).`;
+                bgColor = "bg-indigo-600";
+            } else if (height < 89) {
+                message = `A ${kmh} km/h, la caída superaría una Palma de Cera del Quindío (${height.toFixed(1)}m).`;
+                bgColor = "bg-violet-600";
+            } else if (height < 139) {
+                message = `A ${kmh} km/h, el golpe es como caer desde la Torre de Control de El Dorado (${height.toFixed(1)}m).`;
+                bgColor = "bg-orange-600";
+            } else if (height < 161) {
+                message = `¡EXTREMO! A ${kmh} km/h, el impacto equivale a caer desde el Salto del Tequendama (${height.toFixed(1)}m).`;
+                bgColor = "bg-red-600";
+            } else if (height < 183) {
+                message = `¡CATASTRÓFICO! Superaste la altura de la Torre Avianca (${height.toFixed(1)}m). El impacto es fatal.`;
+                bgColor = "bg-rose-700";
+            } else if (height < 196) {
+                message = `A ${kmh} km/h, la caída es equivalente a la Torre de Cali (${height.toFixed(1)}m).`;
+                bgColor = "bg-red-900";
+            } else if (height < 216) {
+                message = `A ${kmh} km/h, el impacto iguala la altura de la Torre Colpatria (${height.toFixed(1)}m).`;
+                bgColor = "bg-black";
+            } else {
+                message = `A ${kmh} km/h, el impacto supera incluso al edificio BD Bacatá (${height.toFixed(1)}m).`;
+                bgColor = "bg-black";
+            }
+
+            factText.textContent = message;
+            dynamicAlert.className = `p-6 rounded-2xl ${bgColor} text-white shadow-lg transition-all duration-300 min-h-[100px] flex items-center`;
+        }
+
+        function updateBuilding(height, floors) {
+            const containerHeight = 750;
+            const pixelsPerMeter = containerHeight / MAX_HEIGHT_FOR_VISUAL;
+            
+            let visualHeight = height * pixelsPerMeter;
+            if (height > 0 && visualHeight < 5) visualHeight = 5;
+            
+            visualBuilding.style.height = `${visualHeight}px`;
+            visualBuilding.innerHTML = '';
+            
+            const floorCount = Math.floor(floors);
+            const maxWindows = Math.min(floorCount, 120); 
+            for (let i = 0; i < maxWindows; i++) {
+                const floorDiv = document.createElement('div');
+                floorDiv.className = 'flex justify-around w-full';
+                floorDiv.innerHTML = '<div class="window"></div><div class="window"></div>';
+                visualBuilding.appendChild(floorDiv);
+            }
+        }
+
+        function setupLandmarks() {
+            const containerHeight = 750;
+            const pixelsPerMeter = containerHeight / MAX_HEIGHT_FOR_VISUAL;
+
+            document.querySelectorAll('.landmark').forEach(el => {
+                const h = parseFloat(el.dataset.height);
+                el.style.bottom = `${h * pixelsPerMeter}px`;
+            });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            const labels = [];
+            const dataMeters = [];
+            
+            for (let v = 0; v <= 230; v += 10) {
+                labels.push(v);
+                const h = Math.pow(v / 3.6, 2) / (2 * GRAVITY);
+                dataMeters.push(h);
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Metros',
+                        data: dataMeters,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 4,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        yAxisID: 'y'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 16,
+                            cornerRadius: 12,
+                            displayColors: false,
+                            callbacks: {
+                                title: (items) => `Velocidad: ${items[0].label} km/h`,
+                                label: (context) => {
+                                    const m = context.parsed.y;
+                                    const p = (m / METERS_PER_FLOOR).toFixed(1);
+                                    return [
+                                        `📏 Altura: ${m.toFixed(1)} metros`,
+                                        `🏢 Niveles: ${p} pisos`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Velocidad (km/h)', font: { weight: 'bold' } },
+                            grid: { display: false }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Metros (m)', color: '#2563eb', font: { weight: 'bold' } },
+                            min: 0,
+                            suggestedMax: 240
+                        },
+                        yPisos: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Equivalencia en Pisos', color: '#ea580c', font: { weight: 'bold' } },
+                            grid: { drawOnChartArea: false },
+                            min: 0,
+                            suggestedMax: 240 / METERS_PER_FLOOR,
+                            ticks: {
+                                callback: value => Math.round(value)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartHighlight(speed, height) {
+            if (!chartInstance) return;
+            
+            const highlightPoint = {
+                label: 'Actual',
+                data: [{x: speed, y: height}],
+                backgroundColor: '#e11d48',
+                borderColor: '#fff',
+                borderWidth: 3,
+                pointRadius: 9,
+                pointHoverRadius: 11,
+                showLine: false,
+                yAxisID: 'y'
+            };
+
+            if (chartInstance.data.datasets.length > 1) {
+                chartInstance.data.datasets[1] = highlightPoint;
+            } else {
+                chartInstance.data.datasets.push(highlightPoint);
+            }
+            
+            chartInstance.update('none');
+        }
+
+        window.onload = () => {
+            setupLandmarks();
+            initChart();
+            updateCalculations();
+        };
+
+        speedInput.addEventListener('input', updateCalculations);
+    </script>
+</body>
+</html>
