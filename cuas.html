@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación Técnica AAAES - Contra-UAV</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #e9ecef; margin: 0; padding: 20px; color: #343a40; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        
+        .logo-container { text-align: center; margin-bottom: 20px; }
+        .logo-container img { max-width: 250px; height: auto; }
+
+        .header { text-align: center; border-bottom: 4px solid #003366; margin-bottom: 25px; padding-bottom: 10px; }
+        h1 { color: #003366; font-size: 22px; margin: 5px 0; text-transform: uppercase; letter-spacing: 1px; }
+        p.sub-header { margin: 0; font-weight: bold; color: #555; text-transform: uppercase; font-size: 14px; }
+
+        .meta-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; }
+        
+        .section { margin-bottom: 30px; border: 1px solid #003366; border-radius: 5px; overflow: hidden; }
+        .section-title { background: #003366; color: white; padding: 10px 15px; font-weight: bold; font-size: 15px; text-transform: uppercase; }
+        
+        .item { display: flex; align-items: flex-start; padding: 12px 15px; border-bottom: 1px solid #eee; transition: background 0.2s; }
+        .item:hover { background-color: #f1f4f7; }
+        .item:last-child { border-bottom: none; }
+        
+        input[type="checkbox"] { transform: scale(1.4); margin-right: 15px; margin-top: 4px; cursor: pointer; }
+        label { font-size: 14px; line-height: 1.6; color: #212529; cursor: pointer; }
+        .label-title { font-weight: bold; display: block; color: #003366; margin-bottom: 2px; }
+        
+        input[type="text"] { width: 90%; border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
+        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 4px; border: 1px solid #ced4da; resize: none; box-sizing: border-box; }
+        
+        .footer-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; text-align: center; }
+        .sig-line { border-top: 2px solid #000; padding-top: 10px; font-weight: bold; font-size: 13px; text-transform: uppercase; }
+        
+        .btn-print { display: block; width: 250px; margin: 30px auto; padding: 15px; background: #003366; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; text-transform: uppercase; }
+        .btn-print:hover { background: #004a94; }
+
+        @media print { 
+            .btn-print { display: none; } 
+            body { background: white; padding: 0; } 
+            .container { box-shadow: none; width: 100%; border: none; }
+            .item:hover { background: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-container">
+        <img src="https://aaaes.fac.mil.co/sites/aaaes/files/IMAGENESAAAES/log_aaaes.png" alt="Logo AAAES">
+    </div>
+
+    <div class="header">
+        <p class="sub-header">Autoridad Aeronáutica de Aviación de Estado</p>
+        <h1>Lista de Chequeo: Evaluación Técnica (Contra-UAV)</h1>
+    </div>
+
+    <div class="meta-data">
+        <div><strong>Fecha de Inspección:</strong> <br><input type="text" id="fechaAuto"></div>
+        <div><strong>Dependencia:</strong> <br>Torre de Control (TWR)</div>
+        <div><strong>Sistema Evaluado:</strong> <br><input type="text" placeholder="Modelo / S/N"></div>
+        <div><strong>Frecuencias Operativas:</strong> <br><input type="text" placeholder="Bandas de Emisión"></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">1. Coordinación y Comunicaciones (COM)</div>
+        <div class="item">
+            <input type="checkbox" id="com1">
+            <label for="com1"><span class="label-title">Canal Primario:</span> Existencia de frecuencia de radio dedicada o línea telefónica directa entre el operador del sistema y TWR.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="com2">
+            <label for="com2"><span class="label-title">Protocolo de Aborto:</span> Palabra clave o señal clara definida para detener la emisión de interferencia de inmediato en caso de emergencia.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="com3">
+            <label for="com3"><span class="label-title">Fraseología:</span> Uso de términos técnicos correctos para reportar "Emisión iniciada", "Prueba activa" y "Prueba terminada".</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">2. Vigilancia y Visualización (SUR)</div>
+        <div class="item">
+            <input type="checkbox" id="sur1">
+            <label for="sur1"><span class="label-title">Integridad Radar/ADS-B:</span> Ausencia de ecos falsos, pérdida de blancos reales o degradación de señal en pantallas de TWR.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="sur2">
+            <label for="sur2"><span class="label-title">Conciencia Situacional:</span> Provisión de alimentación de datos (feed) del sistema contra-UAV hacia la torre.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="sur3">
+            <label for="sur3"><span class="label-title">Identificación de Amenazas:</span> Diferenciación correcta entre el dron de prueba y aeronaves legales en las cercanías.</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">3. Espectro Electromagnético y Navegación (NAV)</div>
+        <div class="item">
+            <input type="checkbox" id="nav1">
+            <label for="nav1"><span class="label-title">Interferencia en Radioayudas:</span> Ausencia de reportes de aeronaves sobre degradación en VOR, ILS o GPS durante la activación.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="nav2">
+            <label for="nav2"><span class="label-title">Ruido en Comunicaciones:</span> Ausencia de estática o bloqueo de portadora en frecuencias de control (VHF/UHF).</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="nav3">
+            <label for="nav3"><span class="label-title">Lóbulo de Interferencia:</span> El efecto del "jamming" se mantiene dentro de los límites geográficos y de altitud autorizados.</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">4. Gestión del Tránsito Aéreo (ATM)</div>
+        <div class="item">
+            <input type="checkbox" id="atm1">
+            <label for="atm1"><span class="label-title">Segregación del Espacio Aéreo:</span> Emisión y cumplimiento del NOTAM correspondiente para el volumen de espacio aéreo reservado.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="atm2">
+            <label for="atm2"><span class="label-title">Impacto en Aeronaves Civiles:</span> Procedimientos activos para desviar o mantener tráficos si hay coincidencia de frecuencias.</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="atm3">
+            <label for="atm3"><span class="label-title">Gestión de Contingencias:</span> Plan de acción inmediato en TWR si el dron de prueba pierde el vínculo de mando (Lost Link).</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">5. Evaluación Visual (TWR Window)</div>
+        <div class="item">
+            <input type="checkbox" id="vis1">
+            <label for="vis1"><span class="label-title">Monitoreo de Trayectoria:</span> Contacto visual permanente; el dron no se desvía a áreas críticas (pistas, depósitos de combustible).</label>
+        </div>
+        <div class="item">
+            <input type="checkbox" id="vis2">
+            <label for="vis2"><span class="label-title">Efectividad del Sistema:</span> Observación de la neutralización física (aterrizaje, RTH o caída) tras la activación.</label>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Observaciones y Novedades Técnicas</div>
+        <div style="padding:15px;">
+            <textarea placeholder="Registre cualquier comportamiento anómalo detectado en los sistemas de navegación o comunicaciones..."></textarea>
+        </div>
+    </div>
+
+    <div class="footer-sigs">
+        <div class="sig-line">Firma Inspector AAAES / Controlador TWR</div>
+        <div class="sig-line">Firma Responsable Técnico de la Prueba</div>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">Generar Reporte Oficial PDF</button>
+</div>
+
+<script>
+    document.getElementById('fechaAuto').value = new Date().toLocaleDateString();
+</script>
+
+</body>
+</html>
