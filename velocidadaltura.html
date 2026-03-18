@@ -89,12 +89,12 @@
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 26px;
-            width: 26px;
+            width: 24px;
             border-radius: 50%;
             background: #e11d48;
             cursor: pointer;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            margin-top: -10px;
+            margin-top: -8px;
             border: 2px solid white;
         }
 
@@ -118,14 +118,19 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
                 <div class="space-y-6">
                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                        <label for="speed" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
+                        <label for="speed" class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
                             Velocidad de Impacto
                         </label>
-                        <div class="text-center mb-4">
+                        <div class="text-center mb-2">
                             <span id="speedValue" class="text-7xl font-black text-slate-900 leading-none tracking-tighter">50</span>
                             <span class="text-3xl font-bold text-slate-300 ml-1">km/h</span>
                         </div>
-                        <input type="range" id="speed" min="0" max="230" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center mb-6">
+                            <span class="text-xs font-bold text-slate-400 uppercase">Equivalente a:</span>
+                            <span id="msValue" class="text-sm font-bold text-slate-600 ml-1">13.9</span>
+                            <span class="text-xs font-bold text-slate-400 ml-0.5">m/s</span>
+                        </div>
+                        <input type="range" id="speed" min="0" max="230" step="1" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                         <div class="flex justify-between text-[10px] font-bold text-slate-400 mt-4 tracking-widest uppercase">
                             <span>0 km/h</span>
                             <span>115 km/h</span>
@@ -145,7 +150,7 @@
                         <div class="bg-orange-50 p-5 rounded-2xl border border-orange-100 text-center">
                             <span class="block text-[10px] font-bold text-orange-500 uppercase tracking-widest mb-1">Equivalente Pisos</span>
                             <div class="flex justify-center items-baseline gap-1">
-                                <span id="floorsResult" class="text-4xl font-black text-orange-900">3.3</span>
+                                <span id="floorsResult" class="text-4xl font-black text-orange-900">3.6</span>
                                 <span class="text-orange-500 font-bold">pisos</span>
                             </div>
                         </div>
@@ -158,16 +163,20 @@
                     </div>
 
                     <div class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter bg-white p-3 border border-slate-100 rounded-xl">
-                        * Cálculo: h = v² / (2g). 1 piso ≈ 3 metros.
+                        * Cálculo: h = v² / (2g). 1 piso ≈ 2.7 metros.
                     </div>
                 </div>
 
                 <div class="flex flex-col">
                     <div class="building-container" id="container">
-                        <!-- Landmarks Colombia Actualizados -->
+                        <!-- Landmarks Colombia -->
                         <div class="landmark" data-height="5">
                             <span class="text-sm">🚦</span><div class="landmark-line"></div>
                             <span class="landmark-label">Semáforo (5m)</span>
+                        </div>
+                        <div class="landmark" data-height="10">
+                            <span class="text-sm">🏠</span><div class="landmark-line"></div>
+                            <span class="landmark-label">Casa 3 pisos (10m)</span>
                         </div>
                         <div class="landmark" data-height="26">
                             <span class="text-sm">✝️</span><div class="landmark-line"></div>
@@ -235,6 +244,7 @@
     <script>
         const speedInput = document.getElementById('speed');
         const speedDisplay = document.getElementById('speedValue');
+        const msDisplay = document.getElementById('msValue');
         const metersDisplay = document.getElementById('metersResult');
         const floorsDisplay = document.getElementById('floorsResult');
         const visualBuilding = document.getElementById('visualBuilding');
@@ -242,7 +252,7 @@
         const dynamicAlert = document.getElementById('dynamicAlert');
 
         const GRAVITY = 9.81; 
-        const METERS_PER_FLOOR = 3;
+        const METERS_PER_FLOOR = 2.7;
         const MAX_HEIGHT_FOR_VISUAL = 240; 
         let chartInstance = null;
 
@@ -253,6 +263,7 @@
             const floors = height / METERS_PER_FLOOR;
 
             speedDisplay.textContent = kmh;
+            msDisplay.textContent = ms.toFixed(1);
             metersDisplay.textContent = height.toFixed(1);
             floorsDisplay.textContent = floors.toFixed(1);
 
@@ -271,9 +282,12 @@
             } else if (height < 5) {
                 message = `A ${kmh} km/h, el impacto equivale a caer desde ${height.toFixed(1)}m. Aún no alcanzas la altura de un semáforo.`;
                 bgColor = "bg-emerald-600";
-            } else if (height < 26) {
-                message = `A ${kmh} km/h, el choque supera un semáforo (${height.toFixed(1)}m). Te acercas a la altura del Cristo Rey en Cali.`;
+            } else if (height < 10) {
+                message = `A ${kmh} km/h, el choque supera un semáforo (${height.toFixed(1)}m). Te acercas a la altura de una casa de 3 pisos.`;
                 bgColor = "bg-teal-600";
+            } else if (height < 26) {
+                message = `A ${kmh} km/h, el impacto supera una casa de 3 pisos (${height.toFixed(1)}m).`;
+                bgColor = "bg-teal-700";
             } else if (height < 35) {
                 message = `A ${kmh} km/h, el impacto es como caer desde el Cristo Rey de Cali (${height.toFixed(1)}m).`;
                 bgColor = "bg-cyan-600";
@@ -321,7 +335,7 @@
             visualBuilding.innerHTML = '';
             
             const floorCount = Math.floor(floors);
-            const maxWindows = Math.min(floorCount, 120); 
+            const maxWindows = Math.min(floorCount, 150); 
             for (let i = 0; i < maxWindows; i++) {
                 const floorDiv = document.createElement('div');
                 floorDiv.className = 'flex justify-around w-full';
@@ -342,19 +356,16 @@
 
         function initChart() {
             const ctx = document.getElementById('impactChart').getContext('2d');
-            const labels = [];
             const dataMeters = [];
             
-            for (let v = 0; v <= 230; v += 10) {
-                labels.push(v);
+            for (let v = 0; v <= 230; v += 1) {
                 const h = Math.pow(v / 3.6, 2) / (2 * GRAVITY);
-                dataMeters.push(h);
+                dataMeters.push({x: v, y: h});
             }
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
                     datasets: [{
                         label: 'Metros',
                         data: dataMeters,
@@ -381,7 +392,7 @@
                             cornerRadius: 12,
                             displayColors: false,
                             callbacks: {
-                                title: (items) => `Velocidad: ${items[0].label} km/h`,
+                                title: (items) => `Velocidad: ${items[0].parsed.x} km/h`,
                                 label: (context) => {
                                     const m = context.parsed.y;
                                     const p = (m / METERS_PER_FLOOR).toFixed(1);
@@ -395,6 +406,9 @@
                     },
                     scales: {
                         x: { 
+                            type: 'linear',
+                            min: 0,
+                            max: 230,
                             title: { display: true, text: 'Velocidad (km/h)', font: { weight: 'bold' } },
                             grid: { display: false }
                         },
@@ -438,6 +452,7 @@
                 yAxisID: 'y'
             };
 
+            // Reemplazar o añadir el dataset de resalte
             if (chartInstance.data.datasets.length > 1) {
                 chartInstance.data.datasets[1] = highlightPoint;
             } else {
