@@ -125,7 +125,7 @@
 async function init() {
         const tbody = document.getElementById('tableBody');
         try {
-            const response = await fetch('aeronaves.csv');
+            const response = await fetch('documentos.csv');
             if (!response.ok) throw new Error();
             const data = await response.text();
             const rows = data.split(/\r?\n/).slice(1);
