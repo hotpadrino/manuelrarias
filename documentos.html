@@ -125,7 +125,7 @@
 async function init() {
     const tbody = document.getElementById('tableBody');
     try {
-        const response = await fetch('Documentos.csv');
+        const response = await fetch('documentos.csv');
         if (!response.ok) throw new Error('No se pudo leer el archivo');
         
         // 1. Obtenemos los datos como un "buffer" binario (sin procesar)
