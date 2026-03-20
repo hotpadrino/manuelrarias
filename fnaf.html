@@ -2,119 +2,154 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mini FNAF Clone</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FNAF Mobile Edition</title>
     <style>
-        body { background: #000; color: white; font-family: 'Courier New', Courier, monospace; text-align: center; overflow: hidden; }
-        #office { width: 600px; height: 400px; border: 5px solid #333; margin: 20px auto; position: relative; background: #1a1a1a; }
-        .door-btn { position: absolute; bottom: 10px; padding: 10px; cursor: pointer; }
-        #btn-left { left: 10px; background: red; }
-        #cam-monitor { width: 100%; height: 100%; background: #000; position: absolute; top: 0; display: none; z-index: 10; }
-        .status { font-size: 1.2rem; margin: 10px; }
-        #static { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0.1; pointer-events: none; background: url('https://media.giphy.com/media/oEI9uWUic9Zf2/giphy.gif'); }
-        .ui-btn { background: #444; color: white; border: 1px solid #fff; padding: 10px; cursor: pointer; }
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body { 
+            background: #000; color: white; margin: 0; padding: 0;
+            font-family: sans-serif; display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden;
+        }
+        
+        #game-container {
+            position: relative; width: 100%; flex-grow: 1;
+            background: #111; border: 2px solid #333;
+        }
+
+        .status-bar {
+            background: #222; padding: 10px; display: flex;
+            justify-content: space-between; font-weight: bold;
+        }
+
+        /* Vistas */
+        #office, #cam-view {
+            width: 100%; height: 100%; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+        }
+
+        #cam-view { background: #001500; display: none; position: absolute; top: 0; }
+
+        /* Controles grandes para dedos */
+        .controls {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; padding: 15px; background: #111;
+        }
+
+        .btn {
+            background: #444; color: white; border: none; padding: 20px;
+            font-size: 1.1rem; border-radius: 8px; text-transform: uppercase;
+        }
+
+        .btn-door-open { background: #8b0000; }
+        .btn-door-closed { background: #006400; }
+        .btn-monitor { background: #1e90ff; }
+
+        #static-fx {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://media.giphy.com/media/oEI9uWUic9Zf2/giphy.gif');
+            opacity: 0.05; pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Noche 1</h1>
-    <div class="status">Energía: <span id="power">100</span>% | Hora: <span id="time">12</span> AM</div>
+    <div class="status-bar">
+        <span>ENERGÍA: <span id="power">100</span>%</span>
+        <span><span id="time">12</span> AM</span>
+    </div>
 
-    <div id="office">
-        <div id="static"></div>
-        <div id="office-view">
-            <p style="margin-top: 150px;">ESTÁS EN LA OFICINA</p>
-            <div id="jumpscare" style="display:none; font-size: 50px; color: red; font-weight: bold;">¡TE ATRAPARON!</div>
+    <div id="game-container">
+        <div id="static-fx"></div>
+        
+        <div id="office">
+            <h2 id="office-msg">VIGILANDO PASILLO</h2>
+            <div id="jumpscare" style="display:none; color:red; font-size:2rem;">¡GAME OVER!</div>
         </div>
 
-        <div id="cam-monitor">
-            <h3 id="cam-name">CAM 01: Pasillo</h3>
-            <div id="enemy-view" style="font-size: 20px; margin-top: 100px;">VACÍO</div>
-            <button class="ui-btn" onclick="switchCam(1)">CAM 01</button>
-            <button class="ui-btn" onclick="switchCam(2)">CAM 02</button>
+        <div id="cam-view">
+            <h3 id="cam-label">CAM 01</h3>
+            <div id="enemy-status" style="font-size: 1.5rem;">TODO DESPEJADO</div>
         </div>
+    </div>
 
-        <button id="btn-left" class="door-btn" onclick="toggleDoor()">PUERTA: ABIERTA</button>
-        <button style="position: absolute; bottom: 10px; right: 10px;" class="ui-btn" onclick="toggleMonitor()">MONITOR</button>
+    <div class="controls">
+        <button id="door-btn" class="btn btn-door-open" onclick="toggleDoor()">Puerta: ABIERTA</button>
+        <button class="btn btn-monitor" onclick="toggleMonitor()">Monitor Cam</button>
+        <button id="cam-sel" class="btn" style="display:none;" onclick="switchCam()">Cambiar Cámara</button>
     </div>
 
     <script>
         let power = 100;
-        let hour = 0; // 0 es 12 AM
+        let hour = 0;
         let doorOpen = true;
         let monitoring = false;
+        let enemyPos = 1; // 1 y 2 cams, 3 puerta, 4 pierde
         let currentCam = 1;
-        let enemyPos = 1; // 1: Cam1, 2: Cam2, 3: Puerta, 4: Ataque
-        let gameOver = false;
-
-        // Bucle de Energía
-        setInterval(() => {
-            if (gameOver) return;
-            let drain = 0.5;
-            if (!doorOpen) drain += 1.5;
-            if (monitoring) drain += 1;
-            
-            power -= drain;
-            document.getElementById("power").innerText = Math.floor(power);
-            if (power <= 0) endGame("Se acabó la luz...");
-        }, 2000);
-
-        // Reloj
-        setInterval(() => {
-            if (gameOver) return;
-            hour++;
-            document.getElementById("time").innerText = hour;
-            if (hour >= 6) endGame("¡Ganaste! Son las 6 AM");
-        }, 30000); // Cada 30 seg sube una hora
-
-        // Movimiento del "Animatrónico"
-        setInterval(() => {
-            if (gameOver) return;
-            if (Math.random() > 0.6) {
-                enemyPos++;
-                if (enemyPos === 3 && !doorOpen) {
-                    enemyPos = 1; // Rebota si la puerta está cerrada
-                } else if (enemyPos > 3) {
-                    endGame("¡Jumpscare!");
-                }
-                updateCamView();
-            }
-        }, 5000);
+        let active = true;
 
         function toggleDoor() {
+            if(!active) return;
             doorOpen = !doorOpen;
-            document.getElementById("btn-left").innerText = doorOpen ? "PUERTA: ABIERTA" : "PUERTA: CERRADA";
-            document.getElementById("btn-left").style.background = doorOpen ? "red" : "green";
+            const btn = document.getElementById("door-btn");
+            btn.innerText = doorOpen ? "Puerta: ABIERTA" : "Puerta: CERRADA";
+            btn.className = doorOpen ? "btn btn-door-open" : "btn btn-door-closed";
         }
 
         function toggleMonitor() {
+            if(!active) return;
             monitoring = !monitoring;
-            document.getElementById("cam-monitor").style.display = monitoring ? "block" : "none";
-            updateCamView();
+            document.getElementById("cam-view").style.display = monitoring ? "flex" : "none";
+            document.getElementById("cam-sel").style.display = monitoring ? "block" : "none";
+            updateUI();
         }
 
-        function switchCam(n) {
-            currentCam = n;
-            document.getElementById("cam-name").innerText = "CAM 0" + n;
-            updateCamView();
+        function switchCam() {
+            currentCam = currentCam === 1 ? 2 : 1;
+            updateUI();
         }
 
-        function updateCamView() {
-            const view = document.getElementById("enemy-view");
+        function updateUI() {
+            document.getElementById("cam-label").innerText = "CAM 0" + currentCam;
+            const status = document.getElementById("enemy-status");
             if (currentCam === enemyPos) {
-                view.innerText = "¡ALGO SE MUEVE EN LAS SOMBRAS!";
-                view.style.color = "yellow";
+                status.innerText = "¡MOVIMIENTO DETECTADO!";
+                status.style.color = "yellow";
             } else {
-                view.innerText = "VACÍO";
-                view.style.color = "white";
+                status.innerText = "TODO DESPEJADO";
+                status.style.color = "white";
             }
         }
 
-        function endGame(msg) {
-            gameOver = true;
-            alert(msg);
-            if (msg === "¡Jumpscare!") {
-                document.getElementById("jumpscare").style.display = "block";
+        // Lógica de juego
+        setInterval(() => {
+            if(!active) return;
+            // Drenaje de energía
+            let usage = 0.5;
+            if(!doorOpen) usage += 1.5;
+            if(monitoring) usage += 1.0;
+            power -= usage;
+            document.getElementById("power").innerText = Math.floor(power);
+            if(power <= 0) gameOver("TE QUEDASTE SIN LUZ");
+        }, 1500);
+
+        setInterval(() => {
+            if(!active) return;
+            // Movimiento enemigo
+            if(Math.random() > 0.7) {
+                enemyPos++;
+                if(enemyPos === 3 && !doorOpen) {
+                    enemyPos = 1; // Se va si la puerta está cerrada
+                } else if(enemyPos > 3) {
+                    gameOver("¡JUMPSCARE!");
+                }
+                if(monitoring) updateUI();
             }
+        }, 4000);
+
+        function gameOver(reason) {
+            active = false;
+            alert(reason);
             location.reload();
         }
     </script>
