@@ -123,28 +123,42 @@
     ];
 
 async function init() {
-        const tbody = document.getElementById('tableBody');
-        try {
-            const response = await fetch('documentos.csv');
-            if (!response.ok) throw new Error();
-            const data = await response.text();
-            const rows = data.split(/\r?\n/).slice(1);
-            tbody.innerHTML = '';
-            let count = 0;
-            rows.forEach(line => {
-                if (line.trim() === '') return;
-                const cols = line.split(';');
-                if (cols.length >= 4) { renderRow(cols); count++; }
-            });
-            updateCounter(count);
-        } catch (error) {
-            console.warn("Cargando datos de respaldo.");
-            tbody.innerHTML = ''; 
-            fallbackData.forEach(cols => renderRow(cols));
-            updateCounter(fallbackData.length);
-        }
-    }
+    const tbody = document.getElementById('tableBody');
+    try {
+        const response = await fetch('Documentos.csv');
+        if (!response.ok) throw new Error('No se pudo leer el archivo');
+        
+        // 1. Obtenemos los datos como un "buffer" binario (sin procesar)
+        const buffer = await response.arrayBuffer();
+        
+        // 2. Usamos TextDecoder para forzar la codificación de Windows/Excel en español
+        // Esto arreglará los símbolos §, ñ, tildes y caracteres especiales.
+        const decoder = new TextDecoder('windows-1252');
+        const data = decoder.decode(buffer);
+        
+        const rows = data.split(/\r?\n/).slice(1);
+        tbody.innerHTML = ''; 
+        let count = 0;
 
+        rows.forEach(line => {
+            if (line.trim() === '') return;
+            // Si tu CSV usa punto y coma como separador:
+            const cols = line.split(';');
+            if (cols.length >= 4) {
+                renderRow(cols);
+                count++;
+            }
+        });
+        updateCounter(count);
+
+    } catch (error) {
+        console.warn("Cargando datos de respaldo (CSV no detectado o bloqueado)");
+        tbody.innerHTML = ''; 
+        fallbackData.forEach(cols => renderRow(cols));
+        updateCounter(fallbackData.length);
+    }
+}
+    
     function renderRow(cols) {
         const tbody = document.getElementById('tableBody');
         const tr = document.createElement('tr');
