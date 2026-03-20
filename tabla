@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Tabla en la Nube</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        table { border-collapse: collapse; width: 100%; background: white; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #3ecf8e; color: white; }
+        .formulario { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="formulario">
+        <h3>Agregar nuevo dato</h3>
+        <input type="text" id="nombre" placeholder="Nombre">
+        <input type="number" id="valor" placeholder="Valor">
+        <button onclick="guardarDato()">Guardar en la Red</button>
+    </div>
+
+    <table id="tablaDatos">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <script>
+        // CONFIGURACIÓN (Copia tus datos de Supabase aquí)
+        const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // FUNCIÓN PARA LEER DATOS
+        async function cargarDatos() {
+            const { data, error } = await supabase
+                .from('tabla')
+                .select('*');
+
+            if (error) console.error('Error:', error);
+            else mostrarEnTabla(data);
+        }
+
+        function mostrarEnTabla(datos) {
+            const cuerpo = document.querySelector('#tablaDatos tbody');
+            cuerpo.innerHTML = ''; // Limpiar tabla
+            datos.forEach(fila => {
+                cuerpo.innerHTML += `
+                    <tr>
+                        <td>${fila.id}</td>
+                        <td>${fila.nombre}</td>
+                        <td>${fila.valor}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // FUNCIÓN PARA EDITAR/GUARDAR DATOS
+        async function guardarDato() {
+            const nombre = document.getElementById('nombre').value;
+            const valor = document.getElementById('valor').value;
+
+            const { data, error } = await supabase
+                .from('mi_tabla')
+                .insert([{ nombre: nombre, valor: valor }]);
+
+            if (error) alert("Hubo un error al guardar");
+            else {
+                alert("Dato guardado con éxito");
+                cargarDatos(); // Refrescar la tabla
+            }
+        }
+
+        // Cargar datos al abrir la página
+        cargarDatos();
+    </script>
+</body>
+</html>
