@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Datos Documental - Certificación</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; margin: 20px; color: #333; }
+        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #003366; text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Contador destacado */
+        #counterDisplay { 
+            background-color: #eef6ff; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            color: #003366; 
+            border-left: 6px solid #0055ff;
+            font-size: 1.1em;
+            display: block; /* Asegura visibilidad */
+        }
+
+        .table-wrapper { max-height: 65vh; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 900px; }
+        
+        th { background-color: #003366; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.4; }
+        
+        .doc-highlight { color: #0055ff; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .filter-input { 
+            width: 100%; padding: 6px; margin-top: 8px; border: 1px solid #ccc; 
+            border-radius: 4px; box-sizing: border-box; font-weight: normal; color: #333;
+        }
+        
+        .date-col { width: 110px; }
+        .doc-col { width: 160px; }
+        .title-col { width: 280px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Base de Datos Documental - Certificación</h2>
+    
+    <div id="counterDisplay">Iniciando sistema...</div>
+    
+    <div class="table-wrapper">
+        <table id="techTable">
+            <thead>
+                <tr>
+                    <th class="date-col">Fecha<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th class="doc-col">Documento<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th class="title-col">Título<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th>Observaciones (Búsqueda Global)<br><input type="text" class="filter-input" id="globalFilter" onkeyup="filterTable()" placeholder="Buscar en toda la fila..."></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Datos de ejemplo en caso de que el CSV no sea accesible
+    const fallbackData = [
+        ["20-nov-07", "AC 120-94", "Aircraft Electrical Wiring Interconnection Systems Training Program", "FAA The objective of this EWIS training program is to give operators or maintenance repair organizations a model for developing their own EWIS training program. It will help ensure that proper processes, procedures, methods, techniques, and practices are used when performing maintenance."],
+        ["20-may-24", "AC 20-158B", "The Certification of Aircraft Electrical and Electronic Systems for Operation in High-Intensity Radiated Fields (HIRF)", "Provides guidance for a new type certificate (TC) or change to an existing TC when the certification basis requires addressing HIRF requirements."],
+        ["28-oct-10", "AC 20-170", "Integrated Modular Avionics Development", "Verification, Integration and Approval using RTCA/DO-297 and Technical Standard Order C153."],
+        ["04-may-77", "AC 20-41A", "Substitute Technical Standard Order (TSO) Aircraft Equipment", "Sets forth acceptable means for complying with rules governing substitution of TSO equipment."],
+        ["14-sep-18", "AC 20-62E", "ELIGIBILITY, QUALITY, AND IDENTIFICATION OF AERONAUTICAL REPLACEMENT PARTS", "Class I, II and III Product definitions and certification requirements."],
+        ["29-sep-05", "AC 23-13A", "Fatigue, Fail-Safe, and Damage Tolerance Evaluation of Metallic Structure", "Guidance for demonstrating compliance with Part 23 regarding fatigue and fail-safe."],
+        ["08-sep-98", "AC 43.13-1B", "Acceptable Methods, Techniques, and Practices - Aircraft Inspection and Repair", "Prácticas Estándar para Reparaciones."],
+        ["03-mar-08", "AC 43.13-2B", "Acceptable Methods, Techniques, and Practices - Aircraft Alterations", "Prácticas Estándar para Modificaciones."],
+        ["03-feb-06", "ADS-44-HDBK", "AERONAUTICAL DESIGN STANDARD HANDBOOK ARMAMENT AIRWORTHINESS QUALIFICATION", "Guidelines to qualify an armament system for use on-board U.S. Army air vehicles."],
+        ["19-dic-05", "ADS-45-HDBK", "AERONAUTICAL DESIGN STANDARD: DATA AND TEST PROCEDURES FOR AIRWORTHINESS RELEASE", "Guidelines prior to issuance of Contractor Flight Release (CFR) or Airworthiness Release (AWR)."],
+        ["02-abr-17", "AECTP-600", "THE TEN STEP METHOD FOR EVALUATING MATERIEL LIFE", "Process to determine ability of materiel to meet extended life requirements."],
+        ["28-may-20", "AFMAN 91-201", "AIR FORCE MANUAL EXPLOSIVES SAFETY STANDARDS", "Air Force policy for explosives safety criteria and precautions."],
+        ["10-ago-12", "ARP 1870", "Aerospace Systems Electrical Bonding and Grounding", "Minimum requirements for bonding and grounding for EMC and Safety."],
+        ["21-dic-10", "ARP 4754A", "GUIDELINES FOR DEVELOPMENT OF CIVIL AIRCRAFT AND SYSTEMS", "Validation of requirements and verification of design implementation."],
+        ["01-dic-96", "ARP 4761", "GUIDELINES AND METHODS FOR CONDUCTING SAFETY ASSESSMENT", "Systematic means to show compliance with FAR/JAR 25.1309."],
+        ["05-dic-18", "ARP 5414", "Aircraft Lightning Zone", "Defines lightning strike zones and provides guidelines for locating them."],
+        ["11-ene-03", "ARP 5583A", "Guide to Certification of Aircraft in HIRF Environment", "Best engineering practices for HIRF protection certification."],
+        ["09-ene-24", "ASTM D4054-23", "Evaluation of New Aviation Turbine Fuels", "Guide for producer of alternative fuel with testing requirements."],
+        ["04-nov-22", "ASTM D7566-22", "Aviation Turbine Fuel Containing Synthesized Hydrocarbons", "Minimum property requirements for synthesized hydrocarbons."],
+        ["01-jun-20", "ASTM F2490-20", "Aircraft Electrical Load and Power Source Capacity Analysis", "How to prepare an ELA to meet FAA requirements."],
+        ["28-jun-04", "CONPES 3293", "REPOSICIÓN AVIONES DE COMBATE TÁCTICO FAC", "Adquisición de 24 aviones turbohélice nuevos (Super Tucano)."],
+        ["09-jun-08", "CONPES 3522", "LINEAMIENTOS ACUERDOS DE COOPERACIÓN INDUSTRIAL - OFFSETS", "Convenios para acceder a tecnologías y conocimientos competitivos."],
+        ["14-jul-08", "CONPES 3533", "ADECUACIÓN SISTEMA PROPIEDAD INTELECTUAL", "Incentivar la investigación y clima de seguridad para inversión."],
+        ["08-ago-16", "CONPES 3866", "POLÍTICA NACIONAL DE DESARROLLO PRODUCTIVO", "Instrumentos para resolver fallas de mercado y productividad."],
+        ["13-ene-20", "CONPES 3983", "POLÍTICA DE DESARROLLO ESPACIAL", "Colombia como mercado potencial en uso de servicios satelitales."],
+        ["30-nov-20", "CONPES 4011", "POLÍTICA NACIONAL DE EMPRENDIMIENTO", "Habilidades y mecanismos de financiamiento para innovación."],
+        ["08-dic-10", "DO-160", "Environmental Conditions and Test Procedures", "Secciones 4 a 26: Temperatura, Vibración, EMI, Rayos, etc."],
+        ["05-ene-12", "DO-178C", "Software Considerations in Airborne Systems", "Guía para crear software seguro, niveles A a E."],
+        ["22-jun-23", "DO-220B", "MOPS For Airborne Weather Radar Systems", "Añade requisitos para detección de cristales de hielo en alta altitud."],
+        ["19-abr-00", "DO-254", "Design Assurance Guidance for Electronic Hardware", "Planeación, validación y diseño de hardware electrónico."],
+        ["08-nov-05", "DO-297", "Integrated Modular Avionics (IMA) Certification", "Guía para desarrolladores e integradores de sistemas IMA."],
+        ["06-ago-14", "DO-326A", "Airworthiness Security Process Specification", "Amenaza de interacción electrónica no autorizada a la seguridad."],
+        ["13-dic-11", "DO-330", "Software Tool Qualification Considerations", "Procesos para calificar herramientas de desarrollo y prueba."],
+        ["10-sep-20", "DO-355A", "Information Security Guidance for Continuing Airworthiness", "Asegurar que amenazas de seguridad se confinen en niveles aceptables."],
+        ["12-dic-14", "MIL-HDBK-516C", "AIRWORTHINESS CERTIFICATION CRITERIA", "Foundational document to define the air system's airworthiness certification basis."],
+        ["15-sep-20", "MIL-STD-1472H", "DESIGN CRITERIA STANDARD: HUMAN ENGINEERING", "Practices to be applied in the design of systems, equipment and facilities."],
+        ["24-nov-80", "MIL-STD-1629A", "FAILURE MODE, EFFECTS AND CRITICALITY ANALYSIS", "Procedures for performing FMECA to evaluate impact of failures."],
+        ["11-dic-15", "MIL-STD-461G", "EMI CONTROL OF SUBSYSTEMS AND EQUIPMENT", "Control of electromagnetic interference characteristics."],
+        ["31-ene-19", "MIL-STD-810H", "ENVIRONMENTAL ENGINEERING CONSIDERATIONS", "Influences that environmental stresses have on materiel."],
+        ["18-jun-20", "STANAG 3733", "LASER PULSE REPETITION FREQUENCIES (PRF)", "Criteria for categorization of laser designator systems for mission selection."],
+        ["01-nov-18", "STANAG 4241", "BULLET IMPACT MUNITION TEST PROCEDURES", "Test requirements for reaction of munitions to small arms projectiles."],
+        ["28-nov-19", "STANAG 4370", "ENVIRONMENTAL TESTING", "Guidelines on management and standardization of environmental testing."],
+        ["01-mar-20", "STANAG 4382", "SLOW HEATING TEST PROCEDURES FOR MUNITIONS", "Standard test procedure for assessing munition response to slow heat sources."],
+        ["01-dic-20", "STANAG 4396", "SYMPATHETIC REACTION TEST PROCEDURES", "Evidence of potential for munitions to react to adjacent explosions."],
+        ["01-mar-19", "STANAG 4496", "FRAGMENT IMPACT TEST PROCEDURES", "Test procedures for munition reaction to fragment strikes."],
+        ["08-oct-01", "STANAG 4518", "SAFE DISPOSAL OF MUNITIONS", "Standardized design safety principles and assessment for safe disposal."],
+        ["01-nov-18", "STANAG 4526", "SHAPED CHARGE JET MUNITION TEST", "Reaction of munitions to threats from shaped charge weapons."],
+        ["03-sep-09", "STANAG 4671", "UAV SYSTEMS AIRWORTHINESS REQUIREMENTS", "Airworthiness standards for military UAVs (150kg to 20000kg)."],
+        ["24-oct-23", "STANAG 4703", "LIGHT UAS AIRWORTHINESS REQUIREMENTS", "AEP-83 Edition C. Requirements for Light UAS ≤ 150 kg."],
+        ["16-jun-17", "STANAG 4737", "UAS WEAPONS INTEGRATION", "AEP-82 Edition A. Guidelines for integration of weapons on unmanned platforms."],
+        ["PDTE", "STANAG 4746", "LIGHT ROTARY WING UAS AIRWORTHINESS", "AEP-89. EN ESTUDIO, SIN PUBLICAR (a 16feb26)."]
+    ];
+
+async function init() {
+        const tbody = document.getElementById('tableBody');
+        try {
+            const response = await fetch('aeronaves.csv');
+            if (!response.ok) throw new Error();
+            const data = await response.text();
+            const rows = data.split(/\r?\n/).slice(1);
+            tbody.innerHTML = '';
+            let count = 0;
+            rows.forEach(line => {
+                if (line.trim() === '') return;
+                const cols = line.split(';');
+                if (cols.length >= 4) { renderRow(cols); count++; }
+            });
+            updateCounter(count);
+        } catch (error) {
+            console.warn("Cargando datos de respaldo.");
+            tbody.innerHTML = ''; 
+            fallbackData.forEach(cols => renderRow(cols));
+            updateCounter(fallbackData.length);
+        }
+    }
+
+    function renderRow(cols) {
+        const tbody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cols[0] || ''}</td>
+            <td class="doc-highlight">${cols[1] || ''}</td>
+            <td>${cols[2] || ''}</td>
+            <td>${cols[3] || ''}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function filterTable() {
+        const inputs = document.getElementsByClassName("filter-input");
+        const globalInput = document.getElementById("globalFilter").value.toUpperCase();
+        const tr = document.getElementById("techTable").getElementsByTagName("tr");
+        let visibleCount = 0;
+
+        for (let i = 1; i < tr.length; i++) {
+            let rowText = tr[i].innerText.toUpperCase();
+            let matchesGlobal = rowText.indexOf(globalInput) > -1;
+            
+            let matchesSpecific = true;
+            // Solo verificamos los primeros 3 filtros individuales
+            for (let j = 0; j < 3; j++) {
+                const val = inputs[j].value.toUpperCase();
+                const cell = tr[i].getElementsByTagName("td")[j];
+                if (cell && val && cell.innerText.toUpperCase().indexOf(val) === -1) {
+                    matchesSpecific = false;
+                    break;
+                }
+            }
+
+            if (matchesGlobal && matchesSpecific) {
+                tr[i].style.display = "";
+                visibleCount++;
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+        updateCounter(visibleCount);
+    }
+
+    function updateCounter(n) {
+        document.getElementById('counterDisplay').textContent = `Mostrando todos los registros (${n})`;
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
