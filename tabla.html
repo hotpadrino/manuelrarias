@@ -39,43 +39,34 @@
         const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // FUNCIÓN PARA LEER DATOS
+        // 2. Función para leer (Nombre de tabla: 'tabla')
         async function cargarDatos() {
             const { data, error } = await supabase
-                .from('tabla')
+                .from('tabla') // Nombre exacto de tu tabla
                 .select('*');
-
-            if (error) console.error('Error:', error);
-            else mostrarEnTabla(data);
+        
+            if (error) {
+                console.error('Error al leer:', error.message);
+                return;
+            }
+            mostrarEnTabla(data);
         }
-
-        function mostrarEnTabla(datos) {
-            const cuerpo = document.querySelector('#tablaDatos tbody');
-            cuerpo.innerHTML = ''; // Limpiar tabla
-            datos.forEach(fila => {
-                cuerpo.innerHTML += `
-                    <tr>
-                        <td>${fila.id}</td>
-                        <td>${fila.nombre}</td>
-                        <td>${fila.valor}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // FUNCIÓN PARA EDITAR/GUARDAR DATOS
+        
+        // 3. Función para guardar (Columnas: nombre, telefono)
         async function guardarDato() {
-            const nombre = document.getElementById('nombre').value;
-            const valor = document.getElementById('valor').value;
-
+            const nom = document.getElementById('nombre').value;
+            const tel = document.getElementById('telefono').value;
+        
             const { data, error } = await supabase
-                .from('mi_tabla')
-                .insert([{ nombre: nombre, valor: valor }]);
-
-            if (error) alert("Hubo un error al guardar");
-            else {
-                alert("Dato guardado con éxito");
-                cargarDatos(); // Refrescar la tabla
+                .from('tabla')
+                .insert([{ nombre: nom, telefono: tel }]); // Coincidir con tus columnas
+        
+            if (error) {
+                console.error('Error al guardar:', error.message);
+                alert("Error: " + error.message);
+            } else {
+                alert("¡Guardado!");
+                cargarDatos(); 
             }
         }
 
