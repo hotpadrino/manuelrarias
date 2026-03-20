@@ -15,6 +15,7 @@
             --text-light: #fdfefe;
             --bg-light: #f2f4f4;
             --danger-color: #c0392b;
+            --sidebar-width: 300px;
         }
 
         body {
@@ -23,17 +24,36 @@
             display: flex;
             height: 100vh;
             background-color: var(--bg-light);
+            overflow: hidden;
+        }
+
+        /* Botón de Menú para Móvil */
+        #mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         /* Menú Lateral */
         #sidebar {
-            width: 300px;
+            width: var(--sidebar-width);
             background-color: var(--primary-color);
             color: var(--text-light);
             display: flex;
             flex-direction: column;
             box-shadow: 3px 0 10px rgba(0,0,0,0.3);
-            z-index: 10;
+            z-index: 90;
+            transition: transform 0.3s ease-in-out;
         }
 
         #sidebar h2 {
@@ -42,7 +62,6 @@
             border-bottom: 2px solid var(--secondary-color);
             margin: 0;
             font-size: 1.1rem;
-            letter-spacing: 1px;
             background: #060d14;
         }
 
@@ -60,15 +79,10 @@
             font-size: 0.95rem;
         }
 
-        .menu-item:hover {
-            background-color: var(--secondary-color);
-            padding-left: 30px;
-        }
-
+        .menu-item:hover { background-color: var(--secondary-color); }
         .menu-item.active {
             background-color: #2980b9;
             border-left: 5px solid var(--accent-color);
-            font-weight: bold;
         }
 
         #btn-resumen {
@@ -78,18 +92,14 @@
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
-            transition: background 0.3s;
         }
 
-        #btn-resumen:hover { background: #2ecc71; }
-
-        /* Contenido Principal */
+        /* Área de Contenido */
         #content {
             flex-grow: 1;
             padding: 30px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+            width: 100%;
         }
 
         .card {
@@ -97,74 +107,47 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-top: 10px;
         }
 
-        h1 { color: var(--primary-color); margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h1 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; }
 
-        /* Tabla de Resumen */
-        .table-container { overflow-x: auto; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.85rem;
-        }
+        .table-container { overflow-x: auto; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ebedef; font-size: 0.85rem; }
+        th { background: var(--secondary-color); color: white; }
 
-        th, td {
-            text-align: left;
-            padding: 14px;
-            border-bottom: 1px solid #ebedef;
-        }
-
-        th { background-color: var(--secondary-color); color: white; position: sticky; top: 0; }
-        tr:hover { background-color: #f9f9f9; }
-
-        /* Vista de Detalle */
-        .detail-view {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .wiki-img {
-            width: 100%;
-            border-radius: 10px;
-            object-fit: cover;
-            max-height: 450px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .stat-box {
-            padding: 15px;
-            background: #fdfefe;
-            border-radius: 6px;
-            border: 1px solid #e5e8e8;
-            border-left: 4px solid #3498db;
-        }
-
-        .stat-label { font-size: 0.75rem; color: #95a5a6; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-size: 1rem; font-weight: bold; color: #2c3e50; }
+        .detail-view { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .wiki-img { width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { padding: 12px; background: #fdfefe; border: 1px solid #e5e8e8; border-left: 4px solid #3498db; }
+        .stat-label { font-size: 0.7rem; color: #95a5a6; text-transform: uppercase; }
+        .stat-value { font-size: 0.95rem; font-weight: bold; color: #2c3e50; }
 
         .weapon-box {
-            margin-top: 25px;
-            padding: 20px;
-            background: #fef5e7;
-            border-radius: 8px;
-            border: 1px solid #f8c471;
-            border-left: 6px solid var(--danger-color);
+            margin-top: 20px; padding: 15px; background: #fef5e7;
+            border-radius: 8px; border-left: 6px solid var(--danger-color);
         }
 
-        .weapon-title { font-weight: bold; color: var(--danger-color); margin-bottom: 10px; display: flex; align-items: center; }
-        .wiki-desc { margin-top: 20px; line-height: 1.7; color: #566573; font-style: italic; font-size: 0.95rem; }
+        /* MEDIA QUERIES PARA CELULAR */
+        @media (max-width: 768px) {
+            #mobile-menu-btn { display: block; }
+            #sidebar {
+                position: fixed;
+                height: 100vh;
+                transform: translateX(-100%);
+            }
+            #sidebar.open { transform: translateX(0); }
+            .detail-view { grid-template-columns: 1fr; }
+            #content { padding: 60px 15px 15px 15px; }
+            .card { padding: 15px; }
+            h1 { font-size: 1.4rem; }
+        }
     </style>
 </head>
 <body>
+
+<button id="mobile-menu-btn" onclick="toggleMenu()">☰ MENÚ</button>
 
 <div id="sidebar">
     <h2>CATÁLOGO TÉCNICO</h2>
@@ -174,106 +157,91 @@
 
 <div id="content">
     <div id="view-area" class="card">
-        <h1>Sistema de Información de Aeronaves</h1>
-        <p>Seleccione una plataforma en el menú lateral para consultar sus capacidades tácticas, armamento y especificaciones de diseño. Los datos incluyen integraciones actuales de Wikipedia en español.</p>
+        <h1>Sistema de Información de Flota</h1>
+        <p>Seleccione una aeronave para consultar especificaciones técnicas y capacidades tácticas. Optimizado para consulta móvil.</p>
     </div>
 </div>
 
 <script>
     const data = [
-        { nombre: "T-90 Calima", año: 2016, valor: "0.29", autonomia: "6.3", crucero: 171, rango: 619, peso: "34 Kg", motor: "Lycoming IO-390-A3A6", arma: "Generalmente desarmado (Instrucción básica).", wiki: "Lancair_Legacy" },
-        { nombre: "A-320 neo", año: 2014, valor: "110", autonomia: "7", crucero: 511, rango: 3000, peso: "10", motor: "CFM LEAP-1A / P&W PW1100G", arma: "Ninguno (Transporte civil/militar).", wiki: "Familia_Airbus_A320neo" },
-        { nombre: "AC-47 Fantasma", año: 1947, valor: "2", autonomia: "10", crucero: 280, rango: 2500, peso: "7", motor: "P&WC PT6A-67R", arma: "3 ametralladoras rotativas GAU-19 de 12.7 mm (.50) o GAU-2 de 7.62 mm.", wiki: "Basler_BT-67" },
-        { nombre: "B-737", año: 1967, valor: "150", autonomia: "6", crucero: 500, rango: 3900, peso: "20", motor: "CFM56-7B / LEAP-1B", arma: "Ninguno (Transporte y misiones especiales).", wiki: "Boeing_737" },
-        { nombre: "C-10 Kfir", año: 1973, valor: "30", autonomia: "2", crucero: 540, rango: 1200, peso: "6", motor: "GE J79-GE-J1E", arma: "2 cañones DEFA 552 (30 mm), misiles Python 5, Derby y bombas Spice/LGB.", wiki: "IAI_Kfir" },
-        { nombre: "C-130 Hercules", año: 1954, valor: "30", autonomia: "12", crucero: 350, rango: 3000, peso: "20", motor: "Allison T56 / RR AE 2100", arma: "Ninguno (Transporte táctico y carga).", wiki: "Lockheed_C-130_Hercules" },
-        { nombre: "C-212 Aviocar", año: 1971, valor: "5.0", autonomia: "8.0", crucero: 190, rango: 770, peso: "3.3", motor: "Honeywell TPE331-10", arma: "Ninguno (Versiones FAC para transporte y paracaidismo).", wiki: "CASA_C-212_Aviocar" },
-        { nombre: "C-295 Casa", año: 1997, valor: "30", autonomia: "10", crucero: 320, rango: 2000, peso: "12", motor: "P&WC PW127G", arma: "Ninguno (Transporte mediano).", wiki: "CASA_C-295" },
-        { nombre: "Eurofighter", año: 1994, valor: "100", autonomia: "2", crucero: 700, rango: 1800, peso: "7", motor: "Eurojet EJ200", arma: "1 cañón Mauser BK-27 (27 mm), misiles Meteor, IRIS-T, AIM-120 y bombas Paveway.", wiki: "Eurofighter_Typhoon" },
-        { nombre: "F-16 Falcon", año: 1974, valor: "70", autonomia: "2", crucero: 540, rango: 1200, peso: "6", motor: "GE F110 / P&W F100", arma: "1 cañón M61A1 Vulcan (20 mm), misiles AIM-9X/AIM-120D, bombas JDAM/Maverick.", wiki: "General_Dynamics_F-16_Fighting_Falcon" },
-        { nombre: "H-450 Hermes", año: 1998, valor: "2", autonomia: "10", crucero: 220, rango: 1000, peso: "1", motor: "UEL AR801", arma: "Sensores ISR. Opcionalmente misiles ligeros aire-tierra (Spike).", wiki: "Elbit_Hermes_450" },
-        { nombre: "JAS-39 Gripen", año: 1988, valor: "49", autonomia: "2", crucero: 580, rango: 1800, peso: "7", motor: "Volvo RM12 / GE F414", arma: "1 cañón Mauser BK-27 (27 mm), misiles Meteor, RB 15F y bombas inteligentes.", wiki: "Saab_39_Gripen" },
-        { nombre: "KC-390 Millennium", año: 2014, valor: "50", autonomia: "12", crucero: 430, rango: 3200, peso: "23", motor: "IAE V2500-E5", arma: "Ninguno (Carga y reabastecimiento).", wiki: "Embraer_C-390_Millennium" },
-        { nombre: "UH-1H Huey", año: 1966, valor: "1.5", autonomia: "2.5", crucero: 110, rango: 250, peso: "1.9", motor: "Lycoming T53", arma: "Ametralladoras M60/M134 (7.62 mm) y lanzacohetes de 70 mm.", wiki: "Bell_UH-1_Iroquois" },
-        { nombre: "UH-60 BlackHawk", año: 1974, valor: "20", autonomia: "3", crucero: 180, rango: 200, peso: "9", motor: "GE T700-GE-701C/D", arma: "GAU-19 (12.7 mm) o M134 (7.62 mm). Versión Arpía: Misiles Spike y cohetes.", wiki: "Sikorsky_UH-60_Black_Hawk" },
-        { nombre: "A-10C Warthog", año: 1972, valor: "45", autonomia: "4.0", crucero: 300, rango: 2240, peso: "7.2", motor: "2x GE TF34-GE-100", arma: "1 cañón rotativo GAU-8 Avenger (30 mm), misiles Maverick y bombas JDAM.", wiki: "Fairchild-Republic_A-10_Thunderbolt_II" },
-        { nombre: "AH-64E Apache", año: 1975, valor: "52.0", autonomia: "2.5", crucero: 150, rango: 260, peso: "5.2", motor: "2x GE T700-GE-701D", arma: "1 cañón M230 (30 mm), misiles Hellfire y cohetes Hydra 70.", wiki: "Boeing_AH-64_Apache" }
+        { nombre: "T-90 Calima", año: 2016, valor: "0.29", autonomia: "6.3", crucero: 171, rango: 619, peso: "34 Kg", motor: "Lycoming IO-390-A3A6", arma: "Generalmente desarmado.", wiki: "Lancair_Legacy" },
+        { nombre: "A-320 neo", año: 2014, valor: "110", autonomia: "7", crucero: 511, rango: 3000, peso: "10", motor: "CFM LEAP-1A / P&W PW1100G", arma: "Ninguno (Transporte).", wiki: "Familia_Airbus_A320neo" },
+        { nombre: "AC-47 Fantasma", año: 1947, valor: "2", autonomia: "10", crucero: 280, rango: 2500, peso: "7", motor: "P&WC PT6A-67R", arma: "3 ametralladoras rotativas GAU-19/GAU-2.", wiki: "Basler_BT-67" },
+        { nombre: "B-737", año: 1967, valor: "150", autonomia: "6", crucero: 500, rango: 3900, peso: "20", motor: "CFM56-7B / LEAP-1B", arma: "Ninguno.", wiki: "Boeing_737" },
+        { nombre: "C-10 Kfir", año: 1973, valor: "30", autonomia: "2", crucero: 540, rango: 1200, peso: "6", motor: "GE J79-GE-J1E", arma: "Cañones DEFA 30mm, Misiles Python/Derby.", wiki: "IAI_Kfir" },
+        { nombre: "C-130 Hercules", año: 1954, valor: "30", autonomia: "12", crucero: 350, rango: 3000, peso: "20", motor: "Allison T56 / RR AE 2100", arma: "Ninguno.", wiki: "Lockheed_C-130_Hercules" },
+        { nombre: "C-212 Aviocar", año: 1971, valor: "5.0", autonomia: "8.0", crucero: 190, rango: 770, peso: "3.3", motor: "Honeywell TPE331-10", arma: "Ninguno.", wiki: "CASA_C-212_Aviocar" },
+        { nombre: "C-295 Casa", año: 1997, valor: "30", autonomia: "10", crucero: 320, rango: 2000, peso: "12", motor: "P&WC PW127G", arma: "Ninguno.", wiki: "CASA_C-295" },
+        { nombre: "Eurofighter", año: 1994, valor: "100", autonomia: "2", crucero: 700, rango: 1800, peso: "7", motor: "Eurojet EJ200", arma: "Cañón 27mm, Misiles Meteor/IRIS-T.", wiki: "Eurofighter_Typhoon" },
+        { nombre: "F-16 Falcon", año: 1974, valor: "70", autonomia: "2", crucero: 540, rango: 1200, peso: "6", motor: "GE F110 / P&W F100", arma: "Cañón 20mm, AIM-9X, AIM-120.", wiki: "General_Dynamics_F-16_Fighting_Falcon" },
+        { nombre: "H-450 Hermes", año: 1998, valor: "2", autonomia: "10", crucero: 220, rango: 1000, peso: "1", motor: "UEL AR801", arma: "Sensores ISR / Misiles Spike.", wiki: "Elbit_Hermes_450" },
+        { nombre: "JAS-39 Gripen", año: 1988, valor: "49", autonomia: "2", crucero: 580, rango: 1800, peso: "7", motor: "Volvo RM12 / GE F414", arma: "Cañón 27mm, Misiles Meteor.", wiki: "Saab_39_Gripen" },
+        { nombre: "KC-390 Millennium", año: 2014, valor: "50", autonomia: "12", crucero: 430, rango: 3200, peso: "23", motor: "IAE V2500-E5", arma: "Ninguno.", wiki: "Embraer_C-390_Millennium" },
+        { nombre: "UH-1H Huey", año: 1966, valor: "1.5", autonomia: "2.5", crucero: 110, rango: 250, peso: "1.9", motor: "Lycoming T53", arma: "M60/M134 7.62mm, Cohetes 70mm.", wiki: "Bell_UH-1_Iroquois" },
+        { nombre: "UH-60 BlackHawk", año: 1974, valor: "20", autonomia: "3", crucero: 180, rango: 200, peso: "9", motor: "GE T700-GE-701C/D", arma: "GAU-19 12.7mm, Misiles Spike (Arpía).", wiki: "Sikorsky_UH-60_Black_Hawk" },
+        { nombre: "A-10C Warthog", año: 1972, valor: "45", autonomia: "4.0", crucero: 300, rango: 2240, peso: "7.2", motor: "2x GE TF34-GE-100", arma: "Cañón GAU-8 30mm, Misiles Maverick.", wiki: "Fairchild-Republic_A-10_Thunderbolt_II" },
+        { nombre: "AH-64E Apache", año: 1975, valor: "52.0", autonomia: "2.5", crucero: 150, rango: 260, peso: "5.2", motor: "2x GE T700-GE-701D", arma: "Cañón M230 30mm, Misiles Hellfire.", wiki: "Boeing_AH-64_Apache" }
     ];
 
     const menuList = document.getElementById('menu-list');
+    const sidebar = document.getElementById('sidebar');
     const viewArea = document.getElementById('view-area');
-    const btnResumen = document.getElementById('btn-resumen');
+
+    function toggleMenu() { sidebar.classList.toggle('open'); }
 
     data.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'menu-item';
         div.innerText = item.nombre;
-        div.onclick = () => showDetail(index, div);
+        div.onclick = () => {
+            showDetail(index, div);
+            if (window.innerWidth <= 768) toggleMenu();
+        };
         menuList.appendChild(div);
     });
 
-    btnResumen.onclick = () => {
-        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-        let tableHTML = `<h1>Cuadro Comparativo de Capacidades</h1><div class="table-container"><table>
-            <tr><th>AERONAVE</th><th>1er VUELO</th><th>VALOR (M USD)</th><th>AUTON.</th><th>CRUCERO</th><th>MOTOR</th><th>ARMAMENTO Y CALIBRE</th></tr>`;
-        
+    document.getElementById('btn-resumen').onclick = () => {
+        if (window.innerWidth <= 768) toggleMenu();
+        let tableHTML = `<h1>Cuadro de Flota</h1><div class="table-container"><table>
+            <tr><th>AERONAVE</th><th>1er VUELO</th><th>VALOR (M USD)</th><th>AUTON.</th><th>MOTOR</th><th>ARMAMENTO</th></tr>`;
         data.forEach(item => {
-            tableHTML += `<tr>
-                <td><b>${item.nombre}</b></td>
-                <td>${item.año}</td>
-                <td>${item.valor}</td>
-                <td>${item.autonomia} h</td>
-                <td>${item.crucero} kts</td>
-                <td>${item.motor}</td>
-                <td style="color: #c0392b; font-weight: 500;">${item.arma}</td>
-            </tr>`;
+            tableHTML += `<tr><td><b>${item.nombre}</b></td><td>${item.año}</td><td>${item.valor}</td><td>${item.autonomia}h</td><td>${item.motor}</td><td style="color:#c0392b">${item.arma}</td></tr>`;
         });
-        tableHTML += `</table></div>`;
-        viewArea.innerHTML = tableHTML;
+        viewArea.innerHTML = tableHTML + `</table></div>`;
     };
 
     async function showDetail(index, element) {
         document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
         element.classList.add('active');
         const item = data[index];
-        viewArea.innerHTML = `<h1>Obteniendo datos técnicos de ${item.nombre}...</h1>`;
-
+        viewArea.innerHTML = `<h1>Cargando datos de ${item.nombre}...</h1>`;
         try {
             const response = await fetch(`https://es.wikipedia.org/api/rest_v1/page/summary/${item.wiki}`);
             const wikiData = await response.json();
-            const imgUrl = wikiData.originalimage ? wikiData.originalimage.source : 'https://via.placeholder.com/600x400?text=Imagen+No+Disponible';
-            
+            const imgUrl = wikiData.originalimage ? wikiData.originalimage.source : 'https://via.placeholder.com/600x400?text=Sin+Imagen';
             viewArea.innerHTML = `
                 <h1>${item.nombre}</h1>
                 <div class="detail-view">
-                    <div>
-                        <img src="${imgUrl}" class="wiki-img">
-                        <p class="wiki-desc">${wikiData.extract || "Sin descripción adicional en español."}</p>
-                    </div>
+                    <div><img src="${imgUrl}" class="wiki-img"><p style="font-style:italic; color:#566573">${wikiData.extract || ""}</p></div>
                     <div>
                         <div class="stats-grid">
-                            <div class="stat-box"><div class="stat-label">Entrada en servicio</div><div class="stat-value">${item.año}</div></div>
-                            <div class="stat-box"><div class="stat-label">Costo Unidad</div><div class="stat-value">${item.valor} M USD</div></div>
-                            <div class="stat-box"><div class="stat-label">Autonomía</div><div class="stat-value">${item.autonomia} Horas</div></div>
-                            <div class="stat-box"><div class="stat-label">V. Crucero</div><div class="stat-value">${item.crucero} KIAS</div></div>
-                            <div class="stat-box"><div class="stat-label">Rango Máx.</div><div class="stat-value">${item.rango} NM</div></div>
-                            <div class="stat-box"><div class="stat-label">Carga Útil</div><div class="stat-value">${item.peso}</div></div>
+                            <div class="stat-box"><div class="stat-label">Año</div><div class="stat-value">${item.año}</div></div>
+                            <div class="stat-box"><div class="stat-label">Valor</div><div class="stat-value">${item.valor}M</div></div>
+                            <div class="stat-box"><div class="stat-label">Auton.</div><div class="stat-value">${item.autonomia}h</div></div>
+                            <div class="stat-box"><div class="stat-label">Crucero</div><div class="stat-value">${item.crucero}k</div></div>
                         </div>
-                        <div class="stat-box" style="margin-top:15px; border-left-color: #2c3e50; background: #eaeded;">
-                            <div class="stat-label">Motorización</div>
-                            <div class="stat-value" style="font-size: 0.9rem;">${item.motor}</div>
+                        <div class="stat-box" style="margin-top:10px; background:#eaeded">
+                            <div class="stat-label">Motor</div><div class="stat-value">${item.motor}</div>
                         </div>
                         <div class="weapon-box">
-                            <div class="weapon-title">⚔️ CAPACIDAD DE ARMAMENTO</div>
-                            <div class="stat-value" style="color: #7b241c;">${item.arma}</div>
+                            <div style="font-weight:bold; color:var(--danger-color)">⚔️ ARMAMENTO</div>
+                            <div style="font-size:0.9rem">${item.arma}</div>
                         </div>
                     </div>
-                </div>
-            `;
-        } catch (e) {
-            viewArea.innerHTML = `<h1>Error de conexión</h1><p>No se pudo conectar con los servicios de información externa de Wikipedia en español.</p>`;
-        }
+                </div>`;
+        } catch (e) { viewArea.innerHTML = `<h1>Error de carga</h1>`; }
     }
 </script>
 </body>
 </html>
+
