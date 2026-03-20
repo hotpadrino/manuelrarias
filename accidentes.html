@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Accidentes - Análisis Técnico y Militar</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>⚠️</text></svg>">
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; margin: 20px; color: #1a1a1a; }
+        .container { background-color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 98%; margin: auto; }
+        
+        h2 { color: #003366; text-align: center; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-top: 0; text-transform: uppercase; }
+        
+        .search-box {
+            background-color: #f0f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #d1d9e6;
+        }
+        
+        #globalSearch {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #003366;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        #counterDisplay { 
+            background-color: #eef6ff;
+            padding: 12px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            color: #003366; 
+            border-left: 6px solid #0055ff;
+            font-size: 1.1em;
+        }
+
+        .table-wrapper { max-height: 60vh; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85em; min-width: 1000px; }
+        
+        /* Encabezados con formato UNIFICADO */
+        th { background-color: #003366; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; text-align: left; border-right: 1px solid #004080; }
+        
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.4; }
+        
+        .year-cell { width: 60px; text-align: center; font-weight: bold; }
+        .flight-cell { font-weight: bold; color: #0055ff; width: 150px; }
+        .summary-text { text-align: justify; color: #333; }
+        .plane-cell { width: 180px; font-style: italic; }
+        .victims-cell { width: 100px; text-align: center; font-weight: bold; }
+
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #f1f7ff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Análisis de Accidentes y Lecciones Aprendidas</h2>
+    
+    <div class="search-box">
+        <label for="globalSearch" style="font-weight: bold; display: block; margin-bottom: 8px;">🔍 BUSCADOR GLOBAL (Filtra en todas las columnas):</label>
+        <input type="text" id="globalSearch" onkeyup="filterTable()" placeholder="Escriba para buscar (ej: 1991, fatiga, STANAG, Boeing, software)...">
+    </div>
+
+    <div id="counterDisplay">Cargando base de datos...</div>
+    
+    <div class="table-wrapper">
+        <table id="accidentTable">
+            <thead>
+                <tr>
+                    <th class="year-cell">Año</th>
+                    <th class="flight-cell">Vuelo / Caso</th>
+                    <th>Resumen y Análisis de la Falla</th>
+                    <th class="plane-cell">Aeronave</th>
+                    <th class="victims-cell">Víctimas</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Base de datos completa integrada con los nuevos casos militares
+    const masterData = [
+        ["1954", "781 BOAC / 201 SAA", "Ventanas Cuadradas. Fatiga del metal en ángulos rectos. Descubierto mediante ensayos en tanque de agua. Evolución a ventanas ovales.", "Havilland DH-106 Comet", "35 y 21"],
+        ["1963", "214 de Pan Am", "Rayo. Explosión de tanques por vapores de combustible. Investigaciones sobre seguridad de vapores en tanques.", "Boeing 707-121", "81 de 81"],
+        ["1973", "820 de Varig", "Fuego. Cigarrillo en baño. Humo con monóxido de carbono. Llevó a la prohibición de fumar años después.", "Boeing 707-345C", "123 de 134"],
+        ["1985", "123 de Japan Airlines", "Reparación. Mamparo de presión con reparación defectuosa (una hilera de remaches). Falló tras 12.319 ciclos.", "Boeing 747-SR46", "520 de 524"],
+        ["1988", "243 de Aloha Airlines", "Brecha. Descompresión por fatiga del metal. Aeronave superó vida útil (89.680 vuelos frente a 75.000).", "Boeing 737-200", "1 de 95"],
+        ["1989", "232 de United Airlines", "3 hidráulicos. Explosión de motor 2 destruyó todos los sistemas hidráulicos. Control mediante gases de motores.", "McDonnell Douglas DC-10-10", "112 de 296"],
+        ["1991", "Pérdida de potencia USAF", "SHAFT. Falla de acoplamiento drive shaft. Advertencias de Bell ignoradas por USAF hasta la tragedia. Uso posterior de pintura Temp-Plates.", "UH-1N Huey USAF", "2 de 2"],
+        ["1994", "Fairchild AFB Practise", "COMPLACENCIA. Maniobras agresivas fuera de límites. Tolerancia de la cadena de mando a piloto con historial de violaciones.", "B-52 Stratofortress", "4 de 4"],
+        ["2000", "USMC Marana / Otros", "CERTIFICACIÓN. Accidente por VRS. Presión política para acelerar certificación de tecnología tilt-rotor sin entender límites.", "V-22 Osprey", "19 de 19"],
+        ["2006", "XV230 Afganistán", "MODIFICACIÓN. Fuga de combustible en contacto con tubería caliente. Error de diseño no detectado en estudios de seguridad previos.", "MR2 Nimrod RAF", "14 de 14"],
+        ["2007", "Entrenamiento F-15", "LARGUERO. Falla estructural por espesor inferior al diseño (1mm vs 2.5mm). Punto ciego de mantenimiento por ubicación interna.", "F-15C Eagle", "0 de 1"],
+        ["2010", "Elmendorf AFB", "REPARACIÓN OBOGS. Pérdida de oxígeno en sistema OBOGS. Factores de ergonomía y gestión de fallos en alta carga de trabajo.", "F-22 Raptor", "1 de 1"],
+        ["2010", "Batallón Caicedo", "COMPLACENCIA. Colisión en helipuerto improvisado. Ausencia de secuencia clara y control local efectivo con trayectorias convergentes.", "Bell 222 EJC / H-500 FAC", "8 de 8"],
+        ["2015", "Prueba Sevilla", "SOFTWARE. Error de configuración de FADEC borró parámetros de calibración. Fallo latente que solo apareció en el despegue.", "A-400M Atlas", "4 de 6"],
+        ["2017", "Accidente Leflore", "HÉLICE. Corrosión pintada y no eliminada en taller logístico en 2011. Falla sistémica por priorizar velocidad sobre seguridad.", "KC-130T Hercules", "16 de 16"],
+        ["2026", "Incidente El Dorado", "COMUNICACIÓN. Incursión de pista de helicóptero FAC durante despegue de A320. RTO de alta velocidad con reventón de llantas.", "Bell 212 / A320 LA4278", "0 de 160"]
+    ];
+
+    async function init() {
+        const tbody = document.getElementById('tableBody');
+        try {
+            const response = await fetch('accidentes.csv');
+            if (!response.ok) throw new Error();
+            const buffer = await response.arrayBuffer();
+            const decoder = new TextDecoder('windows-1252'); // Codificación para caracteres especiales de Excel
+            const data = decoder.decode(buffer);
+            const rows = data.split(/\r?\n/).slice(1);
+            tbody.innerHTML = '';
+            let count = 0;
+            rows.forEach(line => {
+                if (line.trim() === '') return;
+                const cols = line.split(';');
+                if (cols.length >= 5) { renderRow(cols); count++; }
+            });
+            updateCounter(count);
+        } catch (e) {
+            console.warn("Cargando datos integrados (CSV no detectado)");
+            tbody.innerHTML = '';
+            masterData.forEach(cols => renderRow(cols));
+            updateCounter(masterData.length);
+        }
+    }
+
+    function renderRow(cols) {
+        const tbody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="year-cell">${cols[0]}</td>
+            <td class="flight-cell">${cols[1]}</td>
+            <td class="summary-text">${cols[2]}</td>
+            <td class="plane-cell">${cols[3]}</td>
+            <td class="victims-cell">${cols[4]}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function filterTable() {
+        const input = document.getElementById("globalSearch").value.toUpperCase();
+        const tr = document.getElementById("tableBody").getElementsByTagName("tr");
+        let visibleCount = 0;
+        for (let i = 0; i < tr.length; i++) {
+            const rowText = tr[i].innerText.toUpperCase();
+            if (rowText.indexOf(input) > -1) {
+                tr[i].style.display = "";
+                visibleCount++;
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+        updateCounter(visibleCount);
+    }
+
+    function updateCounter(n) {
+        document.getElementById('counterDisplay').textContent = `Mostrando todos los registros (${n})`;
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
