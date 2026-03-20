@@ -3,45 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Contactos</title>
+    <title>Gestión de Contactos - Manuel</title>
     <link rel="icon" href="data:,">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #f8f9fa; }
-        .container { max-width: 800px; margin-top: 50px; }
-        .card { border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .table-container { background: white; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        body { background-color: #f4f7f6; padding-bottom: 50px; }
+        .container { max-width: 900px; margin-top: 30px; }
+        .admin-only { display: none; } /* Oculto por defecto */
+        .card { border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .table-container { background: white; border-radius: 10px; padding: 25px; }
+        #login-section { margin-top: 60px; border-top: 2px solid #dee2e6; padding-top: 30px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="card p-4 mb-4">
-        <h2 class="text-center mb-4 text-primary">Registro de Usuarios</h2>
+    <h2 class="text-center mb-4">Directorio de Contactos</h2>
+
+    <div id="admin-form" class="card p-4 mb-4 admin-only">
+        <h5 class="text-primary">Nuevo Contacto</h5>
         <div class="row g-3">
             <div class="col-md-5">
-                <input type="text" id="nombre" class="form-control" placeholder="Nombre completo">
+                <input type="text" id="nombre" class="form-control" placeholder="Nombre">
             </div>
             <div class="col-md-5">
                 <input type="text" id="telefono" class="form-control" placeholder="Teléfono">
             </div>
             <div class="col-md-2">
-                <button onclick="guardarDato()" class="btn btn-primary w-100">Guardar</button>
+                <button onclick="guardarDato()" class="btn btn-success w-100">Agregar</button>
             </div>
         </div>
     </div>
 
     <div class="table-container">
-        <h4 class="mb-3">Lista de Contactos</h4>
         <div class="table-responsive">
             <table id="tablaDatos" class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>ID</th>
                         <th>Nombre</th>
                         <th>Teléfono</th>
-                        <th class="text-center">Acciones</th>
+                        <th class="admin-only text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,87 +51,123 @@
             </table>
         </div>
     </div>
+
+    <div id="login-section" class="text-center">
+        <div id="login-form" class="mx-auto" style="max-width: 350px;">
+            <p class="text-muted small">Acceso administrativo</p>
+            <input type="email" id="admin-email" class="form-control mb-2" placeholder="Email">
+            <input type="password" id="admin-pass" class="form-control mb-2" placeholder="Contraseña">
+            <button onclick="login()" class="btn btn-outline-primary btn-sm w-100">Entrar como Admin</button>
+        </div>
+        
+        <div id="logout-section" class="admin-only">
+            <p class="text-success fw-bold">Sesión iniciada como Administrador</p>
+            <button onclick="logout()" class="btn btn-danger btn-sm">Cerrar Sesión</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // CONFIGURACIÓN (Mantén tus claves actuales)
+    // 1. CONFIGURACIÓN (Reemplaza con tus datos reales)
     const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // CARGAR DATOS
-    async function cargarDatos() {
-        const { data, error } = await db.from('tabla').select('*').order('id', { ascending: true });
-        if (error) {
-            console.error('Error:', error.message);
-        } else {
-            mostrarEnTabla(data);
-        }
+    let isAdmin = false;
+
+    // 2. REVISAR SESIÓN AL CARGAR
+    async function checkSession() {
+        const { data: { session } } = await db.auth.getSession();
+        isAdmin = !!session;
+        actualizarInterfaz();
+        cargarDatos();
     }
 
-    // MOSTRAR EN TABLA CON BOTONES
-    function mostrarEnTabla(datos) {
+    // 3. ACTUALIZAR VISIBILIDAD DE INTERFAZ
+    function actualizarInterfaz() {
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(el => el.style.display = isAdmin ? 'block' : 'none');
+        
+        // El login form se oculta si ya soy admin
+        document.getElementById('login-form').style.display = isAdmin ? 'none' : 'block';
+        
+        // El botón de logout se muestra si soy admin
+        document.getElementById('logout-section').style.display = isAdmin ? 'block' : 'none';
+
+        // Ajustar específicamente la columna de la tabla si el elemento existe
+        const thAcciones = document.querySelector('th.admin-only');
+        if(thAcciones) thAcciones.style.display = isAdmin ? 'table-cell' : 'none';
+    }
+
+    // 4. CARGAR DATOS
+    async function cargarDatos() {
+        const { data, error } = await db.from('tabla').select('*').order('nombre');
+        if (error) console.error(error);
+        else mostrarTabla(data);
+    }
+
+    function mostrarTabla(datos) {
         const cuerpo = document.querySelector('#tablaDatos tbody');
         cuerpo.innerHTML = '';
         datos.forEach(fila => {
+            let accionesHTML = isAdmin ? `
+                <td class="text-center">
+                    <button class="btn btn-sm btn-warning" onclick="editarDato(${fila.id}, '${fila.nombre}', '${fila.telefono}')">✎</button>
+                    <button class="btn btn-sm btn-danger" onclick="borrarDato(${fila.id})">🗑</button>
+                </td>` : '';
+
             cuerpo.innerHTML += `
                 <tr>
-                    <td>${fila.id}</td>
                     <td>${fila.nombre}</td>
                     <td>${fila.telefono}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-warning me-2" onclick="editarDato(${fila.id}, '${fila.nombre}', '${fila.telefono}')">Editar</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="borrarDato(${fila.id})">Borrar</button>
-                    </td>
+                    ${accionesHTML}
                 </tr>`;
         });
     }
 
-    // GUARDAR NUEVO
-    async function guardarDato() {
-        const nom = document.getElementById('nombre').value;
-        const tel = document.getElementById('telefono').value;
-
-        if (!nom || !tel) return alert("Por favor, llena todos los campos");
-
-        const { error } = await db.from('tabla').insert([{ nombre: nom, telefono: tel }]);
-        
+    // 5. ACCIONES ADMIN
+    async function login() {
+        const email = document.getElementById('admin-email').value;
+        const pass = document.getElementById('admin-pass').value;
+        const { error } = await db.auth.signInWithPassword({ email, password: pass });
         if (error) alert("Error: " + error.message);
-        else {
-            document.getElementById('nombre').value = '';
-            document.getElementById('telefono').value = '';
+        else location.reload();
+    }
+
+    async function logout() {
+        await db.auth.signOut();
+        location.reload();
+    }
+
+    async function guardarDato() {
+        const nombre = document.getElementById('nombre').value;
+        const telefono = document.getElementById('telefono').value;
+        const { error } = await db.from('tabla').insert([{ nombre, telefono }]);
+        if (error) alert(error.message);
+        else { 
+            document.getElementById('nombre').value = ''; 
+            document.getElementById('telefono').value = ''; 
+            cargarDatos(); 
+        }
+    }
+
+    async function borrarDato(id) {
+        if(confirm("¿Borrar contacto?")) {
+            await db.from('tabla').delete().eq('id', id);
             cargarDatos();
         }
     }
 
-    // BORRAR DATO
-    async function borrarDato(id) {
-        if (!confirm("¿Seguro que quieres eliminar este registro?")) return;
-
-        const { error } = await db.from('tabla').delete().eq('id', id);
-        
-        if (error) alert("Error al borrar: " + error.message);
-        else cargarDatos();
+    async function editarDato(id, n, t) {
+        const nuevoN = prompt("Nombre:", n);
+        const nuevoT = prompt("Teléfono:", t);
+        if(nuevoN && nuevoT) {
+            await db.from('tabla').update({ nombre: nuevoN, telefono: nuevoT }).eq('id', id);
+            cargarDatos();
+        }
     }
 
-    // EDITAR DATO
-    async function editarDato(id, nombreActual, telefonoActual) {
-        const nuevoNombre = prompt("Nuevo nombre:", nombreActual);
-        const nuevoTelefono = prompt("Nuevo teléfono:", telefonoActual);
-
-        if (nuevoNombre === null || nuevoTelefono === null) return;
-
-        const { error } = await db.from('tabla')
-            .update({ nombre: nuevoNombre, telefono: nuevoTelefono })
-            .eq('id', id);
-
-        if (error) alert("Error al actualizar: " + error.message);
-        else cargarDatos();
-    }
-
-    // Inicio
-    cargarDatos();
+    checkSession();
 </script>
-
 </body>
 </html>
