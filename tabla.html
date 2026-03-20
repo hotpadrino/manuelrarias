@@ -37,11 +37,11 @@
         // CONFIGURACIÓN (Copia tus datos de Supabase aquí)
         const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // 2. Función para leer (Nombre de tabla: 'tabla')
         async function cargarDatos() {
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('tabla') // Nombre exacto de tu tabla
                 .select('*');
         
@@ -57,7 +57,7 @@
             const nom = document.getElementById('nombre').value;
             const tel = document.getElementById('telefono').value;
         
-            const { data, error } = await supabase
+            const { data, error } = await db
                 .from('tabla')
                 .insert([{ nombre: nom, telefono: tel }]); // Coincidir con tus columnas
         
