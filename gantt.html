@@ -418,6 +418,14 @@
 
         loadInitialData();
         setViewMode('days');
+
+        function editProjectTitle() {
+            const titleElement = document.getElementById('project-main-title');
+            const newTitle = prompt("Ingrese el nuevo título del proyecto:", titleElement.innerText);
+            if (newTitle !== null && newTitle.trim() !== "") {
+                titleElement.innerText = newTitle.trim();
+            }
+        }
     </script>
 </body>
 </html>
