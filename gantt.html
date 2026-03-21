@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gantt Enterprise v3.0</title>
+    <title>Gantt Enterprise Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,54 +12,80 @@
         .row-h { height: 46px; }
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
-        
         @media (max-width: 768px) {
             #task-sidebar { position: absolute; left: -280px; z-index: 50; transition: left 0.3s ease; }
             #task-sidebar.open { left: 0; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-2 sm:p-6">
+<body class="bg-slate-50 text-slate-800 font-sans p-2 sm:p-4">
 
-    <div class="max-w-7xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
+    <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase tracking-widest text-rose-600">Información</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-content" class="text-xs space-y-3">
+                <p><b class="text-slate-400 font-medium">ID Actividad:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
+                <p><b class="text-slate-400 font-medium">Responsable:</b> <span id="m-owner" class="text-slate-700"></span></p>
+                <p><b class="text-slate-400 font-medium">Periodo:</b> <span id="m-period" class="text-slate-700"></span></p>
+                <div class="pt-2">
+                    <span class="text-slate-400 block mb-1 uppercase text-[9px] font-bold">Observaciones:</span>
+                    <div id="m-obs" class="bg-slate-50 p-4 rounded-xl text-slate-600 italic leading-relaxed border border-slate-100 min-h-[80px]"></div>
+                </div>
+            </div>
+            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase active:scale-95 transition">Cerrar</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
         <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-white">
             <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden p-2 bg-slate-100 rounded-lg text-slate-600"><i class="fas fa-bars"></i></button>
-                <h2 class="text-sm font-black text-slate-800 tracking-tight uppercase">Cronograma Maestro</h2>
+                <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500"><i class="fas fa-bars"></i></button>
+                <div>
+                    <h2 class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Gantt Enterprise</h2>
+                    <p id="file-status" class="text-[10px] font-bold text-slate-800">Cargando datos...</p>
+                </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <div class="relative inline-block text-left">
-                    <button onclick="toggleDrop()" class="h-9 px-4 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-xl border border-slate-200 hover:bg-slate-200 transition flex items-center gap-2 uppercase tracking-wider">
-                        <i class="fas fa-file-csv text-slate-400"></i> Datos <i class="fas fa-chevron-down"></i>
+                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition bg-white shadow-sm">Días</button>
+                    <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Semanas</button>
+                    <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Meses</button>
+                </div>
+                <div class="relative">
+                    <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-4 bg-slate-50 text-slate-700 text-[10px] font-bold rounded-xl border border-slate-200 flex items-center gap-2">
+                        <i class="fas fa-file-csv text-rose-500"></i> DATOS <i class="fas fa-chevron-down text-[8px]"></i>
                     </button>
-                    <div id="drop-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
-                        <label class="flex items-center gap-3 px-4 py-3 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50">
-                            <i class="fas fa-upload text-blue-500"></i> IMPORTAR CSV
+                    <div id="drop-menu" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
+                        <label class="flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50 transition">
+                            <i class="fas fa-file-import text-blue-500"></i> IMPORTAR CSV
                             <input type="file" id="csvIn" class="hidden" accept=".csv" onchange="handleFile(this)">
                         </label>
-                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-3 text-[10px] font-bold text-slate-600 hover:bg-slate-50">
-                            <i class="fas fa-download text-emerald-500"></i> EXPORTAR CSV
+                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition text-left">
+                            <i class="fas fa-file-export text-emerald-500"></i> EXPORTAR CSV
                         </button>
                     </div>
                 </div>
-
-                <div class="h-9 w-px bg-slate-200 mx-1"></div>
-                
-                <button onclick="scrollToToday()" class="h-9 px-4 bg-rose-500 text-white text-[10px] font-black rounded-xl shadow-lg shadow-rose-100 uppercase transition active:scale-95">Ir a Hoy</button>
+                <button onclick="scrollToToday()" class="h-9 px-5 bg-rose-500 text-white text-[10px] font-black rounded-xl shadow-lg shadow-rose-100 uppercase transition active:scale-95">Hoy</button>
             </div>
         </div>
 
-        <div class="flex overflow-hidden relative" style="height: 60vh;">
-            <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden" onclick="toggleSidebar()"></div>
+        <div class="flex overflow-hidden relative" style="height: 58vh;">
+            <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/10 z-40 md:hidden" onclick="toggleSidebar()"></div>
             
-            <div id="task-sidebar" class="w-[280px] md:w-72 flex-shrink-0 border-r border-slate-100 flex flex-col bg-white h-full overflow-hidden">
-                <div class="row-h flex items-center px-4 font-bold bg-slate-50/50 border-b border-slate-100 text-[9px] text-slate-400 uppercase tracking-widest">WBS / Tareas</div>
+            <div id="task-sidebar" class="w-[280px] md:w-72 flex-shrink-0 border-r border-slate-100 flex flex-col bg-white h-full">
+                <div class="row-h flex items-center px-5 font-bold bg-slate-50 border-b border-slate-100 text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</div>
                 <div id="task-list" class="flex-grow overflow-y-auto gantt-scroll"></div>
             </div>
 
-            <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative">
-                <div id="timeline-header" class="flex sticky top-0 z-20 bg-white/95 border-b border-slate-100"></div>
+            <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
+                <div id="gantt-header-container" class="sticky top-0 z-20 bg-white/95 border-b border-slate-100">
+                    <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50/50"></div>
+                    <div id="unit-header" class="flex"></div>
+                </div>
                 <div id="bars-container" class="relative">
                     <div id="today-line"><span id="today-label">HOY</span></div>
                 </div>
@@ -67,34 +93,61 @@
         </div>
     </div>
 
-    <footer class="mt-12 mb-8 max-w-4xl mx-auto px-4">
+    <footer class="mt-12 mb-8 max-w-4xl mx-auto px-6 text-center">
         <div class="w-full h-px bg-slate-200 mb-6 opacity-60"></div>
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="text-center md:text-left">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2026 • Tecnología de vanguardia</p>
-                <p class="text-[9px] text-slate-300">HTML5 • Tailwind • JS</p>
-            </div>
-            <div class="flex gap-4">
-                <a href="https://wa.me/573128816469" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-500 hover:text-green-600 transition-colors text-[10px] font-bold border border-slate-200 shadow-sm"><i class="fab fa-whatsapp"></i> WHATSAPP</a>
-                <a href="mailto:alucard8@gmail.com" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-500 hover:text-blue-600 transition-colors text-[10px] font-bold border border-slate-200 shadow-sm"><i class="far fa-envelope"></i> EMAIL</a>
-            </div>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">© 2026 • Tecnología de vanguardia</p>
+        <div class="flex justify-center gap-4 text-[10px] font-bold uppercase">
+            <a href="https://wa.me/573128816469" class="hover:text-green-600 transition"><i class="fab fa-whatsapp mr-1"></i> WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition"><i class="far fa-envelope mr-1"></i> Email</a>
         </div>
     </footer>
 
     <script>
-        // Configuración de fechas reales (Formato DD/MM/AAAA)
-        const startDateProject = new Date(2026, 2, 1); // 1 de Marzo 2026
-        const zoom = 50;
+        // Datos por defecto si falla la lectura del archivo raíz
+        const defaultCSVData = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
+1;Plan Maestro;Dir;1/03/2026;15/03/2026;Notas de la tarea maestra.
+1.1;Fase Ingeniería;Arq;1/03/2026;8/03/2026;Notas de ingeniería detallada.
+1.2;Planos Estructurales;Soto;1/03/2026;4/03/2026;Revisar cálculos de carga.
+1.3;Memoria Cálculo;Luna;5/03/2026;8/03/2026;Validación por interventoría.
+2;Fase Compras;Adm;9/03/2026;15/03/2026;Gestión de suministros.
+2.1;Acero de Refuerzo;Gómez;9/03/2026;12/03/2026;Varillas grado 60.
+2.2;Ejecución Obra;Residente;16/03/2026;25/03/2026;Actividades en terreno.`;
 
-        let tasks = [
-            { id: 1, level: 1, name: "Plan Maestro", owner: "Dir", start: "01/03/2026", end: "15/03/2026", open: true },
-            { id: 2, level: 2, name: "Fase Ingeniería", owner: "Arq", start: "01/03/2026", end: "08/03/2026", parent: 1, open: true },
-            { id: 3, level: 3, name: "Planos Estructurales", owner: "Soto", start: "01/03/2026", end: "04/03/2026", parent: 2 },
-            { id: 4, level: 3, name: "Memoria Cálculo", owner: "Luna", start: "05/03/2026", end: "08/03/2026", parent: 2 },
-            { id: 5, level: 2, name: "Fase Compras", owner: "Adm", start: "09/03/2026", end: "15/03/2026", parent: 1, open: true },
-            { id: 6, level: 3, name: "Acero de Refuerzo", owner: "Gómez", start: "09/03/2026", end: "12/03/2026", parent: 5 },
-            { id: 7, level: 1, name: "Ejecución Obra", owner: "Residente", start: "16/03/2026", end: "25/03/2026", open: true }
-        ];
+        let tasks = [];
+        let viewMode = 'days'; 
+        let columnWidth = 45;
+        const projectStart = new Date(2026, 2, 1);
+
+        // Función para intentar leer gantt.csv en la raíz
+        async function loadInitialData() {
+            try {
+                const response = await fetch('gantt.csv');
+                if (!response.ok) throw new Error("No se encontró gantt.csv en la raíz");
+                const text = await response.text();
+                tasks = parseCSV(text);
+                document.getElementById('file-status').innerText = "gantt.csv cargado desde raíz";
+            } catch (error) {
+                console.warn(error.message);
+                tasks = parseCSV(defaultCSVData);
+                document.getElementById('file-status').innerText = "Usando datos por defecto";
+            }
+            render();
+            setTimeout(scrollToToday, 500);
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(';');
+                if (cols.length >= 6) {
+                    const idStr = cols[0].trim();
+                    const level = idStr.split('.').filter(n => n !== "").length;
+                    data.push({ id: idStr, level: level, name: cols[1].trim(), owner: cols[2].trim(), start: cols[3].trim(), end: cols[4].trim(), obs: cols[5].trim(), open: true });
+                }
+            }
+            return data;
+        }
 
         function parseDate(str) {
             const [d, m, y] = str.split('/').map(Number);
@@ -105,102 +158,163 @@
             return Math.ceil((d1 - d2) / (1000 * 60 * 60 * 24));
         }
 
-        function toggleDrop() { document.getElementById('drop-menu').classList.toggle('hidden'); }
-        function toggleSidebar() { 
-            document.getElementById('task-sidebar').classList.toggle('open');
-            document.getElementById('sidebar-overlay').classList.toggle('hidden');
+        function setViewMode(mode) {
+            viewMode = mode;
+            columnWidth = mode === 'days' ? 45 : (mode === 'weeks' ? 80 : 120);
+            ['days', 'weeks', 'months'].forEach(m => {
+                document.getElementById(`btn-${m}`).className = `px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
+            });
+            render();
         }
 
         function render() {
             const listObj = document.getElementById('task-list');
-            const headerObj = document.getElementById('timeline-header');
+            const monthHeader = document.getElementById('month-header');
+            const unitHeader = document.getElementById('unit-header');
             const barsObj = document.getElementById('bars-container');
             const todayLine = document.getElementById('today-line');
 
-            listObj.innerHTML = ''; headerObj.innerHTML = '';
+            listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const today = new Date(); // Fecha real de hoy
-            const dayOfToday = diffDays(today, startDateProject) + 1;
-            todayLine.style.left = ((dayOfToday - 1) * zoom + (zoom/2)) + "px";
+            const totalProjectDays = 150;
+            const today = new Date();
+            const dayOfToday = diffDays(today, projectStart);
+            const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
+            todayLine.style.left = (dayOfToday * scaleFactor) + "px";
 
-            // Header Días Reales
-            for(let i=0; i<31; i++) {
-                const cur = new Date(startDateProject);
-                cur.setDate(cur.getDate() + i);
-                const isToday = cur.toDateString() === today.toDateString();
+            // Header Multinivel
+            if (viewMode !== 'months') {
+                monthHeader.classList.remove('hidden');
+                let curMonth = -1; let monthBox = null;
+                const units = viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7);
+                for (let i = 0; i < units; i++) {
+                    const cur = new Date(projectStart); cur.setDate(cur.getDate() + (i * (viewMode === 'days' ? 1 : 7)));
+                    if (cur.getMonth() !== curMonth) {
+                        curMonth = cur.getMonth();
+                        monthBox = document.createElement('div');
+                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 py-1.5 uppercase tracking-widest";
+                        monthBox.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+                        monthHeader.appendChild(monthBox);
+                    }
+                    monthBox.style.width = (parseFloat(monthBox.style.width || 0) + columnWidth) + "px";
 
-                const d = document.createElement('div');
-                d.className = `flex-shrink-0 border-r border-slate-100 flex flex-col items-center justify-center ${isToday ? 'bg-rose-50 text-rose-500 font-bold' : 'text-slate-400'}`;
-                d.style.width = zoom + "px"; d.style.height = "46px";
-                d.innerHTML = `<span class="text-[8px]">${cur.toLocaleDateString('es-ES',{weekday:'short'})}</span><span class="text-[9px]">${cur.getDate()}</span>`;
-                headerObj.appendChild(d);
+                    const d = document.createElement('div');
+                    d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] ${cur.toDateString() === today.toDateString() && viewMode === 'days' ? 'bg-rose-50 text-rose-500 font-bold' : 'text-slate-400'}`;
+                    d.style.width = columnWidth + "px"; d.style.height = "38px";
+                    d.innerText = viewMode === 'days' ? cur.getDate() : `S${i+1}`;
+                    unitHeader.appendChild(d);
+                }
+            } else {
+                monthHeader.classList.add('hidden');
+                for (let i = 0; i < 6; i++) {
+                    const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
+                    const d = document.createElement('div');
+                    d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
+                    d.style.width = columnWidth + "px"; d.style.height = "52px";
+                    d.innerText = cur.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
+                    unitHeader.appendChild(d);
+                }
             }
 
-            // Jerarquía de IDs
-            let idx = [0, 0, 0];
+            // Tareas y Plegado
             tasks.forEach((t) => {
-                const p1 = tasks.find(p => p.id === t.parent);
-                const p2 = p1 ? tasks.find(p => p.id === p1.parent) : null;
-                const isHidden = (p1 && !p1.open) || (p2 && !p2.open);
+                let isHidden = false;
+                const parts = t.id.split('.');
+                if (parts.length > 1) {
+                    const p1 = tasks.find(x => x.id === parts[0]);
+                    if (p1 && !p1.open) isHidden = true;
+                    if (parts.length > 2) {
+                        const p2 = tasks.find(x => x.id === parts[0] + '.' + parts[1]);
+                        if (p2 && !p2.open) isHidden = true;
+                    }
+                }
 
-                if(t.level === 1) { idx[0]++; idx[1]=0; idx[2]=0; t.dId = idx[0]; }
-                else if(t.level === 2) { idx[1]++; idx[2]=0; t.dId = `${idx[0]}.${idx[1]}`; }
-                else { idx[2]++; t.dId = `${idx[0]}.${idx[1]}.${idx[2]}`; }
-
-                // Fila Lista
                 const lRow = document.createElement('div');
-                lRow.className = `row-h flex items-center px-4 border-b border-slate-50 text-[10px] hover:bg-slate-50 transition-colors ${isHidden ? 'hidden' : ''}`;
-                lRow.style.paddingLeft = (t.level * 12) + "px";
-                const icon = t.level < 3 ? (t.open ? '▼' : '▶') : '•';
-                lRow.innerHTML = `<span class="truncate cursor-pointer text-slate-700">
-                    <b class="text-rose-500 mr-1">${icon} ${t.dId}</b> ${t.name}
+                lRow.className = `row-h flex items-center px-4 border-b border-slate-50 text-[10px] hover:bg-slate-50 transition-all ${isHidden ? 'hidden' : ''}`;
+                lRow.style.paddingLeft = (t.level === 1 ? 12 : t.level === 2 ? 26 : 42) + "px";
+                
+                const children = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
+                const arrow = children ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
+                
+                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center">
+                    ${arrow} <span onclick="openModal(tasks.find(x=>x.id==='${t.id}'))"><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span>
                 </span>`;
-                lRow.onclick = () => { if(t.level < 3) { t.open = !t.open; render(); } };
                 listObj.appendChild(lRow);
 
-                // Barra
-                const startX = diffDays(parseDate(t.start), startDateProject);
-                const duration = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
-
+                const startDays = diffDays(parseDate(t.start), projectStart);
+                const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (31 * zoom) + "px";
+                bRow.style.width = (150 * columnWidth) + "px";
 
                 const bar = document.createElement('div');
-                bar.className = `absolute top-3 rounded flex items-center px-2 text-[8px] font-bold border shadow-sm truncate transition-all
-                    ${t.level === 1 ? 'bg-rose-500 text-white border-rose-600' : t.level === 2 ? 'bg-slate-700 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-300'}`;
-                bar.style.left = (startX * zoom) + "px";
-                bar.style.width = (duration * zoom) + "px";
-                bar.style.height = "20px";
+                bar.className = `absolute top-3 rounded-lg flex items-center px-2 text-[8px] font-bold shadow-sm cursor-pointer transition-all ${t.level === 1 ? 'bg-rose-500 text-white' : 'bg-slate-700 text-white'}`;
+                bar.style.left = (startDays * scaleFactor) + "px";
+                bar.style.width = (dur * scaleFactor) + "px";
+                bar.style.height = "22px";
                 bar.innerText = t.owner;
-                
+                bar.onclick = () => openModal(t);
                 bRow.appendChild(bar);
                 barsObj.appendChild(bRow);
             });
         }
 
-        function scrollToToday() {
-            const vp = document.getElementById('timeline-viewport');
-            const todayPos = (diffDays(new Date(), startDateProject) * zoom) - (vp.offsetWidth / 2);
-            vp.scrollTo({ left: todayPos, behavior: 'smooth' });
+        function toggleNode(id) {
+            const t = tasks.find(x => x.id === id);
+            if (t) { t.open = !t.open; render(); }
+        }
+
+        function openModal(t) {
+            document.getElementById('m-id').innerText = t.id;
+            document.getElementById('m-owner').innerText = t.owner;
+            document.getElementById('m-period').innerText = `${t.start} a ${t.end}`;
+            document.getElementById('m-obs').innerText = t.obs || "Sin notas.";
+            document.getElementById('modal-title').innerText = t.name;
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.getElementById('detail-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.getElementById('detail-modal').classList.remove('flex');
+        }
+
+        function handleFile(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => { tasks = parseCSV(e.target.result); render(); };
+            reader.readAsText(file, 'UTF-8');
+            document.getElementById('drop-menu').classList.add('hidden');
         }
 
         function exportCSV() {
-            let csv = "ID,Nivel,Tarea,Responsable,Inicio,Fin\n";
-            tasks.forEach(t => csv += `${t.id},${t.level},${t.name},${t.owner},${t.start},${t.end}\n`);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'gantt_export.csv'; a.click();
+            let csv = "ID;Tarea;Responsable;Inicio;Fin;Observaciones\n";
+            tasks.forEach(t => csv += `${t.id};${t.name};${t.owner};${t.start};${t.end};${t.obs}\n`);
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'gantt.csv'; a.click();
+            document.getElementById('drop-menu').classList.add('hidden');
+        }
+
+        function scrollToToday() {
+            const vp = document.getElementById('timeline-viewport');
+            const dayOfToday = diffDays(new Date(), projectStart);
+            const factor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
+            vp.scrollTo({ left: (dayOfToday * factor) - (vp.offsetWidth / 2), behavior: 'smooth' });
+        }
+
+        function toggleSidebar() {
+            document.getElementById('task-sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('hidden');
         }
 
         document.getElementById('timeline-viewport').onscroll = function() {
             document.getElementById('task-list').scrollTop = this.scrollTop;
         };
 
-        render();
-        setTimeout(scrollToToday, 500);
+        // Iniciar carga automática
+        loadInitialData();
     </script>
 </body>
 </html>
