@@ -1,112 +1,142 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gantt Pro - Cronogramas</title>
+    <title>Gantt Enterprise Pro</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: {} }
+        }
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        html, body { height: 100%; overflow: hidden; background-color: #f8fafc; margin: 0; }
-        :root { --header-h: 90px; --row-h: 48px; }
+        html, body { height: 100%; overflow: hidden; margin: 0; }
+        :root { 
+            --sidebar-w: 280px; 
+            --header-h: 64px; 
+            --row-h: 40px;    
+        }
 
         .gantt-scroll::-webkit-scrollbar { width: 4px; height: 6px; }
-        .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .gantt-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        .dark .gantt-scroll::-webkit-scrollbar-thumb { background: #475569; }
         
-        .row-h { 
-            height: var(--row-h) !important; 
-            min-height: var(--row-h) !important; 
-            max-height: var(--row-h) !important;
-            display: flex; align-items: center; box-sizing: border-box;
-        }
-        .header-total-h { height: var(--header-h) !important; }
+        .row-h { height: var(--row-h); min-height: var(--row-h); display: flex; align-items: center; box-sizing: border-box; }
+        .sidebar-w { width: var(--sidebar-w); min-width: var(--sidebar-w); max-width: var(--sidebar-w); }
+
+        #header-scroll-container { overflow: hidden; }
+        #month-header, #unit-header { display: flex; flex-wrap: nowrap; }
 
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
-        #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
+        #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 1px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
 
-        /* Contenedores de cabezal para evitar desalineación */
-        #month-header { display: flex; flex-wrap: nowrap; min-width: max-content; }
-        #unit-header { display: flex; flex-wrap: nowrap; min-width: max-content; }
-
+        /* LÓGICA MÓVIL CORREGIDA */
         @media (max-width: 768px) {
-            #task-sidebar { 
-                position: absolute; left: -280px; z-index: 50; 
-                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                width: 280px; height: 100%; box-shadow: 10px 0 15px -3px rgba(0,0,0,0.1);
+            :root { --sidebar-w: 240px; }
+            #task-sidebar, #sidebar-header { 
+                position: absolute; 
+                left: calc(-1 * var(--sidebar-w)); 
+                z-index: 50; 
+                transition: left 0.3s ease; 
             }
-            #task-sidebar.open { left: 0; }
+            #task-sidebar.open, #sidebar-header.open { 
+                left: 0; 
+            }
         }
     </style>
 </head>
-<body class="p-1 sm:p-4 flex flex-col">
+<body class="p-0 sm:p-2 flex flex-col bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-    <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in duration-200">
+    <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-start mb-4">
-                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase">Detalles</h3>
-                <button onclick="closeModal()" class="text-slate-400 p-2"><i class="fas fa-times"></i></button>
+                <h3 id="modal-title" class="text-xs font-black text-slate-900 dark:text-white uppercase">Detalles</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-rose-500 p-2"><i class="fas fa-times"></i></button>
             </div>
             <div id="modal-content" class="text-xs space-y-3">
-                <p><b class="text-slate-400">ID:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
-                <p><b class="text-slate-400">Responsable:</b> <span id="m-owner"></span></p>
-                <p><b class="text-slate-400">Periodo:</b> <span id="m-period"></span></p>
-                <div class="bg-slate-50 p-4 rounded-xl italic text-slate-600 border border-slate-100 min-h-[80px]" id="m-obs"></div>
+                <p><b class="text-slate-500 dark:text-slate-400">ID:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
+                <p><b class="text-slate-500 dark:text-slate-400">Responsable:</b> <span id="m-owner" class="dark:text-slate-200"></span></p>
+                <p><b class="text-slate-500 dark:text-slate-400">Periodo:</b> <span id="m-period" class="dark:text-slate-200"></span></p>
+                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl italic text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700 min-h-[80px]" id="m-obs"></div>
             </div>
-            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase">Cerrar</button>
+            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 dark:bg-slate-700 text-white py-2.5 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-800 dark:hover:bg-slate-600 transition">Cerrar</button>
         </div>
     </div>
 
-    <div class="flex-grow flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
-        <div class="p-3 sm:p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-white z-30">
+    <div class="flex-grow flex flex-col bg-white dark:bg-slate-900 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden relative">
+        
+        <div class="px-4 py-2 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between z-40 bg-white dark:bg-slate-900 relative">
             <div class="flex items-center gap-3">
-                <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500"><i class="fas fa-bars"></i></button>
+                <button onclick="toggleSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"><i class="fas fa-bars"></i></button>
                 <div>
-                    <h2 class="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Gantt Enterprise</h2>
-                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-800">Visualizador de cronogramas con barras</p>
+                    <h2 class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-0.5">Gantt Enterprise</h2>
+                    <p class="text-[10px] font-bold text-slate-800 dark:text-slate-300">Control de Certificación</p>
                 </div>
             </div>
-
             <div class="flex items-center gap-2">
-                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 scale-90 sm:scale-100">
-                    <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition">Días</button>
-                    <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition">Semanas</button>
-                    <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition">Meses</button>
+                <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Alternar Tema">
+                    🌓
+                </button>
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 hidden sm:flex">
+                    <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[8px] font-bold uppercase rounded-md transition">Días</button>
+                    <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[8px] font-bold uppercase rounded-md transition">Semanas</button>
+                    <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[8px] font-bold uppercase rounded-md transition">Meses</button>
                 </div>
-
+                
                 <div class="relative group">
-                    <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-3 bg-slate-50 text-slate-700 text-[9px] font-bold rounded-xl border border-slate-200 flex items-center gap-2">
-                        <i class="fas fa-database text-rose-500"></i> DATOS
+                    <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-8 px-3 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[8px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                        <i class="fas fa-database text-rose-500"></i> <span class="hidden sm:inline">DATOS</span>
                     </button>
-                    <div id="drop-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
-                        <label class="flex items-center gap-3 px-4 py-4 text-[9px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50">
+                    <div id="drop-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 z-50 overflow-hidden">
+                        
+                        <div class="sm:hidden flex flex-col border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-2 gap-1">
+                            <span class="text-[8px] font-black text-slate-400 px-2 uppercase mb-1">Vista</span>
+                            <div class="flex gap-1">
+                                <button onclick="setViewMode('days')" class="flex-1 py-1 text-[8px] font-bold uppercase rounded bg-white dark:bg-slate-700 shadow-sm">Días</button>
+                                <button onclick="setViewMode('weeks')" class="flex-1 py-1 text-[8px] font-bold uppercase rounded border border-slate-200 dark:border-slate-600">Sem</button>
+                                <button onclick="setViewMode('months')" class="flex-1 py-1 text-[8px] font-bold uppercase rounded border border-slate-200 dark:border-slate-600">Mes</button>
+                            </div>
+                        </div>
+
+                        <label class="flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700">
                             <i class="fas fa-file-import text-blue-500"></i> IMPORTAR CSV
                             <input type="file" id="csvIn" class="hidden" accept=".csv" onchange="handleFile(this)">
                         </label>
-                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-4 text-[9px] font-bold text-slate-600 hover:bg-slate-50 text-left">
+                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-left">
                             <i class="fas fa-file-export text-emerald-500"></i> EXPORTAR CSV
                         </button>
                     </div>
                 </div>
-                <button onclick="scrollToToday()" class="h-9 px-4 sm:px-5 bg-rose-500 text-white text-[9px] font-black rounded-xl shadow-lg uppercase transition">Hoy</button>
+                <button onclick="scrollToToday()" class="h-8 px-3 sm:px-4 bg-rose-500 hover:bg-rose-600 text-white text-[8px] font-black rounded-lg shadow-md uppercase transition">Hoy</button>
+            </div>
+        </div>
+
+        <div class="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 z-30 relative">
+            
+            <div id="sidebar-header" class="sidebar-w flex items-center px-5 font-bold border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 h-[64px]">
+                <span class="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">Estructura WBS</span>
+            </div>
+            
+            <div id="header-scroll-container" class="flex-grow">
+                <div id="gantt-header-content" class="flex flex-col h-[64px]">
+                    <div id="month-header" class="border-b border-slate-200 dark:border-slate-800 h-[28px] items-center"></div>
+                    <div id="unit-header" class="h-[36px] items-center"></div>
+                </div>
             </div>
         </div>
 
         <div class="flex-grow flex overflow-hidden relative">
-            <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/10 z-40 md:hidden" onclick="toggleSidebar()"></div>
+            <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/50 z-40 md:hidden" onclick="toggleSidebar()"></div>
             
-            <div id="task-sidebar" class="flex-shrink-0 border-r border-slate-100 flex flex-col bg-white h-full transition-all">
-                <div class="header-total-h flex flex-col justify-center px-5 font-bold bg-slate-50 border-b border-slate-100">
-                    <span class="text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</span>
-                </div>
+            <div id="task-sidebar" class="sidebar-w border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-full overflow-hidden">
                 <div id="task-list" class="flex-grow overflow-hidden"></div>
             </div>
 
-            <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
-                <div id="gantt-header-container" class="sticky top-0 z-20 bg-white border-b border-slate-100 header-total-h">
-                    <div id="month-header" class="border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50 h-[40px]"></div>
-                    <div id="unit-header" class="h-[50px]"></div>
-                </div>
+            <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll bg-white dark:bg-slate-900 relative">
                 <div id="bars-container" class="relative">
                     <div id="today-line"><span id="today-label">HOY</span></div>
                 </div>
@@ -114,21 +144,15 @@
         </div>
     </div>
 
-    <footer class="py-3 text-center text-slate-400 flex-shrink-0 font-bold uppercase text-[9px]">
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
-            <p>© 2026 • Landing Gear Certification</p>
-            <div class="flex gap-4">
-                <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
-                <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
-            </div>
-        </div>
-    </footer>
-
     <script>
         let tasks = [];
         let viewMode = 'days'; 
-        let columnWidth = 45;
+        let columnWidth = 40;
         const projectStart = new Date(2026, 2, 1);
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
 
         async function loadInitialData() {
             try {
@@ -137,8 +161,14 @@
                 const buffer = await response.arrayBuffer();
                 smartDecode(buffer);
             } catch (e) {
-                tasks = parseCSV(`ID;Tarea;Responsable;Inicio;Fin;Observaciones
-1;Proyecto de Certificación;Dir. Proy;01/03/2026;30/07/2026;Inicie cargando su archivo.`);
+                const defaultCSV = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
+1;Levantamiento de Requisitos;Dir. Proy;01/03/2026;20/03/2026;Fase inicial.
+1.1;Revisión de Normativa;Ing. Diseño;01/03/2026;07/03/2026;Análisis técnico.
+1.2;Hito: Requisitos Definidos;Cliente;20/03/2026;20/03/2026;Firma de acta.
+2;Bases de Certificación;Ing. Cert;21/03/2026;15/04/2026;Normativas de seguridad.
+3;Fase de Ensayos;Jefe Lab;16/05/2026;10/07/2026;Ensayos no destructivos.
+4;Cierre y Certificación;Autoridad;11/07/2026;31/07/2026;Certificación aprobada.`;
+                tasks = parseCSV(defaultCSV);
                 render();
             }
             setTimeout(scrollToToday, 500);
@@ -178,11 +208,22 @@
 
         function setViewMode(mode) {
             viewMode = mode;
-            columnWidth = mode === 'days' ? 45 : (mode === 'weeks' ? 80 : 140);
+            columnWidth = mode === 'days' ? 40 : (mode === 'weeks' ? 80 : 160);
+            
+            // Lógica de botones para Desktop
             ['days', 'weeks', 'months'].forEach(m => {
-                document.getElementById(`btn-${m}`).className = `px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
+                const btn = document.getElementById(`btn-${m}`);
+                if(btn) {
+                    if(mode === m) {
+                        btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition bg-white dark:bg-slate-600 shadow-sm text-slate-800 dark:text-white';
+                    } else {
+                        btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition hover:bg-white/50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
+                    }
+                }
             });
-            document.getElementById('timeline-viewport').scrollTop = 0;
+            
+            // Cerrar menú si está en móvil
+            document.getElementById('drop-menu').classList.add('hidden');
             render();
         }
 
@@ -192,60 +233,62 @@
             const unitHeader = document.getElementById('unit-header');
             const barsObj = document.getElementById('bars-container');
             const todayLine = document.getElementById('today-line');
+            const headerContent = document.getElementById('gantt-header-content');
 
             listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const totalProjectDays = 300; // Horizonte extendido
+            const totalProjectDays = 260;
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             
-            // RENDER HEADERS CORREGIDO
-            if (viewMode !== 'months') {
-                monthHeader.classList.remove('hidden');
-                let curMonth = -1;
-                let currentMonthWidth = 0;
-                let currentMonthName = "";
-                let monthBox = null;
+            let curGroup = "";
+            let groupBox = null;
+            let accumulatedWidth = 0;
+            const totalUnits = viewMode === 'months' ? 12 : (viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7));
 
-                const totalUnits = viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7);
-                
-                for (let i = 0; i < totalUnits; i++) {
-                    const cur = new Date(projectStart);
-                    cur.setDate(cur.getDate() + (i * (viewMode === 'days' ? 1 : 7)));
-                    
-                    const monthKey = cur.getMonth() + "-" + cur.getFullYear();
-                    
-                    if (monthKey !== curMonth) {
-                        curMonth = monthKey;
-                        monthBox = document.createElement('div');
-                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 uppercase tracking-tighter flex items-center bg-slate-50 text-[10px] text-slate-500 font-bold overflow-hidden whitespace-nowrap";
-                        monthBox.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-                        monthHeader.appendChild(monthBox);
-                        currentMonthWidth = 0;
+            for (let i = 0; i < totalUnits; i++) {
+                const cur = new Date(projectStart);
+                if(viewMode === 'months') cur.setMonth(cur.getMonth() + i);
+                else cur.setDate(cur.getDate() + (i * (viewMode === 'days' ? 1 : 7)));
+
+                let groupKey = "";
+                if (viewMode === 'months') groupKey = `${cur.getMonth()}-${cur.getFullYear()}`;
+                else if (viewMode === 'weeks') groupKey = `${cur.getMonth()}-${cur.getFullYear()}`;
+                else groupKey = `${cur.getMonth()}-${cur.getFullYear()}-${cur.getDate() <= 15 ? 'Q1' : 'Q2'}`; 
+
+                if (viewMode === 'months') {
+                    monthHeader.classList.add('hidden');
+                    const m = document.createElement('div');
+                    m.className = "flex-shrink-0 border-r border-slate-200 dark:border-slate-800 flex items-center justify-center text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900";
+                    m.style.width = columnWidth + "px"; m.style.height = "64px";
+                    m.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+                    unitHeader.appendChild(m);
+                } else {
+                    monthHeader.classList.remove('hidden');
+                    if (groupKey !== curGroup) {
+                        curGroup = groupKey;
+                        groupBox = document.createElement('div');
+                        groupBox.className = "flex-shrink-0 border-r border-slate-200 dark:border-slate-800 px-2 uppercase text-[8px] text-slate-500 dark:text-slate-400 font-bold flex items-center bg-slate-50 dark:bg-slate-900 overflow-hidden";
+                        groupBox.innerText = cur.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+                        monthHeader.appendChild(groupBox);
+                        accumulatedWidth = 0;
                     }
-                    
-                    currentMonthWidth += columnWidth;
-                    monthBox.style.width = currentMonthWidth + "px";
+                    accumulatedWidth += columnWidth;
+                    groupBox.style.width = accumulatedWidth + "px";
 
-                    const d = document.createElement('div');
-                    d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] text-slate-400`;
-                    d.style.width = columnWidth + "px"; d.style.height = "50px";
-                    d.innerText = viewMode === 'days' ? cur.getDate() : `S${i+1}`;
-                    unitHeader.appendChild(d);
-                }
-            } else {
-                monthHeader.classList.add('hidden');
-                for (let i = 0; i < 12; i++) {
-                    const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
-                    const d = document.createElement('div');
-                    d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
-                    d.style.width = columnWidth + "px"; d.style.height = "90px";
-                    d.innerText = cur.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
-                    unitHeader.appendChild(d);
+                    const u = document.createElement('div');
+                    u.className = "flex-shrink-0 border-r border-slate-100 dark:border-slate-800/50 flex items-center justify-center text-[8px] text-slate-400 dark:text-slate-500";
+                    u.style.width = columnWidth + "px"; u.style.height = "36px";
+                    u.innerText = viewMode === 'days' ? cur.getDate() : `S${i+1}`;
+                    unitHeader.appendChild(u);
                 }
             }
 
-            // ALINEACIÓN DE TAREAS
+            const totalPxWidth = totalUnits * columnWidth;
+            headerContent.style.width = totalPxWidth + "px";
+            barsObj.style.width = totalPxWidth + "px";
+
+            // RENDER TAREAS
             tasks.forEach((t) => {
                 let isHidden = false;
                 const parts = t.id.split('.');
@@ -259,25 +302,30 @@
                 }
 
                 const lRow = document.createElement('div');
-                lRow.className = `row-h px-4 border-b border-slate-50 text-[9px] sm:text-[10px] hover:bg-slate-50 transition-all ${isHidden ? 'hidden' : ''}`;
-                lRow.style.paddingLeft = (t.level === 1 ? 10 : t.level === 2 ? 22 : 36) + "px";
+                lRow.className = `row-h px-3 text-[9px] border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${isHidden ? 'hidden' : ''}`;
+                lRow.style.paddingLeft = (t.level === 1 ? 12 : t.level === 2 ? 24 : 38) + "px";
                 const hasChildren = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
-                const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
-                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">${arrow} <span class="truncate"><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span></span>`;
+                const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-1.5 text-rose-500 dark:text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-1.5 text-slate-300 dark:text-slate-600 w-3"></i>';
+                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">${arrow} <span class="truncate dark:text-slate-300"><b class="text-rose-500/80 dark:text-rose-400 mr-1 font-black">${t.id}</b> ${t.name}</span></span>`;
                 listObj.appendChild(lRow);
 
                 const startDays = diffDays(parseDate(t.start), projectStart);
                 const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
-                bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (unitHeader.scrollWidth || (totalProjectDays * columnWidth)) + "px";
+                bRow.className = `row-h border-b border-slate-50 dark:border-slate-800/30 relative ${isHidden ? 'hidden' : ''}`;
+                bRow.style.width = totalPxWidth + "px";
 
-                let barStyles = t.start === t.end ? "bg-amber-400 text-amber-950 border-amber-500 shadow-md" : (t.level === 1 ? "bg-rose-500 text-white border-rose-600" : (t.level === 2 ? "bg-slate-700 text-white border-slate-800" : "bg-slate-50 text-slate-700 border-slate-200"));
+                let barStyles = "";
+                if (t.start === t.end) barStyles = "bg-amber-400 dark:bg-amber-500 text-amber-950 dark:text-amber-950 border-amber-500 dark:border-amber-600 shadow-sm";
+                else if (t.level === 1) barStyles = "bg-rose-500 dark:bg-rose-600 text-white border-rose-600 dark:border-rose-700 shadow-sm";
+                else if (t.level === 2) barStyles = "bg-slate-700 dark:bg-slate-600 text-white border-slate-800 dark:border-slate-500 shadow-sm";
+                else barStyles = "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+
                 const bar = document.createElement('div');
-                bar.className = `absolute top-3 rounded-lg flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all ${barStyles}`;
+                bar.className = `absolute top-2.5 rounded flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all ${barStyles}`;
                 bar.style.left = (startDays * scaleFactor) + "px";
                 bar.style.width = Math.max(12, (dur * scaleFactor)) + "px";
-                bar.style.height = "22px";
+                bar.style.height = "20px";
                 bar.innerText = t.start === t.end ? "◆" : t.owner;
                 bar.onclick = () => openModal(t);
                 bRow.appendChild(bar);
@@ -288,6 +336,15 @@
             todayLine.style.left = (todayDay * scaleFactor) + "px";
         }
 
+        const timeline = document.getElementById('timeline-viewport');
+        const headerScroll = document.getElementById('header-scroll-container');
+        const taskList = document.getElementById('task-list');
+
+        timeline.addEventListener('scroll', () => {
+            headerScroll.scrollLeft = timeline.scrollLeft;
+            taskList.scrollTop = timeline.scrollTop;
+        });
+
         function toggleNode(id) {
             const t = tasks.find(x => x.id === id);
             if (t) { t.open = !t.open; render(); }
@@ -296,10 +353,10 @@
         function focusOnTask(id) {
             const t = tasks.find(x => x.id === id);
             if (!t) return;
-            const vp = document.getElementById('timeline-viewport');
             const startDays = diffDays(parseDate(t.start), projectStart);
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
-            vp.scrollTo({ left: (startDays * scaleFactor) - 100, behavior: 'smooth' });
+            timeline.scrollTo({ left: (startDays * scaleFactor) - 100, behavior: 'smooth' });
+            if (window.innerWidth <= 768) toggleSidebar();
         }
 
         function openModal(t) {
@@ -335,22 +392,19 @@
         }
 
         function scrollToToday() {
-            const vp = document.getElementById('timeline-viewport');
             const dayOfToday = diffDays(new Date(), projectStart);
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
-            vp.scrollTo({ left: (dayOfToday * scaleFactor) - (vp.offsetWidth / 2), behavior: 'smooth' });
+            timeline.scrollTo({ left: (dayOfToday * scaleFactor) - (timeline.offsetWidth / 2), behavior: 'smooth' });
         }
 
         function toggleSidebar() {
             const sb = document.getElementById('task-sidebar');
+            const sh = document.getElementById('sidebar-header');
             const overlay = document.getElementById('sidebar-overlay');
             sb.classList.toggle('open');
+            sh.classList.toggle('open');
             overlay.classList.toggle('hidden');
         }
-
-        document.getElementById('timeline-viewport').onscroll = function() {
-            document.getElementById('task-list').scrollTop = this.scrollTop;
-        };
 
         loadInitialData();
         setViewMode('days');
