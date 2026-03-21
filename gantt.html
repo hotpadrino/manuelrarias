@@ -74,7 +74,7 @@
                 <button onclick="toggleSidebar()" class="md:hidden w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"><i class="fas fa-bars"></i></button>
                 <div>
                     <h2 class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-0.5">Gantt Enterprise</h2>
-                    <p class="text-[10px] font-bold text-slate-800 dark:text-slate-300">Control de Certificación</p>
+                    <p id="project-main-title" onclick="editProjectTitle()" class="text-[10px] font-bold text-slate-800 dark:text-slate-300 cursor-pointer hover:text-rose-500 transition-colors" title="Haz clic para editar">Control de Certificación</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -143,6 +143,16 @@
             </div>
         </div>
     </div>
+    
+    <footer class="py-3 text-center text-slate-400 font-bold uppercase text-[9px] flex-shrink-0">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
+        <p>© 2026 • Escríbeme si quieres tener una web genial</p>
+        <div class="flex gap-4">
+            <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
+        </div>
+    </div>
+    </footer>
 
     <script>
         let tasks = [];
