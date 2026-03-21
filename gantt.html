@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gantt Enterprise - Landing Gear Certification</title>
+    <title>Gantt Pro - Landing Gear Certification</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Bloqueo de scroll externo */
         html, body { height: 100%; overflow: hidden; background-color: #f8fafc; }
-        
         .gantt-scroll::-webkit-scrollbar { width: 4px; height: 6px; }
         .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Altura estricta para sincronización */
         .row-h { height: 46px; }
+        .header-total-h { height: 90px; } /* Altura exacta de Mes (40px) + Unidad (50px) */
+
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
-        
-        /* Altura del encabezado (Mes + Unidad) */
-        .header-height { height: 84px; } 
 
         @media (max-width: 768px) {
             #task-sidebar { position: absolute; left: -280px; z-index: 50; transition: left 0.3s ease; }
@@ -31,8 +30,8 @@
     <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div class="flex justify-between items-start mb-4">
-                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase">Detalles de Tarea</h3>
-                <button onclick="closeModal()" class="text-slate-400 p-1"><i class="fas fa-times"></i></button>
+                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase">Detalles</h3>
+                <button onclick="closeModal()" class="text-slate-400 p-1 hover:text-rose-500 transition-colors"><i class="fas fa-times"></i></button>
             </div>
             <div id="modal-content" class="text-xs space-y-3">
                 <p><b class="text-slate-400">ID:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
@@ -40,38 +39,39 @@
                 <p><b class="text-slate-400">Periodo:</b> <span id="m-period"></span></p>
                 <div class="bg-slate-50 p-4 rounded-xl italic text-slate-600 border border-slate-100 min-h-[80px]" id="m-obs"></div>
             </div>
-            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase">Cerrar</button>
+            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase shadow-lg">Cerrar</button>
         </div>
     </div>
 
     <div class="flex-grow flex flex-col bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden relative">
+        
         <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-white z-30">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500"><i class="fas fa-bars"></i></button>
                 <div>
                     <h2 class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Gantt Enterprise</h2>
-                    <p id="file-status" class="text-xs font-bold text-slate-800">Cargando Proyecto...</p>
+                    <p id="file-status" class="text-[10px] font-bold text-slate-800 tracking-tight">Cargar archivo .csv para actualizar cronograma</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
                 <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition bg-white shadow-sm">Días</button>
+                    <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Días</button>
                     <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Semanas</button>
                     <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Meses</button>
                 </div>
                 
                 <div class="relative">
-                    <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-4 bg-slate-50 text-slate-700 text-[10px] font-bold rounded-xl border border-slate-200 flex items-center gap-2">
-                        <i class="fas fa-database text-rose-500"></i> DATOS <i class="fas fa-chevron-down text-[8px]"></i>
+                    <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-4 bg-slate-50 text-slate-700 text-[10px] font-bold rounded-xl border border-slate-200 flex items-center gap-2 hover:bg-slate-100 transition">
+                        <i class="fas fa-file-csv text-rose-500"></i> DATOS <i class="fas fa-chevron-down text-[8px]"></i>
                     </button>
                     <div id="drop-menu" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
                         <label class="flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50 transition text-left">
-                            <i class="fas fa-file-import text-blue-500"></i> IMPORTAR CSV
+                            <i class="fas fa-file-import text-blue-500"></i> IMPORTAR MANUAL
                             <input type="file" id="csvIn" class="hidden" accept=".csv" onchange="handleFile(this)">
                         </label>
                         <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition text-left">
-                            <i class="fas fa-file-export text-emerald-500"></i> EXPORTAR CSV
+                            <i class="fas fa-file-export text-emerald-500"></i> EXPORTAR (gantt.csv)
                         </button>
                     </div>
                 </div>
@@ -84,18 +84,21 @@
             <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/10 z-40 md:hidden" onclick="toggleSidebar()"></div>
             
             <div id="task-sidebar" class="w-[280px] md:w-72 flex-shrink-0 border-r border-slate-100 flex flex-col bg-white h-full transition-all">
-                <div class="header-height flex items-center px-5 font-bold bg-slate-50 border-b border-slate-100 text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</div>
+                <div class="header-total-h flex flex-col justify-center px-5 font-bold bg-slate-50/50 border-b border-slate-100">
+                    <span class="text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</span>
+                    <span class="text-[8px] text-slate-300 font-normal mt-1 italic">Clic en nombre para localizar</span>
+                </div>
                 <div id="task-list" class="flex-grow overflow-y-hidden gantt-scroll"></div>
             </div>
 
             <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
                 <div id="gantt-header-container" class="sticky top-0 z-20 bg-white/95 border-b border-slate-100">
-                    <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50/50"></div>
-                    <div id="unit-header" class="flex h-[46px]"></div>
+                    <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50/50 h-[40px] items-center"></div>
+                    <div id="unit-header" class="flex h-[50px]"></div>
                 </div>
                 <div id="bars-container" class="relative">
                     <div id="today-line"><span id="today-label">HOY</span></div>
-                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -103,7 +106,7 @@
     <footer class="py-4 max-w-4xl mx-auto px-6 text-center text-slate-400 flex-shrink-0">
         <div class="w-full h-px bg-slate-200 mb-3 opacity-60"></div>
         <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
-            <p class="text-[10px] font-bold uppercase tracking-widest">© 2026 • Tecnología de vanguardia</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest">© 2026 • Landing Gear Certification Project</p>
             <div class="flex justify-center gap-4 text-[10px] font-bold uppercase">
                 <a href="https://wa.me/573128816469" class="hover:text-green-600 transition"><i class="fab fa-whatsapp mr-1"></i> WhatsApp</a>
                 <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition"><i class="far fa-envelope mr-1"></i> Email</a>
@@ -112,7 +115,12 @@
     </footer>
 
     <script>
-        // Datos de ejemplo en formato UTF-8 (respetando tildes)
+        let tasks = [];
+        let viewMode = 'days'; 
+        let columnWidth = 45;
+        const projectStart = new Date(2026, 2, 1);
+
+        // Datos por defecto (Certificación Tren de Aterrizaje)
         const defaultCSVData = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
 1;Levantamiento de Requisitos;Director Proy;01/03/2026;20/03/2026;Fase de definición de alcance técnico.
 1.1;Revisión de Normativa;Ing. Diseño;01/03/2026;07/03/2026;Análisis de especificaciones originales.
@@ -128,21 +136,16 @@
 4;Cierre y Certificación;Autoridad;11/07/2026;31/07/2026;Proceso legal final.
 4.1;Emisión del Certificado;Director Cert.;31/07/2026;31/07/2026;Certificación oficial obtenida.`;
 
-        let tasks = [];
-        let viewMode = 'days'; 
-        let columnWidth = 45;
-        const projectStart = new Date(2026, 2, 1);
-
         async function loadInitialData() {
             try {
                 const response = await fetch('gantt.csv');
                 if (!response.ok) throw new Error();
                 const text = await response.text();
                 tasks = parseCSV(text);
-                document.getElementById('file-status').innerText = "gantt.csv (Raíz)";
+                document.getElementById('file-status').innerText = "Viendo: gantt.csv";
             } catch (e) {
                 tasks = parseCSV(defaultCSVData);
-                document.getElementById('file-status').innerText = "Modo Predeterminado";
+                document.getElementById('file-status').innerText = "Usando cronograma por defecto";
             }
             render();
             setTimeout(scrollToToday, 500);
@@ -156,16 +159,7 @@
                 if (cols.length >= 6) {
                     const idStr = cols[0].trim();
                     const level = idStr.split('.').filter(n => n !== "").length;
-                    data.push({ 
-                        id: idStr, 
-                        level: level, 
-                        name: cols[1].trim(), 
-                        owner: cols[2].trim(), 
-                        start: cols[3].trim(), 
-                        end: cols[4].trim(), 
-                        obs: cols[5].trim(), 
-                        open: true 
-                    });
+                    data.push({ id: idStr, level: level, name: cols[1].trim(), owner: cols[2].trim(), start: cols[3].trim(), end: cols[4].trim(), obs: cols[5].trim(), open: true });
                 }
             }
             return data;
@@ -199,7 +193,7 @@
             listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const totalProjectDays = 160;
+            const totalProjectDays = 180;
             const today = new Date();
             const dayOfToday = diffDays(today, projectStart);
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
@@ -215,7 +209,7 @@
                     if (cur.getMonth() !== curMonth) {
                         curMonth = cur.getMonth();
                         monthBox = document.createElement('div');
-                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 py-1.5 uppercase tracking-widest h-[38px] flex items-center bg-slate-50/50 font-bold text-slate-500";
+                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 uppercase tracking-tighter flex items-center bg-slate-50/80 text-[10px] text-slate-500 font-bold";
                         monthBox.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                         monthHeader.appendChild(monthBox);
                     }
@@ -223,17 +217,17 @@
 
                     const d = document.createElement('div');
                     d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] ${cur.toDateString() === today.toDateString() && viewMode === 'days' ? 'bg-rose-50 text-rose-500 font-bold' : 'text-slate-400'}`;
-                    d.style.width = columnWidth + "px"; d.style.height = "46px";
+                    d.style.width = columnWidth + "px"; d.style.height = "50px";
                     d.innerText = viewMode === 'days' ? cur.getDate() : `S${i+1}`;
                     unitHeader.appendChild(d);
                 }
             } else {
                 monthHeader.classList.add('hidden');
-                for (let i = 0; i < 6; i++) {
+                for (let i = 0; i < 8; i++) {
                     const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
                     const d = document.createElement('div');
                     d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
-                    d.style.width = columnWidth + "px"; d.style.height = "84px";
+                    d.style.width = columnWidth + "px"; d.style.height = "90px";
                     d.innerText = cur.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
                     unitHeader.appendChild(d);
                 }
@@ -252,40 +246,30 @@
                     }
                 }
 
+                // Lista Lateral
                 const lRow = document.createElement('div');
                 lRow.className = `row-h flex items-center px-4 border-b border-slate-50 text-[10px] hover:bg-slate-50 transition-all ${isHidden ? 'hidden' : ''}`;
                 lRow.style.paddingLeft = (t.level === 1 ? 12 : t.level === 2 ? 26 : 42) + "px";
-                const hasChildren = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
-                const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
+                const children = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
+                const arrow = children ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
                 
                 lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">
                     ${arrow} <span><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span>
                 </span>`;
                 listObj.appendChild(lRow);
 
+                // Barras
                 const startDays = diffDays(parseDate(t.start), projectStart);
                 const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (totalProjectDays * columnWidth) + "px";
+                bRow.style.width = (180 * columnWidth) + "px";
 
-                // Lógica de colores (Hitos vs Niveles)
-                let barStyles = "";
-                if (t.start === t.end) {
-                    barStyles = "bg-amber-400 text-amber-950 border-amber-500 shadow-md z-10"; // Color especial HITOS
-                } else if (t.level === 1) {
-                    barStyles = "bg-rose-500 text-white border-rose-600 shadow-md";
-                } else if (t.level === 2) {
-                    barStyles = "bg-slate-700 text-white border-slate-800 shadow-sm";
-                } else {
-                    barStyles = "bg-slate-100 text-slate-700 border-slate-300"; // Nivel 3
-                }
-
+                let barStyles = t.start === t.end ? "bg-amber-400 text-amber-950 border-amber-500 shadow-md z-10" : (t.level === 1 ? "bg-rose-500 text-white border-rose-600 shadow-md" : (t.level === 2 ? "bg-slate-700 text-white border-slate-800 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-300"));
                 const bar = document.createElement('div');
-                bar.id = `bar-${t.id}`;
                 bar.className = `absolute top-3 rounded-lg flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all ${barStyles}`;
                 bar.style.left = (startDays * scaleFactor) + "px";
-                bar.style.width = Math.max(8, (dur * scaleFactor)) + "px"; // Mínimo visible para hitos
+                bar.style.width = Math.max(10, (dur * scaleFactor)) + "px";
                 bar.style.height = "22px";
                 bar.innerText = t.start === t.end ? "◆" : t.owner;
                 bar.onclick = () => openModal(t);
@@ -357,6 +341,7 @@
         };
 
         loadInitialData();
+        setViewMode('days');
     </script>
 </body>
 </html>
