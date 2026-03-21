@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gantt Pro + Numeración Jerárquica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gantt-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .gantt-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .row-h { height: 48px; }
+        #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 20; pointer-events: none; }
+        #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 9px; padding: 2px 5px; border-radius: 0 0 4px 4px; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 p-4 font-sans">
+
+    <div class="max-w-6xl mx-auto bg-slate-900 rounded-xl border border-slate-800 shadow-2xl overflow-hidden">
+        <div class="p-4 border-b border-slate-800 flex flex-wrap gap-4 items-center justify-between bg-slate-900/50">
+            <div class="flex items-center gap-4">
+                <h2 class="text-sm font-bold text-rose-500 uppercase tracking-tighter">Gantt Mobile View v2.0</h2>
+                <div class="flex gap-1 bg-slate-800 p-1 rounded-lg">
+                    <button onclick="setZoom(45)" class="px-3 py-1 hover:bg-slate-700 rounded text-[10px] font-bold transition">DÍAS</button>
+                    <button onclick="setZoom(120)" class="px-3 py-1 hover:bg-slate-700 rounded text-[10px] font-bold transition">MESES</button>
+                </div>
+            </div>
+            <button onclick="scrollToToday()" class="text-[10px] bg-rose-600/20 text-rose-400 border border-rose-500/50 px-4 py-1.5 rounded-full font-bold hover:bg-rose-600 hover:text-white transition">IR A HOY</button>
+        </div>
+
+        <div class="flex overflow-hidden" style="height: 60vh;">
+            <div class="w-72 flex-shrink-0 border-r border-slate-800 flex flex-col bg-slate-900/80">
+                <div class="row-h flex items-center px-4 font-bold bg-slate-800/30 border-b border-slate-800 text-[11px] text-slate-500">ESTRUCTURA DE TAREAS</div>
+                <div id="task-list" class="flex-grow overflow-hidden"></div>
+            </div>
+
+            <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative">
+                <div id="timeline-header" class="flex sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800"></div>
+                <div id="bars-container" class="relative">
+                    <div id="today-line"><span id="today-label">HOY</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-white dark:bg-slate-950 mt-20">
+        <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-slate-700 to-transparent"></div>
+        <div class="max-w-4xl mx-auto px-6 py-12 text-center">
+            <h3 class="text-xl font-bold mb-6 bg-gradient-to-r from-rose-600 to-fuchsia-600 bg-clip-text text-transparent">
+                ¿Te gustaría un sitio web interactivo como este?
+            </h3>
+            <div class="flex flex-wrap justify-center gap-6 mb-8">
+                <a href="https://wa.me/573128816469?text=Hola!%20Me%20interesa%20un%20sitio%20web" 
+                   target="_blank" class="flex items-center gap-2 px-5 py-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:scale-105 transition-transform border border-green-200 dark:border-green-800 shadow-sm">
+                    <i class="fab fa-whatsapp text-xl"></i><span class="font-semibold">Contáctame</span>
+                </a>
+                <a href="mailto:alucard8@gmail.com" class="flex items-center gap-2 px-5 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:scale-105 transition-transform border border-blue-200 dark:border-blue-800 shadow-sm">
+                    <i class="far fa-envelope text-xl"></i><span class="font-semibold">alucard8@gmail.com</span>
+                </a>
+            </div>
+            <div class="text-gray-400 dark:text-gray-600 text-sm flex flex-col items-center gap-2">
+                <p class="font-medium">© 2026 • Desarrollado con tecnología de vanguardia</p>
+                <div class="flex items-center gap-2 opacity-50">
+                    <i class="fas fa-code text-xs"></i><span>HTML5 • Tailwind • JS</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let tasks = [
+            { id: 1, level: 1, name: "Fase Estratégica", owner: "CEO", start: 1, duration: 6, open: true },
+            { id: 2, level: 2, name: "Análisis Mercado", owner: "Luis", start: 1, duration: 3, parent: 1 },
+            { id: 3, level: 2, name: "Definición KPI", owner: "Ana", start: 4, duration: 3, parent: 1 },
+            { id: 4, level: 1, name: "Desarrollo Backend", owner: "Dev", start: 7, duration: 10, open: true },
+            { id: 5, level: 2, name: "Base de Datos", owner: "Marta", start: 7, duration: 4, parent: 4 },
+            { id: 6, level: 2, name: "API Rest", owner: "Pedro", start: 10, duration: 7, parent: 4 }
+        ];
+
+        let zoom = 45;
+        let dayOfToday = 8;
+
+        function render() {
+            const listObj = document.getElementById('task-list');
+            const headerObj = document.getElementById('timeline-header');
+            const barsObj = document.getElementById('bars-container');
+            const todayLine = document.getElementById('today-line');
+
+            listObj.innerHTML = '';
+            headerObj.innerHTML = '';
+            Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
+
+            const maxDays = 25;
+            todayLine.style.left = ((dayOfToday - 1) * zoom + (zoom/2)) + "px";
+
+            for(let i=1; i<=maxDays; i++) {
+                const d = document.createElement('div');
+                d.className = `flex-shrink-0 border-r border-slate-800/40 text-[10px] flex items-center justify-center ${i === dayOfToday ? 'text-rose-500 font-bold' : 'opacity-30'}`;
+                d.style.width = zoom + "px"; d.style.height = "48px";
+                d.innerText = i;
+                headerObj.appendChild(d);
+            }
+
+            // Generar IDs jerárquicos (1, 1.1, 1.2...)
+            let mainIndex = 0;
+            let subIndex = 0;
+
+            tasks.forEach((t, index) => {
+                if(t.level === 1) { mainIndex++; subIndex = 0; t.displayId = mainIndex; }
+                else { subIndex++; t.displayId = `${mainIndex}.${subIndex}`; }
+
+                const isHidden = t.parent && !tasks.find(p => p.id === t.parent).open;
+
+                // Fila Lista
+                const lRow = document.createElement('div');
+                lRow.className = `row-h flex items-center px-4 border-b border-slate-800/30 text-[11px] ${isHidden ? 'hidden' : ''}`;
+                lRow.style.paddingLeft = (t.level === 1 ? 10 : 25) + "px";
+                lRow.innerHTML = `<span class="truncate cursor-pointer hover:text-rose-400">
+                    <b class="text-rose-500/80 mr-1">${t.displayId}</b> ${t.name}
+                </span>`;
+                lRow.onclick = () => { if(t.level === 1) { t.open = !t.open; render(); } };
+                listObj.appendChild(lRow);
+
+                // Fila Barra
+                const bRow = document.createElement('div');
+                bRow.className = `row-h border-b border-slate-800/10 relative ${isHidden ? 'hidden' : ''}`;
+                bRow.style.width = (maxDays * zoom) + "px";
+
+                const bar = document.createElement('div');
+                bar.className = `absolute top-3 rounded-md flex items-center px-3 text-[10px] font-bold shadow-md truncate
+                    ${t.level === 1 ? 'bg-rose-600 text-white' : 'bg-slate-700 text-slate-300 border border-slate-600'}`;
+                bar.style.left = ((t.start - 1) * zoom) + "px";
+                bar.style.width = (t.duration * zoom) + "px";
+                bar.style.height = "24px";
+                bar.innerText = t.owner;
+
+                bRow.appendChild(bar);
+                barsObj.appendChild(bRow);
+            });
+        }
+
+        function scrollToToday() {
+            const vp = document.getElementById('timeline-viewport');
+            vp.scrollTo({ left: ((dayOfToday - 1) * zoom) - (vp.offsetWidth / 3), behavior: 'smooth' });
+        }
+
+        function setZoom(v) { zoom = v; render(); }
+
+        document.getElementById('timeline-viewport').onscroll = function() {
+            document.getElementById('task-list').scrollTop = this.scrollTop;
+        };
+
+        render();
+        setTimeout(scrollToToday, 600);
+    </script>
+</body>
+                    </html>
+                    
