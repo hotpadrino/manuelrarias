@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gantt Enterprise Pro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -12,6 +13,8 @@
         .row-h { height: 46px; }
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
+        .header-height { height: 84px; } 
+
         @media (max-width: 768px) {
             #task-sidebar { position: absolute; left: -280px; z-index: 50; transition: left 0.3s ease; }
             #task-sidebar.open { left: 0; }
@@ -23,19 +26,16 @@
     <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div class="flex justify-between items-start mb-4">
-                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase tracking-widest text-rose-600">Información</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1"><i class="fas fa-times"></i></button>
+                <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase tracking-widest">Información</h3>
+                <button onclick="closeModal()" class="text-slate-400 p-1"><i class="fas fa-times"></i></button>
             </div>
             <div id="modal-content" class="text-xs space-y-3">
-                <p><b class="text-slate-400 font-medium">ID Actividad:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
-                <p><b class="text-slate-400 font-medium">Responsable:</b> <span id="m-owner" class="text-slate-700"></span></p>
-                <p><b class="text-slate-400 font-medium">Periodo:</b> <span id="m-period" class="text-slate-700"></span></p>
-                <div class="pt-2">
-                    <span class="text-slate-400 block mb-1 uppercase text-[9px] font-bold">Observaciones:</span>
-                    <div id="m-obs" class="bg-slate-50 p-4 rounded-xl text-slate-600 italic leading-relaxed border border-slate-100 min-h-[80px]"></div>
-                </div>
+                <p><b class="text-slate-400">ID:</b> <span id="m-id" class="text-rose-500 font-bold"></span></p>
+                <p><b class="text-slate-400">Responsable:</b> <span id="m-owner"></span></p>
+                <p><b class="text-slate-400">Periodo:</b> <span id="m-period"></span></p>
+                <div class="bg-slate-50 p-4 rounded-xl italic text-slate-600 border border-slate-100 min-h-[80px]" id="m-obs"></div>
             </div>
-            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase active:scale-95 transition">Cerrar</button>
+            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-bold text-[10px] uppercase">Cerrar</button>
         </div>
     </div>
 
@@ -44,8 +44,8 @@
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500"><i class="fas fa-bars"></i></button>
                 <div>
-                    <h2 class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Gantt Enterprise</h2>
-                    <p id="file-status" class="text-[10px] font-bold text-slate-800">Cargando datos...</p>
+                    <h2 class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Gantt Enterprise</h2>
+                    <p id="file-status" class="text-[10px] font-bold text-slate-800">Cargando...</p>
                 </div>
             </div>
 
@@ -55,12 +55,13 @@
                     <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Semanas</button>
                     <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition">Meses</button>
                 </div>
+                
                 <div class="relative">
                     <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-4 bg-slate-50 text-slate-700 text-[10px] font-bold rounded-xl border border-slate-200 flex items-center gap-2">
-                        <i class="fas fa-file-csv text-rose-500"></i> DATOS <i class="fas fa-chevron-down text-[8px]"></i>
+                        <i class="fas fa-database text-rose-500"></i> DATOS <i class="fas fa-chevron-down text-[8px]"></i>
                     </button>
                     <div id="drop-menu" class="hidden absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
-                        <label class="flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50 transition">
+                        <label class="flex items-center gap-3 px-4 py-4 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer border-b border-slate-50 transition text-left">
                             <i class="fas fa-file-import text-blue-500"></i> IMPORTAR CSV
                             <input type="file" id="csvIn" class="hidden" accept=".csv" onchange="handleFile(this)">
                         </label>
@@ -69,22 +70,23 @@
                         </button>
                     </div>
                 </div>
-                <button onclick="scrollToToday()" class="h-9 px-5 bg-rose-500 text-white text-[10px] font-black rounded-xl shadow-lg shadow-rose-100 uppercase transition active:scale-95">Hoy</button>
+
+                <button onclick="scrollToToday()" class="h-9 px-5 bg-rose-500 text-white text-[10px] font-black rounded-xl shadow-lg uppercase">Hoy</button>
             </div>
         </div>
 
-        <div class="flex overflow-hidden relative" style="height: 58vh;">
+        <div class="flex overflow-hidden relative" style="height: 60vh;">
             <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/10 z-40 md:hidden" onclick="toggleSidebar()"></div>
             
             <div id="task-sidebar" class="w-[280px] md:w-72 flex-shrink-0 border-r border-slate-100 flex flex-col bg-white h-full">
-                <div class="row-h flex items-center px-5 font-bold bg-slate-50 border-b border-slate-100 text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</div>
-                <div id="task-list" class="flex-grow overflow-y-auto gantt-scroll"></div>
+                <div class="header-height flex items-center px-5 font-bold bg-slate-50 border-b border-slate-100 text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</div>
+                <div id="task-list" class="flex-grow overflow-y-hidden gantt-scroll"></div>
             </div>
 
             <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
                 <div id="gantt-header-container" class="sticky top-0 z-20 bg-white/95 border-b border-slate-100">
                     <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50/50"></div>
-                    <div id="unit-header" class="flex"></div>
+                    <div id="unit-header" class="flex h-[46px]"></div>
                 </div>
                 <div id="bars-container" class="relative">
                     <div id="today-line"><span id="today-label">HOY</span></div>
@@ -93,22 +95,21 @@
         </div>
     </div>
 
-    <footer class="mt-12 mb-8 max-w-4xl mx-auto px-6 text-center">
+    <footer class="mt-12 mb-8 max-w-4xl mx-auto px-6 text-center text-slate-400">
         <div class="w-full h-px bg-slate-200 mb-6 opacity-60"></div>
-        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-4">© 2026 • Tecnología de vanguardia</p>
+        <p class="text-[10px] font-bold uppercase tracking-widest mb-4">© 2026 • Tecnología de vanguardia</p>
         <div class="flex justify-center gap-4 text-[10px] font-bold uppercase">
-            <a href="https://wa.me/573128816469" class="hover:text-green-600 transition"><i class="fab fa-whatsapp mr-1"></i> WhatsApp</a>
-            <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition"><i class="far fa-envelope mr-1"></i> Email</a>
+            <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
         </div>
     </footer>
 
     <script>
-        // Datos por defecto si falla la lectura del archivo raíz
         const defaultCSVData = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
 1;Plan Maestro;Dir;1/03/2026;15/03/2026;Notas de la tarea maestra.
 1.1;Fase Ingeniería;Arq;1/03/2026;8/03/2026;Notas de ingeniería detallada.
-1.2;Planos Estructurales;Soto;1/03/2026;4/03/2026;Revisar cálculos de carga.
-1.3;Memoria Cálculo;Luna;5/03/2026;8/03/2026;Validación por interventoría.
+1.1.1;Planos Estructurales;Soto;1/03/2026;4/03/2026;Revisar cálculos de carga.
+1.1.2;Memoria Cálculo;Luna;5/03/2026;8/03/2026;Validación por interventoría.
 2;Fase Compras;Adm;9/03/2026;15/03/2026;Gestión de suministros.
 2.1;Acero de Refuerzo;Gómez;9/03/2026;12/03/2026;Varillas grado 60.
 2.2;Ejecución Obra;Residente;16/03/2026;25/03/2026;Actividades en terreno.`;
@@ -118,18 +119,16 @@
         let columnWidth = 45;
         const projectStart = new Date(2026, 2, 1);
 
-        // Función para intentar leer gantt.csv en la raíz
         async function loadInitialData() {
             try {
                 const response = await fetch('gantt.csv');
-                if (!response.ok) throw new Error("No se encontró gantt.csv en la raíz");
+                if (!response.ok) throw new Error();
                 const text = await response.text();
                 tasks = parseCSV(text);
-                document.getElementById('file-status').innerText = "gantt.csv cargado desde raíz";
-            } catch (error) {
-                console.warn(error.message);
+                document.getElementById('file-status').innerText = "gantt.csv (Raíz)";
+            } catch (e) {
                 tasks = parseCSV(defaultCSVData);
-                document.getElementById('file-status').innerText = "Usando datos por defecto";
+                document.getElementById('file-status').innerText = "Modo Predeterminado";
             }
             render();
             setTimeout(scrollToToday, 500);
@@ -160,7 +159,7 @@
 
         function setViewMode(mode) {
             viewMode = mode;
-            columnWidth = mode === 'days' ? 45 : (mode === 'weeks' ? 80 : 120);
+            columnWidth = mode === 'days' ? 45 : (mode === 'weeks' ? 80 : 140);
             ['days', 'weeks', 'months'].forEach(m => {
                 document.getElementById(`btn-${m}`).className = `px-3 py-1 text-[9px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
             });
@@ -183,7 +182,6 @@
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             todayLine.style.left = (dayOfToday * scaleFactor) + "px";
 
-            // Header Multinivel
             if (viewMode !== 'months') {
                 monthHeader.classList.remove('hidden');
                 let curMonth = -1; let monthBox = null;
@@ -193,7 +191,7 @@
                     if (cur.getMonth() !== curMonth) {
                         curMonth = cur.getMonth();
                         monthBox = document.createElement('div');
-                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 py-1.5 uppercase tracking-widest";
+                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 py-1.5 uppercase tracking-widest h-[38px] flex items-center bg-slate-50/50";
                         monthBox.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                         monthHeader.appendChild(monthBox);
                     }
@@ -201,7 +199,7 @@
 
                     const d = document.createElement('div');
                     d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] ${cur.toDateString() === today.toDateString() && viewMode === 'days' ? 'bg-rose-50 text-rose-500 font-bold' : 'text-slate-400'}`;
-                    d.style.width = columnWidth + "px"; d.style.height = "38px";
+                    d.style.width = columnWidth + "px"; d.style.height = "46px";
                     d.innerText = viewMode === 'days' ? cur.getDate() : `S${i+1}`;
                     unitHeader.appendChild(d);
                 }
@@ -211,13 +209,12 @@
                     const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
                     const d = document.createElement('div');
                     d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
-                    d.style.width = columnWidth + "px"; d.style.height = "52px";
+                    d.style.width = columnWidth + "px"; d.style.height = "84px";
                     d.innerText = cur.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
                     unitHeader.appendChild(d);
                 }
             }
 
-            // Tareas y Plegado
             tasks.forEach((t) => {
                 let isHidden = false;
                 const parts = t.id.split('.');
@@ -233,12 +230,11 @@
                 const lRow = document.createElement('div');
                 lRow.className = `row-h flex items-center px-4 border-b border-slate-50 text-[10px] hover:bg-slate-50 transition-all ${isHidden ? 'hidden' : ''}`;
                 lRow.style.paddingLeft = (t.level === 1 ? 12 : t.level === 2 ? 26 : 42) + "px";
-                
                 const children = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
                 const arrow = children ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
                 
-                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center">
-                    ${arrow} <span onclick="openModal(tasks.find(x=>x.id==='${t.id}'))"><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span>
+                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="openModal(tasks.find(x=>x.id==='${t.id}'))">
+                    ${arrow} <span><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span>
                 </span>`;
                 listObj.appendChild(lRow);
 
@@ -246,10 +242,11 @@
                 const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (150 * columnWidth) + "px";
+                bRow.style.width = (totalProjectDays * columnWidth) + "px";
 
+                let barStyles = t.level === 1 ? "bg-rose-500 text-white border-rose-600 shadow-md" : (t.level === 2 ? "bg-slate-700 text-white border-slate-800 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-300");
                 const bar = document.createElement('div');
-                bar.className = `absolute top-3 rounded-lg flex items-center px-2 text-[8px] font-bold shadow-sm cursor-pointer transition-all ${t.level === 1 ? 'bg-rose-500 text-white' : 'bg-slate-700 text-white'}`;
+                bar.className = `absolute top-3 rounded-lg flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all ${barStyles}`;
                 bar.style.left = (startDays * scaleFactor) + "px";
                 bar.style.width = (dur * scaleFactor) + "px";
                 bar.style.height = "22px";
@@ -300,8 +297,8 @@
         function scrollToToday() {
             const vp = document.getElementById('timeline-viewport');
             const dayOfToday = diffDays(new Date(), projectStart);
-            const factor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
-            vp.scrollTo({ left: (dayOfToday * factor) - (vp.offsetWidth / 2), behavior: 'smooth' });
+            const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
+            vp.scrollTo({ left: (dayOfToday * scaleFactor) - (vp.offsetWidth / 2), behavior: 'smooth' });
         }
 
         function toggleSidebar() {
@@ -313,7 +310,6 @@
             document.getElementById('task-list').scrollTop = this.scrollTop;
         };
 
-        // Iniciar carga automática
         loadInitialData();
     </script>
 </body>
