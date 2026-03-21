@@ -9,33 +9,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         html, body { height: 100%; overflow: hidden; background-color: #f8fafc; margin: 0; }
-        
-        :root {
-            --header-h: 90px;
-            --row-h: 48px;
-        }
+        :root { --header-h: 90px; --row-h: 48px; }
 
         .gantt-scroll::-webkit-scrollbar { width: 4px; height: 6px; }
         .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* ALINEACIÓN MATEMÁTICA */
         .row-h { 
             height: var(--row-h) !important; 
             min-height: var(--row-h) !important; 
             max-height: var(--row-h) !important;
-            display: flex; 
-            align-items: center;
-            box-sizing: border-box;
-            border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; box-sizing: border-box;
         }
-        .header-total-h { 
-            height: var(--header-h) !important; 
-            min-height: var(--header-h) !important; 
-            max-height: var(--header-h) !important;
-        }
+        .header-total-h { height: var(--header-h) !important; }
 
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
+
+        /* Contenedores de cabezal para evitar desalineación */
+        #month-header { display: flex; flex-wrap: nowrap; min-width: max-content; }
+        #unit-header { display: flex; flex-wrap: nowrap; min-width: max-content; }
 
         @media (max-width: 768px) {
             #task-sidebar { 
@@ -50,7 +42,7 @@
 <body class="p-1 sm:p-4 flex flex-col">
 
     <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div class="flex justify-between items-start mb-4">
                 <h3 id="modal-title" class="text-xs font-black text-slate-900 uppercase">Detalles</h3>
                 <button onclick="closeModal()" class="text-slate-400 p-2"><i class="fas fa-times"></i></button>
@@ -111,9 +103,9 @@
             </div>
 
             <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
-                <div id="gantt-header-container" class="sticky top-0 z-20 bg-white border-b border-slate-100 header-total-h overflow-hidden">
-                    <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50 h-[40px] items-center"></div>
-                    <div id="unit-header" class="flex h-[50px] items-center"></div>
+                <div id="gantt-header-container" class="sticky top-0 z-20 bg-white border-b border-slate-100 header-total-h">
+                    <div id="month-header" class="border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50 h-[40px]"></div>
+                    <div id="unit-header" class="h-[50px]"></div>
                 </div>
                 <div id="bars-container" class="relative">
                     <div id="today-line"><span id="today-label">HOY</span></div>
@@ -138,14 +130,6 @@
         let columnWidth = 45;
         const projectStart = new Date(2026, 2, 1);
 
-        const defaultCSV = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
-1;Levantamiento de Requisitos;Dir. Proy;01/03/2026;20/03/2026;Fase de definición técnica inicial.
-1.1;Revisión de Normativa;Ing. Diseño;01/03/2026;07/03/2026;Análisis de aeronavegabilidad aeronáutica.
-1.2;Hito: Requisitos Definidos;Cliente;20/03/2026;20/03/2026;Firma de acta inicial del proyecto.
-2;Bases de Certificación;Ing. Cert;21/03/2026;15/04/2026;Criterios de seguridad y validación.
-3;Fase de Ensayos;Jefe Lab;16/05/2026;10/07/2026;Validación técnica de ingeniería mecanizada.
-3.1;Ensayos de Laboratorio;Técnico NDT;16/05/2026;31/05/2026;Pruebas de materiales y fatiga.`;
-
         async function loadInitialData() {
             try {
                 const response = await fetch('gantt.csv');
@@ -153,7 +137,8 @@
                 const buffer = await response.arrayBuffer();
                 smartDecode(buffer);
             } catch (e) {
-                tasks = parseCSV(defaultCSV);
+                tasks = parseCSV(`ID;Tarea;Responsable;Inicio;Fin;Observaciones
+1;Proyecto de Certificación;Dir. Proy;01/03/2026;30/07/2026;Inicie cargando su archivo.`);
                 render();
             }
             setTimeout(scrollToToday, 500);
@@ -197,7 +182,6 @@
             ['days', 'weeks', 'months'].forEach(m => {
                 document.getElementById(`btn-${m}`).className = `px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
             });
-            // Reset vertical scroll on mode change
             document.getElementById('timeline-viewport').scrollTop = 0;
             render();
         }
@@ -212,23 +196,37 @@
             listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const totalProjectDays = 250;
+            const totalProjectDays = 300; // Horizonte extendido
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             
+            // RENDER HEADERS CORREGIDO
             if (viewMode !== 'months') {
                 monthHeader.classList.remove('hidden');
-                let curMonth = -1; let monthBox = null;
-                const units = viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7);
-                for (let i = 0; i < units; i++) {
-                    const cur = new Date(projectStart); cur.setDate(cur.getDate() + (i * (viewMode === 'days' ? 1 : 7)));
-                    if (cur.getMonth() !== curMonth) {
-                        curMonth = cur.getMonth();
+                let curMonth = -1;
+                let currentMonthWidth = 0;
+                let currentMonthName = "";
+                let monthBox = null;
+
+                const totalUnits = viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7);
+                
+                for (let i = 0; i < totalUnits; i++) {
+                    const cur = new Date(projectStart);
+                    cur.setDate(cur.getDate() + (i * (viewMode === 'days' ? 1 : 7)));
+                    
+                    const monthKey = cur.getMonth() + "-" + cur.getFullYear();
+                    
+                    if (monthKey !== curMonth) {
+                        curMonth = monthKey;
                         monthBox = document.createElement('div');
-                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 uppercase tracking-tighter flex items-center bg-slate-50 text-[10px] text-slate-500 font-bold";
+                        monthBox.className = "flex-shrink-0 border-r border-slate-100 px-3 uppercase tracking-tighter flex items-center bg-slate-50 text-[10px] text-slate-500 font-bold overflow-hidden whitespace-nowrap";
                         monthBox.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
                         monthHeader.appendChild(monthBox);
+                        currentMonthWidth = 0;
                     }
-                    monthBox.style.width = (parseFloat(monthBox.style.width || 0) + columnWidth) + "px";
+                    
+                    currentMonthWidth += columnWidth;
+                    monthBox.style.width = currentMonthWidth + "px";
+
                     const d = document.createElement('div');
                     d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] text-slate-400`;
                     d.style.width = columnWidth + "px"; d.style.height = "50px";
@@ -237,7 +235,7 @@
                 }
             } else {
                 monthHeader.classList.add('hidden');
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 12; i++) {
                     const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
                     const d = document.createElement('div');
                     d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
@@ -247,6 +245,7 @@
                 }
             }
 
+            // ALINEACIÓN DE TAREAS
             tasks.forEach((t) => {
                 let isHidden = false;
                 const parts = t.id.split('.');
@@ -271,7 +270,7 @@
                 const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (250 * columnWidth) + "px";
+                bRow.style.width = (unitHeader.scrollWidth || (totalProjectDays * columnWidth)) + "px";
 
                 let barStyles = t.start === t.end ? "bg-amber-400 text-amber-950 border-amber-500 shadow-md" : (t.level === 1 ? "bg-rose-500 text-white border-rose-600" : (t.level === 2 ? "bg-slate-700 text-white border-slate-800" : "bg-slate-50 text-slate-700 border-slate-200"));
                 const bar = document.createElement('div');
