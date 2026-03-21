@@ -2,149 +2,122 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extintores Pro - Seguridad al Alcance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Extintores Pro - Seguridad Móvil</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Configuración de Tailwind para soportar modo oscuro por clase
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <style>
-        :root {
-            --primary: #e11d48;
-            --primary-hover: #be123c;
-        }
-        .dark {
-            background-color: #0f172a;
-            color: #f1f5f9;
-        }
-        .transition-theme {
-            transition: background-color 0.3s, color 0.3s;
-        }
+        /* Optimización para evitar parpadeos al cargar en móviles */
+        .transition-theme { transition: background-color 0.3s ease, color 0.3s ease; }
+        /* Ajuste de tamaño de botones para dedos (Touch Targets) */
+        button, input, select { min-height: 44px; }
     </style>
 </head>
-<body class="transition-theme bg-gray-50 text-gray-900 font-sans">
+<body class="transition-theme bg-gray-50 text-gray-900 dark:bg-slate-900 dark:text-fuchsia-50 font-sans">
 
-    <header class="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-rose-600 flex items-center gap-2">
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b dark:border-slate-800">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-rose-600 flex items-center gap-2">
                 <i class="fas fa-fire-extinguisher"></i> EXTIN-PRO
             </h1>
-            <button id="themeToggle" class="p-2 rounded-full bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-yellow-400">
+            <button id="themeToggle" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-yellow-400 focus:outline-none" aria-label="Cambiar tema">
                 <i class="fas fa-moon dark:hidden"></i>
                 <i class="fas fa-sun hidden dark:block"></i>
             </button>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-12 space-y-20">
-
-        <section class="text-center space-y-8">
-            <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight">Protección que salva vidas</h2>
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Descubre cómo utilizar correctamente un extintor y mantén tu entorno seguro con nuestra guía interactiva.
-            </p>
-            <div class="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
-                <iframe class="w-full h-full" src="https://www.youtube.com/embed/cUY1o6Saoc0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-            </div>
-        </section>
-
-        <section class="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700">
-            <div class="flex items-center gap-3 mb-6">
-                <i class="fas fa-calculator text-rose-500 text-2xl"></i>
-                <h3 class="text-2xl font-bold">Simulador de Cobertura</h3>
-            </div>
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <label class="block">
-                        <span class="text-sm font-semibold uppercase">Área del recinto (m²)</span>
-                        <input type="number" id="areaInput" placeholder="Ej: 50" class="mt-1 block w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 p-3 shadow-sm focus:ring-rose-500 focus:border-rose-500">
-                    </label>
-                    <label class="block">
-                        <span class="text-sm font-semibold uppercase">Nivel de Riesgo</span>
-                        <select id="riskLevel" class="mt-1 block w-full rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 p-3 shadow-sm">
-                            <option value="1">Bajo (Oficinas, hogares)</option>
-                            <option value="1.5">Moderado (Talleres, comercios)</option>
-                            <option value="2">Alto (Almacenes químicos, fábricas)</option>
-                        </select>
-                    </label>
-                    <button onclick="calculate()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-rose-200 dark:shadow-none">
-                        Calcular Necesidad
-                    </button>
-                </div>
-                <div id="resultBox" class="flex flex-col justify-center items-center p-6 bg-rose-50 dark:bg-rose-900/20 rounded-2xl border-2 border-dashed border-rose-200 dark:border-rose-800">
-                    <span class="text-gray-500 dark:text-gray-400 text-center">Ingresa los datos para ver la recomendación</span>
-                </div>
-            </div>
-        </section>
-
+    <main class="max-w-4xl mx-auto px-6 py-10 space-y-16">
         <section class="space-y-6">
-            <h3 class="text-2xl font-bold text-center">Lista de Inspección Mensual</h3>
-            <div class="grid gap-4">
-                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl cursor-pointer hover:shadow-md transition border border-gray-100 dark:border-slate-700">
-                    <input type="checkbox" class="w-5 h-5 text-rose-600 rounded border-gray-300 focus:ring-rose-500">
-                    <span class="ml-4 font-medium text-gray-700 dark:text-gray-300 text-sm md:text-base">¿El manómetro indica presión en la zona verde?</span>
-                </label>
-                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl cursor-pointer hover:shadow-md transition border border-gray-100 dark:border-slate-700">
-                    <input type="checkbox" class="w-5 h-5 text-rose-600 rounded border-gray-300 focus:ring-rose-500">
-                    <span class="ml-4 font-medium text-gray-700 dark:text-gray-300 text-sm md:text-base">¿El precinto de seguridad está intacto?</span>
-                </label>
-                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl cursor-pointer hover:shadow-md transition border border-gray-100 dark:border-slate-700">
-                    <input type="checkbox" class="w-5 h-5 text-rose-600 rounded border-gray-300 focus:ring-rose-500">
-                    <span class="ml-4 font-medium text-gray-700 dark:text-gray-300 text-sm md:text-base">¿La boquilla y manguera están libres de obstrucciones?</span>
-                </label>
-                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl cursor-pointer hover:shadow-md transition border border-gray-100 dark:border-slate-700">
-                    <input type="checkbox" class="w-5 h-5 text-rose-600 rounded border-gray-300 focus:ring-rose-500">
-                    <span class="ml-4 font-medium text-gray-700 dark:text-gray-300 text-sm md:text-base">¿La etiqueta de mantenimiento está vigente?</span>
-                </label>
+            <h2 class="text-3xl font-bold text-center">Guía de Uso Rápido</h2>
+            <div class="aspect-video w-full rounded-2xl overflow-hidden shadow-lg border dark:border-slate-700">
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/cUY1o6Saoc0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
         </section>
 
+        <section class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border dark:border-slate-700">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-calculator text-rose-500"></i> Calculadora de Carga
+            </h3>
+            <div class="space-y-4">
+                <input type="number" id="areaInput" placeholder="Metros cuadrados (m²)" class="w-full p-4 rounded-xl border dark:bg-slate-700 dark:border-slate-600 outline-none focus:ring-2 focus:ring-rose-500">
+                <select id="riskLevel" class="w-full p-4 rounded-xl border dark:bg-slate-700 dark:border-slate-600 outline-none">
+                    <option value="1">Riesgo Bajo</option>
+                    <option value="1.5">Riesgo Medio</option>
+                    <option value="2">Riesgo Alto</option>
+                </select>
+                <button onclick="calculate()" class="w-full bg-rose-600 text-white font-bold py-4 rounded-xl active:scale-95 transition-transform">
+                    Calcular Ahora
+                </button>
+                <div id="resultBox" class="mt-4 p-4 text-center rounded-xl bg-gray-50 dark:bg-slate-900/50 min-h-[60px] flex items-center justify-center italic text-gray-500">
+                    El resultado aparecerá aquí
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h3 class="text-xl font-bold text-center">Checklist de Inspección</h3>
+            <div class="grid gap-3">
+                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 active:bg-gray-100 dark:active:bg-slate-700 transition">
+                    <input type="checkbox" class="w-6 h-6 accent-rose-600">
+                    <span class="ml-4 text-sm">Presión en zona verde</span>
+                </label>
+                <label class="flex items-center p-4 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 active:bg-gray-100 dark:active:bg-slate-700 transition">
+                    <input type="checkbox" class="w-6 h-6 accent-rose-600">
+                    <span class="ml-4 text-sm">Manguera sin grietas</span>
+                </label>
+            </div>
+        </section>
     </main>
 
-    <footer class="bg-gray-100 dark:bg-slate-950 py-12 text-center text-gray-500 text-sm">
-        <p>© 2026 Extin-Pro Soluciones de Seguridad. Calidad certificada.</p>
-    </footer>
-
     <script>
-        // Lógica de Tema Claro/Oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        const html = document.documentElement;
+        // LÓGICA DE TEMA (CORREGIDA PARA MÓVILES)
+        const btn = document.getElementById('themeToggle');
+        const docEl = document.documentElement;
 
-        themeToggle.addEventListener('click', () => {
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
+        // Función para cambiar el tema
+        function toggleTheme() {
+            if (docEl.classList.contains('dark')) {
+                docEl.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
             } else {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
+                docEl.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
             }
-        });
-
-        // Mantener preferencia del usuario
-        if (localStorage.getItem('theme') === 'dark') {
-            html.classList.add('dark');
         }
 
-        // Lógica del Simulador
+        // Event listener para clic y touch (celulares)
+        btn.addEventListener('click', toggleTheme);
+
+        // Comprobar preferencia guardada al cargar
+        if (localStorage.getItem('color-theme') === 'dark' || 
+            (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            docEl.classList.add('dark');
+        } else {
+            docEl.classList.remove('dark');
+        }
+
+        // LÓGICA DEL SIMULADOR
         function calculate() {
             const area = document.getElementById('areaInput').value;
             const risk = document.getElementById('riskLevel').value;
-            const resultBox = document.getElementById('resultBox');
+            const res = document.getElementById('resultBox');
 
-            if (!area || area <= 0) {
-                resultBox.innerHTML = `<span class="text-rose-500">Por favor, ingresa un área válida.</span>`;
-                return;
+            if (area > 0) {
+                const total = Math.ceil((area * risk) / 20);
+                res.innerHTML = `<b class="text-rose-600 text-lg">Necesitas ${total} extintor(es) de 10lbs</b>`;
+                res.classList.remove('italic');
+            } else {
+                res.innerText = "Ingresa un área válida";
             }
-
-            const capacityRequired = Math.ceil((area * risk) / 15);
-            
-            resultBox.innerHTML = `
-                <div class="text-center animate-bounce">
-                    <span class="block text-4xl font-black text-rose-600">${capacityRequired}</span>
-                    <span class="text-sm font-bold uppercase dark:text-gray-300">Unidades de 10lbs recomendadas</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-4 text-center italic">Basado en normativas estándar de seguridad contra incendios.</p>
-            `;
         }
     </script>
 </body>
-  </html>
-  
+    </html>
+    
