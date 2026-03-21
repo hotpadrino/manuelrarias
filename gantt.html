@@ -12,25 +12,28 @@
         
         :root {
             --header-h: 90px;
-            --row-h: 48px; /* Altura aumentada para mejor tacto en móvil */
+            --row-h: 48px;
         }
 
         .gantt-scroll::-webkit-scrollbar { width: 4px; height: 6px; }
         .gantt-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Asegura alineación perfecta */
         .row-h { 
             height: var(--row-h); 
             min-height: var(--row-h); 
             max-height: var(--row-h);
             display: flex; 
             align-items: center; 
-            box-sizing: border-box;
         }
         .header-total-h { height: var(--header-h); min-height: var(--header-h); }
 
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 2px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
+
+        /* Corrección de scroll en barra lateral */
+        #task-list {
+            overflow-y: hidden; /* Sincronizado por JS con el cronograma */
+        }
 
         @media (max-width: 768px) {
             #task-sidebar { 
@@ -61,7 +64,6 @@
     </div>
 
     <div class="flex-grow flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative">
-        
         <div class="p-3 sm:p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 bg-white z-30">
             <div class="flex items-center gap-3">
                 <button onclick="toggleSidebar()" class="md:hidden w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 text-slate-500"><i class="fas fa-bars"></i></button>
@@ -78,7 +80,7 @@
                     <button onclick="setViewMode('months')" id="btn-months" class="px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition">Meses</button>
                 </div>
 
-                <div class="relative group">
+                <div class="relative">
                     <button onclick="document.getElementById('drop-menu').classList.toggle('hidden')" class="h-9 px-3 bg-slate-50 text-slate-700 text-[9px] font-bold rounded-xl border border-slate-200 flex items-center gap-2">
                         <i class="fas fa-database text-rose-500"></i> DATOS
                     </button>
@@ -105,7 +107,7 @@
                     <span class="text-[9px] text-slate-400 uppercase tracking-widest">Estructura WBS</span>
                     <span class="text-[7px] text-slate-300 font-normal mt-1 italic hidden sm:block">Clic para localizar</span>
                 </div>
-                <div id="task-list" class="flex-grow overflow-y-hidden"></div>
+                <div id="task-list" class="flex-grow"></div>
             </div>
 
             <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll relative bg-white">
@@ -113,7 +115,7 @@
                     <div id="month-header" class="flex border-b border-slate-50 text-[10px] font-bold text-slate-400 bg-slate-50 h-[40px] items-center"></div>
                     <div id="unit-header" class="flex h-[50px]"></div>
                 </div>
-                <div id="bars-container" class="relative">
+                <div id="bars-container" class="relative pb-10">
                     <div id="today-line"><span id="today-label">HOY</span></div>
                 </div>
             </div>
@@ -143,8 +145,7 @@
 1.2;Hito: Requisitos Definidos;Cliente;20/03/2026;20/03/2026;Firma de acta inicial.
 2;Bases de Certificación;Ing. Cert;21/03/2026;15/04/2026;Criterios de seguridad.
 3;Fase de Ensayos;Jefe Lab;16/05/2026;10/07/2026;Validación técnica.
-3.1;Ensayos de Laboratorio;Técnico NDT;16/05/2026;31/05/2026;Pruebas de materiales.
-4;Hito: Certificado Obtenido;Autoridad;31/07/2026;31/07/2026;Fin del proyecto exitoso.`;
+4;Cierre y Certificación;Autoridad;11/07/2026;31/07/2026;Fin del proyecto exitoso.`;
 
         async function loadInitialData() {
             try {
@@ -186,8 +187,7 @@
             viewMode = mode;
             columnWidth = mode === 'days' ? 45 : (mode === 'weeks' ? 80 : 140);
             ['days', 'weeks', 'months'].forEach(m => {
-                const btn = document.getElementById(`btn-${m}`);
-                btn.className = `px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
+                document.getElementById(`btn-${m}`).className = `px-3 py-1 text-[8px] font-bold uppercase rounded-lg transition ${mode === m ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`;
             });
             render();
         }
@@ -202,13 +202,13 @@
             listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const totalProjectDays = 200;
+            const totalProjectDays = 250;
             const today = new Date();
             const dayOfToday = diffDays(today, projectStart);
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             todayLine.style.left = (dayOfToday * scaleFactor) + "px";
 
-            // Headers
+            // Headers logic... (se mantiene igual)
             if (viewMode !== 'months') {
                 monthHeader.classList.remove('hidden');
                 let curMonth = -1; let monthBox = null;
@@ -223,7 +223,6 @@
                         monthHeader.appendChild(monthBox);
                     }
                     monthBox.style.width = (parseFloat(monthBox.style.width || 0) + columnWidth) + "px";
-
                     const d = document.createElement('div');
                     d.className = `flex-shrink-0 border-r border-slate-100 flex items-center justify-center text-[9px] ${cur.toDateString() === today.toDateString() && viewMode === 'days' ? 'bg-rose-50 text-rose-500 font-bold' : 'text-slate-400'}`;
                     d.style.width = columnWidth + "px"; d.style.height = "50px";
@@ -232,7 +231,7 @@
                 }
             } else {
                 monthHeader.classList.add('hidden');
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < 10; i++) {
                     const cur = new Date(projectStart); cur.setMonth(cur.getMonth() + i);
                     const d = document.createElement('div');
                     d.className = "flex-shrink-0 border-r border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-50";
@@ -254,22 +253,21 @@
                     }
                 }
 
+                // Lista Lateral Row
                 const lRow = document.createElement('div');
                 lRow.className = `row-h px-4 border-b border-slate-50 text-[9px] sm:text-[10px] hover:bg-slate-50 transition-all ${isHidden ? 'hidden' : ''}`;
                 lRow.style.paddingLeft = (t.level === 1 ? 10 : t.level === 2 ? 22 : 36) + "px";
                 const hasChildren = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
                 const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2 text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-2 text-slate-300 w-3"></i>';
-                
-                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">
-                    ${arrow} <span class="truncate"><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span>
-                </span>`;
+                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">${arrow} <span class="truncate"><b class="text-rose-500/60 mr-1 font-black">${t.id}</b> ${t.name}</span></span>`;
                 listObj.appendChild(lRow);
 
+                // Bar Row
                 const startDays = diffDays(parseDate(t.start), projectStart);
                 const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 relative ${isHidden ? 'hidden' : ''}`;
-                bRow.style.width = (200 * columnWidth) + "px";
+                bRow.style.width = (250 * columnWidth) + "px";
 
                 let barStyles = t.start === t.end ? "bg-amber-400 text-amber-950 border-amber-500 shadow-md z-10" : (t.level === 1 ? "bg-rose-500 text-white border-rose-600 shadow-md" : (t.level === 2 ? "bg-slate-700 text-white border-slate-800 shadow-sm" : "bg-slate-50 text-slate-700 border-slate-300"));
                 const bar = document.createElement('div');
@@ -284,6 +282,7 @@
             });
         }
 
+        // --- Funciones de Utilidad ---
         function toggleNode(id) {
             const t = tasks.find(x => x.id === id);
             if (t) { t.open = !t.open; render(); }
@@ -318,7 +317,6 @@
             const file = input.files[0];
             const reader = new FileReader();
             reader.onload = (e) => { tasks = parseCSV(e.target.result); render(); };
-            // LEER COMO ISO-8859-1 para arreglar caracteres raros de Excel Español
             reader.readAsText(file, 'ISO-8859-1');
             document.getElementById('drop-menu').classList.add('hidden');
         }
@@ -346,6 +344,7 @@
             overlay.classList.toggle('hidden');
         }
 
+        // --- Sincronización de Scroll ---
         document.getElementById('timeline-viewport').onscroll = function() {
             document.getElementById('task-list').scrollTop = this.scrollTop;
         };
