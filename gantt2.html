@@ -436,8 +436,9 @@ function render(){
       var span=Math.min(daysToNext,DAYS-i);
       var mc=document.createElement('div');mc.className='month-cell';
       mc.style.width=(span*columnWidth)+'px';
-      var ms=d.toLocaleDateString('es-ES',{month:'short'}).replace('.','').toUpperCase();
-      mc.innerText=(dom===1||i===0)?ms+' '+d.getFullYear():ms;
+      var ms = d.toLocaleDateString('es-ES', {month:'long', year:'numeric'});
+      mc.innerText = ms.charAt(0).toUpperCase() + ms.slice(1);
+
       monthHdr.appendChild(mc);i+=span;
     }
     for(var di=0;di<DAYS;di++){
