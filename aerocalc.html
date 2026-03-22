@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroCalc — TMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   CSS VARIABLES — THEMES
+══════════════════════════════════════════════ */
+:root {
+  --radius: 6px;
+  --font-mono: 'Share Tech Mono', monospace; 
+  --font-ui: 'Barlow Condensed', sans-serif; 
+  --font-body: 'Barlow', sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* THEME: Claro Original */
+[data-theme="light"] {
+  --bg: #f8fafc; --bg2: #ffffff; --bg3: #f1f5f9; --border: #cbd5e1;
+  --accent: #0f172a; --text: #0f172a; --text2: #475569;
+  --success: #16a34a; --danger: #dc2626;
+  --btn-bg: #f1f5f9; --btn-text: #0f172a; --btn-border: 1px solid #cbd5e1;
+  --input-bg: #ffffff; --card-border: 1px solid #cbd5e1;
+}
+
+/* THEME: Azul */
+[data-theme="blue"] {
+  --bg: #e0f2fe; --bg2: #ffffff; --bg3: #bae6fd; --border: #7dd3fc;
+  --accent: #0284c7; --text: #0c4a6e; --text2: #0369a1;
+  --success: #16a34a; --danger: #dc2626;
+  --btn-bg: #0284c7; --btn-text: #ffffff; --btn-border: 1px solid #0284c7;
+  --input-bg: #ffffff; --card-border: 1px solid #7dd3fc;
+}
+
+/* THEME: Morado Aesthetic */
+[data-theme="purple"] {
+  --bg: #f3e8ff; --bg2: #ffffff; --bg3: #e9d5ff; --border: #d8b4fe;
+  --accent: #9333ea; --text: #3b0764; --text2: #581c87;
+  --success: #16a34a; --danger: #dc2626;
+  --btn-bg: #9333ea; --btn-text: #ffffff; --btn-border: 1px solid #9333ea;
+  --input-bg: #ffffff; --card-border: 1px solid #d8b4fe;
+}
+
+/* THEME: Rosa */
+[data-theme="pink"] {
+  --bg: #fce7f3; --bg2: #ffffff; --bg3: #fbcfe8; --border: #f9a8d4;
+  --accent: #db2777; --text: #831843; --text2: #9d174d;
+  --success: #16a34a; --danger: #dc2626;
+  --btn-bg: #db2777; --btn-text: #ffffff; --btn-border: 1px solid #db2777;
+  --input-bg: #ffffff; --card-border: 1px solid #f9a8d4;
+}
+
+/* THEME: Verde Ejército Camuflado */
+[data-theme="camo-green"] {
+  --bg: #4a5320; --bg2: #3b421a; --bg3: #5b6628; --border: #2d3319;
+  --accent: #a8b854; --text: #f0f4e3; --text2: #d2dca3;
+  --success: #a8b854; --danger: #ff5555;
+  --btn-bg: #5b6628; --btn-text: #f0f4e3; --btn-border: 1px solid #a8b854;
+  --input-bg: #2d3319; --card-border: 1px solid #5b6628;
+}
+
+/* THEME: Arena Camuflado */
+[data-theme="camo-sand"] {
+  --bg: #d2b48c; --bg2: #c3a378; --bg3: #e6d3a8; --border: #8b5a2b;
+  --accent: #5c3a21; --text: #3e2723; --text2: #4e342e;
+  --success: #2e7d32; --danger: #c62828;
+  --btn-bg: #e6d3a8; --btn-text: #5c3a21; --btn-border: 1px solid #8b5a2b;
+  --input-bg: #e6d3a8; --card-border: 1px solid #8b5a2b;
+}
+
+/* THEME: Negro & Rojo Puros (Botones huecos) */
+[data-theme="black-red"] {
+  --bg: #000000; --bg2: #000000; --bg3: #000000; --border: #550000;
+  --accent: #ff3333; --text: #ffaaaa; --text2: #cc6666;
+  --success: #ff3333; --danger: #ff3333;
+  --btn-bg: transparent; --btn-text: #ff3333; --btn-border: 1px solid #ff3333;
+  --input-bg: #000000; --card-border: 1px solid #550000;
+}
+
+/* THEME: Negro & Verde Puros (Botones huecos) */
+[data-theme="black-green"] {
+  --bg: #000000; --bg2: #000000; --bg3: #000000; --border: #004400;
+  --accent: #00ff41; --text: #99ff99; --text2: #66cc66;
+  --success: #00ff41; --danger: #00ff41;
+  --btn-bg: transparent; --btn-text: #00ff41; --btn-border: 1px solid #00ff41;
+  --input-bg: #000000; --card-border: 1px solid #004400;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* Patrones de Camuflaje (solo se activan en los temas camo) */
+body { background-color: var(--bg); background-image: none; color: var(--text); font-family: var(--font-body); font-size: 15px; min-height: 100vh; }
+[data-theme="camo-green"] body {
+  background-image: radial-gradient(#3b421a 15%, transparent 16%), radial-gradient(#5b6628 15%, transparent 16%);
+  background-size: 60px 60px; background-position: 0 0, 30px 30px;
+}
+[data-theme="camo-sand"] body {
+  background-image: radial-gradient(#c3a378 15%, transparent 16%), radial-gradient(#e6d3a8 15%, transparent 16%);
+  background-size: 60px 60px; background-position: 0 0, 30px 30px;
+}
+
+/* ══ HEADER ══ */
+header {
+  background: var(--bg2); border-bottom: 1px solid var(--accent); padding: 0 16px;
+  display: flex; align-items: center; justify-content: space-between; height: 64px;
+  position: sticky; top: 0; z-index: 100;
+}
+.logo { font-family: var(--font-ui); font-weight: 900; font-size: 22px; color: var(--accent); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.logo svg { width:24px; height:24px; fill: var(--accent); }
+.logo span { color: var(--text2); font-weight:400; font-size:14px; letter-spacing:1px; }
+
+/* Barra de temas deslizable horizontalmente */
+.theme-bar { 
+  display: flex; gap: 8px; overflow-x: auto; padding: 4px; align-items: center;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.theme-bar::-webkit-scrollbar { display: none; }
+
+.theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid var(--border); flex-shrink: 0; }
+.theme-btn.active { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+.theme-btn[data-t="light"]       { background: #ffffff; border-color: #cbd5e1; }
+.theme-btn[data-t="blue"]        { background: #0284c7; border-color: #7dd3fc; }
+.theme-btn[data-t="purple"]      { background: #9333ea; border-color: #d8b4fe; }
+.theme-btn[data-t="pink"]        { background: #db2777; border-color: #f9a8d4; }
+.theme-btn[data-t="camo-green"]  { background: #4a5320; border-color: #a8b854; }
+.theme-btn[data-t="camo-sand"]   { background: #d2b48c; border-color: #5c3a21; }
+.theme-btn[data-t="black-red"]   { background: #000000; border-color: #ff3333; }
+.theme-btn[data-t="black-green"] { background: #000000; border-color: #00ff41; }
+
+/* ══ MAIN MENU ══ */
+#home-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 20px 16px; max-width: 960px; margin: 0 auto; }
+.menu-btn {
+  background: var(--btn-bg); border: var(--btn-border); border-radius: 8px;
+  padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  color: var(--btn-text); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.menu-btn:active { opacity: 0.7; transform: scale(0.98); }
+.menu-btn .icon { font-size: 28px; }
+.menu-btn .label { font-family: var(--font-ui); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+[data-theme="black-red"] .menu-btn, [data-theme="black-green"] .menu-btn { box-shadow: none; }
+
+/* ══ PANELS ══ */
+main { padding: 16px; max-width: 960px; margin: 0 auto; }
+.cat-panel { display: none; }
+.cat-panel.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+.panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 15px; }
+
+.btn-back {
+  background: var(--btn-bg); border: var(--btn-border); color: var(--btn-text);
+  padding: 12px 20px; font-family: var(--font-ui); font-weight: 700; font-size: 16px;
+  letter-spacing: 1px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; width: 100%; justify-content: center;
+}
+
+/* ══ CARDS & INPUTS ══ */
+.card { background: var(--bg2); border: var(--card-border); border-radius: var(--radius); overflow: hidden; }
+.card-head { background: var(--bg3); padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.card-title { font-family: var(--font-ui); font-weight: 700; font-size: 15px; text-transform: uppercase; color: var(--accent); }
+.card-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+.field-row { display: flex; gap: 8px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+label { font-size: 12px; font-family: var(--font-ui); letter-spacing: .5px; text-transform: uppercase; color: var(--text2); }
+input, select, textarea {
+  background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text);
+  font-family: var(--font-mono); font-size: 16px; padding: 12px; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
+
+.calc-btn {
+  height: 46px; background: var(--btn-bg); color: var(--btn-text); border: var(--btn-border); border-radius: var(--radius);
+  font-family: var(--font-ui); font-size: 16px; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 4px;
+}
+.calc-btn:active { opacity: 0.7; }
+
+.result-box { 
+  background: transparent; border: 1px dashed var(--accent); border-radius: var(--radius); padding: 12px; 
+  font-family: var(--font-mono); font-size: 20px; color: var(--success); min-height: 52px; 
+  display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 4px;
+}
+
+/* ══ TABLA PESO Y BALANCE ══ */
+.wb-row { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
+.wb-row input { height: 40px; font-size: 14px; padding: 6px; }
+.wb-header { font-family: var(--font-ui); font-size: 12px; color: var(--text2); text-transform: uppercase; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; gap: 6px; }
+.btn-del { 
+  background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+  height: 40px; width: 40px; border-radius: var(--radius); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+}
+.wb-m { background: transparent !important; border-style: dashed !important; color: var(--accent) !important; }
+</style>
+</head>
+<body data-theme="blue">
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>
+    AEROCALC <span>// TMA</span>
+  </div>
+  <div class="theme-bar">
+    <div class="theme-btn" data-t="light" title="Claro"></div>
+    <div class="theme-btn active" data-t="blue" title="Azul"></div>
+    <div class="theme-btn" data-t="purple" title="Morado"></div>
+    <div class="theme-btn" data-t="pink" title="Rosa"></div>
+    <div class="theme-btn" data-t="camo-green" title="Camuflado Verde"></div>
+    <div class="theme-btn" data-t="camo-sand" title="Camuflado Arena"></div>
+    <div class="theme-btn" data-t="black-red" title="Negro/Rojo"></div>
+    <div class="theme-btn" data-t="black-green" title="Negro/Verde"></div>
+  </div>
+</header>
+
+<!-- MENU PRINCIPAL -->
+<div id="home-menu">
+  <button class="menu-btn" onclick="openPanel('fuel')"><span class="icon">⛽</span><span class="label">Combustible</span></button>
+  <button class="menu-btn" onclick="openPanel('torque')"><span class="icon">🔧</span><span class="label">Torque</span></button>
+  <button class="menu-btn" onclick="openPanel('pressure')"><span class="icon">🔵</span><span class="label">Presión</span></button>
+  <button class="menu-btn" onclick="openPanel('metrology')"><span class="icon">📏</span><span class="label">Metrología</span></button>
+  <button class="menu-btn" onclick="openPanel('time')"><span class="icon">🕐</span><span class="label">Tiempos</span></button>
+  <button class="menu-btn" onclick="openPanel('temp')"><span class="icon">🌡️</span><span class="label">Temperatura</span></button>
+  <button class="menu-btn" onclick="openPanel('wb')"><span class="icon">⚖️</span><span class="label">Peso y CG</span></button>
+  <button class="menu-btn" onclick="openPanel('notes')"><span class="icon">📝</span><span class="label">Bloc Notas</span></button>
+</div>
+
+<main>
+
+<!-- PANEL: PESO Y CENTRADO -->
+<section class="cat-panel" id="cat-wb">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid" style="grid-template-columns: 1fr;">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Cálculo de Centro de Gravedad (CG)</span></div>
+      <div class="card-body">
+        <div class="wb-header">
+          <span>Estación / Ítem</span><span>Peso (W)</span><span>Brazo (A)</span><span>Momento (M)</span><span></span>
+        </div>
+        <div id="wb-container"></div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button class="calc-btn" style="flex:1; border-style: dashed;" onclick="addWbRow()">+ FILA</button>
+          <button class="calc-btn" style="flex:2;" onclick="calcCG()">CALCULAR CG</button>
+        </div>
+        <div class="result-box" style="margin-top: 15px; flex-direction: column; align-items: flex-start; gap: 5px; border-style: solid;">
+          <div style="font-size: 14px; color: var(--text2);">Peso Total: <span id="wb-total-w" style="color:var(--text);">0</span></div>
+          <div style="font-size: 14px; color: var(--text2);">Momento Total: <span id="wb-total-m" style="color:var(--text);">0</span></div>
+          <div style="font-size: 26px; font-weight: bold; margin-top: 5px; color: var(--accent);">CG: <span id="wb-final-cg">0.00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: NOTAS -->
+<section class="cat-panel" id="cat-notes">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid" style="grid-template-columns: 1fr;">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Bloc de Notas del Técnico</span></div>
+      <div class="card-body">
+        <p style="font-size:12px; color:var(--text2); margin-bottom:5px;">Se guarda automáticamente en tu dispositivo local.</p>
+        <textarea id="tma_notes" placeholder="Escribe aquí tareas pendientes, reportes, números de parte..." oninput="saveNotes()"></textarea>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: COMBUSTIBLE -->
+<section class="cat-panel" id="cat-fuel">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Galones ↔ Libras (Jet A-1)</span></div>
+      <div class="card-body">
+        <div class="field-row">
+            <div class="field"><label>Galones</label><input type="number" id="f_gal"></div>
+            <div class="field"><label>Libras</label><input type="number" id="f_lbs"></div>
+        </div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcFuel('gal_to_lb')">Gal → Lb</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcFuel('lb_to_gal')">Lb → Gal</button>
+        </div>
+        <div class="result-box" id="res_fuel_us">—</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">Kilogramos ↔ Libras</span></div>
+      <div class="card-body">
+        <div class="field-row">
+            <div class="field"><label>KG</label><input type="number" id="f_kg"></div>
+            <div class="field"><label>Libras</label><input type="number" id="f_lbs2"></div>
+        </div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcFuel('kg_to_lb')">Kg → Lb</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcFuel('lb_to_kg')">Lb → Kg</button>
+        </div>
+        <div class="result-box" id="res_fuel_m">—</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">Litros → Kg (Jet A-1)</span></div>
+      <div class="card-body">
+        <div class="field"><label>Litros</label><input type="number" id="f_lts"></div>
+        <button class="calc-btn" onclick="calcFuel('lts_to_kg')">Convertir a Kg</button>
+        <div class="result-box" id="res_fuel_lts">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: TORQUE -->
+<section class="cat-panel" id="cat-torque">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Torque con Extensión</span></div>
+      <div class="card-body">
+        <div class="field"><label>Torque deseado (Te)</label><input type="number" id="t_T"></div>
+        <div class="field-row">
+            <div class="field"><label>Llave (L)</label><input type="number" id="t_L"></div>
+            <div class="field"><label>Extensión (E)</label><input type="number" id="t_E"></div>
+        </div>
+        <button class="calc-btn" onclick="calcTorqueExt()">CALCULAR Ajuste (Tw)</button>
+        <div class="result-box" id="res_torque_ext">—</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">Conversión de Torque</span></div>
+      <div class="card-body">
+        <div class="field-row">
+            <div class="field"><label>Valor</label><input type="number" id="t_val"></div>
+            <div class="field"><label>De</label>
+                <select id="t_from">
+                    <option value="lbft">lb-ft</option>
+                    <option value="lbin">lb-in</option>
+                    <option value="nm">Nm</option>
+                </select>
+            </div>
+        </div>
+        <button class="calc-btn" onclick="calcTorqueConv()">Convertir</button>
+        <div class="result-box" id="res_torque_conv" style="font-size:16px; flex-direction:column; gap:4px;">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: PRESIÓN -->
+<section class="cat-panel" id="cat-pressure">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Conversión de Presión</span></div>
+      <div class="card-body">
+        <div class="field"><label>Valor a convertir</label><input type="number" id="p_val"></div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcPress('psi_bar')">PSI → Bar</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcPress('bar_psi')">Bar → PSI</button>
+        </div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcPress('psi_kg')">PSI → kg/cm²</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcPress('kg_psi')">kg/cm² → PSI</button>
+        </div>
+        <div class="result-box" id="res_press">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: METROLOGÍA -->
+<section class="cat-panel" id="cat-metrology">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Decimal a Fracción (1/64)</span></div>
+      <div class="card-body">
+        <div class="field"><label>Pulgadas Decimal (Ej: 0.0468)</label><input type="number" id="m_dec" step="0.0001"></div>
+        <button class="calc-btn" onclick="calcFraction()">Convertir a Fracción</button>
+        <div class="result-box" id="res_frac">—</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">Milímetros ↔ Pulgadas</span></div>
+      <div class="card-body">
+        <div class="field"><label>Valor</label><input type="number" id="m_val"></div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcMetrology('in_mm')">Pulg → mm</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcMetrology('mm_in')">mm → Pulg</button>
+        </div>
+        <div class="result-box" id="res_mm">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: TIEMPOS -->
+<section class="cat-panel" id="cat-time">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Minutos → Hora Decimal</span></div>
+      <div class="card-body">
+        <div class="field"><label>Minutos trabajados (0-59)</label><input type="number" id="time_min" max="59"></div>
+        <button class="calc-btn" onclick="calcTime('min_dec')">A Decimal</button>
+        <div class="result-box" id="res_time_dec">—</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><span class="card-title">Hora Decimal → HH:MM</span></div>
+      <div class="card-body">
+        <div class="field"><label>Horas en decimal (Ej: 1.75)</label><input type="number" id="time_dec" step="0.01"></div>
+        <button class="calc-btn" onclick="calcTime('dec_hm')">A Reloj</button>
+        <div class="result-box" id="res_time_hm">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PANEL: TEMPERATURA -->
+<section class="cat-panel" id="cat-temp">
+  <button class="btn-back" onclick="goHome()">🔙 VOLVER AL MENÚ</button>
+  <div class="panel-grid">
+    <div class="card"><div class="card-head"><span class="card-title">Conversión de Temperatura</span></div>
+      <div class="card-body">
+        <div class="field"><label>Grados</label><input type="number" id="temp_val"></div>
+        <div class="field-row">
+            <button class="calc-btn" style="flex:1;" onclick="calcTemp('c_f')">°C → °F</button>
+            <button class="calc-btn" style="flex:1;" onclick="calcTemp('f_c')">°F → °C</button>
+        </div>
+        <div class="result-box" id="res_temp">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ── THEMES ── */
+const savedTheme = localStorage.getItem('aero_theme') || 'blue';
+setTheme(savedTheme);
+
+document.querySelectorAll('.theme-btn').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.t));
+});
+
+function setTheme(t) {
+  document.body.dataset.theme = t;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  localStorage.setItem('aero_theme', t);
+}
+
+/* ── NAVEGACIÓN PRINCIPAL ── */
+function openPanel(id) {
+  document.getElementById('home-menu').style.display = 'none';
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('cat-' + id).classList.add('active');
+}
+function goHome() {
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('home-menu').style.display = 'grid';
+}
+
+/* ── HELPERS MATH & DOM ── */
+function val(id) { return parseFloat(document.getElementById(id).value); }
+function setRes(id, text) { document.getElementById(id).innerHTML = text; }
+
+/* ── BLOC DE NOTAS PERSISTENTE ── */
+window.addEventListener('DOMContentLoaded', () => {
+  const notePad = document.getElementById('tma_notes');
+  notePad.value = localStorage.getItem('aero_notes') || '';
+  
+  // Iniciar tabla W&B con filas por defecto
+  addWbRow('Peso Vacío');
+  addWbRow('Pilotos');
+});
+function saveNotes() { localStorage.setItem('aero_notes', document.getElementById('tma_notes').value); }
+
+/* ── PESO Y CENTRADO DINÁMICO ── */
+let wbRowCount = 0;
+function addWbRow(defaultName = '') {
+  wbRowCount++;
+  const container = document.getElementById('wb-container');
+  const rowId = `wb-row-${wbRowCount}`;
+  
+  const div = document.createElement('div');
+  div.className = 'wb-row';
+  div.id = rowId;
+  div.innerHTML = `
+    <input type="text" placeholder="Ítem..." value="${defaultName}">
+    <input type="number" class="wb-w" placeholder="W" oninput="updateRowMom('${rowId}')">
+    <input type="number" class="wb-a" placeholder="Arm" oninput="updateRowMom('${rowId}')">
+    <input type="text" class="wb-m" placeholder="Mom" readonly>
+    <button class="btn-del" onclick="document.getElementById('${rowId}').remove(); calcCG();">X</button>
+  `;
+  container.appendChild(div);
+}
+
+function updateRowMom(rowId) {
+  const row = document.getElementById(rowId);
+  const w = parseFloat(row.querySelector('.wb-w').value) || 0;
+  const a = parseFloat(row.querySelector('.wb-a').value) || 0;
+  row.querySelector('.wb-m').value = (w * a).toFixed(2);
+}
+
+function calcCG() {
+  const rows = document.querySelectorAll('.wb-row');
+  let totalW = 0, totalM = 0;
+  rows.forEach(row => {
+    const w = parseFloat(row.querySelector('.wb-w').value) || 0;
+    const a = parseFloat(row.querySelector('.wb-a').value) || 0;
+    totalW += w; totalM += (w * a);
+  });
+  document.getElementById('wb-total-w').innerText = totalW.toFixed(2);
+  document.getElementById('wb-total-m').innerText = totalM.toFixed(2);
+  document.getElementById('wb-final-cg').innerText = totalW === 0 ? "0.00" : (totalM / totalW).toFixed(2);
+}
+
+/* ── COMBUSTIBLE ── */
+function calcFuel(mode) {
+    if(mode === 'gal_to_lb') { let v = val('f_gal'); if(!isNaN(v)) setRes('res_fuel_us', (v * 6.7).toFixed(2) + ' lbs'); }
+    if(mode === 'lb_to_gal') { let v = val('f_lbs'); if(!isNaN(v)) setRes('res_fuel_us', (v / 6.7).toFixed(2) + ' gal'); }
+    if(mode === 'kg_to_lb') { let v = val('f_kg'); if(!isNaN(v)) setRes('res_fuel_m', (v * 2.20462).toFixed(2) + ' lbs'); }
+    if(mode === 'lb_to_kg') { let v = val('f_lbs2'); if(!isNaN(v)) setRes('res_fuel_m', (v / 2.20462).toFixed(2) + ' kg'); }
+    if(mode === 'lts_to_kg') { let v = val('f_lts'); if(!isNaN(v)) setRes('res_fuel_lts', (v * 0.8).toFixed(2) + ' kg'); }
+}
+
+/* ── TORQUE ── */
+function calcTorqueExt() {
+  const T = val('t_T'), L = val('t_L'), E = val('t_E');
+  if(!isNaN(T) && !isNaN(L) && !isNaN(E) && (L+E)!==0) setRes('res_torque_ext', (T * L / (L + E)).toFixed(2));
+}
+
+function calcTorqueConv() {
+    let v = val('t_val');
+    let from = document.getElementById('t_from').value;
+    if(isNaN(v)) return;
+    
+    let lbft = 0, lbin = 0, nm = 0;
+    if(from === 'lbft') { lbft = v; lbin = v * 12; nm = v * 1.3558; }
+    if(from === 'lbin') { lbin = v; lbft = v / 12; nm = v * 0.11298; }
+    if(from === 'nm') { nm = v; lbft = v / 1.3558; lbin = v / 0.11298; }
+    
+    setRes('res_torque_conv', `<div>${lbft.toFixed(2)} lb-ft</div><div>${lbin.toFixed(2)} lb-in</div><div>${nm.toFixed(2)} Nm</div>`);
+}
+
+/* ── PRESIÓN ── */
+function calcPress(mode) {
+    let v = val('p_val');
+    if(isNaN(v)) return;
+    if(mode === 'psi_bar') setRes('res_press', (v / 14.5038).toFixed(2) + ' Bar');
+    if(mode === 'bar_psi') setRes('res_press', (v * 14.5038).toFixed(2) + ' PSI');
+    if(mode === 'psi_kg') setRes('res_press', (v * 0.070307).toFixed(3) + ' kg/cm²');
+    if(mode === 'kg_psi') setRes('res_press', (v / 0.070307).toFixed(2) + ' PSI');
+}
+
+/* ── METROLOGÍA ── */
+function calcFraction() {
+    let dec = val('m_dec');
+    if(isNaN(dec)) return;
+    let num = Math.round(dec * 64);
+    if (num === 0) { setRes('res_frac', "0"); return; }
+    const gcd = (a, b) => b ? gcd(b, a % b) : a;
+    let common = gcd(num, 64);
+    setRes('res_frac', (num/common) + "/" + (64/common) + '"');
+}
+
+function calcMetrology(mode) {
+    let v = val('m_val');
+    if(isNaN(v)) return;
+    if(mode === 'in_mm') setRes('res_mm', (v * 25.4).toFixed(3) + ' mm');
+    if(mode === 'mm_in') setRes('res_mm', (v / 25.4).toFixed(4) + ' in');
+}
+
+/* ── TIEMPOS ── */
+function calcTime(mode) {
+    if(mode === 'min_dec') {
+        let min = val('time_min');
+        if(!isNaN(min)) setRes('res_time_dec', (min / 60).toFixed(2) + ' hrs');
+    }
+    if(mode === 'dec_hm') {
+        let dec = val('time_dec');
+        if(!isNaN(dec)) {
+            let h = Math.floor(dec);
+            let m = Math.round((dec - h) * 60);
+            setRes('res_time_hm', `${h}h ${m < 10 ? '0'+m : m}m`);
+        }
+    }
+}
+
+/* ── TEMPERATURA ── */
+function calcTemp(mode) {
+    let v = val('temp_val');
+    if(isNaN(v)) return;
+    if(mode === 'c_f') setRes('res_temp', ((v * 9/5) + 32).toFixed(1) + ' °F');
+    if(mode === 'f_c') setRes('res_temp', ((v - 32) * 5/9).toFixed(1) + ' °C');
+}
+
+</script>
+</body>
+</html>
