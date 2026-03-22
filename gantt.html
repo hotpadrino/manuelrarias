@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gantt Enterprise Pro</title>
+    <title>Gantt Enterprise Pro - Edición FAC</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -34,7 +34,6 @@
         #today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; z-index: 10; pointer-events: none; }
         #today-label { position: absolute; top: 0; transform: translateX(-50%); background: #f43f5e; color: white; font-size: 8px; padding: 1px 4px; border-radius: 0 0 4px 4px; font-weight: bold; }
 
-        /* LÓGICA MÓVIL CORREGIDA */
         @media (max-width: 768px) {
             :root { --sidebar-w: 240px; }
             #task-sidebar, #sidebar-header { 
@@ -43,9 +42,7 @@
                 z-index: 50; 
                 transition: left 0.3s ease; 
             }
-            #task-sidebar.open, #sidebar-header.open { 
-                left: 0; 
-            }
+            #task-sidebar.open, #sidebar-header.open { left: 0; }
         }
     </style>
 </head>
@@ -54,16 +51,39 @@
     <div id="detail-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-start mb-4">
-                <h3 id="modal-title" class="text-xs font-black text-slate-900 dark:text-white uppercase">Detalles</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-rose-500 p-2"><i class="fas fa-times"></i></button>
+                <h3 id="modal-title" class="text-xs font-black text-slate-900 dark:text-white uppercase truncate pr-4">Editar Tarea</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-rose-500 transition"><i class="fas fa-times"></i></button>
             </div>
+            
             <div id="modal-content" class="text-xs space-y-3">
                 <p><b class="text-slate-500 dark:text-slate-400">ID:</b> <span id="m-id" class="font-bold text-rose-500"></span></p>
-                <p><b class="text-slate-500 dark:text-slate-400">Responsable:</b> <span id="m-owner" class="dark:text-slate-200"></span></p>
-                <p><b class="text-slate-500 dark:text-slate-400">Periodo:</b> <span id="m-period" class="dark:text-slate-200"></span></p>
-                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl italic text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-700 min-h-[80px]" id="m-obs"></div>
+                
+                <div>
+                    <b class="text-slate-500 dark:text-slate-400 block mb-1">Responsable:</b>
+                    <input type="text" id="edit-owner" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                </div>
+                
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <b class="text-slate-500 dark:text-slate-400 block mb-1">Inicio:</b>
+                        <input type="date" id="edit-start" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                    </div>
+                    <div class="flex-1">
+                        <b class="text-slate-500 dark:text-slate-400 block mb-1">Fin:</b>
+                        <input type="date" id="edit-end" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                    </div>
+                </div>
+                
+                <div>
+                    <b class="text-slate-500 dark:text-slate-400 block mb-1">Observaciones:</b>
+                    <textarea id="edit-obs" rows="3" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition resize-none"></textarea>
+                </div>
             </div>
-            <button onclick="closeModal()" class="w-full mt-6 bg-slate-900 dark:bg-slate-700 text-white py-2.5 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-800 dark:hover:bg-slate-600 transition">Cerrar</button>
+
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeModal()" class="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 py-2.5 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 dark:hover:bg-slate-700 transition">Cancelar</button>
+                <button onclick="saveTaskEdit()" class="flex-1 bg-rose-500 text-white py-2.5 rounded-xl font-bold text-[10px] uppercase hover:bg-rose-600 shadow-md transition">Guardar</button>
+            </div>
         </div>
     </div>
 
@@ -78,9 +98,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Alternar Tema">
-                    🌓
-                </button>
+                <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="Alternar Tema">🌓</button>
                 <div class="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 hidden sm:flex">
                     <button onclick="setViewMode('days')" id="btn-days" class="px-3 py-1 text-[8px] font-bold uppercase rounded-md transition">Días</button>
                     <button onclick="setViewMode('weeks')" id="btn-weeks" class="px-3 py-1 text-[8px] font-bold uppercase rounded-md transition">Semanas</button>
@@ -111,16 +129,14 @@
                         </button>
                     </div>
                 </div>
-                <button onclick="scrollToToday()" class="h-8 px-3 sm:px-4 bg-rose-500 hover:bg-rose-600 text-white text-[8px] font-black rounded-lg shadow-md uppercase transition">Hoy</button>
+                <button id="btn-hoy" onclick="scrollToToday()" class="h-8 px-3 sm:px-4 bg-rose-500 hover:bg-rose-600 text-white text-[8px] font-black rounded-lg shadow-md uppercase transition">Hoy</button>
             </div>
         </div>
 
         <div class="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 z-30 relative">
-            
             <div id="sidebar-header" class="sidebar-w flex items-center px-5 font-bold border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 h-[64px]">
                 <span class="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">Estructura WBS</span>
             </div>
-            
             <div id="header-scroll-container" class="flex-grow">
                 <div id="gantt-header-content" class="flex flex-col h-[64px]">
                     <div id="month-header" class="border-b border-slate-200 dark:border-slate-800 h-[28px] items-center"></div>
@@ -133,36 +149,37 @@
             <div id="sidebar-overlay" class="hidden fixed inset-0 bg-slate-900/50 z-40 md:hidden" onclick="toggleSidebar()"></div>
             
             <div id="task-sidebar" class="sidebar-w border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col h-full overflow-hidden">
-                <div id="task-list" class="flex-grow overflow-hidden"></div>
+                <div id="task-list" class="flex-grow overflow-auto gantt-scroll pb-20"></div>
             </div>
 
             <div id="timeline-viewport" class="flex-grow overflow-auto gantt-scroll bg-white dark:bg-slate-900 relative">
-                <div id="bars-container" class="relative">
+                <div id="bars-container" class="relative pb-20">
                     <div id="today-line"><span id="today-label">HOY</span></div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <footer class="py-3 text-center text-slate-400 font-bold uppercase text-[9px] flex-shrink-0">
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
-        <p>© 2026 • Escríbeme si quieres tener una web genial</p>
-        <div class="flex gap-4">
-            <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
-            <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
+            <p>© 2026 • Inversiones Aripar</p>
+            <div class="flex gap-4">
+                <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
+                <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
+            </div>
         </div>
-    </div>
     </footer>
 
     <script>
         let tasks = [];
         let viewMode = 'days'; 
         let columnWidth = 40;
-        const projectStart = new Date(2026, 2, 1);
+        let currentEditId = null; // Controla la tarea que se está editando
+        
+        let projectStart = new Date();
+        let totalProjectDays = 30;
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-        }
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
         async function loadInitialData() {
             try {
@@ -178,7 +195,7 @@
 2;Bases de Certificación;Ing. Cert;21/03/2026;15/04/2026;Normativas de seguridad.
 3;Fase de Ensayos;Jefe Lab;16/05/2026;10/07/2026;Ensayos no destructivos.
 4;Cierre y Certificación;Autoridad;11/07/2026;31/07/2026;Certificación aprobada.`;
-                tasks = parseCSV(defaultCSV);
+                parseCSV(defaultCSV);
                 render();
             }
             setTimeout(scrollToToday, 500);
@@ -189,27 +206,98 @@
             let isUtf8 = true;
             try { new TextDecoder('utf-8', {fatal: true}).decode(uint8); } catch(e) { isUtf8 = false; }
             const decoder = new TextDecoder(isUtf8 ? 'utf-8' : 'iso-8859-1');
-            tasks = parseCSV(decoder.decode(uint8));
+            parseCSV(decoder.decode(uint8));
             render();
+        }
+
+        function parseDate(str) {
+            if (!str) return new Date(NaN);
+            const parts = str.trim().split('/');
+            if (parts.length !== 3) return new Date(NaN);
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            const y = parseInt(parts[2], 10);
+            return new Date(y, m - 1, d);
+        }
+
+        // Helpers de conversión de fechas para los inputs del Modal (Formato HTML5 YYYY-MM-DD)
+        function toInputDate(str) {
+            if (!str || !str.includes('/')) return '';
+            const [d, m, y] = str.split('/');
+            return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        }
+
+        function fromInputDate(str) {
+            if (!str || !str.includes('-')) return '';
+            const [y, m, d] = str.split('-');
+            return `${parseInt(d, 10)}/${parseInt(m, 10)}/${parseInt(y, 10)}`;
         }
 
         function parseCSV(text) {
             const lines = text.trim().split('\n');
-            const data = [];
+            tasks = [];
+            let errors = [];
+            let counters = [0, 0, 0]; 
+
             for (let i = 1; i < lines.length; i++) {
                 const cols = lines[i].split(';');
                 if (cols.length >= 6) {
-                    const idStr = cols[0].trim();
-                    const level = idStr.split('.').filter(n => n !== "").length;
-                    data.push({ id: idStr, level: level, name: cols[1].trim(), owner: cols[2].trim(), start: cols[3].trim(), end: cols[4].trim(), obs: cols[5].trim(), open: true });
+                    let rawId = cols[0].trim().toLowerCase();
+                    let finalId = rawId;
+                    let level = 1;
+                    
+                    if (rawId === 'a') {
+                        counters[0]++; counters[1] = 0; counters[2] = 0;
+                        finalId = `${counters[0]}`; level = 1;
+                    } else if (rawId === 'b') {
+                        if (counters[0] === 0) counters[0] = 1;
+                        counters[1]++; counters[2] = 0;
+                        finalId = `${counters[0]}.${counters[1]}`; level = 2;
+                    } else if (rawId === 'c') {
+                        if (counters[0] === 0) counters[0] = 1;
+                        if (counters[1] === 0) counters[1] = 1;
+                        counters[2]++;
+                        finalId = `${counters[0]}.${counters[1]}.${counters[2]}`; level = 3;
+                    } else if (/^\d+(\.\d+)*$/.test(rawId)) {
+                        let parts = rawId.split('.'); level = parts.length;
+                        if (parts[0]) counters[0] = parseInt(parts[0], 10);
+                        if (parts[1]) counters[1] = parseInt(parts[1], 10); else counters[1] = 0;
+                        if (parts[2]) counters[2] = parseInt(parts[2], 10); else counters[2] = 0;
+                        finalId = rawId;
+                    } else {
+                        counters[0]++; counters[1] = 0; counters[2] = 0;
+                        finalId = `${counters[0]}`; level = 1;
+                    }
+                    
+                    const startStr = cols[3].trim();
+                    const endStr = cols[4].trim();
+                    const sDate = parseDate(startStr);
+                    const eDate = parseDate(endStr);
+                    
+                    let validDates = true;
+
+                    if (isNaN(sDate.getTime()) || isNaN(eDate.getTime())) {
+                        errors.push(`ID original [${cols[0].trim()}] -> Nivel [${finalId}]: Formato de fecha inválido (${startStr} - ${endStr})`);
+                        validDates = false;
+                    } else if (sDate > eDate) {
+                        errors.push(`ID original [${cols[0].trim()}] -> Nivel [${finalId}]: Fecha de fin es anterior al inicio.`);
+                        validDates = false;
+                    }
+
+                    tasks.push({ 
+                        id: finalId, level: level, name: cols[1].trim(), owner: cols[2].trim(), 
+                        start: startStr, end: endStr, obs: cols[5].trim(), open: true,
+                        validDates: validDates
+                    });
                 }
             }
-            return data;
-        }
 
-        function parseDate(str) {
-            const [d, m, y] = str.split('/').map(Number);
-            return new Date(y, m - 1, d);
+            if (errors.length > 0) {
+                alert("Atención: Se detectaron errores en las fechas de las siguientes tareas:\n\n" + 
+                      errors.slice(0, 8).join("\n") + 
+                      (errors.length > 8 ? "\n...y otros más." : "") + 
+                      "\n\nLas tareas se listarán, pero sus barras podrían no renderizarse.");
+            }
         }
 
         function diffDays(d1, d2) {
@@ -220,19 +308,13 @@
             viewMode = mode;
             columnWidth = mode === 'days' ? 40 : (mode === 'weeks' ? 80 : 160);
             
-            // Lógica de botones para Desktop
             ['days', 'weeks', 'months'].forEach(m => {
                 const btn = document.getElementById(`btn-${m}`);
                 if(btn) {
-                    if(mode === m) {
-                        btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition bg-white dark:bg-slate-600 shadow-sm text-slate-800 dark:text-white';
-                    } else {
-                        btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition hover:bg-white/50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
-                    }
+                    if(mode === m) btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition bg-white dark:bg-slate-600 shadow-sm text-slate-800 dark:text-white';
+                    else btn.className = 'px-3 py-1 text-[8px] font-bold uppercase rounded-md transition hover:bg-white/50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400';
                 }
             });
-            
-            // Cerrar menú si está en móvil
             document.getElementById('drop-menu').classList.add('hidden');
             render();
         }
@@ -244,18 +326,49 @@
             const barsObj = document.getElementById('bars-container');
             const todayLine = document.getElementById('today-line');
             const headerContent = document.getElementById('gantt-header-content');
+            const btnHoy = document.getElementById('btn-hoy');
 
             listObj.innerHTML = ''; monthHeader.innerHTML = ''; unitHeader.innerHTML = '';
             Array.from(barsObj.children).forEach(c => { if(c.id !== 'today-line') c.remove(); });
 
-            const totalProjectDays = 260;
+            if (tasks.length > 0) {
+                let minDate = new Date(8640000000000000);
+                let maxDate = new Date(-8640000000000000);
+                let validFound = false;
+                
+                tasks.forEach(t => {
+                    if (t.validDates) {
+                        const s = parseDate(t.start);
+                        const e = parseDate(t.end);
+                        if (s < minDate) minDate = s;
+                        if (e > maxDate) maxDate = e;
+                        validFound = true;
+                    }
+                });
+                
+                if (validFound) {
+                    projectStart = new Date(minDate);
+                    projectStart.setDate(projectStart.getDate() - 5); 
+                    let projectEnd = new Date(maxDate);
+                    projectEnd.setDate(projectEnd.getDate() + 15);    
+                    totalProjectDays = diffDays(projectEnd, projectStart);
+                }
+            }
+            if (totalProjectDays < 30) totalProjectDays = 30; 
+
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             
             let curGroup = "";
             let groupBox = null;
             let accumulatedWidth = 0;
-            const totalUnits = viewMode === 'months' ? 12 : (viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7));
+            
+            let endObj = new Date(projectStart);
+            endObj.setDate(endObj.getDate() + totalProjectDays);
+            let totalMonths = (endObj.getFullYear() - projectStart.getFullYear()) * 12 + (endObj.getMonth() - projectStart.getMonth()) + 1;
+            
+            const totalUnits = viewMode === 'months' ? totalMonths : (viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7));
 
+            // RENDER CABEZAL
             for (let i = 0; i < totalUnits; i++) {
                 const cur = new Date(projectStart);
                 if(viewMode === 'months') cur.setMonth(cur.getMonth() + i);
@@ -319,31 +432,48 @@
                 lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">${arrow} <span class="truncate dark:text-slate-300"><b class="text-rose-500/80 dark:text-rose-400 mr-1 font-black">${t.id}</b> ${t.name}</span></span>`;
                 listObj.appendChild(lRow);
 
-                const startDays = diffDays(parseDate(t.start), projectStart);
-                const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
                 const bRow = document.createElement('div');
                 bRow.className = `row-h border-b border-slate-50 dark:border-slate-800/30 relative ${isHidden ? 'hidden' : ''}`;
                 bRow.style.width = totalPxWidth + "px";
 
-                let barStyles = "";
-                if (t.start === t.end) barStyles = "bg-amber-400 dark:bg-amber-500 text-amber-950 dark:text-amber-950 border-amber-500 dark:border-amber-600 shadow-sm";
-                else if (t.level === 1) barStyles = "bg-rose-500 dark:bg-rose-600 text-white border-rose-600 dark:border-rose-700 shadow-sm";
-                else if (t.level === 2) barStyles = "bg-slate-700 dark:bg-slate-600 text-white border-slate-800 dark:border-slate-500 shadow-sm";
-                else barStyles = "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+                if (t.validDates) {
+                    const startDays = diffDays(parseDate(t.start), projectStart);
+                    const dur = diffDays(parseDate(t.end), parseDate(t.start)) + 1;
+                    
+                    let barStyles = "";
+                    if (t.start === t.end) barStyles = "bg-amber-400 dark:bg-amber-500 text-amber-950 dark:text-amber-950 border-amber-500 dark:border-amber-600 shadow-sm";
+                    else if (t.level === 1) barStyles = "bg-rose-500 dark:bg-rose-600 text-white border-rose-600 dark:border-rose-700 shadow-sm";
+                    else if (t.level === 2) barStyles = "bg-slate-700 dark:bg-slate-600 text-white border-slate-800 dark:border-slate-500 shadow-sm";
+                    else barStyles = "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
 
-                const bar = document.createElement('div');
-                bar.className = `absolute top-2.5 rounded flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all ${barStyles}`;
-                bar.style.left = (startDays * scaleFactor) + "px";
-                bar.style.width = Math.max(12, (dur * scaleFactor)) + "px";
-                bar.style.height = "20px";
-                bar.innerText = t.start === t.end ? "◆" : t.owner;
-                bar.onclick = () => openModal(t);
-                bRow.appendChild(bar);
+                    const bar = document.createElement('div');
+                    bar.className = `absolute top-2.5 rounded flex items-center px-2 text-[8px] font-bold border cursor-pointer transition-all hover:ring-2 hover:ring-rose-400 hover:ring-offset-1 dark:hover:ring-offset-slate-900 ${barStyles}`;
+                    bar.style.left = (startDays * scaleFactor) + "px";
+                    bar.style.width = Math.max(12, (dur * scaleFactor)) + "px";
+                    bar.style.height = "20px";
+                    bar.innerText = t.start === t.end ? "◆" : t.owner;
+                    bar.onclick = () => openModal(t);
+                    bRow.appendChild(bar);
+                }
                 barsObj.appendChild(bRow);
             });
             
+            // Lógica inteligente de la línea de HOY
             const todayDay = diffDays(new Date(), projectStart);
-            todayLine.style.left = (todayDay * scaleFactor) + "px";
+            if (todayDay >= 0 && todayDay <= totalProjectDays) {
+                todayLine.style.display = 'block';
+                todayLine.style.left = (todayDay * scaleFactor) + "px";
+                if (btnHoy) {
+                    btnHoy.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnHoy.onclick = scrollToToday;
+                }
+            } else {
+                todayLine.style.display = 'none';
+                if (btnHoy) {
+                    btnHoy.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnHoy.onclick = null;
+                }
+            }
         }
 
         const timeline = document.getElementById('timeline-viewport');
@@ -352,7 +482,15 @@
 
         timeline.addEventListener('scroll', () => {
             headerScroll.scrollLeft = timeline.scrollLeft;
-            taskList.scrollTop = timeline.scrollTop;
+            if (taskList.scrollTop !== timeline.scrollTop) {
+                taskList.scrollTop = timeline.scrollTop;
+            }
+        });
+
+        taskList.addEventListener('scroll', () => {
+            if (timeline.scrollTop !== taskList.scrollTop) {
+                timeline.scrollTop = taskList.scrollTop;
+            }
         });
 
         function toggleNode(id) {
@@ -362,24 +500,53 @@
 
         function focusOnTask(id) {
             const t = tasks.find(x => x.id === id);
-            if (!t) return;
+            if (!t || !t.validDates) return;
             const startDays = diffDays(parseDate(t.start), projectStart);
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             timeline.scrollTo({ left: (startDays * scaleFactor) - 100, behavior: 'smooth' });
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
+        // --- SISTEMA DE EDICIÓN EN VIVO ---
         function openModal(t) {
+            currentEditId = t.id;
             document.getElementById('m-id').innerText = t.id;
-            document.getElementById('m-owner').innerText = t.owner;
-            document.getElementById('m-period').innerText = `${t.start} a ${t.end}`;
-            document.getElementById('m-obs').innerText = t.obs || "Sin notas.";
             document.getElementById('modal-title').innerText = t.name;
+            document.getElementById('edit-owner').value = t.owner || "";
+            document.getElementById('edit-start').value = toInputDate(t.start);
+            document.getElementById('edit-end').value = toInputDate(t.end);
+            document.getElementById('edit-obs').value = t.obs || "";
+            
             document.getElementById('detail-modal').classList.remove('hidden');
             document.getElementById('detail-modal').classList.add('flex');
         }
 
+        function saveTaskEdit() {
+            if (!currentEditId) return;
+            const t = tasks.find(x => x.id === currentEditId);
+            if (!t) return;
+
+            // Leer datos del formulario
+            t.owner = document.getElementById('edit-owner').value.trim();
+            t.start = fromInputDate(document.getElementById('edit-start').value);
+            t.end = fromInputDate(document.getElementById('edit-end').value);
+            t.obs = document.getElementById('edit-obs').value.trim();
+
+            // Re-validar fechas internamente
+            const sDate = parseDate(t.start);
+            const eDate = parseDate(t.end);
+            if (isNaN(sDate.getTime()) || isNaN(eDate.getTime()) || sDate > eDate) {
+                t.validDates = false;
+            } else {
+                t.validDates = true;
+            }
+
+            closeModal();
+            render(); // Redibuja el gráfico y reajusta los límites automáticamente
+        }
+
         function closeModal() {
+            currentEditId = null;
             document.getElementById('detail-modal').classList.add('hidden');
             document.getElementById('detail-modal').classList.remove('flex');
         }
@@ -403,6 +570,7 @@
 
         function scrollToToday() {
             const dayOfToday = diffDays(new Date(), projectStart);
+            if (dayOfToday < 0 || dayOfToday > totalProjectDays) return; // Seguro adicional
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             timeline.scrollTo({ left: (dayOfToday * scaleFactor) - (timeline.offsetWidth / 2), behavior: 'smooth' });
         }
@@ -416,9 +584,6 @@
             overlay.classList.toggle('hidden');
         }
 
-        loadInitialData();
-        setViewMode('days');
-
         function editProjectTitle() {
             const titleElement = document.getElementById('project-main-title');
             const newTitle = prompt("Ingrese el nuevo título del proyecto:", titleElement.innerText);
@@ -426,6 +591,9 @@
                 titleElement.innerText = newTitle.trim();
             }
         }
+
+        loadInitialData();
+        setViewMode('days');
     </script>
 </body>
 </html>
