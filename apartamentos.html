@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASA GLORIA - Luxury Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        :root { --gold: #c5a059; --dark-bg: #0d0d0d; --card-bg: #141414; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--dark-bg); color: #e5e7eb; font-family: 'Inter', sans-serif; }
+        
+        #map { height: 600px; width: 100%; border: 1px solid #262626; z-index: 1; }
+        
+        .leaflet-tooltip {
+            background: #1a1a1a !important; color: white !important; border: 1px solid var(--gold) !important;
+            border-radius: 0px !important; padding: 10px !important; box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
+        }
+        .tooltip-title { color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 11px; display: block; border-bottom: 1px solid #333; margin-bottom: 4px; }
+
+        .feature-label { color: #737373; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+        .feature-value { color: #ffffff; font-size: 13px; }
+
+        .nav-btn { transition: all 0.3s ease; background: #111; border: 1px solid #262626; }
+        .nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        .leaflet-control-zoom-in, .leaflet-control-zoom-out { background-color: #1a1a1a !important; color: var(--gold) !important; border: 1px solid #333 !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col min-h-screen">
+
+    <div class="max-w-7xl mx-auto flex-grow w-full">
+        
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-stone-800 pb-6">
+            <div class="text-left">
+                <h1 class="text-4xl font-light tracking-[0.3em] text-white uppercase">CASA GLORIA</h1>
+                <p class="text-[var(--gold)] font-serif italic tracking-widest text-xs mt-1 text-center md:text-left">Apartamentos Amoblados en Bogotá y alrededores</p>
+            </div>
+            
+            <div class="mt-4 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-2 text-[9px] tracking-widest uppercase">
+                
+                <div class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
+                    <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Regional
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
+                        Ricaurte • La Mesa
+                    </div>
+                </div>
+
+                <div class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
+                    <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Norte
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
+                        Urban Chicó • Unique Mine
+                    </div>
+                </div>
+
+                <div class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
+                    <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Occidente
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
+                        Fontibón Galias • Ambrosia
+                    </div>
+                </div>
+
+                <div class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
+                    <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Centro
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
+                        Candelaria • Campin
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2">
+                <div id="map"></div>
+            </div>
+
+            <div id="info-section" class="lg:col-span-1">
+                <div id="placeholder" class="h-full min-h-[500px] flex items-center justify-center border border-stone-800 p-10 text-center bg-[#111]">
+                    <p class="text-stone-500 font-serif italic text-sm">Explore el portafolio mediante los controles o el mapa</p>
+                </div>
+
+                <div id="property-card" class="hidden border border-stone-800 bg-[var(--card-bg)] shadow-2xl flex flex-col">
+                    
+                    <div class="relative w-full h-60 border-b border-stone-800 group overflow-hidden bg-black">
+                        <img id="prop-img" src="" class="w-full h-full object-cover transition-opacity duration-500 ease-in-out opacity-100">
+                        
+                        <button onclick="changeImage(-1)" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-[var(--gold)] hover:text-black z-10">&#10094;</button>
+                        <button onclick="changeImage(1)" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-[var(--gold)] hover:text-black z-10">&#10095;</button>
+                        
+                        <div id="img-counter" class="absolute bottom-3 right-3 bg-black/80 text-[var(--gold)] text-[10px] px-2 py-1 tracking-widest border border-stone-800 z-10">1/5</div>
+                    </div>
+
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h2 id="prop-title" class="text-2xl font-light text-white tracking-wide mb-1 uppercase"></h2>
+                        <p id="prop-address" class="text-[var(--gold)] text-[10px] tracking-[0.15em] mb-6 font-mono uppercase pb-4 border-b border-stone-800"></p>
+                        
+                        <div class="grid grid-cols-2 gap-y-6 mb-8">
+                            <div><p class="feature-label">Metros Cuadrados</p><p id="feat-area" class="feature-value"></p></div>
+                            <div><p class="feature-label">Habitaciones / Baños</p><p id="feat-rooms" class="feature-value"></p></div>
+                            <div><p class="feature-label">Parqueadero</p><p id="feat-park" class="feature-value"></p></div>
+                            <div><p class="feature-label">Zonas Comunes</p><p id="feat-common" class="feature-value text-xs"></p></div>
+                        </div>
+
+                        <div class="space-y-3 mb-6">
+                            <a id="btn-booking" href="#" target="_blank" class="block w-full py-3 border border-[var(--gold)] text-[var(--gold)] text-center text-[10px] tracking-[0.3em] font-bold hover:bg-[var(--gold)] hover:text-black transition-all duration-500 uppercase">Reservar Activo</a>
+                            <a id="btn-docs" href="#" target="_blank" class="block w-full py-3 border border-stone-800 text-stone-500 text-center text-[10px] tracking-[0.3em] hover:border-stone-400 transition-all duration-500 uppercase">Documentación Técnica</a>
+                        </div>
+
+                        <div class="mt-auto pt-6 border-t border-stone-800 flex gap-2">
+                            <button onclick="changeProperty(-1)" class="nav-btn flex-1 py-3 text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">← Anterior</button>
+                            <button onclick="changeProperty(1)" class="nav-btn flex-1 py-3 text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">Siguiente →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-6 text-center text-stone-500 font-light uppercase text-[10px] tracking-[0.2em] flex-shrink-0 border-t border-stone-800 mt-auto bg-transparent">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 max-w-7xl mx-auto px-4 lg:px-0">
+            <p>© 2026 • INVERSIONES ARIPAR • Real Estate Management</p>
+            <div class="flex gap-6">
+                <a href="https://wa.me/573128816469" class="hover:text-[var(--gold)] transition-colors duration-300" target="_blank">WhatsApp</a>
+                <a href="mailto:alucard8@gmail.com" class="hover:text-[var(--gold)] transition-colors duration-300">Email</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const propiedades = [
+            // --- ZONA NORTE (2) ---
+            { 
+                name: "Chicó Unique Mine", 
+                coords: [4.68610, -74.04718], 
+                address: "Cra 9 #100-77, Apto Piso 3", 
+                area: "20m²", 
+                rooms: "1 Hab / 1 Baño", 
+                park: "De pago en las instalaciones", 
+                common: "Lobby, Coworking, Terraza, Piscina, Sauna, Gimnasio",
+                images: [
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/2199c8c7-cc9b-4ac2-a5eb-eaaa0de26a47.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/abc03430-996e-4185-8128-f5981583ead8.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/3f6d054e-c120-46ae-aa3b-a4b9916b7191.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/b651b33e-568e-44dc-9f1a-14bf78901a8e.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/3324685f-23a0-43ef-942b-8a05f0f3440c.jpeg?im_w=720"
+                ],
+                link: "https://airbnb.com.co/h/chico-unique",
+                docs: "https://padlet.com/manuelrarias/aripar"
+            },
+            { 
+                name: "Urban Chicó", 
+                coords: [4.68264, -74.05428], 
+                address: "Tv 20 #94A-36, Apto Piso 2", 
+                area: "26m²", 
+                rooms: "1 Hab / 1 Baño", 
+                park: "Incluido en el alquiler", 
+                common: "Gimnasio, Sauna, Terraza, Salón Social, Vigilancia 24/7",
+                images: [
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/ea30a388-6916-4944-aa1b-f87a9ab6c3c8.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/bd469023-304c-46ca-8627-d9efbc3948bf.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/1ba63d20-e98e-4a64-87d1-058f546406ce.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/0267f9ec-02a7-4bc8-8467-7f4f3020412a.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/f15cfdf5-3486-4e5e-9fcb-d5c3d75a352d.jpeg?im_w=720"
+                ],
+                link: "https://www.airbnb.com.co/h/uchico",
+                docs: "https://padlet.com/manuelrarias/aripar"
+            },
+
+            // --- ZONA OCCIDENTE (2) ---
+            { 
+                name: "Fontibón Parque Central 1", 
+                coords: [4.67089, -74.14836], 
+                address: "Calle 16F #99-72, Apto Piso 18", 
+                area: "47m²", 
+                rooms: "2 Hab / 1 Baño", 
+                park: "Comunal, de pago externo", 
+                common: "Piscina, Club House, Gimnasio, BBQ, Terraza, Portería 24/7",
+                images: [
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTc3Mzk5NTk2MzExMjc5MjAy/original/7a4b4ada-4cc3-4f5c-97e5-de3bb88a7297.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-577399596311279202/original/2c4ca9ce-4f00-4157-a13f-18b062bedcfd.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-577399596311279202/original/85f78ef3-55ac-4678-ae6f-b71700bc9cba.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-577399596311279202/original/5a7930ee-182c-4a1d-969c-28a3823b43dd.jpeg?im_w=960",
+                    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTc3Mzk5NTk2MzExMjc5MjAy/original/8f2309a3-7f32-498f-a835-2cad8b6e0f02.jpeg?im_w=960"
+                ],
+                link: "https://www.airbnb.com.co/h/galiaspc",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            },
+            { 
+                name: "Fontibón Ambrosía", 
+                coords: [4.67132, -74.13949], 
+                address: "Calle 20a #96c-86, Apto segundo piso vista exterior", 
+                area: "67m²", 
+                rooms: "3 Hab / 1 Baño", 
+                park: "De pago en las instalaciones", 
+                common: "Portería, sin amoblar",
+                images: [
+                    "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/7a2482f2-94aa-4a74-a2e9-cc17e3586e8b.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/ad5475fe-6ca8-447e-a649-f0a56a5d9975.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/cbfa4dd5-4d0b-4f68-a3fa-d8c3c30757de.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/861f1033-9665-4df2-ae25-660886133aa0.jpeg?im_w=720",
+                    "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/904d0eed-463e-4794-8ad9-572c43c41630.jpeg?im_w=720"
+                ],
+                link: "http://airbnb.com.co/h/eambrosia",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            },
+
+            // --- ZONA CENTRO (2) ---
+            { 
+                name: "Candelaria Intaglio", 
+                coords: [4.59807, -74.06880], 
+                address: "Calle 12C #1-29, Apto Piso 3", 
+                area: "30m²", 
+                rooms: "1 Hab / 1 Baño", 
+                park: "Parqueadero Cercano", 
+                common: "Patio Central, Zona Histórica",
+                images: [
+                    "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=600",
+                    "URL_FOTO_2_AIRBNB",
+                    "URL_FOTO_3_AIRBNB",
+                    "URL_FOTO_4_AIRBNB",
+                    "URL_FOTO_5_AIRBNB"
+                ],
+                link: "https://www.airbnb.com.co/h/intaglio",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            },
+            { 
+                name: "Campin Manzana 3", 
+                coords: [4.6512, -74.0754], 
+                address: "Cra 35 #63d-48, Apto Piso 8", 
+                area: "30m²", 
+                rooms: "1 Hab / 1 Baño", 
+                park: "De pago en el edificio", 
+                common: "Piscina, Gimasio, Canchas, Parque, Bar, Recepción, Zona de Lavandería",
+                images: [
+                    "https://images.unsplash.com/photo-1493246507139-91e8bef99c17?auto=format&fit=crop&w=600",
+                    "URL_FOTO_2_AIRBNB",
+                    "URL_FOTO_3_AIRBNB",
+                    "URL_FOTO_4_AIRBNB",
+                    "URL_FOTO_5_AIRBNB"
+                ],
+                link: "https://www.airbnb.com.co/h/campin",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            },
+
+            // --- ZONA REGIONAL (2) ---
+            { 
+                name: "Ricaurte - Cabo Verde Praia", 
+                coords: [4.29576, -74.77879], 
+                address: "Km 125 Vía Girardot, Casa con Piscina", 
+                area: "250m²", 
+                rooms: "3 Hab / 2 Baños", 
+                park: "Privado (3 Vehículos)", 
+                common: "Piscina Privada, Zonas Verdes, Canchas, Vigilancia 24/7",
+                images: [
+                    "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=600",
+                    "URL_FOTO_2_AIRBNB",
+                    "URL_FOTO_3_AIRBNB",
+                    "URL_FOTO_4_AIRBNB",
+                    "URL_FOTO_5_AIRBNB"
+                ],
+                link: "https://www.airbnb.com.co/h/caboverdepraia",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            },
+            { 
+                name: "Cachipay - La Mesa - Anatoli",
+                coords: [4.70519, -74.41434], 
+                address: "Km 3 vía La Mesa, Anatolí, Cundinamarca", 
+                area: "300m²", 
+                rooms: "4 Hab / 3 Baños", 
+                park: "Privado (3 Vehículos)",
+                common: "Zona BBQ, zonas verdes, casa 2 pisos",
+                images: [
+                    "https://v1.padlet.pics/3/image.webp?t=c_limit%2Cdpr_1%2Ch_647%2Cw_364&url=https%3A%2F%2Fu1.padletusercontent.com%2Fuploads%2Fpadlet-uploads-usc1%2F1225937190%2F6ebbdc0dda6be23ed26e92f496c5e2cb%2FIMG_20250506_WA0029.jpg%3Fexpiry_token%3D5WaHZRdGG3LkUVQGy3SZ-zdRtq89aJeottSBaF_Hii8dmxJqYDvE2-MDbblcM-ZrVekXW99RReKkJFIoMoKiozAkY726Mc8ZanlaxouFeI9yFCZrmGwkca1KYPhyYysXmdU37TN0KMI8ExSRzlaHR1cFUzx9CmozOks4yvpE-3WG5pzDXP3bHnWAeqDD29J0XzTzKVhjcr5V0XRD-4MWe7JnwgC9kq3UFFFuIxNO1ug%3D",
+                    "URL_FOTO_2_AIRBNB",
+                    "URL_FOTO_3_AIRBNB",
+                    "URL_FOTO_4_AIRBNB",
+                    "URL_FOTO_5_AIRBNB"
+                ],
+                link: "https://wa.me/573005583743",
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+            }
+        ];
+
+        let currentPropIndex = -1;
+        let currentImgIndex = 0;
+        let autoPlayTimer;
+
+        const map = L.map('map', { zoomControl: false }).setView([4.66, -74.08], 12);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        function updateCarousel() {
+            const p = propiedades[currentPropIndex];
+            const imgEl = document.getElementById('prop-img');
+            
+            imgEl.style.opacity = 0;
+            setTimeout(() => {
+                imgEl.src = p.images[currentImgIndex];
+                imgEl.style.opacity = 1;
+            }, 300);
+            
+            document.getElementById('img-counter').innerText = `${currentImgIndex + 1}/${p.images.length}`;
+        }
+
+        function startAutoPlay() {
+            clearInterval(autoPlayTimer);
+            autoPlayTimer = setInterval(() => { changeImage(1, false); }, 3500);
+        }
+
+        function changeImage(delta, manual = true) {
+            if (currentPropIndex === -1) return;
+            if (manual) startAutoPlay(); 
+
+            const p = propiedades[currentPropIndex];
+            currentImgIndex += delta;
+            
+            if (currentImgIndex < 0) currentImgIndex = p.images.length - 1;
+            if (currentImgIndex >= p.images.length) currentImgIndex = 0;
+            
+            updateCarousel();
+        }
+
+        function showProperty(index) {
+            if (index < 0) index = propiedades.length - 1;
+            if (index >= propiedades.length) index = 0;
+            currentPropIndex = index;
+            currentImgIndex = 0;
+            
+            const p = propiedades[currentPropIndex];
+
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('property-card').classList.remove('hidden');
+            
+            updateCarousel();
+            startAutoPlay();
+            
+            document.getElementById('prop-title').innerText = p.name;
+            document.getElementById('prop-address').innerText = p.address;
+            document.getElementById('feat-area').innerText = p.area;
+            document.getElementById('feat-rooms').innerText = p.rooms;
+            document.getElementById('feat-park').innerText = p.park;
+            document.getElementById('feat-common').innerText = p.common;
+            document.getElementById('btn-booking').href = p.link;
+            document.getElementById('btn-docs').href = p.docs; 
+
+            map.flyTo(p.coords, 15, { duration: 1.5 });
+
+            if (window.innerWidth < 1024) {
+                document.getElementById('info-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function changeProperty(delta) { showProperty(currentPropIndex + delta); }
+
+        propiedades.forEach((p, i) => {
+            const marker = L.marker(p.coords).addTo(map);
+            marker.bindTooltip(`
+                <span class="tooltip-title">${p.name}</span>
+                <div style="font-size: 10px; color: #aaa;">${p.area} • ${p.rooms}</div>
+            `, { direction: 'top', offset: [0, -10] });
+            marker.on('click', () => showProperty(i));
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") changeProperty(1);
+            if (e.key === "ArrowLeft") changeProperty(-1);
+        });
+    </script>
+</body>
+</html>
