@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gantt Enterprise Pro</title>
+    <title>Gantt Enterprise Pro - Edición FAC</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -162,7 +162,7 @@
 
     <footer class="py-3 text-center text-slate-400 font-bold uppercase text-[9px] flex-shrink-0">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
-            <p>© 2026 • Inversiones Aripar</p>
+            <p>© 2026 • Landing Gear Certification</p>
             <div class="flex gap-4">
                 <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
                 <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
@@ -174,7 +174,7 @@
         let tasks = [];
         let viewMode = 'days'; 
         let columnWidth = 40;
-        let currentEditId = null; // Controla la tarea que se está editando
+        let currentEditId = null; 
         
         let projectStart = new Date();
         let totalProjectDays = 30;
@@ -220,7 +220,6 @@
             return new Date(y, m - 1, d);
         }
 
-        // Helpers de conversión de fechas para los inputs del Modal (Formato HTML5 YYYY-MM-DD)
         function toInputDate(str) {
             if (!str || !str.includes('/')) return '';
             const [d, m, y] = str.split('/');
@@ -284,9 +283,14 @@
                         validDates = false;
                     }
 
+                    // SANITIZACIÓN AL IMPORTAR: Agrupar todas las columnas restantes por si había ";" en las notas
+                    // y cambiar el texto plano "\n" (si existía) por un salto de línea real.
+                    const rawObs = cols.slice(5).join(';');
+                    const cleanObs = rawObs.trim().replace(/\\n/g, '\n');
+
                     tasks.push({ 
                         id: finalId, level: level, name: cols[1].trim(), owner: cols[2].trim(), 
-                        start: startStr, end: endStr, obs: cols[5].trim(), open: true,
+                        start: startStr, end: endStr, obs: cleanObs, open: true,
                         validDates: validDates
                     });
                 }
@@ -368,7 +372,6 @@
             
             const totalUnits = viewMode === 'months' ? totalMonths : (viewMode === 'days' ? totalProjectDays : Math.ceil(totalProjectDays / 7));
 
-            // RENDER CABEZAL
             for (let i = 0; i < totalUnits; i++) {
                 const cur = new Date(projectStart);
                 if(viewMode === 'months') cur.setMonth(cur.getMonth() + i);
@@ -411,7 +414,6 @@
             headerContent.style.width = totalPxWidth + "px";
             barsObj.style.width = totalPxWidth + "px";
 
-            // RENDER TAREAS
             tasks.forEach((t) => {
                 let isHidden = false;
                 const parts = t.id.split('.');
@@ -458,7 +460,6 @@
                 barsObj.appendChild(bRow);
             });
             
-            // Lógica inteligente de la línea de HOY
             const todayDay = diffDays(new Date(), projectStart);
             if (todayDay >= 0 && todayDay <= totalProjectDays) {
                 todayLine.style.display = 'block';
@@ -507,7 +508,6 @@
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
-        // --- SISTEMA DE EDICIÓN EN VIVO ---
         function openModal(t) {
             currentEditId = t.id;
             document.getElementById('m-id').innerText = t.id;
@@ -526,13 +526,11 @@
             const t = tasks.find(x => x.id === currentEditId);
             if (!t) return;
 
-            // Leer datos del formulario
             t.owner = document.getElementById('edit-owner').value.trim();
             t.start = fromInputDate(document.getElementById('edit-start').value);
             t.end = fromInputDate(document.getElementById('edit-end').value);
             t.obs = document.getElementById('edit-obs').value.trim();
 
-            // Re-validar fechas internamente
             const sDate = parseDate(t.start);
             const eDate = parseDate(t.end);
             if (isNaN(sDate.getTime()) || isNaN(eDate.getTime()) || sDate > eDate) {
@@ -542,7 +540,7 @@
             }
 
             closeModal();
-            render(); // Redibuja el gráfico y reajusta los límites automáticamente
+            render(); 
         }
 
         function closeModal() {
@@ -561,7 +559,11 @@
 
         function exportCSV() {
             let csv = "ID;Tarea;Responsable;Inicio;Fin;Observaciones\n";
-            tasks.forEach(t => csv += `${t.id};${t.name};${t.owner};${t.start};${t.end};${t.obs}\n`);
+            tasks.forEach(t => {
+                // SANITIZACIÓN AL EXPORTAR: Reemplaza saltos de línea reales por texto plano "\n"
+                const safeObs = (t.obs || "").replace(/\r?\n/g, '\\n');
+                csv += `${t.id};${t.name};${t.owner};${t.start};${t.end};${safeObs}\n`;
+            });
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = 'gantt.csv'; a.click();
@@ -570,7 +572,7 @@
 
         function scrollToToday() {
             const dayOfToday = diffDays(new Date(), projectStart);
-            if (dayOfToday < 0 || dayOfToday > totalProjectDays) return; // Seguro adicional
+            if (dayOfToday < 0 || dayOfToday > totalProjectDays) return; 
             const scaleFactor = columnWidth / (viewMode === 'days' ? 1 : (viewMode === 'weeks' ? 7 : 30.4));
             timeline.scrollTo({ left: (dayOfToday * scaleFactor) - (timeline.offsetWidth / 2), behavior: 'smooth' });
         }
