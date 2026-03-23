@@ -9,49 +9,55 @@
     body { margin: 0; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
     #globeViz { position: absolute; top: 0; }
     
-    /* Botón Hamburguesa - Más grande para dedos */
+    /* Botón Hamburguesa */
     .menu-toggle {
       display: none; position: absolute; top: 15px; right: 15px; z-index: 100;
       background: #222; border: 1px solid #555; color: white; 
-      padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 24px;
+      padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 20px;
     }
 
-    /* Menú Lateral */
+    /* Menú Lateral Derecho */
     .ui-overlay {
       position: absolute; top: 20px; right: 20px; z-index: 90;
       display: flex; flex-direction: column; gap: 10px;
       background: rgba(0, 0, 0, 0.95); padding: 20px; border-radius: 12px; border: 1px solid #444;
-      width: 200px; transition: all 0.3s ease-in-out;
+      width: 190px; transition: transform 0.3s ease-in-out;
     }
 
     button {
       padding: 12px; background: #222; color: #eee; border: 1px solid #555;
-      border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 500;
+      border-radius: 6px; cursor: pointer; font-size: 14px;
+    }
+    button:hover { background: #444; border-color: #0066ff; }
+
+    /* Etiquetas de Océanos con fondo oscuro para legibilidad */
+    .ocean-label {
+      background: rgba(0, 0, 0, 0.7); padding: 3px 8px; border-radius: 4px;
+      font-size: 12px; color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.4);
+      white-space: nowrap; pointer-events: none; font-weight: bold;
     }
 
-    /* Etiquetas Océanos con fondo legible */
-    .ocean-label {
-      background: rgba(0, 0, 0, 0.8); padding: 4px 10px; border-radius: 4px;
-      font-size: 13px; color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.5);
-      white-space: nowrap; pointer-events: none; font-weight: bold;
+    /* Panel de información detallada (de regiones.htm) */
+    .info-panel {
+      position: absolute; bottom: 20px; left: 20px;
+      background: rgba(0,0,0,0.9); padding: 15px; border-radius: 10px;
+      max-width: 280px; display: none; border: 1px solid #0066ff; z-index: 80;
     }
 
     /* --- AJUSTES PARA MÓVILES --- */
     @media (max-width: 768px) {
-      .menu-toggle { display: block; }
+      .menu-toggle { display: block; } /* Mostrar hamburguesa */
       
       .ui-overlay { 
-        position: fixed; top: 0; right: -100%; /* Totalmente fuera a la derecha */
-        height: 100vh; width: 220px; 
-        border-radius: 15px 0 0 15px;
-        padding-top: 80px; box-sizing: border-box;
+        right: 0; top: 0; height: auto;
+        width: 170px; padding: 60px 15px 20px 15px;
+        border-radius: 0 0 0 15px;
+        transform: translateX(110%); /* Esconder menú */
       }
+      .ui-overlay.active { transform: translateX(0); } /* Mostrar al activar */
       
-      .ui-overlay.active { right: 0; } /* Se desliza al centro */
-      
-      button { font-size: 18px; padding: 15px; } /* Botones más grandes */
-      
-      .ocean-label { font-size: 16px; padding: 6px 12px; }
+      button { font-size: 13px; padding: 10px; }
+      .info-panel { bottom: 10px; left: 10px; right: 10px; max-width: none; font-size: 14px; }
     }
   </style>
 </head>
@@ -65,11 +71,14 @@
     <button onclick="navigate('regiones')">Regiones Colombia</button>
     <button onclick="navigate('oceanos')">Océanos y Mares</button>
     <button onclick="navigate('fronteras')">Fronteras Mundo</button>
-    <hr style="width:100%; border: 0.5px solid #444;">
+    <hr style="width:100%; border: 0.5px solid #444; margin: 5px 0;">
     <button onclick="resetView()" style="background: #0051a8;">🔄 Reset y Girar</button>
   </div>
 
+  <div id="info" class="info-panel"></div>
+
   <script>
+    // Datos de océanos con etiquetas constantes
     const oceanosData = [
       { lat: 15, lng: -120, name: "Pacífico Norte" }, { lat: -30, lng: -140, name: "Pacífico Sur" },
       { lat: 25, lng: -45, name: "Atlántico Norte" }, { lat: -25, lng: -25, name: "Atlántico Sur" },
@@ -79,13 +88,14 @@
       { lat: 25, lng: 38, name: "Mar Rojo" }, { lat: 42, lng: 32, name: "Mar Negro" }
     ];
 
+    // Datos extraídos de regiones.htm
     const regionesCOL = [
-        { name: "Caribe", color: "#fdb462", lat: 10.5, lng: -74.5 },
-        { name: "Andina", color: "#fb8072", lat: 5.5, lng: -75.2 },
-        { name: "Pacífica", color: "#80b1d3", lat: 5, lng: -77.3 },
-        { name: "Amazonía", color: "#4daf4a", lat: -0.5, lng: -71.5 },
-        { name: "Orinoquía", color: "#b3de69", lat: 4, lng: -70.5 },
-        { name: "Insular", color: "#bc80bd", lat: 12.5, lng: -81.7 }
+        { name: "Caribe", color: "#fdb462", lat: 10.5, lng: -74.5, rel: "Llanuras costeras y Sierra Nevada", bio: "Manglares, sabanas, zonas secas", eco: "Turismo, ganadería, minería" },
+        { name: "Andina", color: "#fb8072", lat: 5.5, lng: -75.2, rel: "Cordilleras de los Andes", bio: "Alta por pisos térmicos", eco: "Agricultura, industria, comercio" },
+        { name: "Pacífica", color: "#80b1d3", lat: 5, lng: -77.3, rel: "Selva húmeda y costa", bio: "Muy alta (Chocó biogeográfico)", eco: "Pesca, minería, madera" },
+        { name: "Amazonía", color: "#4daf4a", lat: -0.5, lng: -71.5, rel: "Selva tropical plana", bio: "Extremadamente alta", eco: "Recursos forestales, ecoturismo" },
+        { name: "Orinoquía", color: "#b3de69", lat: 4, lng: -70.5, rel: "Llanuras (Llanos Orientales)", bio: "Fauna de sabana", eco: "Ganadería, petróleo" },
+        { name: "Insular", color: "#bc80bd", lat: 12.5, lng: -81.7, rel: "Islas y cayos", bio: "Ecosistemas marinos", eco: "Turismo" }
     ];
 
     let worldData = null;
@@ -106,17 +116,18 @@
       .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)')
       .polygonStrokeColor(() => '#888')
       .polygonLabel(({ properties: d }) => `
-        <div style="background: rgba(0,0,0,0.9); padding: 8px; border-radius: 5px; border: 1px solid #0066ff; color: white; font-size: 16px;">
+        <div style="background: rgba(0,0,0,0.9); padding: 8px; border-radius: 5px; border: 1px solid #0066ff; color: white;">
           <b>${d.NAME || d.name}</b>
         </div>
-      `);
+      `)
+      .onPointClick(d => {
+        if(d.rel) showInfo(d.name, `<b>Relieve:</b> ${d.rel}<br><b>Biodiversidad:</b> ${d.bio}<br><b>Economía:</b> ${d.eco}`);
+      });
 
     world.controls().autoRotate = true;
     world.controls().autoRotateSpeed = 0.5;
 
-    function toggleMenu() { 
-      document.getElementById('mainMenu').classList.toggle('active'); 
-    }
+    function toggleMenu() { document.getElementById('mainMenu').classList.toggle('active'); }
 
     function navigate(view) {
       world.controls().autoRotate = false;
@@ -128,7 +139,7 @@
       if (view === 'regiones') {
         world.pointsData(regionesCOL)
              .pointColor(d => d.color)
-             .pointRadius(isMobile ? 0.7 : 1.2)
+             .pointRadius(isMobile ? 0.8 : 1.5)
              .pointLabel(d => d.name);
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.5 }, 1000);
       } 
@@ -142,10 +153,7 @@
         } else {
           fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
             .then(res => res.json())
-            .then(geo => {
-              worldData = geo;
-              world.polygonsData(geo.features);
-            });
+            .then(geo => { worldData = geo; world.polygonsData(geo.features); });
         }
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 2 }, 1000);
       }
@@ -153,8 +161,15 @@
 
     function resetView() {
       world.pointsData([]).htmlElementsData([]).polygonsData([]);
+      document.getElementById('info').style.display = 'none';
       world.controls().autoRotate = true;
       world.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
+    }
+
+    function showInfo(title, html) {
+      const panel = document.getElementById('info');
+      panel.innerHTML = `<h3 style="margin:0 0 8px 0; color:#00f2ff">${title}</h3>${html}`;
+      panel.style.display = 'block';
     }
   </script>
 </body>
