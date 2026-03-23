@@ -260,7 +260,9 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
     <div class="card">
       <div class="card-head"><span class="card-title">Bloc de Notas del Técnico</span></div>
       <div class="card-body">
-        <p style="font-size:12px; color:var(--text2); margin-bottom:5px;">Se guarda automáticamente en tu dispositivo local.</p>
+        <div style="font-size:12px; color:var(--text2); margin-bottom:10px; line-height:1.4; background:var(--bg3); padding:10px; border-radius:4px; border-left:4px solid var(--accent);">
+          <strong>⚠️ AVISO (NO OFICIAL):</strong> Guardado automático local. Uso exclusivo como ayuda memoria (tareas, observaciones, páginas del manual). <strong>No constituye un registro oficial ni reemplaza la documentación técnica aplicable.</strong>
+        </div>
         <textarea id="tma_notes" placeholder="Escribe aquí tareas pendientes, reportes, números de parte..." oninput="saveNotes()"></textarea>
       </div>
     </div>
@@ -427,6 +429,29 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
 </main>
 
 <script>
+/* ── NAV (Historial del Navegador) ── */
+history.replaceState({ view: "home" }, "", "");
+
+window.addEventListener("popstate", () => {
+  const anyOpen = [...document.querySelectorAll(".cat-panel")].some(p => p.classList.contains("active"));
+  if (anyOpen) goHome(false);
+});
+
+function openPanel(id) {
+  document.getElementById("home-menu").style.display = "none";
+  document.querySelectorAll(".cat-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("cat-" + id).classList.add("active");
+  history.pushState({ view: id }, "", "");
+  window.scrollTo(0, 0);
+}
+
+function goHome(pushState = true) {
+  document.querySelectorAll(".cat-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("home-menu").style.display = "grid"; // IMPORTANTE: Se usa 'grid' para no romper el diseño
+  if (pushState) history.pushState({ view: "home" }, "", "");
+  window.scrollTo(0, 0);
+}
+
 /* ── THEMES ── */
 const savedTheme = localStorage.getItem('aero_theme') || 'blue';
 setTheme(savedTheme);
@@ -439,17 +464,6 @@ function setTheme(t) {
   document.body.dataset.theme = t;
   document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
   localStorage.setItem('aero_theme', t);
-}
-
-/* ── NAVEGACIÓN PRINCIPAL ── */
-function openPanel(id) {
-  document.getElementById('home-menu').style.display = 'none';
-  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('cat-' + id).classList.add('active');
-}
-function goHome() {
-  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('home-menu').style.display = 'grid';
 }
 
 /* ── HELPERS MATH & DOM ── */
