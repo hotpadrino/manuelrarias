@@ -2,47 +2,74 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Explorador Global 3D</title>
+  <title>Explorador Global 3D - Manuel Arias</title>
   <script src="//unpkg.com/globe.gl"></script>
   <style>
-    body { margin: 0; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
+    body { margin: 0; background: #000; font-family: 'Segoe UI', Tahoma, sans-serif; color: white; overflow: hidden; }
     #globeViz { position: absolute; top: 0; }
     
-    /* Menú y Botones */
-    .menu-toggle { display: none; position: absolute; top: 15px; right: 15px; z-index: 20; background: #222; border: 1px solid #555; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
-    .ui-overlay { position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #444; width: 180px; transition: transform 0.3s ease; }
-    button { padding: 12px; background: #222; color: #eee; border: 1px solid #555; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px; }
-    button:hover { background: #444; border-color: #0066ff; }
-
-    /* Estilo para las etiquetas de Océanos con fondo oscuro */
-    .ocean-label {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 13px;
-      pointer-events: none;
-      color: #00f2ff;
-      border: 0.5px solid rgba(0, 242, 255, 0.3);
-      white-space: nowrap;
+    /* Botón Hamburguesa Mejorado */
+    .menu-toggle {
+      display: none; position: absolute; top: 20px; right: 20px; z-index: 100;
+      background: #333; border: 1px solid #555; color: white; padding: 12px 15px;
+      border-radius: 8px; cursor: pointer; font-size: 20px;
     }
 
-    /* Panel de información (Hover Países) */
-    .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; min-width: 150px; display: none; border: 1px solid #0066ff; z-index: 5; pointer-events: none; }
+    /* Menú Lateral Derecho */
+    .ui-overlay {
+      position: absolute; top: 20px; right: 20px; z-index: 90;
+      display: flex; flex-direction: column; gap: 12px;
+      background: rgba(0, 0, 0, 0.9); padding: 25px; border-radius: 15px; border: 1px solid #444;
+      width: 220px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-    @media (max-width: 600px) { .menu-toggle { display: block; } .ui-overlay { transform: translateX(250px); top: 60px; } .ui-overlay.active { transform: translateX(0); } }
+    button {
+      padding: 15px; background: #222; color: #eee; border: 1px solid #555;
+      border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 16px; text-align: center;
+    }
+    button:hover { background: #444; border-color: #0066ff; }
+
+    /* Etiquetas Océanos */
+    .ocean-label {
+      background: rgba(0, 0, 0, 0.7); padding: 4px 10px; border-radius: 6px;
+      font-size: 14px; color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.4);
+      white-space: nowrap; pointer-events: none;
+    }
+
+    /* Panel de información (Hover) */
+    .info-panel {
+      position: absolute; bottom: 30px; left: 20px;
+      background: rgba(0,0,0,0.9); padding: 20px; border-radius: 10px;
+      min-width: 200px; display: none; border: 1px solid #0066ff; z-index: 80;
+      font-size: 16px; pointer-events: none;
+    }
+
+    /* --- AJUSTES PARA MÓVILES --- */
+    @media (max-width: 768px) {
+      .menu-toggle { display: block; }
+      .ui-overlay { 
+        transform: translateX(350px); /* Escondido a la derecha */
+        top: 85px; right: 15px; width: 70%;
+      }
+      .ui-overlay.active { transform: translateX(0); }
+      
+      button { font-size: 18px; padding: 18px; } /* Botones más grandes para dedos */
+      .info-panel { bottom: 10px; left: 10px; right: 10px; font-size: 18px; }
+    }
   </style>
 </head>
 
 <body>
   <div id="globeViz"></div>
+
   <button class="menu-toggle" onclick="toggleMenu()">☰ Menú</button>
-  
+
   <div class="ui-overlay" id="mainMenu">
     <button onclick="navigate('regiones')">Regiones Colombia</button>
     <button onclick="navigate('oceanos')">Océanos y Mares</button>
     <button onclick="navigate('fronteras')">Fronteras Mundo</button>
-    <hr style="width:100%; border: 0.5px solid #444;">
-    <button onclick="resetView()" style="background: #0051a8;">Reset y Girar</button>
+    <hr style="width:100%; border: 0.5px solid #444; margin: 10px 0;">
+    <button onclick="resetView()" style="background: #0051a8; font-weight: bold;">🔄 Reset y Girar</button>
   </div>
 
   <div id="info" class="info-panel"></div>
@@ -72,8 +99,7 @@
       (document.getElementById('globeViz'))
       .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
       .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-      .pointRadius(1.2).pointAltitude(0)
-      // Configuración de Etiquetas (Usa HTML para el fondo oscuro)
+      .pointRadius(1.5).pointAltitude(0)
       .htmlElementsData([])
       .htmlElement(d => {
         const el = document.createElement('div');
@@ -81,53 +107,47 @@
         el.className = 'ocean-label';
         return el;
       })
-      // Configuración de Fronteras
-      .polygonCapColor(() => 'rgba(0, 100, 255, 0.05)')
+      .polygonCapColor(() => 'rgba(0, 100, 255, 0.08)')
       .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)')
-      .polygonStrokeColor(() => '#666')
+      .polygonStrokeColor(() => '#777')
       .polygonLabel(({ properties: d }) => `
-        <div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 3px; border: 1px solid #0066ff;">
+        <div style="background: rgba(0,0,0,0.9); padding: 8px; border-radius: 5px; border: 1px solid #0066ff; color: white; font-size: 16px;">
           <b>${d.NAME || d.name}</b>
         </div>
       `)
       .onPolygonHover(hoverD => {
-        if (hoverD) {
-          showInfo("País Seleccionado", hoverD.properties.NAME || hoverD.properties.name);
-        }
+        if (hoverD) showInfo("País", hoverD.properties.NAME || hoverD.properties.name);
       });
 
     world.controls().autoRotate = true;
     world.controls().autoRotateSpeed = 0.5;
 
-    function toggleMenu() { document.getElementById('mainMenu').classList.toggle('active'); }
+    function toggleMenu() { 
+      document.getElementById('mainMenu').classList.toggle('active'); 
+    }
 
     function navigate(view) {
       world.controls().autoRotate = false;
       world.pointsData([]).htmlElementsData([]).polygonsData([]);
-      if (window.innerWidth < 600) toggleMenu();
+      if (window.innerWidth < 768) toggleMenu(); // Cerrar al elegir
       
       if (view === 'regiones') {
         world.pointsData(regionesCOL).pointColor(d => d.color).pointLabel(d => d.name);
-        world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.5 }, 1000);
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.5 }, 1000);
       } 
       else if (view === 'oceanos') {
-        // Etiquetas siempre visibles con fondo
         world.htmlElementsData(oceanosData);
-        world.pointOfView({ lat: 15, lng: -40, altitude: 2.0 }, 1000);
+        world.pointOfView({ lat: 15, lng: -40, altitude: 2.5 }, 1000);
       } 
       else if (view === 'fronteras') {
-        const loadFronteras = (data) => {
-          world.polygonsData(data.features);
-        };
-
         if (worldData) {
-          loadFronteras(worldData);
+          world.polygonsData(worldData.features);
         } else {
           fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
             .then(res => res.json())
             .then(geo => {
               worldData = geo;
-              loadFronteras(geo);
+              world.polygonsData(geo.features);
             });
         }
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 2 }, 1000);
