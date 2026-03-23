@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌟 Tablas de Multiplicar</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1830;
+    --card: #231f3a;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --accent5: #ff9de2;
+    --text: #fffffe;
+    --muted: #a7a9be;
+    --correct: #6bcb77;
+    --wrong: #ff6b6b;
+    --empty: #2e2b4a;
+    --header-row: #2a1f5a;
+    --header-col: #1f2a5a;
+    --glow1: rgba(255,107,107,0.3);
+    --glow2: rgba(255,217,61,0.3);
+    --glow3: rgba(107,203,119,0.3);
+    --glow4: rgba(77,150,255,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: 40px;
+  }
+
+  /* Stars background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,0.5) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px var(--glow2));
+    animation: titleFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes titleFloat {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .stat-badge {
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .stat-badge.correct { border-color: var(--correct); color: var(--correct); box-shadow: 0 0 12px var(--glow3); }
+  .stat-badge.streak  { border-color: var(--accent2); color: var(--accent2); box-shadow: 0 0 12px var(--glow2); }
+  .stat-badge.total   { border-color: var(--accent4); color: var(--accent4); box-shadow: 0 0 12px var(--glow4); }
+
+  .stat-badge.streak.on-fire {
+    animation: firePulse 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes firePulse {
+    from { box-shadow: 0 0 10px var(--glow2); transform: scale(1); }
+    to   { box-shadow: 0 0 25px rgba(255,217,61,0.7); transform: scale(1.05); }
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    background: var(--card);
+    border-radius: 20px;
+    height: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent4), var(--accent3));
+    border-radius: 20px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 12px var(--glow3);
+    min-width: 0%;
+  }
+
+  /* TABLE WRAPPER */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    margin-bottom: 24px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 540px;
+  }
+
+  th, td {
+    width: 60px;
+    height: 52px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  /* Corner cell */
+  th.corner {
+    background: var(--bg);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--accent2);
+  }
+
+  /* Header rows/cols */
+  th.col-header {
+    background: var(--header-col);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--accent4);
+    padding: 0 4px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  td.row-header {
+    background: var(--header-row);
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: var(--accent5);
+    position: sticky;
+    left: 0;
+    z-index: 5;
+  }
+
+  /* Answer cells */
+  td.answer-cell {
+    background: var(--empty);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  td.answer-cell:hover { background: #3a3560; }
+
+  td.answer-cell.correct-cell {
+    background: rgba(107, 203, 119, 0.18);
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  td.answer-cell.wrong-cell {
+    background: rgba(255, 107, 107, 0.18);
+    animation: shake 0.4s ease;
+  }
+
+  td.answer-cell.active-cell {
+    background: rgba(77,150,255,0.2);
+    outline: 2px solid var(--accent4);
+    outline-offset: -2px;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0.5; }
+    80% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+  }
+
+  .answer-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--correct);
+  }
+
+  /* INPUT OVERLAY */
+  .input-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .input-overlay.show { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .input-box {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 32px 40px;
+    text-align: center;
+    border: 2px solid var(--accent4);
+    box-shadow: 0 0 40px var(--glow4);
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 260px;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(30px) scale(0.9); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .input-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--accent2);
+    margin-bottom: 16px;
+  }
+
+  .input-field {
+    background: var(--empty);
+    border: 2px solid var(--accent4);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    width: 100px;
+    text-align: center;
+    padding: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-field:focus {
+    border-color: var(--accent2);
+    box-shadow: 0 0 16px var(--glow2);
+  }
+
+  .input-hint {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 10px;
+  }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn:hover  { transform: translateY(-2px); }
+  .btn:active { transform: scale(0.96); }
+
+  .btn-clear {
+    background: linear-gradient(135deg, #ff6b6b, #d63031);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(255,107,107,0.35);
+  }
+
+  .btn-show {
+    background: linear-gradient(135deg, var(--accent4), #7048e8);
+    color: #fff;
+    box-shadow: 0 4px 16px var(--glow4);
+  }
+
+  /* MODAL CONFIRM */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal-box {
+    background: var(--card);
+    border: 2px solid var(--accent1);
+    border-radius: 24px;
+    padding: 36px 44px;
+    text-align: center;
+    box-shadow: 0 0 50px var(--glow1);
+    max-width: 340px;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .modal-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  .modal-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--accent1);
+    margin-bottom: 8px;
+  }
+
+  .modal-text {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .modal-btns { display: flex; gap: 12px; justify-content: center; }
+
+  .btn-confirm {
+    background: linear-gradient(135deg, var(--accent1), #c0392b);
+    color: #fff;
+    box-shadow: 0 4px 14px var(--glow1);
+  }
+
+  .btn-cancel {
+    background: var(--surface);
+    color: var(--muted);
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+
+  /* CELEBRATION */
+  .celebration {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    pointer-events: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .celebration.show { display: flex; }
+
+  .celebration-card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 28px 44px;
+    text-align: center;
+    border: 3px solid var(--accent2);
+    box-shadow: 0 0 60px var(--glow2);
+    animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    pointer-events: none;
+  }
+
+  @keyframes bounceIn {
+    0%   { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    60%  { transform: scale(1.1) rotate(3deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .celebration-emoji { font-size: 3rem; display: block; margin-bottom: 4px; }
+
+  .celebration-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    background: linear-gradient(135deg, var(--accent2), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .celebration-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  /* CONFETTI canvas */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 299;
+    display: none;
+  }
+
+  #confetti-canvas.show { display: block; }
+
+  /* COMPLETE BANNER */
+  .complete-banner {
+    display: none;
+    background: linear-gradient(135deg, #2a1f5a, #1f3a2a);
+    border: 2px solid var(--correct);
+    border-radius: 20px;
+    padding: 20px 28px;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 30px var(--glow3);
+  }
+
+  .complete-banner.show { display: block; }
+
+  .complete-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--correct);
+    margin-bottom: 4px;
+  }
+
+  .complete-sub { color: var(--muted); font-size: 0.95rem; }
+
+  /* Diagonal label on correct full table */
+  .col-header span.num { display: block; font-size: 1.1rem; }
+  .col-header span.label { font-size: 0.6rem; color: var(--muted); font-family: 'Nunito', sans-serif; font-weight: 600; text-transform: uppercase; }
+
+  @media (max-width: 600px) {
+    th, td { width: 44px; height: 42px; }
+    .input-box { padding: 24px 20px; }
+    .modal-box { padding: 28px 24px; margin: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="container">
+  <header>
+    <div class="title">🌟 Tablas de Multiplicar</div>
+    <div class="subtitle">¡Haz clic en una celda y escribe el resultado!</div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-badge correct">✅ <span id="stat-correct">0</span> correctas</div>
+    <div class="stat-badge streak" id="streak-badge">🔥 Racha: <span id="stat-streak">0</span></div>
+    <div class="stat-badge total">📊 <span id="stat-pct">0</span>% completo</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="complete-banner" id="complete-banner">
+    <div class="complete-title">🏆 ¡TABLA COMPLETA! 🏆</div>
+    <div class="complete-sub">¡Eres un campeón de las matemáticas! Llenaste las 100 celdas correctamente.</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-clear" onclick="confirmClear()">🗑️ Limpiar todo</button>
+    <button class="btn btn-show" onclick="toggleAnswers()">👁️ <span id="toggle-label">Ver respuestas</span></button>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="mult-table"></table>
+  </div>
+</div>
+
+<!-- Input overlay -->
+<div class="input-overlay" id="input-overlay" onclick="closeInputIfOutside(event)">
+  <div class="input-box" id="input-box">
+    <div class="input-question" id="input-question">2 × 3 = ?</div>
+    <input class="input-field" id="input-field" type="number" min="0" max="999" autocomplete="off" inputmode="numeric">
+    <div class="input-hint">Presiona Enter para confirmar · Esc para cancelar</div>
+  </div>
+</div>
+
+<!-- Confirm clear modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">¿Borrar todo?</div>
+    <div class="modal-text">¿Estás seguro que quieres borrar todas tus respuestas? ¡No se puede deshacer!</div>
+    <div class="modal-btns">
+      <button class="btn btn-confirm" onclick="doClear()">Sí, borrar</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Celebration -->
+<div class="celebration" id="celebration">
+  <div class="celebration-card">
+    <span class="celebration-emoji" id="cel-emoji">🎉</span>
+    <div class="celebration-text" id="cel-text">¡Increíble!</div>
+    <div class="celebration-sub" id="cel-sub">¡Racha de 5!</div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'tablas_v2';
+let answers   = {};   // "r_c": number (user answer)
+let streak    = 0;
+let maxStreak = 0;
+let showingAnswers = false;
+let activeCell = null; // {r, c}
+
+// Celebrations config
+const STREAK_MILESTONES = {
+  5:   { emoji:'🌟', text:'¡Racha de 5!',   sub:'¡Estás en llamas!' },
+  10:  { emoji:'🔥', text:'¡10 seguidas!',  sub:'¡Imparable!' },
+  15:  { emoji:'🚀', text:'¡15 correctas!', sub:'¡Eres un cohete!' },
+  20:  { emoji:'🏆', text:'¡20 seguidas!',  sub:'¡Campeón total!' },
+  25:  { emoji:'💫', text:'¡25 en racha!',  sub:'¡Fuera de este mundo!' },
+  30:  { emoji:'👑', text:'¡30 seguidas!',  sub:'¡Eres el rey/reina!' },
+  50:  { emoji:'🦄', text:'¡50 en racha!',  sub:'¡Unicornio matemático!' },
+};
+
+// ─── LOAD / SAVE ─────────────────────────────────────────────────────────────
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, streak, maxStreak }));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    answers   = data.answers   || {};
+    streak    = data.streak    || 0;
+    maxStreak = data.maxStreak || 0;
+  } catch(e) { answers = {}; streak = 0; maxStreak = 0; }
+}
+
+// ─── BUILD TABLE ──────────────────────────────────────────────────────────────
+function buildTable() {
+  const table = document.getElementById('mult-table');
+  table.innerHTML = '';
+
+  // Header row
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+  const cornerTh = document.createElement('th');
+  cornerTh.className = 'corner';
+  cornerTh.textContent = '×';
+  hr.appendChild(cornerTh);
+
+  for (let c = 1; c <= 10; c++) {
+    const th = document.createElement('th');
+    th.className = 'col-header';
+    th.innerHTML = `<span class="num">${c}</span>`;
+    hr.appendChild(th);
+  }
+  thead.appendChild(hr);
+  table.appendChild(thead);
+
+  // Body rows
+  const tbody = document.createElement('tbody');
+  for (let r = 1; r <= 10; r++) {
+    const tr = document.createElement('tr');
+    const rowTh = document.createElement('td');
+    rowTh.className = 'row-header';
+    rowTh.textContent = r;
+    tr.appendChild(rowTh);
+
+    for (let c = 1; c <= 10; c++) {
+      const td = document.createElement('td');
+      td.className = 'answer-cell';
+      td.dataset.r = r;
+      td.dataset.c = c;
+      td.onclick = () => openInput(r, c);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+
+  renderAllCells();
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderAllCells() {
+  for (let r = 1; r <= 10; r++) {
+    for (let c = 1; c <= 10; c++) {
+      renderCell(r, c);
+    }
+  }
+  updateStats();
+}
+
+function renderCell(r, c) {
+  const td = document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+  if (!td) return;
+  const key   = `${r}_${c}`;
+  const val   = answers[key];
+  const correct = r * c;
+
+  td.classList.remove('correct-cell','wrong-cell','active-cell');
+  td.innerHTML = '';
+
+  if (showingAnswers) {
+    const span = document.createElement('span');
+    span.className = 'answer-num';
+    span.style.color = 'var(--accent2)';
+    span.textContent = correct;
+    td.appendChild(span);
+    return;
+  }
+
+  if (val !== undefined) {
+    const span = document.createElement('span');
+    span.className = 'answer-num';
+    if (val === correct) {
+      span.style.color = 'var(--correct)';
+      td.classList.add('correct-cell');
+    } else {
+      span.style.color = 'var(--wrong)';
+      td.classList.add('wrong-cell');
+    }
+    span.textContent = val;
+    td.appendChild(span);
+  }
+
+  if (activeCell && activeCell.r === r && activeCell.c === c) {
+    td.classList.add('active-cell');
+  }
+}
+
+// ─── INPUT ────────────────────────────────────────────────────────────────────
+function openInput(r, c) {
+  if (showingAnswers) return;
+  activeCell = { r, c };
+  renderCell(r, c);
+
+  document.getElementById('input-question').textContent = `${r} × ${c} = ?`;
+  const key = `${r}_${c}`;
+  const field = document.getElementById('input-field');
+  field.value = answers[key] !== undefined ? answers[key] : '';
+  document.getElementById('input-overlay').classList.add('show');
+  setTimeout(() => { field.focus(); field.select(); }, 50);
+}
+
+document.getElementById('input-field').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitAnswer();
+  if (e.key === 'Escape') closeInput();
+  // Arrow navigation
+  const nav = { ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0] };
+  if (nav[e.key] && activeCell) {
+    e.preventDefault();
+    submitAnswer(false); // save without showing feedback first
+    const [dr, dc] = nav[e.key];
+    let nr = activeCell.r + dr, nc = activeCell.c + dc;
+    if (nr < 1) nr = 10; if (nr > 10) nr = 1;
+    if (nc < 1) nc = 10; if (nc > 10) nc = 1;
+    openInput(nr, nc);
+  }
+});
+
+function submitAnswer(close = true) {
+  const field = document.getElementById('input-field');
+  const val   = field.value.trim();
+  if (val === '' || isNaN(val)) { if (close) closeInput(); return; }
+
+  const num = parseInt(val, 10);
+  const { r, c } = activeCell;
+  const key = r + '_' + c;
+  const correct = r * c;
+  const wasCorrect = answers[key] === correct;
+  answers[key] = num;
+
+  if (num === correct && !wasCorrect) {
+    streak++;
+    if (streak > maxStreak) maxStreak = streak;
+    checkStreak();
+  } else if (num !== correct) {
+    streak = 0;
+  }
+
+  saveState();
+  renderCell(r, c);
+  updateStats();
+
+  if (close) closeInput();
+}
+
+function closeInput() {
+  document.getElementById('input-overlay').classList.remove('show');
+  if (activeCell) {
+    const prev = activeCell;
+    activeCell = null;
+    renderCell(prev.r, prev.c);
+  }
+}
+
+function closeInputIfOutside(e) {
+  if (e.target.id === 'input-overlay') closeInput();
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  let correctCount = 0;
+  for (let r = 1; r <= 10; r++) {
+    for (let c = 1; c <= 10; c++) {
+      if (answers[r+'_'+c] === r*c) correctCount++;
+    }
+  }
+
+  document.getElementById('stat-correct').textContent = correctCount;
+  document.getElementById('stat-streak').textContent  = streak;
+
+  const pct = Math.round(correctCount / 100 * 100);
+  document.getElementById('stat-pct').textContent = pct;
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  const badge = document.getElementById('streak-badge');
+  badge.classList.toggle('on-fire', streak >= 5);
+
+  if (correctCount === 100) {
+    document.getElementById('complete-banner').classList.add('show');
+    launchConfetti(5000);
+  }
+}
+
+// ─── CELEBRATIONS ────────────────────────────────────────────────────────────
+function checkStreak() {
+  if (STREAK_MILESTONES[streak]) {
+    const { emoji, text, sub } = STREAK_MILESTONES[streak];
+    showCelebration(emoji, text, `¡${text} ${sub}`);
+    launchConfetti(2000);
+  } else if (streak > 0 && streak % 5 === 0) {
+    showCelebration('🎊', `¡${streak} seguidas!`, '¡Sigue así!');
+    launchConfetti(1500);
+  }
+}
+
+function showCelebration(emoji, text, sub) {
+  document.getElementById('cel-emoji').textContent = emoji;
+  document.getElementById('cel-text').textContent  = text;
+  document.getElementById('cel-sub').textContent   = sub;
+  const cel = document.getElementById('celebration');
+  cel.classList.add('show');
+  setTimeout(() => cel.classList.remove('show'), 2200);
+}
+
+// ─── CONFETTI ─────────────────────────────────────────────────────────────────
+function launchConfetti(duration) {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.classList.add('show');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9de2','#fff'];
+  const pieces = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * 100,
+    r: 4 + Math.random() * 6,
+    d: 2 + Math.random() * 3,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 3,
+    angle: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.2,
+    shape: Math.random() > 0.5 ? 'circle' : 'rect',
+  }));
+
+  const start = performance.now();
+  function frame(now) {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y    += p.d;
+      p.x    += p.vx;
+      p.angle += p.spin;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - elapsed / duration);
+      if (p.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+      }
+      ctx.restore();
+    });
+    if (elapsed < duration) requestAnimationFrame(frame);
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.classList.remove('show'); }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ─── TOGGLE ANSWERS ───────────────────────────────────────────────────────────
+function toggleAnswers() {
+  showingAnswers = !showingAnswers;
+  document.getElementById('toggle-label').textContent = showingAnswers ? 'Ocultar respuestas' : 'Ver respuestas';
+  renderAllCells();
+}
+
+// ─── CLEAR ────────────────────────────────────────────────────────────────────
+function confirmClear() {
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function doClear() {
+  answers = {}; streak = 0; maxStreak = 0;
+  saveState();
+  showingAnswers = false;
+  document.getElementById('toggle-label').textContent = 'Ver respuestas';
+  document.getElementById('complete-banner').classList.remove('show');
+  renderAllCells();
+  closeModal();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadState();
+buildTable();
+</script>
+</body>
+</html>
