@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AEROCALC — TMA</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════
+   CORE THEME SYSTEM
+══════════════════════════════════════════════ */
+:root {
+  --font-display: 'Orbitron', monospace;
+  --font-ui: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --radius: 4px;
+  --radius-lg: 8px;
+}
+
+/* ── DARK CYAN (default) ── */
+[data-theme="cyber"] {
+  --bg:     #060a0f;
+  --bg2:    #0c1420;
+  --bg3:    #0f1e2e;
+  --panel:  #081018;
+  --border: #0d3a52;
+  --border2:#1a5a7a;
+  --accent: #00c8ff;
+  --accent2:#0090bb;
+  --glow:   rgba(0,200,255,.18);
+  --glow2:  rgba(0,200,255,.06);
+  --text:   #c8e8f8;
+  --text2:  #4a7a98;
+  --text3:  #1c3a50;
+  --success:#00ffcc;
+  --warn:   #ffb800;
+  --danger: #ff3d3d;
+  --scanline: rgba(0,200,255,.03);
+}
+/* ── BLACK RED ── */
+[data-theme="black-red"] {
+  --bg:#000; --bg2:#080004; --bg3:#0d0008; --panel:#050002;
+  --border:#500020; --border2:#900040; --accent:#ff1744; --accent2:#b00030;
+  --glow:rgba(255,23,68,.18); --glow2:rgba(255,23,68,.06);
+  --text:#ffcccc; --text2:#882244; --text3:#330011;
+  --success:#ff1744; --warn:#ff6600; --danger:#ff1744;
+  --scanline:rgba(255,23,68,.025);
+}
+/* ── BLACK GREEN ── */
+[data-theme="black-green"] {
+  --bg:#000; --bg2:#020a02; --bg3:#041204; --panel:#010801;
+  --border:#004400; --border2:#007700; --accent:#00ff41; --accent2:#00bb30;
+  --glow:rgba(0,255,65,.18); --glow2:rgba(0,255,65,.06);
+  --text:#bbffbb; --text2:#337733; --text3:#0d330d;
+  --success:#00ff41; --warn:#aaff00; --danger:#ff4444;
+  --scanline:rgba(0,255,65,.025);
+}
+/* ── AMBER / COCKPIT ── */
+[data-theme="amber"] {
+  --bg:#080500; --bg2:#120b00; --bg3:#1c1000; --panel:#0a0600;
+  --border:#4a2c00; --border2:#885500; --accent:#ffaa00; --accent2:#cc8800;
+  --glow:rgba(255,170,0,.18); --glow2:rgba(255,170,0,.06);
+  --text:#ffe8a0; --text2:#886600; --text3:#332500;
+  --success:#ffcc00; --warn:#ff8800; --danger:#ff3300;
+  --scanline:rgba(255,170,0,.025);
+}
+/* ── STEEL BLUE / PROFESSIONAL ── */
+[data-theme="steel"] {
+  --bg:#0a0e14; --bg2:#111822; --bg3:#18222e; --panel:#0c1018;
+  --border:#1e3048; --border2:#2e4868; --accent:#4d9fec; --accent2:#2878c8;
+  --glow:rgba(77,159,236,.18); --glow2:rgba(77,159,236,.06);
+  --text:#b8d4ee; --text2:#3a6090; --text3:#172030;
+  --success:#22dd88; --warn:#f0b030; --danger:#ee4444;
+  --scanline:rgba(77,159,236,.03);
+}
+/* ── LIGHT / DAY ── */
+[data-theme="light"] {
+  --bg:#eef3f9; --bg2:#ffffff; --bg3:#dce8f4; --panel:#f4f8fc;
+  --border:#8ab0d0; --border2:#5888bb; --accent:#1560a0; --accent2:#0d4880;
+  --glow:rgba(21,96,160,.10); --glow2:rgba(21,96,160,.04);
+  --text:#0c2848; --text2:#4478a8; --text3:#a8c8e8;
+  --success:#007a3d; --warn:#b06800; --danger:#cc2020;
+  --scanline:transparent;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* CRT scanlines overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:9999; pointer-events:none;
+  background: repeating-linear-gradient(
+    0deg,
+    var(--scanline) 0px,
+    var(--scanline) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* Ambient glow corners */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 0% 0%, var(--glow2) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 100% 100%, var(--glow2) 0%, transparent 70%);
+}
+
+/* ══ HEADER ══ */
+header {
+  position: sticky; top:0; z-index:200;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border2);
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 0 30px var(--glow);
+}
+header::after {
+  content:'';
+  position:absolute; bottom:-2px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: .6;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 12px;
+  text-shadow: 0 0 20px var(--accent);
+  flex-shrink: 0;
+}
+.logo-plane {
+  width: 28px; height: 28px; fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent));
+  animation: planePulse 3s ease-in-out infinite;
+}
+@keyframes planePulse {
+  0%,100% { filter: drop-shadow(0 0 6px var(--accent)); }
+  50%      { filter: drop-shadow(0 0 14px var(--accent)); }
+}
+.logo-sub {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 2px;
+  display: block;
+  line-height:1;
+}
+
+/* theme dots */
+.theme-bar { display:flex; gap:7px; align-items:center; flex-shrink:0; }
+.t-btn {
+  width:22px; height:22px; border-radius:50%;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+  position:relative;
+}
+.t-btn:hover { transform:scale(1.3); }
+.t-btn.active { border-color: var(--text); box-shadow: 0 0 8px var(--accent); }
+.t-btn[data-t="cyber"]      { background:conic-gradient(#060a0f 0deg 180deg,#00c8ff 180deg); }
+.t-btn[data-t="black-red"]  { background:conic-gradient(#000 0deg 180deg,#ff1744 180deg); }
+.t-btn[data-t="black-green"]{ background:conic-gradient(#000 0deg 180deg,#00ff41 180deg); }
+.t-btn[data-t="amber"]      { background:conic-gradient(#080500 0deg 180deg,#ffaa00 180deg); }
+.t-btn[data-t="steel"]      { background:conic-gradient(#0a0e14 0deg 180deg,#4d9fec 180deg); }
+.t-btn[data-t="light"]      { background:conic-gradient(#eef3f9 0deg 180deg,#1560a0 180deg); }
+
+/* ══ HOME MENU ══ */
+#home-menu {
+  position:relative; z-index:1;
+  padding: 24px 20px 20px;
+  max-width: 900px; margin: 0 auto;
+}
+
+.home-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--text2);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  padding-left: 2px;
+}
+.home-title span { color: var(--accent); }
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media(max-width:640px) { .menu-grid { grid-template-columns: repeat(2,1fr); } }
+
+.menu-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  user-select: none;
+}
+.menu-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.menu-card:hover { border-color: var(--border2); box-shadow: 0 0 20px var(--glow); transform:translateY(-2px); }
+.menu-card:hover::before { opacity:1; }
+.menu-card:active { transform:translateY(0) scale(.98); }
+
+.menu-icon {
+  font-size: 30px;
+  line-height:1;
+  filter: drop-shadow(0 0 4px var(--accent));
+}
+.menu-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-align: center;
+}
+.menu-sub {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text2);
+  text-align: center;
+  line-height:1.3;
+}
+
+/* ══ PANEL LAYOUT ══ */
+main { position:relative; z-index:1; }
+
+.cat-panel { display:none; }
+.cat-panel.active { display:block; animation: slideIn .2s ease; padding: 16px 20px; max-width:900px; margin:0 auto; }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* back button */
+.btn-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: border-color .2s, color .2s;
+}
+.btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+/* panel title bar */
+.panel-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-icon { font-size: 24px; }
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+}
+
+.panel-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; }
+.panel-grid.full { grid-template-columns:1fr; }
+
+/* ══ CARDS ══ */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+  position:relative;
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:16px; right:16px; height:1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+}
+.card:hover { border-color: var(--border2); box-shadow: 0 4px 24px var(--glow2); }
+
+.card-head {
+  padding: 10px 16px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.card-badge {
+  margin-left:auto;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 99px;
+  color: var(--accent);
+}
+
+.card-body { padding: 14px; display:flex; flex-direction:column; gap:10px; }
+
+/* ══ FORM ELEMENTS ══ */
+.field { display:flex; flex-direction:column; gap:5px; }
+.field-row { display:flex; gap:8px; align-items:flex-end; }
+
+label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+input[type="number"],
+input[type="text"],
+select,
+textarea {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  padding: 10px 12px;
+  width: 100%;
+  min-height: 42px;
+  transition: border-color .2s, box-shadow .2s;
+  -moz-appearance: textfield;
+  outline:none;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { -webkit-appearance:none; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--glow), inset 0 0 10px var(--glow2);
+}
+select option { background: var(--bg2); }
+textarea { resize:vertical; min-height:180px; font-family: var(--font-ui); font-size:14px; line-height:1.6; }
+
+/* ══ BUTTONS ══ */
+.calc-btn {
+  height: 46px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  position: relative; overflow:hidden;
+  transition: background .2s, box-shadow .2s, color .2s;
+}
+.calc-btn::before {
+  content:'';
+  position:absolute; inset:0;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .25s ease;
+  z-index:0;
+}
+.calc-btn span { position:relative; z-index:1; }
+.calc-btn:hover { box-shadow: 0 0 20px var(--glow); color: var(--bg); }
+.calc-btn:hover::before { transform: scaleX(1); }
+.calc-btn:active { transform: scale(.98); }
+
+.calc-btn.secondary {
+  border-color: var(--border2);
+  color: var(--text2);
+}
+.calc-btn.secondary::before { background: var(--border2); }
+.calc-btn.secondary:hover { color: var(--text); }
+
+.calc-btn.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.calc-btn.danger::before { background: var(--danger); }
+
+/* ══ RESULT BOX ══ */
+.result-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--success);
+  min-height: 50px;
+  display: flex; align-items: center;
+  text-shadow: 0 0 10px var(--success);
+  transition: color .2s, text-shadow .2s;
+  word-break:break-all;
+}
+.result-box.multi {
+  flex-direction:column; align-items:flex-start; gap:4px; font-size:16px;
+}
+.result-box.error { color: var(--danger); text-shadow: 0 0 10px var(--danger); font-size:13px; }
+
+.result-label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+
+/* formula chip */
+.formula-chip {
+  display:inline-flex; align-items:center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+}
+
+/* ══ W&B TABLE ══ */
+.wb-table { width:100%; border-collapse:collapse; }
+.wb-table th {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  text-align:left;
+}
+.wb-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
+.wb-table tr:last-child td { border-bottom:none; }
+.wb-table input {
+  min-height: 36px; font-size:13px; padding: 6px 8px; border-radius:3px;
+}
+.wb-mom {
+  font-family: var(--font-mono);
+  font-size:13px;
+  color: var(--text2);
+  padding: 0 8px;
+  white-space:nowrap;
+}
+.btn-del {
+  background:transparent;
+  border: 1px solid var(--border);
+  color: var(--danger);
+  width:32px; height:32px;
+  border-radius: var(--radius);
+  cursor:pointer;
+  font-size:14px;
+  transition: border-color .15s, background .15s;
+}
+.btn-del:hover { border-color: var(--danger); background: rgba(255,0,0,.1); }
+
+/* CG bar */
+.cg-bar-wrap { margin-top:4px; }
+.cg-bar-track {
+  position:relative; height:28px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius:4px; overflow:hidden;
+}
+.cg-bar-fill {
+  position:absolute; left:0; top:0; height:100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  opacity:.2; transition:width .4s;
+}
+.cg-bar-marker {
+  position:absolute; top:0; width:2px; height:100%;
+  background: var(--warn);
+  box-shadow: 0 0 8px var(--warn);
+  transition:left .4s;
+}
+
+/* CG summary grid */
+.cg-summary {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:4px;
+}
+.cg-cell {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  text-align:center;
+}
+.cg-cell-val {
+  font-family: var(--font-mono);
+  font-size:18px;
+  color: var(--success);
+  text-shadow: 0 0 8px var(--success);
+}
+.cg-cell-val.highlight { color: var(--warn); text-shadow: 0 0 8px var(--warn); font-size:22px; }
+
+/* Notes */
+#notes_status {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text2);
+}
+
+/* ══ CLOCK ══ */
+.hud-clock {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 2px;
+  display:none;
+}
+@media(min-width:500px) { .hud-clock { display:block; } }
+
+/* ══ SCROLLBAR ══ */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius:99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent2); }
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:480px) {
+  .panel-grid { grid-template-columns:1fr; }
+  header { padding:0 12px; }
+  .cat-panel.active { padding: 12px; }
+}
+</style>
+</head>
+<body data-theme="cyber">
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">
+    <svg class="logo-plane" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>
+    <div>
+      AEROCALC
+      <span class="logo-sub">MANTENIMIENTO AERONÁUTICO</span>
+    </div>
+  </div>
+  <div id="hud-clock" class="hud-clock">--:--:--</div>
+  <div class="theme-bar">
+    <div class="t-btn active" data-t="cyber"       title="Cyber Azul"></div>
+    <div class="t-btn"        data-t="black-red"   title="Negro / Rojo"></div>
+    <div class="t-btn"        data-t="black-green" title="Negro / Verde"></div>
+    <div class="t-btn"        data-t="amber"       title="Ámbar / Cockpit"></div>
+    <div class="t-btn"        data-t="steel"       title="Acero Azul"></div>
+    <div class="t-btn"        data-t="light"       title="Día / Claro"></div>
+  </div>
+</header>
+
+<!-- ══ HOME MENU ══ -->
+<div id="home-menu">
+  <div class="home-title">SELECCIONE <span>MÓDULO</span></div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="openPanel('fuel')">
+      <div class="menu-icon">⛽</div>
+      <div class="menu-label">Combustible</div>
+      <div class="menu-sub">Jet A-1 · Gal · Kg · Lts</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('torque')">
+      <div class="menu-icon">🔧</div>
+      <div class="menu-label">Torque</div>
+      <div class="menu-sub">lb-ft · N·m · Extensión</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('pressure')">
+      <div class="menu-icon">🔵</div>
+      <div class="menu-label">Presión</div>
+      <div class="menu-sub">PSI · BAR · kg/cm²</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('metrology')">
+      <div class="menu-icon">📏</div>
+      <div class="menu-label">Metrología</div>
+      <div class="menu-sub">in · mm · Fracciones</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('time')">
+      <div class="menu-icon">🕐</div>
+      <div class="menu-label">Tiempos</div>
+      <div class="menu-sub">HH:MM ↔ Decimal</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('temp')">
+      <div class="menu-icon">🌡️</div>
+      <div class="menu-label">Temperatura</div>
+      <div class="menu-sub">°C · °F · ISA</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('wb')">
+      <div class="menu-icon">✈️</div>
+      <div class="menu-label">Peso y CG</div>
+      <div class="menu-sub">Centro de gravedad</div>
+    </div>
+    <div class="menu-card" onclick="openPanel('notes')">
+      <div class="menu-icon">📝</div>
+      <div class="menu-label">Notas</div>
+      <div class="menu-sub">Bloc técnico local</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══ COMBUSTIBLE ══ -->
+<section class="cat-panel" id="cat-fuel">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">⛽</span><span class="panel-title">COMBUSTIBLE — JET A-1</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Galones ↔ Libras</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="formula-chip">lbs = gal × 6.7</div>
+        <div class="field-row">
+          <div class="field" style="flex:1"><label>Galones US</label><input type="number" id="f_gal" placeholder="0.0" step="any"></div>
+          <div class="field" style="flex:1"><label>Libras</label><input type="number" id="f_lbs" placeholder="0.0" step="any"></div>
+        </div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcFuel('gal_to_lb')"><span>Gal → Lb</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcFuel('lb_to_gal')"><span>Lb → Gal</span></button>
+        </div>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_fuel_us">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Kilogramos ↔ Libras</span></div>
+      <div class="card-body">
+        <div class="formula-chip">1 kg = 2.20462 lbs</div>
+        <div class="field-row">
+          <div class="field" style="flex:1"><label>Kilogramos</label><input type="number" id="f_kg" placeholder="0.0" step="any"></div>
+          <div class="field" style="flex:1"><label>Libras</label><input type="number" id="f_lbs2" placeholder="0.0" step="any"></div>
+        </div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcFuel('kg_to_lb')"><span>Kg → Lb</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcFuel('lb_to_kg')"><span>Lb → Kg</span></button>
+        </div>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_fuel_m">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Litros → Kg</span></div>
+      <div class="card-body">
+        <div class="formula-chip">kg = L × 0.800</div>
+        <div class="field"><label>Litros</label><input type="number" id="f_lts" placeholder="0.0" step="any"></div>
+        <button class="calc-btn" onclick="calcFuel('lts_to_kg')"><span>Convertir a Kg</span></button>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_fuel_lts">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ TORQUE ══ -->
+<section class="cat-panel" id="cat-torque">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">🔧</span><span class="panel-title">TORQUE Y AJUSTES</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Torque con Extensión</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="formula-chip">Tw = T×L ÷ (L+E)</div>
+        <div class="field"><label>Torque deseado T</label><input type="number" id="t_T" placeholder="0.0" step="any"></div>
+        <div class="field-row">
+          <div class="field"><label>Longitud llave L</label><input type="number" id="t_L" placeholder="cm" step="any"></div>
+          <div class="field"><label>Extensión E</label><input type="number" id="t_E" placeholder="cm" step="any"></div>
+        </div>
+        <button class="calc-btn" onclick="calcTorqueExt()"><span>CALCULAR Tw</span></button>
+        <div class="result-label">Ajuste en llave</div>
+        <div class="result-box" id="res_torque_ext">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Conversión de Torque</span></div>
+      <div class="card-body">
+        <div class="field-row">
+          <div class="field" style="flex:2"><label>Valor</label><input type="number" id="t_val" placeholder="0.0" step="any"></div>
+          <div class="field" style="flex:1"><label>Unidad</label>
+            <select id="t_from">
+              <option value="lbft">lb-ft</option>
+              <option value="lbin">lb-in</option>
+              <option value="nm">N·m</option>
+            </select>
+          </div>
+        </div>
+        <button class="calc-btn" onclick="calcTorqueConv()"><span>CONVERTIR TODO</span></button>
+        <div class="result-label">Equivalencias</div>
+        <div class="result-box multi" id="res_torque_conv">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ PRESIÓN ══ -->
+<section class="cat-panel" id="cat-pressure">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">🔵</span><span class="panel-title">PRESIÓN / NEUMÁTICA</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Conversión de Presión</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="field"><label>Valor a convertir</label><input type="number" id="p_val" placeholder="0.0" step="any"></div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcPress('psi_bar')"><span>PSI→Bar</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcPress('bar_psi')"><span>Bar→PSI</span></button>
+        </div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcPress('psi_kg')"><span>PSI→kg/cm²</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcPress('kg_psi')"><span>kg/cm²→PSI</span></button>
+        </div>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_press">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ METROLOGÍA ══ -->
+<section class="cat-panel" id="cat-metrology">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">📏</span><span class="panel-title">METROLOGÍA Y MEDIDAS</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Decimal → Fracción 1/64"</span></div>
+      <div class="card-body">
+        <div class="formula-chip">Fracción más cercana en 1/64"</div>
+        <div class="field"><label>Pulgadas Decimal (ej: 0.0468)</label><input type="number" id="m_dec" step="0.0001" placeholder="0.0000"></div>
+        <button class="calc-btn" onclick="calcFraction()"><span>CONVERTIR A FRACCIÓN</span></button>
+        <div class="result-label">Fracción</div>
+        <div class="result-box" id="res_frac">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Milímetros ↔ Pulgadas</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="formula-chip">1 in = 25.4 mm</div>
+        <div class="field"><label>Valor</label><input type="number" id="m_val" placeholder="0.0000" step="any"></div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcMetrology('in_mm')"><span>Pulg → mm</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcMetrology('mm_in')"><span>mm → Pulg</span></button>
+        </div>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_mm">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ TIEMPOS ══ -->
+<section class="cat-panel" id="cat-time">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">🕐</span><span class="panel-title">GESTIÓN DE TIEMPOS</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Minutos → Decimal</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="formula-chip">dec = min ÷ 60</div>
+        <div class="field"><label>Minutos (0–59)</label><input type="number" id="time_min" max="59" placeholder="0"></div>
+        <button class="calc-btn" onclick="calcTime('min_dec')"><span>A DECIMAL</span></button>
+        <div class="result-label">Hora decimal</div>
+        <div class="result-box" id="res_time_dec">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Decimal → HH:MM</span></div>
+      <div class="card-body">
+        <div class="formula-chip">mm = (dec − hh) × 60</div>
+        <div class="field"><label>Horas en decimal (ej: 1.75)</label><input type="number" id="time_dec" step="0.01" placeholder="0.00"></div>
+        <button class="calc-btn" onclick="calcTime('dec_hm')"><span>A RELOJ</span></button>
+        <div class="result-label">HH:MM</div>
+        <div class="result-box" id="res_time_hm">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ TEMPERATURA ══ -->
+<section class="cat-panel" id="cat-temp">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">🌡️</span><span class="panel-title">TEMPERATURA</span></div>
+  <div class="panel-grid">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Conversión °C / °F</span><span class="card-badge">TOP</span></div>
+      <div class="card-body">
+        <div class="field"><label>Grados</label><input type="number" id="temp_val" placeholder="0.0" step="any"></div>
+        <div class="field-row">
+          <button class="calc-btn" style="flex:1" onclick="calcTemp('c_f')"><span>°C → °F</span></button>
+          <button class="calc-btn" style="flex:1" onclick="calcTemp('f_c')"><span>°F → °C</span></button>
+        </div>
+        <div class="result-label">Resultado</div>
+        <div class="result-box" id="res_temp">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Temperatura ISA</span></div>
+      <div class="card-body">
+        <div class="formula-chip">T = 15 − 0.001981 × alt(ft)</div>
+        <div class="field"><label>Nivel de Vuelo FL (ej: 350)</label><input type="number" id="isa_fl" placeholder="350" step="10" min="0"></div>
+        <button class="calc-btn" onclick="calcISA()"><span>CALCULAR T-ISA</span></button>
+        <div class="result-label">Temperatura ISA</div>
+        <div class="result-box" id="res_isa">—</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ PESO Y CG ══ -->
+<section class="cat-panel" id="cat-wb">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">✈️</span><span class="panel-title">PESO Y CENTRO DE GRAVEDAD</span></div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <div class="card-head">
+      <span class="card-title">Configuración</span>
+    </div>
+    <div class="card-body">
+      <div class="field-row">
+        <div class="field">
+          <label>Unidad Peso</label>
+          <select id="cg_wunit"><option value="lbs">lbs (libras)</option><option value="kg">kg (kilogramos)</option></select>
+        </div>
+        <div class="field">
+          <label>Unidad Brazo</label>
+          <select id="cg_dunit"><option value="in">pulgadas (in)</option><option value="mm">milímetros (mm)</option><option value="m">metros (m)</option></select>
+        </div>
+      </div>
+      <div class="formula-chip">CG = Σ(Peso × Brazo) ÷ Σ(Pesos)</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px; overflow-x:auto;">
+    <div class="card-head"><span class="card-title">Estaciones de Masa</span></div>
+    <div class="card-body" style="padding:0;">
+      <table class="wb-table" id="wb-table">
+        <thead>
+          <tr>
+            <th>Estación / Ítem</th>
+            <th>Peso (W)</th>
+            <th>Brazo (A)</th>
+            <th>Momento (M)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="wb-tbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:10px 14px; display:flex; gap:8px;">
+      <button class="calc-btn secondary" style="flex:1; height:38px; font-size:10px;" onclick="addWbRow()"><span>+ AGREGAR FILA</span></button>
+      <button class="calc-btn" style="flex:2; height:38px;" onclick="calcCG()"><span>CALCULAR CG</span></button>
+      <button class="calc-btn danger" style="flex:1; height:38px; font-size:10px;" onclick="clearWB()"><span>LIMPIAR</span></button>
+    </div>
+  </div>
+
+  <div class="card" id="cg-result-card" style="display:none;">
+    <div class="card-head"><span class="card-title">Resultado CG</span></div>
+    <div class="card-body">
+      <div class="cg-summary">
+        <div class="cg-cell">
+          <div class="result-label">Peso Total</div>
+          <div class="cg-cell-val" id="wb-total-w">—</div>
+        </div>
+        <div class="cg-cell">
+          <div class="result-label">Momento Total</div>
+          <div class="cg-cell-val" id="wb-total-m">—</div>
+        </div>
+        <div class="cg-cell">
+          <div class="result-label">CG Posición</div>
+          <div class="cg-cell-val highlight" id="wb-final-cg">—</div>
+        </div>
+      </div>
+      <div class="cg-bar-wrap">
+        <div class="result-label" style="margin-bottom:5px;">Distribución de masas</div>
+        <div class="cg-bar-track">
+          <div class="cg-bar-fill" id="cg-bar-fill"></div>
+          <div class="cg-bar-marker" id="cg-bar-marker"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ NOTAS ══ -->
+<section class="cat-panel" id="cat-notes">
+  <button class="btn-back" onclick="goHome()">◂ MENÚ PRINCIPAL</button>
+  <div class="panel-header"><span class="panel-icon">📝</span><span class="panel-title">BLOC DE NOTAS TÉCNICAS</span></div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Notas del Técnico</span>
+      <span class="card-badge">AUTO-GUARDADO</span>
+    </div>
+    <div class="card-body">
+      <div style="color:var(--text2); font-size:12px; font-family:var(--font-ui);">
+        ⚠️ AVISO (NO OFICIAL): Guardado automático local. Uso exclusivo como ayuda memoria (tareas, observaciones, páginas del manual). No constituye un registro oficial ni reemplaza la documentación técnica vigente.
+      </div>
+      <textarea id="tma_notes"
+        placeholder="Escribe aquí tus notas técnicas...&#10;&#10;Ej:&#10;• Torque perno NLG: 35 lb-ft (AMM 32-10-01)&#10;• Presión N2 amortiguador nose: 1450 PSI&#10;• Próx inspección: C-Check 2000 FH"
+        oninput="saveNotes()"></textarea>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="notes_status" style="flex:1;">— sin notas —</div>
+        <button class="calc-btn secondary" style="width:auto;padding:0 16px;height:36px;font-size:10px;" onclick="notesCopy()"><span>COPIAR</span></button>
+        <button class="calc-btn danger" style="width:auto;padding:0 16px;height:36px;font-size:10px;" onclick="notesClear()"><span>BORRAR</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ── CLOCK ── */
+function tickClock() {
+  const now = new Date();
+  document.getElementById('hud-clock').textContent =
+    now.toLocaleTimeString('es-CO', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' UTC-5';
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ── THEME ── */
+const savedTheme = localStorage.getItem('aero_theme') || 'cyber';
+setTheme(savedTheme);
+document.querySelectorAll('.t-btn').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.t)));
+function setTheme(t) {
+  document.body.dataset.theme = t;
+  document.querySelectorAll('.t-btn').forEach(b => b.classList.toggle('active', b.dataset.t === t));
+  localStorage.setItem('aero_theme', t);
+}
+
+/* ── NAV ── */
+function openPanel(id) {
+  document.getElementById('home-menu').style.display = 'none';
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('cat-' + id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome() {
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('home-menu').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+/* ── HELPERS ── */
+const v = id => parseFloat(document.getElementById(id).value);
+const setRes = (id, text, err=false) => {
+  const el = document.getElementById(id);
+  if (el.classList.contains('multi')) el.innerHTML = text;
+  else el.textContent = text;
+  el.classList.toggle('error', err);
+  if (!err) el.style.textShadow = '';
+};
+const fmt = (n, d=2) => isFinite(n) ? n.toLocaleString('es-CO',{maximumFractionDigits:d,minimumFractionDigits:0}) : '—';
+
+/* Enter trigger */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const btn = document.activeElement?.closest('.card-body')?.querySelector('.calc-btn:not(.secondary):not(.danger)');
+    if (btn) btn.click();
+  }
+});
+
+/* ── COMBUSTIBLE ── */
+function calcFuel(mode) {
+  if (mode==='gal_to_lb') { const x=v('f_gal'); if(isNaN(x)) return; setRes('res_fuel_us', fmt(x*6.7,2)+' lbs'); }
+  if (mode==='lb_to_gal') { const x=v('f_lbs'); if(isNaN(x)) return; setRes('res_fuel_us', fmt(x/6.7,2)+' gal US'); }
+  if (mode==='kg_to_lb')  { const x=v('f_kg');  if(isNaN(x)) return; setRes('res_fuel_m',  fmt(x*2.20462,2)+' lbs'); }
+  if (mode==='lb_to_kg')  { const x=v('f_lbs2');if(isNaN(x)) return; setRes('res_fuel_m',  fmt(x/2.20462,2)+' kg'); }
+  if (mode==='lts_to_kg') { const x=v('f_lts'); if(isNaN(x)) return; setRes('res_fuel_lts',fmt(x*0.8,3)+' kg'); }
+}
+
+/* ── TORQUE ── */
+function calcTorqueExt() {
+  const T=v('t_T'), L=v('t_L'), E=v('t_E');
+  if([T,L,E].some(isNaN)||(L+E)===0) return setRes('res_torque_ext','⚠ Datos incompletos',true);
+  setRes('res_torque_ext', fmt(T*L/(L+E),4)+' (misma unidad)');
+}
+function calcTorqueConv() {
+  const val=v('t_val'), from=document.getElementById('t_from').value;
+  if(isNaN(val)) return setRes('res_torque_conv','⚠ Ingrese valor',true);
+  let lbft,lbin,nm;
+  if(from==='lbft'){lbft=val; lbin=val*12;   nm=val*1.35582;}
+  if(from==='lbin'){lbin=val; lbft=val/12;   nm=val*0.11299;}
+  if(from==='nm')  {nm=val;   lbft=val/1.35582; lbin=val/0.11299;}
+  setRes('res_torque_conv',
+    `<div>${fmt(lbft,4)} lb-ft</div><div>${fmt(lbin,4)} lb-in</div><div>${fmt(nm,4)} N·m</div>`);
+}
+
+/* ── PRESIÓN ── */
+function calcPress(mode) {
+  const val=v('p_val');
+  if(isNaN(val)) return setRes('res_press','⚠ Ingrese valor',true);
+  if(mode==='psi_bar') setRes('res_press', fmt(val/14.5038,4)+' Bar');
+  if(mode==='bar_psi') setRes('res_press', fmt(val*14.5038,2)+' PSI');
+  if(mode==='psi_kg')  setRes('res_press', fmt(val*0.070307,4)+' kg/cm²');
+  if(mode==='kg_psi')  setRes('res_press', fmt(val/0.070307,2)+' PSI');
+}
+
+/* ── METROLOGÍA ── */
+function calcFraction() {
+  const dec=v('m_dec');
+  if(isNaN(dec)||dec<=0) return setRes('res_frac','⚠ Ingrese valor',true);
+  let best=1,bestErr=99;
+  for(let n=1;n<=64;n++){const e=Math.abs(n/64-dec);if(e<bestErr){bestErr=e;best=n;}}
+  const gcd=(a,b)=>b?gcd(b,a%b):a;
+  const g=gcd(best,64);
+  setRes('res_frac', `${best/g}/${64/g}" (±${fmt(bestErr*25.4,3)} mm)`);
+}
+function calcMetrology(mode) {
+  const val=v('m_val');
+  if(isNaN(val)) return setRes('res_mm','⚠ Ingrese valor',true);
+  if(mode==='in_mm') setRes('res_mm', fmt(val*25.4,4)+' mm');
+  if(mode==='mm_in') setRes('res_mm', fmt(val/25.4,5)+' in');
+}
+
+/* ── TIEMPOS ── */
+function calcTime(mode) {
+  if(mode==='min_dec'){const m=v('time_min');if(!isNaN(m))setRes('res_time_dec',fmt(m/60,4)+' h');}
+  if(mode==='dec_hm'){
+    const dec=v('time_dec');if(isNaN(dec))return;
+    const h=Math.floor(dec),m=Math.round((dec-h)*60);
+    setRes('res_time_hm',`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
+  }
+}
+
+/* ── TEMPERATURA ── */
+function calcTemp(mode) {
+  const val=v('temp_val');
+  if(isNaN(val)) return setRes('res_temp','⚠ Ingrese valor',true);
+  if(mode==='c_f') setRes('res_temp', fmt(val*9/5+32,1)+' °F');
+  if(mode==='f_c') setRes('res_temp', fmt((val-32)*5/9,1)+' °C');
+}
+function calcISA() {
+  const fl=v('isa_fl');
+  if(isNaN(fl)) return setRes('res_isa','⚠ Ingrese FL',true);
+  const alt=fl*100;
+  const t = alt<=36089 ? 15-0.001981*alt : -56.5;
+  setRes('res_isa', fmt(t,2)+' °C  /  '+fmt(t*9/5+32,2)+' °F');
+}
+
+/* ── PESO & CG ── */
+let wbRowId = 0;
+function addWbRow(name='', w='', arm='') {
+  wbRowId++;
+  const id = 'wbr_'+wbRowId;
+  const tbody = document.getElementById('wb-tbody');
+  const tr = document.createElement('tr');
+  tr.id = id;
+  tr.innerHTML = `
+    <td><input type="text"   id="${id}_n" placeholder="Estación..." value="${name}" style="min-width:110px;"></td>
+    <td><input type="number" id="${id}_w" placeholder="0.0" value="${w}" step="any" oninput="wbUpdateMom('${id}')" style="min-width:80px;"></td>
+    <td><input type="number" id="${id}_a" placeholder="0.0" value="${arm}" step="any" oninput="wbUpdateMom('${id}')" style="min-width:80px;"></td>
+    <td><span class="wb-mom" id="${id}_m">—</span></td>
+    <td><button class="btn-del" onclick="document.getElementById('${id}').remove(); calcCG();">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+function wbUpdateMom(id) {
+  const w=parseFloat(document.getElementById(id+'_w').value)||0;
+  const a=parseFloat(document.getElementById(id+'_a').value)||0;
+  document.getElementById(id+'_m').textContent = (w*a).toFixed(2);
+  calcCG();
+}
+function calcCG() {
+  const rows = document.querySelectorAll('#wb-tbody tr');
+  let totalW=0, totalM=0, hasData=false;
+  let arms=[];
+  rows.forEach(tr => {
+    const w=parseFloat(tr.querySelector('[id$="_w"]')?.value)||0;
+    const a=parseFloat(tr.querySelector('[id$="_a"]')?.value)||0;
+    if(w||a){ totalW+=w; totalM+=w*a; hasData=true; if(a)arms.push(a); }
+  });
+  if(!hasData||totalW===0){document.getElementById('cg-result-card').style.display='none';return;}
+  const cg = totalM/totalW;
+  const wu=document.getElementById('cg_wunit').value;
+  const du=document.getElementById('cg_dunit').value;
+  document.getElementById('wb-total-w').textContent = fmt(totalW,2)+' '+wu;
+  document.getElementById('wb-total-m').textContent = fmt(totalM,2);
+  document.getElementById('wb-final-cg').textContent = fmt(cg,4)+' '+du;
+  document.getElementById('cg-result-card').style.display = 'block';
+  if(arms.length>1){
+    const mn=Math.min(...arms), mx=Math.max(...arms), range=mx-mn||1;
+    const pct=Math.max(0,Math.min(100,(cg-mn)/range*100));
+    document.getElementById('cg-bar-fill').style.width=pct+'%';
+    document.getElementById('cg-bar-marker').style.left='calc('+pct+'% - 1px)';
+  }
+}
+function clearWB(){
+  if(!confirm('¿Limpiar todas las filas?'))return;
+  document.getElementById('wb-tbody').innerHTML='';
+  wbRowId=0;
+  document.getElementById('cg-result-card').style.display='none';
+}
+
+/* ── NOTAS ── */
+function saveNotes() {
+  const txt=document.getElementById('tma_notes').value;
+  localStorage.setItem('aero_notes', txt);
+  const ts=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('notes_status').textContent = '✓ Guardado '+ts+'  ('+txt.length+' chars)';
+}
+function notesCopy() {
+  const txt=document.getElementById('tma_notes').value;
+  if(!txt) return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    document.getElementById('notes_status').textContent = '✓ Copiado al portapapeles';
+    setTimeout(()=>{
+      const n=localStorage.getItem('aero_notes')||'';
+      document.getElementById('notes_status').textContent = n ? n.length+' chars guardados' : '— sin notas —';
+    }, 2000);
+  });
+}
+function notesClear() {
+  if(!confirm('¿Borrar todas las notas?')) return;
+  document.getElementById('tma_notes').value='';
+  localStorage.removeItem('aero_notes');
+  document.getElementById('notes_status').textContent='— sin notas —';
+}
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded', () => {
+  // Load notes
+  const n=localStorage.getItem('aero_notes')||'';
+  document.getElementById('tma_notes').value=n;
+  if(n) document.getElementById('notes_status').textContent=n.length+' chars guardados';
+  // Init W&B rows
+  addWbRow('Peso Vacío');
+  addWbRow('Pilotos');
+  addWbRow('Pasajeros / Carga');
+  addWbRow('Combustible');
+});
+</script>
+</body>
+</html>
