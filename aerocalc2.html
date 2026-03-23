@@ -977,16 +977,25 @@ function setTheme(t) {
 }
 
 /* ── NAV ── */
+history.replaceState({ view: "home" }, "", "");
+
+window.addEventListener("popstate", () => {
+  const anyOpen = [...document.querySelectorAll(".cat-panel")].some(p => p.classList.contains("active"));
+  if (anyOpen) goHome(false);
+});
+
 function openPanel(id) {
-  document.getElementById('home-menu').style.display = 'none';
-  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('cat-' + id).classList.add('active');
-  window.scrollTo(0,0);
+  document.getElementById("home-menu").style.display = "none";
+  document.querySelectorAll(".cat-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("cat-" + id).classList.add("active");
+  history.pushState({ view: id }, "", "");   // ← nuevo
+  window.scrollTo(0, 0);
 }
-function goHome() {
-  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('home-menu').style.display = 'block';
-  window.scrollTo(0,0);
+function goHome(pushState = true) {           // ← nuevo parámetro
+  document.querySelectorAll(".cat-panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("home-menu").style.display = "block";
+  if (pushState) history.pushState({ view: "home" }, "", "");  // ← nuevo
+  window.scrollTo(0, 0);
 }
 
 /* ── HELPERS ── */
