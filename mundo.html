@@ -2,59 +2,56 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Explorador Global 3D</title>
   <script src="//unpkg.com/globe.gl"></script>
   <style>
     body { margin: 0; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
     #globeViz { position: absolute; top: 0; }
     
-    /* Botón Hamburguesa */
+    /* Botón Hamburguesa - Más grande para dedos */
     .menu-toggle {
       display: none; position: absolute; top: 15px; right: 15px; z-index: 100;
-      background: #222; border: 1px solid #555; color: white; padding: 8px 12px;
-      border-radius: 6px; cursor: pointer; font-size: 18px;
+      background: #222; border: 1px solid #555; color: white; 
+      padding: 12px 18px; border-radius: 8px; cursor: pointer; font-size: 24px;
     }
 
     /* Menú Lateral */
     .ui-overlay {
       position: absolute; top: 20px; right: 20px; z-index: 90;
       display: flex; flex-direction: column; gap: 10px;
-      background: rgba(0, 0, 0, 0.9); padding: 20px; border-radius: 12px; border: 1px solid #444;
-      width: 190px; transition: transform 0.3s ease-in-out;
+      background: rgba(0, 0, 0, 0.95); padding: 20px; border-radius: 12px; border: 1px solid #444;
+      width: 200px; transition: all 0.3s ease-in-out;
     }
 
     button {
-      padding: 10px; background: #222; color: #eee; border: 1px solid #555;
-      border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px;
+      padding: 12px; background: #222; color: #eee; border: 1px solid #555;
+      border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 500;
     }
-    button:hover { background: #444; border-color: #0066ff; }
 
-    /* Etiquetas Océanos */
+    /* Etiquetas Océanos con fondo legible */
     .ocean-label {
-      background: rgba(0, 0, 0, 0.7); padding: 2px 8px; border-radius: 4px;
-      font-size: 12px; color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.3);
-      white-space: nowrap; pointer-events: none;
+      background: rgba(0, 0, 0, 0.8); padding: 4px 10px; border-radius: 4px;
+      font-size: 13px; color: #00f2ff; border: 1px solid rgba(0, 242, 255, 0.5);
+      white-space: nowrap; pointer-events: none; font-weight: bold;
     }
 
-    .info-panel {
-      position: absolute; bottom: 20px; left: 20px;
-      background: rgba(0,0,0,0.85); padding: 12px; border-radius: 8px;
-      min-width: 150px; display: none; border: 1px solid #0066ff; z-index: 80;
-    }
-
-    /* --- AJUSTES ESPECÍFICOS PARA MÓVILES --- */
-    @media (max-width: 600px) {
+    /* --- AJUSTES PARA MÓVILES --- */
+    @media (max-width: 768px) {
       .menu-toggle { display: block; }
-      .ui-overlay { 
-        right: 0; top: 0; height: auto;
-        width: 160px; padding: 60px 15px 20px 15px;
-        border-radius: 0 0 0 12px;
-        transform: translateX(110%); /* Oculto completamente */
-      }
-      .ui-overlay.active { transform: translateX(0); }
       
-      button { font-size: 13px; padding: 10px; } /* Texto más pequeño */
-      .info-panel { bottom: 10px; left: 10px; font-size: 13px; }
+      .ui-overlay { 
+        position: fixed; top: 0; right: -100%; /* Totalmente fuera a la derecha */
+        height: 100vh; width: 220px; 
+        border-radius: 15px 0 0 15px;
+        padding-top: 80px; box-sizing: border-box;
+      }
+      
+      .ui-overlay.active { right: 0; } /* Se desliza al centro */
+      
+      button { font-size: 18px; padding: 15px; } /* Botones más grandes */
+      
+      .ocean-label { font-size: 16px; padding: 6px 12px; }
     }
   </style>
 </head>
@@ -71,8 +68,6 @@
     <hr style="width:100%; border: 0.5px solid #444;">
     <button onclick="resetView()" style="background: #0051a8;">🔄 Reset y Girar</button>
   </div>
-
-  <div id="info" class="info-panel"></div>
 
   <script>
     const oceanosData = [
@@ -107,11 +102,11 @@
         el.className = 'ocean-label';
         return el;
       })
-      .polygonCapColor(() => 'rgba(0, 100, 255, 0.08)')
+      .polygonCapColor(() => 'rgba(0, 100, 255, 0.1)')
       .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)')
-      .polygonStrokeColor(() => '#777')
+      .polygonStrokeColor(() => '#888')
       .polygonLabel(({ properties: d }) => `
-        <div style="background: rgba(0,0,0,0.9); padding: 6px; border-radius: 4px; border: 1px solid #0066ff; color: white; font-size: 13px;">
+        <div style="background: rgba(0,0,0,0.9); padding: 8px; border-radius: 5px; border: 1px solid #0066ff; color: white; font-size: 16px;">
           <b>${d.NAME || d.name}</b>
         </div>
       `);
@@ -127,14 +122,14 @@
       world.controls().autoRotate = false;
       world.pointsData([]).htmlElementsData([]).polygonsData([]);
       
-      // Ajuste de tamaño de puntos según dispositivo
-      const isMobile = window.innerWidth < 600;
-      const r = isMobile ? 0.8 : 1.5;
-      
-      if (isMobile) toggleMenu(); 
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) document.getElementById('mainMenu').classList.remove('active');
       
       if (view === 'regiones') {
-        world.pointsData(regionesCOL).pointColor(d => d.color).pointLabel(d => d.name).pointRadius(r);
+        world.pointsData(regionesCOL)
+             .pointColor(d => d.color)
+             .pointRadius(isMobile ? 0.7 : 1.2)
+             .pointLabel(d => d.name);
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.5 }, 1000);
       } 
       else if (view === 'oceanos') {
@@ -158,15 +153,8 @@
 
     function resetView() {
       world.pointsData([]).htmlElementsData([]).polygonsData([]);
-      document.getElementById('info').style.display = 'none';
       world.controls().autoRotate = true;
       world.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
-    }
-
-    function showInfo(title, text) {
-      const panel = document.getElementById('info');
-      panel.innerHTML = `<strong>${title}:</strong> ${text}`;
-      panel.style.display = 'block';
     }
   </script>
 </body>
