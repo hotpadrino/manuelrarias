@@ -1,157 +1,1160 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FNAF Mobile Edition</title>
-    <style>
-        * { box-sizing: border-box; touch-action: manipulation; }
-        body { 
-            background: #000; color: white; margin: 0; padding: 0;
-            font-family: sans-serif; display: flex; flex-direction: column;
-            height: 100vh; overflow: hidden;
-        }
-        
-        #game-container {
-            position: relative; width: 100%; flex-grow: 1;
-            background: #111; border: 2px solid #333;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5 NOCHES EN LA FÁBRICA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
 
-        .status-bar {
-            background: #222; padding: 10px; display: flex;
-            justify-content: space-between; font-weight: bold;
-        }
+  :root {
+    --blood: #8b0000;
+    --dark: #050508;
+    --panel: #0a0a10;
+    --dim: #1a1a2e;
+    --green: #00ff41;
+    --amber: #ffaa00;
+    --red: #ff2200;
+    --glow: rgba(0,255,65,0.15);
+  }
 
-        /* Vistas */
-        #office, #cam-view {
-            width: 100%; height: 100%; display: flex;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-        #cam-view { background: #001500; display: none; position: absolute; top: 0; }
+  body {
+    background: var(--dark);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    overflow: hidden;
+    user-select: none;
+    cursor: crosshair;
+  }
 
-        /* Controles grandes para dedos */
-        .controls {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 10px; padding: 15px; background: #111;
-        }
+  /* ─── SCREENS ─── */
+  .screen { position:fixed; inset:0; display:none; }
+  .screen.active { display:flex; }
 
-        .btn {
-            background: #444; color: white; border: none; padding: 20px;
-            font-size: 1.1rem; border-radius: 8px; text-transform: uppercase;
-        }
+  /* TITLE */
+  #title-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+  #title-screen::before {
+    content:'';
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px);
+    pointer-events: none;
+  }
+  .title-flicker {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--blood);
+    text-shadow: 0 0 20px #ff000088, 0 0 60px #ff000044;
+    animation: flicker 3s infinite;
+    letter-spacing: 4px;
+    text-align: center;
+    padding: 0 1rem;
+  }
+  .subtitle {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .start-btn {
+    margin-top: 3rem;
+    padding: 1rem 3rem;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px var(--glow), inset 0 0 20px var(--glow);
+    transition: all 0.2s;
+  }
+  .start-btn:hover {
+    background: var(--glow);
+    box-shadow: 0 0 40px rgba(0,255,65,0.4), inset 0 0 30px rgba(0,255,65,0.2);
+    transform: scale(1.05);
+  }
+  .night-label {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 3px;
+  }
 
-        .btn-door-open { background: #8b0000; }
-        .btn-door-closed { background: #006400; }
-        .btn-monitor { background: #1e90ff; }
+  /* GAME */
+  #game-screen {
+    flex-direction: column;
+    background: var(--dark);
+  }
 
-        #static-fx {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://media.giphy.com/media/oEI9uWUic9Zf2/giphy.gif');
-            opacity: 0.05; pointer-events: none;
-        }
-    </style>
+  /* Office view */
+  #office {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Room background */
+  .room-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 80%, #0d0d1a 0%, #000 100%);
+  }
+  /* Desk */
+  .desk {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 28%;
+    background: linear-gradient(180deg, #1a0f05 0%, #0d0802 100%);
+    border-top: 2px solid #2a1a08;
+  }
+  /* Monitor glow */
+  .monitor {
+    position: absolute;
+    bottom: 26%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 180px;
+    background: #050510;
+    border: 3px solid #1a1a2e;
+    border-radius: 4px;
+    box-shadow: 0 0 30px rgba(0,100,255,0.2), inset 0 0 20px rgba(0,0,50,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: #333;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* Doors */
+  .door-area {
+    position: absolute;
+    top: 10%;
+    width: 12%;
+    height: 65%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  #left-door-area { left: 3%; }
+  #right-door-area { right: 3%; }
+
+  .door-frame {
+    width: 100%;
+    flex: 1;
+    background: #080808;
+    border: 2px solid #1a1a1a;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .door-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
+  }
+
+  .door-closed {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a1008 0%, #0d0804 100%);
+    transform: translateY(-101%);
+    transition: transform 0.3s ease;
+    z-index: 2;
+    border-bottom: 3px solid #2a1a08;
+  }
+  .door-closed.shut { transform: translateY(0); }
+
+  .door-btn {
+    width: 100%;
+    padding: 6px 4px;
+    background: #0a0a10;
+    border: 1px solid #222;
+    color: #555;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .door-btn:hover, .door-btn.active {
+    border-color: var(--amber);
+    color: var(--amber);
+    box-shadow: 0 0 10px rgba(255,170,0,0.3);
+  }
+  .door-btn.danger {
+    border-color: var(--red);
+    color: var(--red);
+    animation: pulse-red 0.5s infinite;
+  }
+
+  /* Animatronic inside door */
+  .animatronic-door {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 85%;
+    opacity: 0;
+    transition: opacity 0.1s;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .animatronic-door.visible { opacity: 1; }
+
+  /* SVG animatronic face */
+  .anim-face {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Corridor lights */
+  .light-btn {
+    width: 100%;
+    padding: 6px 4px;
+    background: #0a0a10;
+    border: 1px solid #222;
+    color: #555;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .light-btn:hover, .light-btn.on {
+    border-color: #ffff88;
+    color: #ffff88;
+    box-shadow: 0 0 10px rgba(255,255,100,0.3);
+  }
+
+  /* Corridor glow overlay */
+  .corridor-light {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 20%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 5;
+  }
+  #left-light { left: 15%; background: linear-gradient(90deg, rgba(255,255,100,0.08), transparent); }
+  #right-light { right: 15%; background: linear-gradient(270deg, rgba(255,255,100,0.08), transparent); }
+  .corridor-light.on { opacity: 1; }
+
+  /* Animatronic in corridor */
+  .corridor-anim {
+    position: absolute;
+    bottom: 20%;
+    width: 8%;
+    opacity: 0;
+    transition: opacity 0.2s;
+    filter: brightness(0.1);
+    z-index: 4;
+  }
+  .corridor-anim.lit { filter: brightness(0.6); }
+  #left-anim { left: 16%; }
+  #right-anim { right: 16%; }
+
+  /* HUD */
+  #hud {
+    height: 60px;
+    background: var(--panel);
+    border-top: 1px solid #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    gap: 1rem;
+  }
+
+  .hud-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .hud-label { font-size: 0.55rem; color: #444; letter-spacing: 3px; text-transform: uppercase; }
+  .hud-val { font-size: 1rem; color: var(--green); text-shadow: 0 0 8px var(--green); }
+
+  /* Power bar */
+  #power-bar-wrap {
+    flex: 1;
+    max-width: 200px;
+    height: 8px;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #power-bar {
+    height: 100%;
+    background: var(--green);
+    transition: width 0.5s, background 0.5s;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  /* Time clock */
+  .clock-display {
+    font-family: 'Creepster', cursive;
+    font-size: 1.4rem;
+    color: var(--amber);
+    text-shadow: 0 0 12px var(--amber);
+    letter-spacing: 2px;
+  }
+
+  /* Cameras */
+  #cam-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 20;
+    display: none;
+    flex-direction: column;
+  }
+  #cam-screen.open { display: flex; }
+
+  .cam-view {
+    flex: 1;
+    position: relative;
+    background: #050505;
+    overflow: hidden;
+  }
+  .cam-static {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    background-size: 200px;
+    opacity: 0.5;
+    pointer-events: none;
+    animation: static-anim 0.1s steps(1) infinite;
+  }
+  .cam-scanlines {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,255,65,0.02) 3px, rgba(0,255,65,0.02) 4px);
+    pointer-events: none;
+  }
+
+  .cam-room {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a1a1a;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+  }
+  .cam-room svg { width: 60%; opacity: 0.15; }
+  .cam-label {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-size: 0.65rem;
+    color: var(--green);
+    letter-spacing: 2px;
+    opacity: 0.7;
+  }
+  .cam-rec {
+    position: absolute;
+    top: 10px; right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
+    color: var(--red);
+  }
+  .rec-dot {
+    width: 7px; height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+    box-shadow: 0 0 6px var(--red);
+  }
+
+  .cam-anim-present {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;
+    opacity: 0;
+    transition: opacity 0.2s;
+    filter: brightness(0.4) sepia(1) hue-rotate(80deg);
+  }
+  .cam-anim-present.show { opacity: 1; }
+
+  .cam-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background: #080808;
+    border-top: 1px solid #111;
+    flex-wrap: wrap;
+  }
+  .cam-tab {
+    padding: 4px 10px;
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+    color: #333;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .cam-tab:hover, .cam-tab.active {
+    border-color: var(--green);
+    color: var(--green);
+    box-shadow: 0 0 8px var(--glow);
+  }
+  .cam-close {
+    padding: 4px 16px;
+    background: #1a0000;
+    border: 1px solid #440000;
+    color: #ff4444;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin-left: auto;
+    text-transform: uppercase;
+  }
+
+  /* JUMPSCARE */
+  #jumpscare {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    background: #000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #jumpscare.active { display: flex; }
+  .js-face {
+    width: min(70vw, 70vh);
+    animation: js-anim 0.05s steps(1) infinite;
+  }
+  .js-text {
+    font-family: 'Creepster', cursive;
+    font-size: 3rem;
+    color: var(--red);
+    text-shadow: 0 0 30px red;
+    margin-top: 1rem;
+    animation: flicker 0.2s infinite;
+  }
+
+  /* GAME OVER / WIN */
+  #result-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+  }
+  .result-title {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(2rem, 8vw, 6rem);
+    animation: flicker 2s infinite;
+    letter-spacing: 4px;
+    text-align: center;
+  }
+  .result-title.lose { color: var(--blood); text-shadow: 0 0 40px red; }
+  .result-title.win { color: var(--green); text-shadow: 0 0 40px var(--green); }
+  .result-sub {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+    letter-spacing: 4px;
+  }
+
+  /* POWER OUT */
+  #power-out {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    z-index: 15;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  #power-out.active { display: flex; }
+  .power-out-text {
+    font-family: 'Creepster', cursive;
+    font-size: 2rem;
+    color: #220000;
+    letter-spacing: 3px;
+  }
+
+  /* Animations */
+  @keyframes flicker {
+    0%,95%,100% { opacity: 1; }
+    96% { opacity: 0.3; }
+    97% { opacity: 1; }
+    98% { opacity: 0.5; }
+  }
+  @keyframes blink {
+    0%,49% { opacity: 1; }
+    50%,100% { opacity: 0; }
+  }
+  @keyframes static-anim {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(-2px, 1px); }
+    50% { transform: translate(1px, -2px); }
+    75% { transform: translate(2px, 0); }
+    100% { transform: translate(0, 1px); }
+  }
+  @keyframes js-anim {
+    0% { transform: scale(1) rotate(-2deg); filter: hue-rotate(0deg); }
+    33% { transform: scale(1.05) rotate(2deg); filter: hue-rotate(180deg); }
+    66% { transform: scale(0.98) rotate(-1deg); filter: hue-rotate(90deg); }
+    100% { transform: scale(1.02) rotate(1deg); filter: hue-rotate(270deg); }
+  }
+  @keyframes pulse-red {
+    0%,100% { box-shadow: 0 0 5px rgba(255,34,0,0.3); }
+    50% { box-shadow: 0 0 15px rgba(255,34,0,0.8); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+</style>
 </head>
 <body>
 
-    <div class="status-bar">
-        <span>ENERGÍA: <span id="power">100</span>%</span>
-        <span><span id="time">12</span> AM</span>
-    </div>
+<!-- TITLE SCREEN -->
+<div id="title-screen" class="screen active">
+  <div class="title-flicker">5 NOCHES<br>EN LA FÁBRICA</div>
+  <div class="subtitle">Security · Surveillance · Survive</div>
+  <button class="start-btn" onclick="startGame()">▶ COMENZAR</button>
+  <div class="night-label" id="night-label-title">NOCHE 1</div>
+  <div style="margin-top:2rem;font-size:0.65rem;color:#333;letter-spacing:2px;text-align:center;padding:0 2rem;">
+    CIERRA LAS PUERTAS · VIGILA LAS CÁMARAS · SOBREVIVE HASTA LAS 6AM
+  </div>
+</div>
 
-    <div id="game-container">
-        <div id="static-fx"></div>
-        
-        <div id="office">
-            <h2 id="office-msg">VIGILANDO PASILLO</h2>
-            <div id="jumpscare" style="display:none; color:red; font-size:2rem;">¡GAME OVER!</div>
+<!-- GAME SCREEN -->
+<div id="game-screen" class="screen">
+  <div id="office">
+    <div class="room-bg"></div>
+
+    <!-- Ceiling lights -->
+    <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;" viewBox="0 0 800 400" preserveAspectRatio="none">
+      <defs>
+        <radialGradient id="roomLight" cx="50%" cy="0%" r="70%">
+          <stop offset="0%" stop-color="#1a1a0f" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </radialGradient>
+      </defs>
+      <rect width="800" height="400" fill="url(#roomLight)"/>
+      <!-- walls -->
+      <line x1="150" y1="0" x2="80" y2="280" stroke="#111" stroke-width="2"/>
+      <line x1="650" y1="0" x2="720" y2="280" stroke="#111" stroke-width="2"/>
+      <line x1="150" y1="0" x2="650" y2="0" stroke="#1a1a1a" stroke-width="1"/>
+      <!-- ceiling light fixture -->
+      <rect x="370" y="0" width="60" height="8" fill="#1a1a0f" rx="2"/>
+      <line x1="400" y1="8" x2="400" y2="30" stroke="#1a1a0f" stroke-width="2"/>
+      <ellipse cx="400" cy="32" rx="20" ry="8" fill="#111" stroke="#1a1a0f"/>
+    </svg>
+
+    <!-- Left door area -->
+    <div class="door-area" id="left-door-area">
+      <div class="door-frame" id="left-door-frame">
+        <div class="door-closed" id="left-door"></div>
+        <div class="animatronic-door" id="left-door-anim">
+          <svg class="anim-face" viewBox="0 0 100 120">
+            <ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/>
+            <circle cx="35" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/>
+            <circle cx="65" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/>
+            <circle cx="35" cy="45" r="6" fill="#ff0000" opacity="0.9"/>
+            <circle cx="65" cy="45" r="6" fill="#ff0000" opacity="0.9"/>
+            <circle cx="36" cy="44" r="2" fill="#fff"/>
+            <circle cx="66" cy="44" r="2" fill="#fff"/>
+            <path d="M30 72 Q50 85 70 72" stroke="#3a1010" stroke-width="2" fill="none"/>
+            <line x1="34" y1="72" x2="32" y2="80" stroke="#3a1010" stroke-width="1.5"/>
+            <line x1="40" y1="76" x2="39" y2="84" stroke="#3a1010" stroke-width="1.5"/>
+            <line x1="50" y1="78" x2="50" y2="86" stroke="#3a1010" stroke-width="1.5"/>
+            <line x1="60" y1="76" x2="61" y2="84" stroke="#3a1010" stroke-width="1.5"/>
+            <line x1="66" y1="72" x2="68" y2="80" stroke="#3a1010" stroke-width="1.5"/>
+            <path d="M20 20 Q50 5 80 20 Q75 0 50 0 Q25 0 20 20" fill="#1a0a0a"/>
+          </svg>
         </div>
+      </div>
+      <button class="door-btn" id="left-door-btn" onclick="toggleDoor('left')">PUERTA</button>
+      <button class="light-btn" id="left-light-btn" onmousedown="toggleLight('left',true)" onmouseup="toggleLight('left',false)" ontouchstart="toggleLight('left',true)" ontouchend="toggleLight('left',false)">LUZ</button>
+    </div>
 
-        <div id="cam-view">
-            <h3 id="cam-label">CAM 01</h3>
-            <div id="enemy-status" style="font-size: 1.5rem;">TODO DESPEJADO</div>
+    <!-- Right door area -->
+    <div class="door-area" id="right-door-area">
+      <div class="door-frame" id="right-door-frame">
+        <div class="door-closed" id="right-door"></div>
+        <div class="animatronic-door" id="right-door-anim">
+          <svg class="anim-face" viewBox="0 0 100 120">
+            <ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/>
+            <circle cx="35" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/>
+            <circle cx="65" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/>
+            <circle cx="35" cy="45" r="6" fill="#00ff00" opacity="0.7"/>
+            <circle cx="65" cy="45" r="6" fill="#00ff00" opacity="0.7"/>
+            <circle cx="36" cy="44" r="2" fill="#fff"/>
+            <circle cx="66" cy="44" r="2" fill="#fff"/>
+            <path d="M28 70 L72 70 L65 82 L35 82 Z" fill="#0a0a0a" stroke="#103010" stroke-width="1.5"/>
+            <rect x="33" y="70" width="5" height="8" fill="#103010"/>
+            <rect x="41" y="70" width="5" height="8" fill="#103010"/>
+            <rect x="49" y="70" width="5" height="8" fill="#103010"/>
+            <rect x="57" y="70" width="5" height="8" fill="#103010"/>
+            <path d="M25 20 Q50 8 75 20 L80 5 Q50 -5 20 5 Z" fill="#0a1a0a"/>
+          </svg>
         </div>
+      </div>
+      <button class="door-btn" id="right-door-btn" onclick="toggleDoor('right')">PUERTA</button>
+      <button class="light-btn" id="right-light-btn" onmousedown="toggleLight('right',true)" onmouseup="toggleLight('right',false)" ontouchstart="toggleLight('right',true)" ontouchend="toggleLight('right',false)">LUZ</button>
     </div>
 
-    <div class="controls">
-        <button id="door-btn" class="btn btn-door-open" onclick="toggleDoor()">Puerta: ABIERTA</button>
-        <button class="btn btn-monitor" onclick="toggleMonitor()">Monitor Cam</button>
-        <button id="cam-sel" class="btn" style="display:none;" onclick="switchCam()">Cambiar Cámara</button>
+    <!-- Corridor lights overlay -->
+    <div class="corridor-light" id="left-light"></div>
+    <div class="corridor-light" id="right-light"></div>
+
+    <!-- Animatronics in corridor (visible only with light) -->
+    <div class="corridor-anim" id="left-anim">
+      <svg viewBox="0 0 60 80">
+        <ellipse cx="30" cy="35" rx="22" ry="26" fill="#1a0a0a"/>
+        <circle cx="22" cy="28" r="7" fill="#050505"/>
+        <circle cx="38" cy="28" r="7" fill="#050505"/>
+        <circle cx="22" cy="28" r="3" fill="#ff0000" opacity="0.8"/>
+        <circle cx="38" cy="28" r="3" fill="#ff0000" opacity="0.8"/>
+        <path d="M18 46 Q30 54 42 46" stroke="#3a1010" stroke-width="1.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="corridor-anim" id="right-anim">
+      <svg viewBox="0 0 60 80">
+        <ellipse cx="30" cy="35" rx="22" ry="26" fill="#0a1a0a"/>
+        <circle cx="22" cy="28" r="7" fill="#050505"/>
+        <circle cx="38" cy="28" r="7" fill="#050505"/>
+        <circle cx="22" cy="28" r="3" fill="#00ff00" opacity="0.6"/>
+        <circle cx="38" cy="28" r="3" fill="#00ff00" opacity="0.6"/>
+        <path d="M16 44 L44 44 L39 52 L21 52 Z" fill="#0a0a0a" stroke="#103010"/>
+      </svg>
     </div>
 
-    <script>
-        let power = 100;
-        let hour = 0;
-        let doorOpen = true;
-        let monitoring = false;
-        let enemyPos = 1; // 1 y 2 cams, 3 puerta, 4 pierde
-        let currentCam = 1;
-        let active = true;
+    <!-- Monitor / Desk -->
+    <div class="monitor">
+      <span style="color:#1a1a2e;font-size:0.55rem;">FAZBEAR INDUSTRIES<br>SECURITY TERMINAL<br>─────────────────<br>PRESS [CAM] TO VIEW</span>
+    </div>
+    <div class="desk"></div>
 
-        function toggleDoor() {
-            if(!active) return;
-            doorOpen = !doorOpen;
-            const btn = document.getElementById("door-btn");
-            btn.innerText = doorOpen ? "Puerta: ABIERTA" : "Puerta: CERRADA";
-            btn.className = doorOpen ? "btn btn-door-open" : "btn btn-door-closed";
-        }
+    <!-- Camera button -->
+    <div style="position:absolute;bottom:30%;left:50%;transform:translateX(-50%);z-index:10;">
+      <button onclick="openCams()" style="padding:8px 20px;background:#0a0a10;border:1px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='#222';this.style.color='#555'">
+        [ CAM ]
+      </button>
+    </div>
 
-        function toggleMonitor() {
-            if(!active) return;
-            monitoring = !monitoring;
-            document.getElementById("cam-view").style.display = monitoring ? "flex" : "none";
-            document.getElementById("cam-sel").style.display = monitoring ? "block" : "none";
-            updateUI();
-        }
+    <!-- Power out overlay -->
+    <div id="power-out">
+      <div class="power-out-text">SIN ENERGÍA</div>
+      <div style="font-size:0.7rem;color:#1a0000;letter-spacing:3px;">ESPERANDO...</div>
+    </div>
 
-        function switchCam() {
-            currentCam = currentCam === 1 ? 2 : 1;
-            updateUI();
-        }
+    <!-- Camera screen -->
+    <div id="cam-screen">
+      <div class="cam-view">
+        <div class="cam-static"></div>
+        <div class="cam-scanlines"></div>
+        <div class="cam-room" id="cam-room-display">
+          <!-- SVG room changes per cam -->
+        </div>
+        <div class="cam-label" id="cam-label">CAM 1A — SHOW STAGE</div>
+        <div class="cam-rec"><div class="rec-dot"></div>REC</div>
+        <div class="cam-anim-present" id="cam-anim1"></div>
+        <div class="cam-anim-present" id="cam-anim2"></div>
+      </div>
+      <div class="cam-tabs" id="cam-tabs"></div>
+    </div>
+  </div>
 
-        function updateUI() {
-            document.getElementById("cam-label").innerText = "CAM 0" + currentCam;
-            const status = document.getElementById("enemy-status");
-            if (currentCam === enemyPos) {
-                status.innerText = "¡MOVIMIENTO DETECTADO!";
-                status.style.color = "yellow";
-            } else {
-                status.innerText = "TODO DESPEJADO";
-                status.style.color = "white";
-            }
-        }
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-block">
+      <span class="hud-label">Noche</span>
+      <span class="hud-val" id="hud-night">1</span>
+    </div>
+    <div class="hud-block">
+      <div id="power-bar-wrap"><div id="power-bar" style="width:100%"></div></div>
+    </div>
+    <div class="hud-block">
+      <span class="hud-label">Energía</span>
+      <span class="hud-val" id="hud-power">100%</span>
+    </div>
+    <div class="clock-display" id="hud-time">12 AM</div>
+    <div class="hud-block">
+      <span class="hud-label">Estado</span>
+      <span class="hud-val" id="hud-status" style="font-size:0.65rem;letter-spacing:1px;">OK</span>
+    </div>
+  </div>
+</div>
 
-        // Lógica de juego
-        setInterval(() => {
-            if(!active) return;
-            // Drenaje de energía
-            let usage = 0.5;
-            if(!doorOpen) usage += 1.5;
-            if(monitoring) usage += 1.0;
-            power -= usage;
-            document.getElementById("power").innerText = Math.floor(power);
-            if(power <= 0) gameOver("TE QUEDASTE SIN LUZ");
-        }, 1500);
+<!-- JUMPSCARE -->
+<div id="jumpscare">
+  <svg class="js-face" viewBox="0 0 200 240">
+    <ellipse cx="100" cy="110" rx="85" ry="95" fill="#1a0000" stroke="#440000" stroke-width="3"/>
+    <circle cx="65" cy="85" r="28" fill="#0a0000" stroke="#440000" stroke-width="2"/>
+    <circle cx="135" cy="85" r="28" fill="#0a0000" stroke="#440000" stroke-width="2"/>
+    <circle cx="65" cy="85" r="16" fill="#ff0000"/>
+    <circle cx="135" cy="85" r="16" fill="#ff0000"/>
+    <circle cx="68" cy="82" r="5" fill="#fff"/>
+    <circle cx="138" cy="82" r="5" fill="#fff"/>
+    <path d="M35 145 Q100 175 165 145 L158 165 Q100 190 42 165 Z" fill="#0a0000" stroke="#440000" stroke-width="2"/>
+    <line x1="55" y1="145" x2="50" y2="165" stroke="#440000" stroke-width="3"/>
+    <line x1="70" y1="152" x2="68" y2="172" stroke="#440000" stroke-width="3"/>
+    <line x1="85" y1="156" x2="84" y2="176" stroke="#440000" stroke-width="3"/>
+    <line x1="100" y1="158" x2="100" y2="178" stroke="#440000" stroke-width="3"/>
+    <line x1="115" y1="156" x2="116" y2="176" stroke="#440000" stroke-width="3"/>
+    <line x1="130" y1="152" x2="132" y2="172" stroke="#440000" stroke-width="3"/>
+    <line x1="145" y1="145" x2="150" y2="165" stroke="#440000" stroke-width="3"/>
+    <path d="M20 30 Q100 5 180 30 Q170 0 100 0 Q30 0 20 30" fill="#1a0000"/>
+    <!-- Cracks / damage -->
+    <line x1="100" y1="15" x2="95" y2="55" stroke="#440000" stroke-width="1.5"/>
+    <line x1="95" y1="35" x2="80" y2="45" stroke="#440000" stroke-width="1"/>
+    <line x1="160" y1="40" x2="150" y2="80" stroke="#440000" stroke-width="1.5"/>
+  </svg>
+  <div class="js-text">¡¡ATRAPADO!!</div>
+</div>
 
-        setInterval(() => {
-            if(!active) return;
-            // Movimiento enemigo
-            if(Math.random() > 0.7) {
-                enemyPos++;
-                if(enemyPos === 3 && !doorOpen) {
-                    enemyPos = 1; // Se va si la puerta está cerrada
-                } else if(enemyPos > 3) {
-                    gameOver("¡JUMPSCARE!");
-                }
-                if(monitoring) updateUI();
-            }
-        }, 4000);
+<!-- RESULT SCREEN -->
+<div id="result-screen" class="screen">
+  <div class="result-title" id="result-title">GAME OVER</div>
+  <div class="result-sub" id="result-sub">No sobreviviste la noche</div>
+  <button class="start-btn" style="margin-top:2rem;" onclick="retryGame()">↺ REINTENTAR</button>
+</div>
 
-        function gameOver(reason) {
-            active = false;
-            alert(reason);
-            location.reload();
-        }
-    </script>
+<script>
+const NIGHTS = [
+  { duration: 90, powerDrain: 0.08, leftSpeed: 12, rightSpeed: 18, name: "NOCHE 1" },
+  { duration: 80, powerDrain: 0.12, leftSpeed: 8,  rightSpeed: 12, name: "NOCHE 2" },
+  { duration: 75, powerDrain: 0.16, leftSpeed: 6,  rightSpeed: 8,  name: "NOCHE 3" },
+  { duration: 70, powerDrain: 0.20, leftSpeed: 4,  rightSpeed: 6,  name: "NOCHE 4" },
+  { duration: 65, powerDrain: 0.25, leftSpeed: 3,  rightSpeed: 4,  name: "NOCHE 5" },
+];
+
+const CAMERAS = [
+  { id: "1A", label: "SHOW STAGE", left: false, right: false },
+  { id: "1B", label: "DINING AREA", left: false, right: false },
+  { id: "2A", label: "WEST HALL",  left: true,  right: false },
+  { id: "2B", label: "EAST HALL",  left: false, right: true  },
+  { id: "3",  label: "SUPPLY ROOM",left: false, right: false },
+  { id: "4A", label: "BACKSTAGE",  left: false, right: false },
+  { id: "4B", label: "WEST CORNER",left: true,  right: false },
+  { id: "5",  label: "EAST CORNER",left: false, right: true  },
+  { id: "6",  label: "KITCHEN",    left: false, right: false },
+];
+
+let currentNight = 0;
+let power = 100;
+let timeElapsed = 0;
+let gameRunning = false;
+let leftDoorClosed = false;
+let rightDoorClosed = false;
+let leftLightOn = false;
+let rightLightOn = false;
+let camsOpen = false;
+let activeCam = "1A";
+let gameLoop = null;
+let powerOutTimer = null;
+
+// Animatronic positions: 0=stage, 1-5=corridor, 6=door
+let leftAnimPos = 0;  // CRISPY (red eyes)
+let rightAnimPos = 0; // VERDOR (green eyes)
+let leftMoveTimer = 0;
+let rightMoveTimer = 0;
+
+function startGame() {
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  initNight(currentNight);
+}
+
+function initNight(n) {
+  const night = NIGHTS[n];
+  power = 100;
+  timeElapsed = 0;
+  leftDoorClosed = false;
+  rightDoorClosed = false;
+  leftLightOn = false;
+  rightLightOn = false;
+  camsOpen = false;
+  leftAnimPos = 0;
+  rightAnimPos = 0;
+  leftMoveTimer = 0;
+  rightMoveTimer = 0;
+  gameRunning = true;
+
+  document.getElementById('hud-night').textContent = n + 1;
+  document.getElementById('hud-status').textContent = 'OK';
+  document.getElementById('hud-status').style.color = 'var(--green)';
+  document.getElementById('left-door').classList.remove('shut');
+  document.getElementById('right-door').classList.remove('shut');
+  document.getElementById('left-door-btn').classList.remove('active','danger');
+  document.getElementById('right-door-btn').classList.remove('active','danger');
+  document.getElementById('power-out').classList.remove('active');
+
+  buildCamTabs();
+  updateCamView();
+  updatePower();
+  updateAnimatronics();
+
+  if (gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(() => gameStep(night), 1000);
+}
+
+function gameStep(night) {
+  if (!gameRunning) return;
+  timeElapsed++;
+
+  // Power drain
+  let drain = night.powerDrain;
+  if (leftDoorClosed) drain += 0.06;
+  if (rightDoorClosed) drain += 0.06;
+  if (leftLightOn) drain += 0.04;
+  if (rightLightOn) drain += 0.04;
+  if (camsOpen) drain += 0.05;
+  power = Math.max(0, power - drain);
+  updatePower();
+
+  // Move animatronics
+  leftMoveTimer++;
+  rightMoveTimer++;
+  if (leftMoveTimer >= night.leftSpeed) {
+    leftMoveTimer = 0;
+    if (leftAnimPos < 6) leftAnimPos++;
+    updateAnimatronics();
+    checkAttack();
+  }
+  if (rightMoveTimer >= night.rightSpeed) {
+    rightMoveTimer = 0;
+    if (rightAnimPos < 6) rightAnimPos++;
+    updateAnimatronics();
+    checkAttack();
+  }
+
+  // Time (1 real second = ~1 game minute; night = 90 seconds = 6 hours)
+  const totalSecs = night.duration;
+  const progress = timeElapsed / totalSecs;
+  const hour = Math.floor(progress * 6);
+  const hours = ['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM'];
+  document.getElementById('hud-time').textContent = hours[Math.min(hour, 6)];
+
+  if (timeElapsed >= totalSecs) {
+    winNight();
+    return;
+  }
+
+  // Power out
+  if (power <= 0) {
+    powerOut();
+  }
+
+  updateStatus();
+}
+
+function checkAttack() {
+  if (!gameRunning) return;
+
+  // Left animatronic at door (pos 6)
+  if (leftAnimPos >= 6) {
+    if (leftDoorClosed) {
+      // Blocked! Push back
+      leftAnimPos = 3;
+      updateAnimatronics();
+      flashDanger('left');
+    } else {
+      // JUMPSCARE
+      triggerJumpscare();
+    }
+  }
+
+  // Right animatronic at door (pos 6)
+  if (rightAnimPos >= 6) {
+    if (rightDoorClosed) {
+      rightAnimPos = 3;
+      updateAnimatronics();
+      flashDanger('right');
+    } else {
+      triggerJumpscare();
+    }
+  }
+}
+
+function updateAnimatronics() {
+  // Update corridor visibility
+  const leftInCorridor = leftAnimPos >= 4 && leftAnimPos < 6;
+  const rightInCorridor = rightAnimPos >= 4 && rightAnimPos < 6;
+
+  const la = document.getElementById('left-anim');
+  const ra = document.getElementById('right-anim');
+  la.style.opacity = leftInCorridor ? '1' : '0';
+  ra.style.opacity = rightInCorridor ? '1' : '0';
+
+  // Update door animatronic visibility (at door = pos 5 or 6 pending)
+  const leftAtDoor = leftAnimPos >= 5;
+  const rightAtDoor = rightAnimPos >= 5;
+  document.getElementById('left-door-anim').classList.toggle('visible', leftAtDoor && !leftDoorClosed);
+  document.getElementById('right-door-anim').classList.toggle('visible', rightAtDoor && !rightDoorClosed);
+
+  // Danger indicator on door button
+  document.getElementById('left-door-btn').classList.toggle('danger', leftAtDoor && !leftDoorClosed);
+  document.getElementById('right-door-btn').classList.toggle('danger', rightAtDoor && !rightDoorClosed);
+
+  updateCamView();
+}
+
+function updateStatus() {
+  const statEl = document.getElementById('hud-status');
+  const threat = (leftAnimPos >= 4) || (rightAnimPos >= 4);
+  if (threat) {
+    statEl.textContent = '⚠ PELIGRO';
+    statEl.style.color = 'var(--red)';
+  } else if (power < 30) {
+    statEl.textContent = '⚡ BAJO';
+    statEl.style.color = 'var(--amber)';
+  } else {
+    statEl.textContent = 'OK';
+    statEl.style.color = 'var(--green)';
+  }
+}
+
+function toggleDoor(side) {
+  if (!gameRunning) return;
+  if (side === 'left') {
+    leftDoorClosed = !leftDoorClosed;
+    document.getElementById('left-door').classList.toggle('shut', leftDoorClosed);
+    document.getElementById('left-door-btn').classList.toggle('active', leftDoorClosed);
+    document.getElementById('left-door-btn').textContent = leftDoorClosed ? 'ABIRIR' : 'PUERTA';
+    if (leftDoorClosed) document.getElementById('left-door-anim').classList.remove('visible');
+  } else {
+    rightDoorClosed = !rightDoorClosed;
+    document.getElementById('right-door').classList.toggle('shut', rightDoorClosed);
+    document.getElementById('right-door-btn').classList.toggle('active', rightDoorClosed);
+    document.getElementById('right-door-btn').textContent = rightDoorClosed ? 'ABRIR' : 'PUERTA';
+    if (rightDoorClosed) document.getElementById('right-door-anim').classList.remove('visible');
+  }
+}
+
+function toggleLight(side, on) {
+  if (!gameRunning) return;
+  if (side === 'left') {
+    leftLightOn = on;
+    document.getElementById('left-light').classList.toggle('on', on);
+    document.getElementById('left-anim').classList.toggle('lit', on);
+    document.getElementById('left-light-btn').classList.toggle('on', on);
+  } else {
+    rightLightOn = on;
+    document.getElementById('right-light').classList.toggle('on', on);
+    document.getElementById('right-anim').classList.toggle('lit', on);
+    document.getElementById('right-light-btn').classList.toggle('on', on);
+  }
+}
+
+function openCams() {
+  if (!gameRunning || power <= 0) return;
+  camsOpen = true;
+  document.getElementById('cam-screen').classList.add('open');
+  updateCamView();
+}
+
+function closeCams() {
+  camsOpen = false;
+  document.getElementById('cam-screen').classList.remove('open');
+}
+
+function buildCamTabs() {
+  const tabs = document.getElementById('cam-tabs');
+  tabs.innerHTML = '';
+  CAMERAS.forEach(cam => {
+    const btn = document.createElement('button');
+    btn.className = 'cam-tab' + (cam.id === activeCam ? ' active' : '');
+    btn.textContent = `CAM ${cam.id}`;
+    btn.onclick = () => { activeCam = cam.id; buildCamTabs(); updateCamView(); };
+    tabs.appendChild(btn);
+  });
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'cam-close';
+  closeBtn.textContent = '✕ CERRAR';
+  closeBtn.onclick = closeCams;
+  tabs.appendChild(closeBtn);
+}
+
+function updateCamView() {
+  const cam = CAMERAS.find(c => c.id === activeCam) || CAMERAS[0];
+  document.getElementById('cam-label').textContent = `CAM ${cam.id} — ${cam.label}`;
+
+  const a1 = document.getElementById('cam-anim1');
+  const a2 = document.getElementById('cam-anim2');
+
+  // Show animatronic on cam based on position
+  const leftCamPos = Math.floor(leftAnimPos / 1.5);
+  const rightCamPos = Math.floor(rightAnimPos / 1.5);
+
+  const leftHere = cam.left && leftAnimPos >= 1 && leftAnimPos <= 4;
+  const rightHere = cam.right && rightAnimPos >= 1 && rightAnimPos <= 4;
+
+  a1.classList.toggle('show', leftHere);
+  a2.classList.toggle('show', rightHere);
+
+  if (leftHere) {
+    a1.innerHTML = `<svg viewBox="0 0 100 120" width="100%">
+      <ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/>
+      <circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/>
+      <circle cx="35" cy="45" r="6" fill="#ff2200" opacity="0.9"/><circle cx="65" cy="45" r="6" fill="#ff2200" opacity="0.9"/>
+    </svg>`;
+  }
+  if (rightHere) {
+    a2.style.right = '20%'; a2.style.left = 'auto';
+    a2.innerHTML = `<svg viewBox="0 0 100 120" width="100%">
+      <ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/>
+      <circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/>
+      <circle cx="35" cy="45" r="6" fill="#00ff00" opacity="0.6"/><circle cx="65" cy="45" r="6" fill="#00ff00" opacity="0.6"/>
+    </svg>`;
+  }
+}
+
+function updatePower() {
+  const pct = Math.max(0, Math.round(power));
+  document.getElementById('hud-power').textContent = pct + '%';
+  document.getElementById('power-bar').style.width = pct + '%';
+  const bar = document.getElementById('power-bar');
+  if (pct > 50) bar.style.background = 'var(--green)';
+  else if (pct > 25) bar.style.background = 'var(--amber)';
+  else bar.style.background = 'var(--red)';
+}
+
+function flashDanger(side) {
+  const btn = document.getElementById(side + '-door-btn');
+  btn.style.animation = 'shake 0.3s';
+  setTimeout(() => btn.style.animation = '', 300);
+}
+
+function powerOut() {
+  if (!gameRunning) return;
+  gameRunning = false;
+  clearInterval(gameLoop);
+  closeCams();
+  document.getElementById('power-out').classList.add('active');
+  document.getElementById('hud-status').textContent = 'SIN ENERGÍA';
+  document.getElementById('hud-status').style.color = 'var(--red)';
+
+  // After ~10 seconds, jumpscare
+  powerOutTimer = setTimeout(() => {
+    triggerJumpscare();
+  }, 10000 + Math.random() * 5000);
+}
+
+function triggerJumpscare() {
+  if (!gameRunning && document.getElementById('jumpscare').classList.contains('active')) return;
+  gameRunning = false;
+  clearInterval(gameLoop);
+  if (powerOutTimer) clearTimeout(powerOutTimer);
+  closeCams();
+
+  document.body.style.animation = 'shake 0.4s';
+  setTimeout(() => document.body.style.animation = '', 400);
+
+  const js = document.getElementById('jumpscare');
+  js.classList.add('active');
+  setTimeout(() => {
+    js.classList.remove('active');
+    showResult(false);
+  }, 2500);
+}
+
+function winNight() {
+  gameRunning = false;
+  clearInterval(gameLoop);
+  if (powerOutTimer) clearTimeout(powerOutTimer);
+  closeCams();
+
+  if (currentNight >= NIGHTS.length - 1) {
+    showResult(true);
+  } else {
+    currentNight++;
+    showResult(true);
+  }
+}
+
+function showResult(won) {
+  document.getElementById('game-screen').classList.remove('active');
+  const rs = document.getElementById('result-screen');
+  rs.classList.add('active');
+  const title = document.getElementById('result-title');
+  const sub = document.getElementById('result-sub');
+
+  if (won) {
+    if (currentNight >= NIGHTS.length) {
+      title.textContent = '¡SOBREVIVISTE!';
+      title.className = 'result-title win';
+      sub.textContent = 'Completaste las 5 noches — ¡Eres el guardia de seguridad más resistente!';
+    } else {
+      title.textContent = `NOCHE ${currentNight} COMPLETA`;
+      title.className = 'result-title win';
+      sub.textContent = `Mañana es la noche ${currentNight + 1}... si te atreves a volver.`;
+    }
+  } else {
+    title.textContent = 'ATRAPADO';
+    title.className = 'result-title lose';
+    sub.textContent = `Fallaste en la Noche ${currentNight + 1}. El turno termina a las 6 AM.`;
+  }
+
+  document.getElementById('night-label-title').textContent = NIGHTS[Math.min(currentNight, NIGHTS.length-1)].name;
+}
+
+function retryGame() {
+  document.getElementById('result-screen').classList.remove('active');
+  // If won all, reset to night 1
+  if (currentNight >= NIGHTS.length) {
+    currentNight = 0;
+    document.getElementById('title-screen').classList.add('active');
+    return;
+  }
+  document.getElementById('game-screen').classList.add('active');
+  initNight(currentNight);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (!gameRunning) return;
+  if (e.key === 'a' || e.key === 'A') toggleDoor('left');
+  if (e.key === 'd' || e.key === 'D') toggleDoor('right');
+  if (e.key === 'c' || e.key === 'C') camsOpen ? closeCams() : openCams();
+  if (e.key === 'q' || e.key === 'Q') toggleLight('left', true);
+  if (e.key === 'e' || e.key === 'E') toggleLight('right', true);
+});
+document.addEventListener('keyup', e => {
+  if (e.key === 'q' || e.key === 'Q') toggleLight('left', false);
+  if (e.key === 'e' || e.key === 'E') toggleLight('right', false);
+});
+</script>
 </body>
 </html>
