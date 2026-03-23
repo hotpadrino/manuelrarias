@@ -133,6 +133,9 @@
       world.controls().autoRotate = false;
       world.pointsData([]).htmlElementsData([]).polygonsData([]);
       
+      // Ocultar el panel de información al cambiar de vista
+      document.getElementById('info').style.display = 'none';
+      
       const isMobile = window.innerWidth < 768;
       if (isMobile) document.getElementById('mainMenu').classList.remove('active');
       
@@ -141,7 +144,7 @@
              .pointColor(d => d.color)
              .pointRadius(isMobile ? 0.8 : 1.5)
              .pointLabel(d => d.name);
-        world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.5 }, 1000);
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.5 }, 1000);
       } 
       else if (view === 'oceanos') {
         world.htmlElementsData(oceanosData);
