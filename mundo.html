@@ -2,16 +2,33 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Explorador Global - Manuel Arias</title>
+  <title>Explorador Global 3D</title>
   <script src="//unpkg.com/globe.gl"></script>
   <style>
     body { margin: 0; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
     #globeViz { position: absolute; top: 0; }
+    
+    /* Menú y Botones */
     .menu-toggle { display: none; position: absolute; top: 15px; right: 15px; z-index: 20; background: #222; border: 1px solid #555; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
     .ui-overlay { position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #444; width: 180px; transition: transform 0.3s ease; }
     button { padding: 12px; background: #222; color: #eee; border: 1px solid #555; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px; }
     button:hover { background: #444; border-color: #0066ff; }
-    .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; min-width: 150px; display: none; border: 1px solid #0066ff; z-index: 5; }
+
+    /* Estilo para las etiquetas de Océanos con fondo oscuro */
+    .ocean-label {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      pointer-events: none;
+      color: #00f2ff;
+      border: 0.5px solid rgba(0, 242, 255, 0.3);
+      white-space: nowrap;
+    }
+
+    /* Panel de información (Hover Países) */
+    .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; min-width: 150px; display: none; border: 1px solid #0066ff; z-index: 5; pointer-events: none; }
+
     @media (max-width: 600px) { .menu-toggle { display: block; } .ui-overlay { transform: translateX(250px); top: 60px; } .ui-overlay.active { transform: translateX(0); } }
   </style>
 </head>
@@ -19,6 +36,7 @@
 <body>
   <div id="globeViz"></div>
   <button class="menu-toggle" onclick="toggleMenu()">☰ Menú</button>
+  
   <div class="ui-overlay" id="mainMenu">
     <button onclick="navigate('regiones')">Regiones Colombia</button>
     <button onclick="navigate('oceanos')">Océanos y Mares</button>
@@ -26,14 +44,15 @@
     <hr style="width:100%; border: 0.5px solid #444;">
     <button onclick="resetView()" style="background: #0051a8;">Reset y Girar</button>
   </div>
+
   <div id="info" class="info-panel"></div>
 
   <script>
-    const oceanosNombres = [
-      { lat: 10, lng: -120, name: "Pacífico Norte" }, { lat: -30, lng: -140, name: "Pacífico Sur" },
+    const oceanosData = [
+      { lat: 15, lng: -120, name: "Pacífico Norte" }, { lat: -30, lng: -140, name: "Pacífico Sur" },
       { lat: 25, lng: -45, name: "Atlántico Norte" }, { lat: -25, lng: -25, name: "Atlántico Sur" },
       { lat: -15, lng: 75, name: "Océano Índico" }, { lat: 80, lng: 0, name: "Océano Ártico" },
-      { lat: -70, lng: 0, name: "Océano Antártico" }, { lat: 36, lng: 18, name: "Mar Mediterráneo" },
+      { lat: -70, lng: 0, name: "Océano Antártico" }, { lat: 37, lng: 18, name: "Mar Mediterráneo" },
       { lat: 15, lng: -75, name: "Mar Caribe" }, { lat: 20, lng: 115, name: "Mar de China" },
       { lat: 25, lng: 38, name: "Mar Rojo" }, { lat: 42, lng: 32, name: "Mar Negro" }
     ];
@@ -47,7 +66,6 @@
         { name: "Insular", color: "#bc80bd", lat: 12.5, lng: -81.7 }
     ];
 
-    // Variable global para guardar el GeoJSON y no descargarlo varias veces
     let worldData = null;
 
     const world = Globe()
@@ -55,12 +73,27 @@
       .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
       .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
       .pointRadius(1.2).pointAltitude(0)
-      .labelSize(1.8).labelColor(() => 'cyan').labelDotRadius(0.5)
-      .polygonCapColor(() => 'rgba(0, 100, 255, 0.1)')
+      // Configuración de Etiquetas (Usa HTML para el fondo oscuro)
+      .htmlElementsData([])
+      .htmlElement(d => {
+        const el = document.createElement('div');
+        el.innerHTML = d.name;
+        el.className = 'ocean-label';
+        return el;
+      })
+      // Configuración de Fronteras
+      .polygonCapColor(() => 'rgba(0, 100, 255, 0.05)')
       .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)')
-      .polygonStrokeColor(() => '#999') // Fronteras más visibles
+      .polygonStrokeColor(() => '#666')
+      .polygonLabel(({ properties: d }) => `
+        <div style="background: rgba(0,0,0,0.8); padding: 5px; border-radius: 3px; border: 1px solid #0066ff;">
+          <b>${d.NAME || d.name}</b>
+        </div>
+      `)
       .onPolygonHover(hoverD => {
-        if (hoverD) showInfo("País", hoverD.properties.NAME || hoverD.properties.name);
+        if (hoverD) {
+          showInfo("País Seleccionado", hoverD.properties.NAME || hoverD.properties.name);
+        }
       });
 
     world.controls().autoRotate = true;
@@ -70,41 +103,39 @@
 
     function navigate(view) {
       world.controls().autoRotate = false;
-      // Limpieza total antes de cambiar
-      world.pointsData([]).labelsData([]).polygonsData([]);
+      world.pointsData([]).htmlElementsData([]).polygonsData([]);
       if (window.innerWidth < 600) toggleMenu();
       
       if (view === 'regiones') {
         world.pointsData(regionesCOL).pointColor(d => d.color).pointLabel(d => d.name);
-        world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.5 }, 1000);
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.5 }, 1000);
       } 
       else if (view === 'oceanos') {
-        // Mostramos puntos y etiquetas para asegurar visibilidad
-        world.pointsData(oceanosNombres).pointRadius(0.5).pointColor(() => 'cyan');
-        world.labelsData(oceanosNombres);
-        world.pointOfView({ lat: 15, lng: -40, altitude: 2.5 }, 1000);
+        // Etiquetas siempre visibles con fondo
+        world.htmlElementsData(oceanosData);
+        world.pointOfView({ lat: 15, lng: -40, altitude: 2.0 }, 1000);
       } 
       else if (view === 'fronteras') {
+        const loadFronteras = (data) => {
+          world.polygonsData(data.features);
+        };
+
         if (worldData) {
-          world.polygonsData(worldData.features);
+          loadFronteras(worldData);
         } else {
-          // Fuente ultra-ligera (110m) para evitar congelamiento
-          fetch('https://unpkg.com/world-atlas/countries-110m.json').then(res => res.json()).then(atlas => {
-             // Convertimos a GeoJSON si es necesario o usamos una URL directa más estable:
-             fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
-              .then(res => res.json())
-              .then(geo => {
-                worldData = geo;
-                world.polygonsData(geo.features);
-              });
-          });
+          fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
+            .then(res => res.json())
+            .then(geo => {
+              worldData = geo;
+              loadFronteras(geo);
+            });
         }
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 2 }, 1000);
       }
     }
 
     function resetView() {
-      world.pointsData([]).labelsData([]).polygonsData([]);
+      world.pointsData([]).htmlElementsData([]).polygonsData([]);
       document.getElementById('info').style.display = 'none';
       world.controls().autoRotate = true;
       world.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
