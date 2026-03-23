@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Explorador Global - Colombia y Océanos</title>
+  <script src="//unpkg.com/globe.gl"></script>
+  <style>
+    body { margin: 0; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; overflow: hidden; }
+    #globeViz { position: absolute; top: 0; }
+    
+    .ui-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #444;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: #222;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    button:hover { background: #444; border-color: #888; }
+    button.active { background: #0066ff; border-color: #00a2ff; }
+
+    .info-panel {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 15px;
+      border-radius: 8px;
+      max-width: 300px;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="globeViz"></div>
+
+  <div class="ui-overlay" id="menu">
+    <h2 style="margin-top:0">Explorador 3D</h2>
+    <button onclick="navigate('regiones')">🇨🇴 Regiones Naturales</button>
+    <button onclick="navigate('fronteras')">🗺️ Fronteras de Colombia</button>
+    <button onclick="navigate('oceanos')">🌊 Océanos y Mares</button>
+    <button onclick="resetView()">🏠 Resetear Vista</button>
+  </div>
+
+  <div id="info" class="info-panel"></div>
+
+  <script>
+    // --- DATOS ---
+    const dataOceanos = [
+      { lat: -15, lng: -150, name: "Océano Pacífico", desc: "El más grande del mundo." },
+      { lat: 20, lng: -40, name: "Océano Atlántico", desc: "Segundo más extenso." },
+      { lat: 20, lng: 15, name: "Mar Mediterráneo", desc: "Cuna de civilizaciones." },
+      { lat: 15, lng: -75, name: "Mar Caribe", desc: "Aguas tropicales colombianas." },
+      { lat: -20, lng: 80, name: "Océano Índico", desc: "Aguas cálidas." }
+    ];
+
+    const regionesCOL = [
+        { name: "Caribe", color: "#fdb462", coords: [11, -75] },
+        { name: "Andina", color: "#fb8072", coords: [4.5, -75.5] },
+        { name: "Pacífica", color: "#80b1d3", coords: [5, -77] },
+        { name: "Amazonía", color: "#4daf4a", coords: [0, -72] },
+        { name: "Orinoquía", color: "#b3de69", coords: [4, -70] },
+        { name: "Insular", color: "#bc80bd", coords: [12.5, -81.7] }
+    ];
+
+    // --- INICIALIZACIÓN DEL GLOBO ---
+    const world = Globe()
+      (document.getElementById('globeViz'))
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+      .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+      .pointRadius(0.5)
+      .pointLabel('name')
+      .onPointClick(d => showInfo(d.name, d.desc));
+
+    // --- LÓGICA DE NAVEGACIÓN (SPA) ---
+    function navigate(view) {
+      history.pushState({ view: view }, "", "#" + view);
+      renderView(view);
+    }
+
+    window.onpopstate = function(event) {
+      const view = event.state ? event.state.view : 'main';
+      renderView(view);
+    };
+
+    function renderView(view) {
+      // Limpiar capas previas
+      world.pointsData([]).htmlElementsData([]).ringsData([]);
+      document.getElementById('info').style.display = 'none';
+
+      if (view === 'regiones') {
+        world.pointColor(() => 'color')
+             .pointsData(regionesCOL.map(r => ({ lat: r.coords[0], lng: r.coords[1], name: r.name, color: r.color })));
+        world.pointRadius(1.2);
+        world.pointAltitude(0.05);
+        world.pointLabel(d => `Región: ${d.name}`);
+        // Enfocar Colombia
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 0.8 }, 1000);
+
+      } else if (view === 'oceanos') {
+        world.pointsData(dataOceanos)
+             .pointColor(() => 'cyan')
+             .pointRadius(0.8)
+             .pointAltitude(0.01);
+        world.pointOfView({ lat: 10, lng: -40, altitude: 2.5 }, 1000);
+
+      } else if (view === 'fronteras') {
+        // Marcador central en Colombia con un anillo de impacto
+        world.ringsData([{ lat: 4.5, lng: -74 }])
+             .ringColor(() => '#ff0000')
+             .ringMaxRadius(10)
+             .ringPropagationSpeed(2);
+        
+        showInfo("Fronteras de Colombia", "Limita con Panamá, Venezuela, Brasil, Perú y Ecuador. Posee fronteras marítimas en el Pacífico y el Caribe.");
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.2 }, 1000);
+      }
+    }
+
+    function resetView() {
+      history.pushState({ view: 'main' }, "", "#");
+      world.pointsData([]).ringsData([]);
+      world.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
+    }
+
+    function showInfo(title, text) {
+      const panel = document.getElementById('info');
+      panel.innerHTML = `<h3>${title}</h3><p>${text}</p>`;
+      panel.style.display = 'block';
+    }
+
+    // Configuración inicial
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.5;
+  </script>
+</body>
+</html>
