@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inversiones Aripar | Gestión de Archivos Manuel Arias</title>
+    <style>
+        :root { --primary: #003366; --secondary: #0055ff; --bg: #f4f7f9; --white: #ffffff; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; flex: 1; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { color: var(--primary); text-transform: uppercase; margin-bottom: 5px; }
+        
+        /* RULETA */
+        .wheel-section { display: flex; flex-direction: column; align-items: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin-bottom: 40px; }
+        .wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; }
+        canvas { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--primary); }
+        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #e11d48; z-index: 10; }
+        .spin-btn { background: var(--primary); color: white; border: none; padding: 12px 35px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .spin-btn:hover { background: var(--secondary); transform: scale(1.05); }
+
+        /* GRILLA ACTUALIZADA SEGÚN REPOSITORIO */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .card { background: var(--white); border-radius: 8px; padding: 18px; text-decoration: none; color: inherit; border-top: 4px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 12px rgba(0,0,0,0.1); border-top-color: var(--secondary); }
+        .card h3 { margin: 0 0 8px 0; color: var(--primary); font-size: 0.95em; text-transform: uppercase; }
+        .card p { font-size: 0.85em; color: #666; margin: 0; line-height: 1.4; flex-grow: 1; }
+        .tag { font-size: 0.7em; font-weight: bold; color: var(--secondary); margin-bottom: 8px; text-transform: uppercase; }
+
+        /* FOOTER */
+        footer { margin-top: 50px; padding: 20px 0; border-top: 1px solid #ddd; color: #94a3b8; font-weight: bold; text-transform: uppercase; font-size: 10px; }
+        .footer-content { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        .footer-links { display: flex; gap: 15px; }
+        .footer-links a { text-decoration: none; color: inherit; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Gestor de Archivos Aripar</h1>
+        <p>Centro de Herramientas de Ingeniería y Gestión</p>
+    </header>
+
+    <section class="wheel-section">
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="canvas" width="300" height="300"></canvas>
+        </div>
+        <button class="spin-btn" onclick="spin()">GIRAR RULETA</button>
+        <p id="result" style="margin-top: 15px; font-weight: bold; color: var(--secondary); min-height: 20px;"></p>
+    </section>
+
+    <div class="grid">
+        <a href="accidentes.html" class="card">
+            <span class="tag">Seguridad</span>
+            <h3>Accidentes</h3>
+            <p>Análisis técnico y lecciones aprendidas aeronáuticas.</p>
+        </a>
+        <a href="documentos.html" class="card">
+            <span class="tag">Normatividad</span>
+            <h3>Documentos</h3>
+            <p>Repositorio normativo y estándares de certificación.</p>
+        </a>
+        <a href="apartamentos.html" class="card">
+            <span class="tag">Gestión</span>
+            <h3>Apartamentos</h3>
+            <p>Administración de rentas cortas y reglamentos.</p>
+        </a>
+        <a href="calculadora.html" class="card">
+            <span class="tag">Finanzas</span>
+            <h3>Calculadora</h3>
+            <p>Simuladores financieros y de inversión.</p>
+        </a>
+        <a href="aerocalc.html" class="card">
+            <span class="tag">Ingeniería</span>
+            <h3>Aero Calc</h3>
+            <p>Cálculos especializados de ingeniería aeronáutica.</p>
+        </a>
+        <a href="aeronaves.html" class="card">
+            <span class="tag">Técnico</span>
+            <h3>Aeronaves</h3>
+            <p>Fichas técnicas y registros de flota.</p>
+        </a>
+        <a href="cuas.html" class="card">
+            <span class="tag">Sistemas</span>
+            <h3>C-UAS</h3>
+            <p>Información de sistemas contra drones.</p>
+        </a>
+        <a href="gantt.html" class="card">
+            <span class="tag">Planeación</span>
+            <h3>Gantt Proyectos</h3>
+            <p>Cronogramas y seguimiento de certificación.</p>
+        </a>
+        <a href="velocidadaltura.html" class="card">
+            <span class="tag">Análisis</span>
+            <h3>Velocidad y Altura</h3>
+            <p>Herramienta de análisis de performance en vuelo.</p>
+        </a>
+        <a href="ruleta.html" class="card">
+            <span class="tag">Interactivo</span>
+            <h3>Ruleta</h3>
+            <p>Acceso directo a la herramienta de sorteos.</p>
+        </a>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <p>© 2026 • Inversiones Aripar</p>
+        <div class="footer-links">
+            <a href="https://wa.me/573128816469" target="_blank">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com">Email</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const options = ["Accidentes", "Documentos", "Finanzas", "Ingeniería", "Gantt", "Proyectos"];
+    const colors = ["#003366", "#004488", "#0055ff", "#002244", "#001133", "#0066cc"];
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let startAngle = 0;
+    const arc = Math.PI / (options.length / 2);
+
+    function drawWheel() {
+        ctx.clearRect(0,0,300,300);
+        for(let i = 0; i < options.length; i++) {
+            const angle = startAngle + i * arc;
+            ctx.fillStyle = colors[i];
+            ctx.beginPath(); ctx.arc(150, 150, 140, angle, angle + arc, false);
+            ctx.lineTo(150, 150); ctx.fill();
+            ctx.save(); ctx.fillStyle = "white";
+            ctx.translate(150 + Math.cos(angle + arc/2) * 90, 150 + Math.sin(angle + arc/2) * 90);
+            ctx.rotate(angle + arc/2 + Math.PI/2);
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(options[i], -ctx.measureText(options[i]).width/2, 0);
+            ctx.restore();
+        }
+    }
+
+    function spin() {
+        const spinAngleStart = Math.random() * 10 + 10;
+        let spinTime = 0; const spinTimeTotal = Math.random() * 3 + 4 * 1000;
+        function rotate() {
+            spinTime += 30;
+            if(spinTime >= spinTimeTotal) {
+                const degrees = startAngle * 180 / Math.PI + 90;
+                const index = Math.floor((360 - degrees % 360) / (arc * 180 / Math.PI));
+                document.getElementById("result").innerHTML = "SELECCIONADO: " + options[index % options.length];
+                return;
+            }
+            const spinAngle = spinAngleStart - (spinTime / spinTimeTotal) * spinAngleStart;
+            startAngle += (spinAngle * Math.PI / 180);
+            drawWheel(); setTimeout(rotate, 30);
+        }
+        rotate();
+    }
+    drawWheel();
+</script>
+</body>
+</html>
