@@ -2,121 +2,118 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Explorador Global Dinámico</title>
+  <title>Explorador Global - Manuel Arias</title>
   <script src="//unpkg.com/globe.gl"></script>
   <style>
     body { margin: 0; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
     #globeViz { position: absolute; top: 0; }
-    .ui-overlay {
-      position: absolute; top: 20px; left: 20px; z-index: 10;
-      display: flex; flex-direction: column; gap: 10px;
-      background: rgba(0, 0, 0, 0.8); padding: 20px; border-radius: 12px; border: 1px solid #444;
-    }
-    button {
-      padding: 12px 20px; background: #222; color: #eee; border: 1px solid #555;
-      border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px; text-align: left;
-    }
+    .menu-toggle { display: none; position: absolute; top: 15px; right: 15px; z-index: 20; background: #222; border: 1px solid #555; color: white; padding: 10px; border-radius: 5px; cursor: pointer; }
+    .ui-overlay { position: absolute; top: 20px; right: 20px; z-index: 10; display: flex; flex-direction: column; gap: 10px; background: rgba(0, 0, 0, 0.85); padding: 20px; border-radius: 12px; border: 1px solid #444; width: 180px; transition: transform 0.3s ease; }
+    button { padding: 12px; background: #222; color: #eee; border: 1px solid #555; border-radius: 6px; cursor: pointer; transition: 0.3s; font-size: 14px; }
     button:hover { background: #444; border-color: #0066ff; }
-    .info-panel {
-      position: absolute; bottom: 20px; right: 20px;
-      background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px;
-      max-width: 300px; display: none; border: 1px solid #0066ff;
-    }
+    .info-panel { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; min-width: 150px; display: none; border: 1px solid #0066ff; z-index: 5; }
+    @media (max-width: 600px) { .menu-toggle { display: block; } .ui-overlay { transform: translateX(250px); top: 60px; } .ui-overlay.active { transform: translateX(0); } }
   </style>
 </head>
 
 <body>
   <div id="globeViz"></div>
-
-  <div class="ui-overlay">
-    <h2 style="margin:0 0 10px 0; font-size: 18px;">Explorador de Manuel</h2>
-    <button onclick="navigate('regiones')">🇨🇴 Regiones de Colombia</button>
-    <button onclick="navigate('oceanos')">🌊 Océanos y Mares</button>
-    <button onclick="navigate('fronteras')">🗺️ Fronteras</button>
+  <button class="menu-toggle" onclick="toggleMenu()">☰ Menú</button>
+  <div class="ui-overlay" id="mainMenu">
+    <button onclick="navigate('regiones')">Regiones Colombia</button>
+    <button onclick="navigate('oceanos')">Océanos y Mares</button>
+    <button onclick="navigate('fronteras')">Fronteras Mundo</button>
     <hr style="width:100%; border: 0.5px solid #444;">
-    <button onclick="resetView()" style="background: #0051a8; font-weight: bold;">🔄 Resetear</button>
+    <button onclick="resetView()" style="background: #0051a8;">Reset y Girar</button>
   </div>
-
   <div id="info" class="info-panel"></div>
 
   <script>
-    const dataOceanos = [
-      { lat: -15, lng: -140, name: "Océano Pacífico", color: "cyan" },
-      { lat: 25, lng: -45, name: "Océano Atlántico", color: "cyan" },
-      { lat: 36, lng: 18, name: "Mar Mediterráneo", color: "cyan" },
-      { lat: 15, lng: -75, name: "Mar Caribe", color: "cyan" },
-      { lat: -20, lng: 80, name: "Océano Índico", color: "cyan" }
+    const oceanosNombres = [
+      { lat: 10, lng: -120, name: "Pacífico Norte" }, { lat: -30, lng: -140, name: "Pacífico Sur" },
+      { lat: 25, lng: -45, name: "Atlántico Norte" }, { lat: -25, lng: -25, name: "Atlántico Sur" },
+      { lat: -15, lng: 75, name: "Océano Índico" }, { lat: 80, lng: 0, name: "Océano Ártico" },
+      { lat: -70, lng: 0, name: "Océano Antártico" }, { lat: 36, lng: 18, name: "Mar Mediterráneo" },
+      { lat: 15, lng: -75, name: "Mar Caribe" }, { lat: 20, lng: 115, name: "Mar de China" },
+      { lat: 25, lng: 38, name: "Mar Rojo" }, { lat: 42, lng: 32, name: "Mar Negro" }
     ];
 
     const regionesCOL = [
-        { name: "Caribe", color: "#fdb462", lat: 11, lng: -75 },
-        { name: "Andina", color: "#fb8072", lat: 4.5, lng: -75.5 },
-        { name: "Pacífica", color: "#80b1d3", lat: 5, lng: -77 },
-        { name: "Amazonía", color: "#4daf4a", lat: 0, lng: -72 },
-        { name: "Orinoquía", color: "#b3de69", lat: 4, lng: -70 },
+        { name: "Caribe", color: "#fdb462", lat: 10.5, lng: -74.5 },
+        { name: "Andina", color: "#fb8072", lat: 5.5, lng: -75.2 },
+        { name: "Pacífica", color: "#80b1d3", lat: 5, lng: -77.3 },
+        { name: "Amazonía", color: "#4daf4a", lat: -0.5, lng: -71.5 },
+        { name: "Orinoquía", color: "#b3de69", lat: 4, lng: -70.5 },
         { name: "Insular", color: "#bc80bd", lat: 12.5, lng: -81.7 }
     ];
+
+    // Variable global para guardar el GeoJSON y no descargarlo varias veces
+    let worldData = null;
 
     const world = Globe()
       (document.getElementById('globeViz'))
       .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
       .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-      .labelsData([])
-      .labelLat(d => d.lat)
-      .labelLng(d => d.lng)
-      .labelText(d => d.name)
-      .labelSize(1.6)
-      .labelDotRadius(0.8)
-      .labelColor(d => d.color)
-      .labelResolution(2);
+      .pointRadius(1.2).pointAltitude(0)
+      .labelSize(1.8).labelColor(() => 'cyan').labelDotRadius(0.5)
+      .polygonCapColor(() => 'rgba(0, 100, 255, 0.1)')
+      .polygonSideColor(() => 'rgba(255, 255, 255, 0.05)')
+      .polygonStrokeColor(() => '#999') // Fronteras más visibles
+      .onPolygonHover(hoverD => {
+        if (hoverD) showInfo("País", hoverD.properties.NAME || hoverD.properties.name);
+      });
 
-    // Configuración de rotación inicial
     world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.6;
+    world.controls().autoRotateSpeed = 0.5;
+
+    function toggleMenu() { document.getElementById('mainMenu').classList.toggle('active'); }
 
     function navigate(view) {
-      // DETENER ROTACIÓN al elegir una opción
       world.controls().autoRotate = false;
+      // Limpieza total antes de cambiar
+      world.pointsData([]).labelsData([]).polygonsData([]);
+      if (window.innerWidth < 600) toggleMenu();
       
-      history.pushState({ view: view }, "", "#" + view);
-      renderView(view);
-    }
-
-    window.onpopstate = (event) => {
-      const view = event.state ? event.state.view : 'main';
-      if (view === 'main') resetView();
-      else renderView(view);
-    };
-
-    function renderView(view) {
-      world.labelsData([]); 
-      world.ringsData([]);
-      document.getElementById('info').style.display = 'none';
-
       if (view === 'regiones') {
-        world.labelsData(regionesCOL);
+        world.pointsData(regionesCOL).pointColor(d => d.color).pointLabel(d => d.name);
         world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.5 }, 1000);
-      } else if (view === 'oceanos') {
-        world.labelsData(dataOceanos);
-        world.pointOfView({ lat: 20, lng: -30, altitude: 2.5 }, 1000);
-      } else if (view === 'fronteras') {
-        world.ringsData([{ lat: 4.5, lng: -74 }]);
-        document.getElementById('info').innerHTML = "<h3>Fronteras</h3><p>Límites terrestres y marítimos de Colombia.</p>";
-        document.getElementById('info').style.display = 'block';
-        world.pointOfView({ lat: 4.5, lng: -74, altitude: 1.8 }, 1000);
+      } 
+      else if (view === 'oceanos') {
+        // Mostramos puntos y etiquetas para asegurar visibilidad
+        world.pointsData(oceanosNombres).pointRadius(0.5).pointColor(() => 'cyan');
+        world.labelsData(oceanosNombres);
+        world.pointOfView({ lat: 15, lng: -40, altitude: 2.5 }, 1000);
+      } 
+      else if (view === 'fronteras') {
+        if (worldData) {
+          world.polygonsData(worldData.features);
+        } else {
+          // Fuente ultra-ligera (110m) para evitar congelamiento
+          fetch('https://unpkg.com/world-atlas/countries-110m.json').then(res => res.json()).then(atlas => {
+             // Convertimos a GeoJSON si es necesario o usamos una URL directa más estable:
+             fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
+              .then(res => res.json())
+              .then(geo => {
+                worldData = geo;
+                world.polygonsData(geo.features);
+              });
+          });
+        }
+        world.pointOfView({ lat: 4.5, lng: -74, altitude: 2 }, 1000);
       }
     }
 
     function resetView() {
-      history.pushState({ view: 'main' }, "", "#");
-      world.labelsData([]);
-      world.ringsData([]);
+      world.pointsData([]).labelsData([]).polygonsData([]);
       document.getElementById('info').style.display = 'none';
-      
-      // VOLVER A GIRAR al resetear
       world.controls().autoRotate = true;
       world.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
+    }
+
+    function showInfo(title, text) {
+      const panel = document.getElementById('info');
+      panel.innerHTML = `<strong>${title}:</strong> ${text}`;
+      panel.style.display = 'block';
     }
   </script>
 </body>
