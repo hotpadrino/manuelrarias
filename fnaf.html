@@ -6,542 +6,184 @@
 <title>5 NOCHES EN LA FÁBRICA</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
-
   :root {
-    --blood: #8b0000;
-    --dark: #050508;
-    --panel: #0a0a10;
-    --dim: #1a1a2e;
-    --green: #00ff41;
-    --amber: #ffaa00;
-    --red: #ff2200;
-    --glow: rgba(0,255,65,0.15);
+    --blood:#8b0000;--dark:#050508;--panel:#0a0a10;--dim:#1a1a2e;
+    --green:#00ff41;--amber:#ffaa00;--red:#ff2200;--glow:rgba(0,255,65,0.15);
   }
-
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  body {
-    background: var(--dark);
-    color: var(--green);
-    font-family: 'Share Tech Mono', monospace;
-    overflow: hidden;
-    user-select: none;
-    cursor: crosshair;
-  }
-
-  /* ─── SCREENS ─── */
-  .screen { position:fixed; inset:0; display:none; }
-  .screen.active { display:flex; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--dark);color:var(--green);font-family:'Share Tech Mono',monospace;overflow:hidden;user-select:none;cursor:crosshair;}
+  .screen{position:fixed;inset:0;display:none;}
+  .screen.active{display:flex;}
 
   /* TITLE */
-  #title-screen {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-  }
-  #title-screen::before {
-    content:'';
-    position:absolute; inset:0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.03) 2px, rgba(0,255,65,0.03) 4px);
-    pointer-events: none;
-  }
-  .title-flicker {
-    font-family: 'Creepster', cursive;
-    font-size: clamp(2rem, 6vw, 5rem);
-    color: var(--blood);
-    text-shadow: 0 0 20px #ff000088, 0 0 60px #ff000044;
-    animation: flicker 3s infinite;
-    letter-spacing: 4px;
-    text-align: center;
-    padding: 0 1rem;
-  }
-  .subtitle {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: #555;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-  }
-  .start-btn {
-    margin-top: 3rem;
-    padding: 1rem 3rem;
-    background: transparent;
-    border: 1px solid var(--green);
-    color: var(--green);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 1.1rem;
-    letter-spacing: 4px;
-    cursor: pointer;
-    text-transform: uppercase;
-    box-shadow: 0 0 20px var(--glow), inset 0 0 20px var(--glow);
-    transition: all 0.2s;
-  }
-  .start-btn:hover {
-    background: var(--glow);
-    box-shadow: 0 0 40px rgba(0,255,65,0.4), inset 0 0 30px rgba(0,255,65,0.2);
-    transform: scale(1.05);
-  }
-  .night-label {
-    margin-top: 1.5rem;
-    font-size: 0.75rem;
-    color: #444;
-    letter-spacing: 3px;
-  }
+  #title-screen{flex-direction:column;align-items:center;justify-content:center;background:#000;}
+  #title-screen::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,0.03) 2px,rgba(0,255,65,0.03) 4px);pointer-events:none;}
+  .title-flicker{font-family:'Creepster',cursive;font-size:clamp(2rem,6vw,5rem);color:var(--blood);text-shadow:0 0 20px #ff000088,0 0 60px #ff000044;animation:flicker 3s infinite;letter-spacing:4px;text-align:center;padding:0 1rem;}
+  .subtitle{margin-top:1rem;font-size:.9rem;color:#555;letter-spacing:6px;text-transform:uppercase;}
+  .start-btn{margin-top:3rem;padding:1rem 3rem;background:transparent;border:1px solid var(--green);color:var(--green);font-family:'Share Tech Mono',monospace;font-size:1.1rem;letter-spacing:4px;cursor:pointer;text-transform:uppercase;box-shadow:0 0 20px var(--glow),inset 0 0 20px var(--glow);transition:all .2s;}
+  .start-btn:hover{background:var(--glow);box-shadow:0 0 40px rgba(0,255,65,.4),inset 0 0 30px rgba(0,255,65,.2);transform:scale(1.05);}
+  .night-label{margin-top:1.5rem;font-size:.75rem;color:#444;letter-spacing:3px;}
 
   /* GAME */
-  #game-screen {
-    flex-direction: column;
-    background: var(--dark);
-  }
+  #game-screen{flex-direction:column;background:var(--dark);}
+  #office{flex:1;position:relative;overflow:hidden;}
+  .room-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 80%,#0d0d1a 0%,#000 100%);}
 
-  /* Office view */
-  #office {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-  }
+  /* DESK */
+  .desk{position:absolute;bottom:0;left:0;right:0;height:26%;background:linear-gradient(180deg,#1e1208 0%,#0d0802 100%);border-top:3px solid #3a1f08;z-index:6;}
 
-  /* Room background */
-  .room-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 60% 40% at 50% 80%, #0d0d1a 0%, #000 100%);
-  }
-  /* Desk */
-  .desk {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 28%;
-    background: linear-gradient(180deg, #1a0f05 0%, #0d0802 100%);
-    border-top: 2px solid #2a1a08;
-  }
-  /* Monitor glow */
-  .monitor {
-    position: absolute;
-    bottom: 26%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 280px;
-    height: 180px;
-    background: #050510;
-    border: 3px solid #1a1a2e;
-    border-radius: 4px;
-    box-shadow: 0 0 30px rgba(0,100,255,0.2), inset 0 0 20px rgba(0,0,50,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    color: #333;
-    text-align: center;
-    line-height: 1.8;
-  }
+  /* Monitor */
+  .monitor{position:absolute;bottom:24%;left:50%;transform:translateX(-50%);width:260px;height:160px;background:#050510;border:3px solid #1a1a2e;border-radius:4px;box-shadow:0 0 30px rgba(0,100,255,.2),inset 0 0 20px rgba(0,0,50,.8);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#333;text-align:center;line-height:1.8;z-index:7;}
+  .monitor-stand{position:absolute;bottom:22.5%;left:50%;transform:translateX(-50%);width:40px;height:18px;background:#111;border:2px solid #1a1a2e;z-index:6;border-top:none;clip-path:polygon(10% 0,90% 0,100% 100%,0 100%);}
 
   /* Doors */
-  .door-area {
-    position: absolute;
-    top: 10%;
-    width: 12%;
-    height: 65%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  #left-door-area { left: 3%; }
-  #right-door-area { right: 3%; }
+  .door-area{position:absolute;top:8%;width:11%;height:62%;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:7;}
+  #left-door-area{left:3%;}
+  #right-door-area{right:3%;}
+  .door-frame{width:100%;flex:1;background:#080808;border:2px solid #1a1a1a;position:relative;overflow:hidden;cursor:pointer;}
+  .door-frame::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.6) 0%,transparent 50%,rgba(0,0,0,.6) 100%);}
+  .door-closed{position:absolute;inset:0;background:linear-gradient(180deg,#1a1008 0%,#0d0804 100%);transform:translateY(-101%);transition:transform .3s ease;z-index:2;border-bottom:3px solid #2a1a08;}
+  .door-closed.shut{transform:translateY(0);}
+  .door-btn{width:100%;padding:5px 4px;background:#0a0a10;border:1px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .door-btn:hover,.door-btn.active{border-color:var(--amber);color:var(--amber);box-shadow:0 0 10px rgba(255,170,0,.3);}
+  .door-btn.danger{border-color:var(--red);color:var(--red);animation:pulse-red .5s infinite;}
+  .animatronic-door{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70%;height:85%;opacity:0;transition:opacity .1s;z-index:1;display:flex;align-items:flex-end;justify-content:center;}
+  .animatronic-door.visible{opacity:1;}
+  .anim-face{width:100%;height:auto;}
+  .light-btn{width:100%;padding:5px 4px;background:#0a0a10;border:1px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .light-btn:hover,.light-btn.on{border-color:#ffff88;color:#ffff88;box-shadow:0 0 10px rgba(255,255,100,.3);}
 
-  .door-frame {
-    width: 100%;
-    flex: 1;
-    background: #080808;
-    border: 2px solid #1a1a1a;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-  }
-  .door-frame::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
-  }
+  /* Corridor */
+  .corridor-light{position:absolute;top:0;bottom:0;width:20%;opacity:0;pointer-events:none;transition:opacity .2s;z-index:5;}
+  #left-light{left:14%;background:linear-gradient(90deg,rgba(255,255,100,.1),transparent);}
+  #right-light{right:14%;background:linear-gradient(270deg,rgba(255,255,100,.1),transparent);}
+  .corridor-light.on{opacity:1;}
+  .corridor-anim{position:absolute;bottom:26%;width:8%;opacity:0;transition:opacity .2s;filter:brightness(.1);z-index:4;}
+  .corridor-anim.lit{filter:brightness(.7);}
+  #left-anim{left:15%;}
+  #right-anim{right:15%;}
 
-  .door-closed {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, #1a1008 0%, #0d0804 100%);
-    transform: translateY(-101%);
-    transition: transform 0.3s ease;
-    z-index: 2;
-    border-bottom: 3px solid #2a1a08;
-  }
-  .door-closed.shut { transform: translateY(0); }
+  /* CAM BUTTON */
+  .cam-open-btn{position:absolute;bottom:27%;left:50%;transform:translateX(-50%);z-index:10;padding:7px 18px;background:#0a0a10;border:1px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .cam-open-btn:hover{border-color:var(--green);color:var(--green);}
 
-  .door-btn {
-    width: 100%;
-    padding: 6px 4px;
-    background: #0a0a10;
-    border: 1px solid #222;
-    color: #555;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-  }
-  .door-btn:hover, .door-btn.active {
-    border-color: var(--amber);
-    color: var(--amber);
-    box-shadow: 0 0 10px rgba(255,170,0,0.3);
-  }
-  .door-btn.danger {
-    border-color: var(--red);
-    color: var(--red);
-    animation: pulse-red 0.5s infinite;
-  }
+  /* CAMERA SCREEN */
+  #cam-screen{position:absolute;inset:0;background:rgba(0,0,0,.96);z-index:20;display:none;flex-direction:row;}
+  #cam-screen.open{display:flex;}
+  .cam-main{flex:1;position:relative;overflow:hidden;background:#050505;}
+  .cam-static{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");background-size:200px;opacity:.5;pointer-events:none;animation:static-anim .1s steps(1) infinite;}
+  .cam-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,.02) 3px,rgba(0,255,65,.02) 4px);pointer-events:none;}
+  .cam-label-overlay{position:absolute;top:10px;left:10px;font-size:.65rem;color:var(--green);letter-spacing:2px;opacity:.7;z-index:2;}
+  .cam-rec{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:6px;font-size:.6rem;color:var(--red);z-index:2;}
+  .rec-dot{width:7px;height:7px;background:var(--red);border-radius:50%;animation:blink 1s infinite;box-shadow:0 0 6px var(--red);}
+  .cam-room-svg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .cam-anim-present{position:absolute;bottom:15%;left:50%;transform:translateX(-50%);width:28%;opacity:0;transition:opacity .2s;filter:brightness(.4) sepia(1) hue-rotate(80deg);z-index:3;}
+  .cam-anim-present.show{opacity:1;}
 
-  /* Animatronic inside door */
-  .animatronic-door {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 70%;
-    height: 85%;
-    opacity: 0;
-    transition: opacity 0.1s;
-    z-index: 1;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .animatronic-door.visible { opacity: 1; }
-
-  /* SVG animatronic face */
-  .anim-face {
-    width: 100%;
-    height: auto;
-  }
-
-  /* Corridor lights */
-  .light-btn {
-    width: 100%;
-    padding: 6px 4px;
-    background: #0a0a10;
-    border: 1px solid #222;
-    color: #555;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-  }
-  .light-btn:hover, .light-btn.on {
-    border-color: #ffff88;
-    color: #ffff88;
-    box-shadow: 0 0 10px rgba(255,255,100,0.3);
-  }
-
-  /* Corridor glow overlay */
-  .corridor-light {
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 20%;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    z-index: 5;
-  }
-  #left-light { left: 15%; background: linear-gradient(90deg, rgba(255,255,100,0.08), transparent); }
-  #right-light { right: 15%; background: linear-gradient(270deg, rgba(255,255,100,0.08), transparent); }
-  .corridor-light.on { opacity: 1; }
-
-  /* Animatronic in corridor */
-  .corridor-anim {
-    position: absolute;
-    bottom: 20%;
-    width: 8%;
-    opacity: 0;
-    transition: opacity 0.2s;
-    filter: brightness(0.1);
-    z-index: 4;
-  }
-  .corridor-anim.lit { filter: brightness(0.6); }
-  #left-anim { left: 16%; }
-  #right-anim { right: 16%; }
+  /* MAP PANEL */
+  .cam-map-panel{width:270px;background:#080808;border-left:1px solid #111;display:flex;flex-direction:column;padding:10px 8px;gap:6px;overflow-y:auto;}
+  .map-title{font-size:.6rem;color:#444;letter-spacing:3px;text-transform:uppercase;text-align:center;padding:4px 0;border-bottom:1px solid #111;margin-bottom:4px;}
+  .map-svg-wrap{width:100%;position:relative;}
+  .map-svg-wrap svg{width:100%;height:auto;}
+  .map-cam-btn{position:absolute;cursor:pointer;border:1px solid #2a2a2a;background:#0d0d0d;border-radius:2px;font-family:'Share Tech Mono',monospace;font-size:.48rem;color:#444;letter-spacing:1px;text-align:center;padding:2px 3px;transition:all .15s;white-space:nowrap;}
+  .map-cam-btn:hover{border-color:var(--green);color:var(--green);}
+  .map-cam-btn.active{border-color:var(--green);color:var(--green);background:#0a1a0a;box-shadow:0 0 6px var(--glow);}
+  .map-cam-btn.has-anim{border-color:var(--red);color:var(--red);animation:pulse-red .8s infinite;}
+  .cam-close-btn{margin-top:auto;padding:8px;background:#1a0000;border:1px solid #440000;color:#ff4444;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;}
 
   /* HUD */
-  #hud {
-    height: 60px;
-    background: var(--panel);
-    border-top: 1px solid #1a1a2e;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2rem;
-    gap: 1rem;
-  }
-
-  .hud-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-  }
-  .hud-label { font-size: 0.55rem; color: #444; letter-spacing: 3px; text-transform: uppercase; }
-  .hud-val { font-size: 1rem; color: var(--green); text-shadow: 0 0 8px var(--green); }
-
-  /* Power bar */
-  #power-bar-wrap {
-    flex: 1;
-    max-width: 200px;
-    height: 8px;
-    background: #111;
-    border: 1px solid #222;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  #power-bar {
-    height: 100%;
-    background: var(--green);
-    transition: width 0.5s, background 0.5s;
-    box-shadow: 0 0 6px currentColor;
-  }
-
-  /* Time clock */
-  .clock-display {
-    font-family: 'Creepster', cursive;
-    font-size: 1.4rem;
-    color: var(--amber);
-    text-shadow: 0 0 12px var(--amber);
-    letter-spacing: 2px;
-  }
-
-  /* Cameras */
-  #cam-screen {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 20;
-    display: none;
-    flex-direction: column;
-  }
-  #cam-screen.open { display: flex; }
-
-  .cam-view {
-    flex: 1;
-    position: relative;
-    background: #050505;
-    overflow: hidden;
-  }
-  .cam-static {
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-    background-size: 200px;
-    opacity: 0.5;
-    pointer-events: none;
-    animation: static-anim 0.1s steps(1) infinite;
-  }
-  .cam-scanlines {
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,255,65,0.02) 3px, rgba(0,255,65,0.02) 4px);
-    pointer-events: none;
-  }
-
-  .cam-room {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #1a1a1a;
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-  }
-  .cam-room svg { width: 60%; opacity: 0.15; }
-  .cam-label {
-    position: absolute;
-    top: 10px; left: 10px;
-    font-size: 0.65rem;
-    color: var(--green);
-    letter-spacing: 2px;
-    opacity: 0.7;
-  }
-  .cam-rec {
-    position: absolute;
-    top: 10px; right: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.6rem;
-    color: var(--red);
-  }
-  .rec-dot {
-    width: 7px; height: 7px;
-    background: var(--red);
-    border-radius: 50%;
-    animation: blink 1s infinite;
-    box-shadow: 0 0 6px var(--red);
-  }
-
-  .cam-anim-present {
-    position: absolute;
-    bottom: 15%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 30%;
-    opacity: 0;
-    transition: opacity 0.2s;
-    filter: brightness(0.4) sepia(1) hue-rotate(80deg);
-  }
-  .cam-anim-present.show { opacity: 1; }
-
-  .cam-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 8px;
-    background: #080808;
-    border-top: 1px solid #111;
-    flex-wrap: wrap;
-  }
-  .cam-tab {
-    padding: 4px 10px;
-    background: #0d0d0d;
-    border: 1px solid #1a1a1a;
-    color: #333;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-  .cam-tab:hover, .cam-tab.active {
-    border-color: var(--green);
-    color: var(--green);
-    box-shadow: 0 0 8px var(--glow);
-  }
-  .cam-close {
-    padding: 4px 16px;
-    background: #1a0000;
-    border: 1px solid #440000;
-    color: #ff4444;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    margin-left: auto;
-    text-transform: uppercase;
-  }
-
-  /* JUMPSCARE */
-  #jumpscare {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: none;
-    background: #000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  #jumpscare.active { display: flex; }
-  .js-face {
-    width: min(70vw, 70vh);
-    animation: js-anim 0.05s steps(1) infinite;
-  }
-  .js-text {
-    font-family: 'Creepster', cursive;
-    font-size: 3rem;
-    color: var(--red);
-    text-shadow: 0 0 30px red;
-    margin-top: 1rem;
-    animation: flicker 0.2s infinite;
-  }
-
-  /* GAME OVER / WIN */
-  #result-screen {
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-  }
-  .result-title {
-    font-family: 'Creepster', cursive;
-    font-size: clamp(2rem, 8vw, 6rem);
-    animation: flicker 2s infinite;
-    letter-spacing: 4px;
-    text-align: center;
-  }
-  .result-title.lose { color: var(--blood); text-shadow: 0 0 40px red; }
-  .result-title.win { color: var(--green); text-shadow: 0 0 40px var(--green); }
-  .result-sub {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: #555;
-    letter-spacing: 4px;
-  }
+  #hud{height:60px;background:var(--panel);border-top:1px solid #1a1a2e;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;gap:.5rem;flex-shrink:0;}
+  .hud-block{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .hud-label{font-size:.5rem;color:#444;letter-spacing:3px;text-transform:uppercase;}
+  .hud-val{font-size:.95rem;color:var(--green);text-shadow:0 0 8px var(--green);}
+  #power-bar-wrap{flex:1;max-width:180px;height:8px;background:#111;border:1px solid #222;border-radius:2px;overflow:hidden;}
+  #power-bar{height:100%;background:var(--green);transition:width .5s,background .5s;box-shadow:0 0 6px currentColor;}
+  .clock-display{font-family:'Creepster',cursive;font-size:1.4rem;color:var(--amber);text-shadow:0 0 12px var(--amber);letter-spacing:2px;}
+  .hud-btn{padding:5px 10px;background:#0a0a10;border:1px solid #2a2a2a;color:#555;font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+  .hud-btn:hover{border-color:var(--green);color:var(--green);}
 
   /* POWER OUT */
-  #power-out {
-    position: absolute;
-    inset: 0;
-    background: #000;
-    z-index: 15;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  #power-out.active { display: flex; }
-  .power-out-text {
-    font-family: 'Creepster', cursive;
-    font-size: 2rem;
-    color: #220000;
-    letter-spacing: 3px;
-  }
+  #power-out{position:absolute;inset:0;background:#000;z-index:15;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
+  #power-out.active{display:flex;}
+  .power-out-text{font-family:'Creepster',cursive;font-size:2rem;color:#220000;letter-spacing:3px;}
 
-  /* Animations */
-  @keyframes flicker {
-    0%,95%,100% { opacity: 1; }
-    96% { opacity: 0.3; }
-    97% { opacity: 1; }
-    98% { opacity: 0.5; }
-  }
-  @keyframes blink {
-    0%,49% { opacity: 1; }
-    50%,100% { opacity: 0; }
-  }
-  @keyframes static-anim {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(-2px, 1px); }
-    50% { transform: translate(1px, -2px); }
-    75% { transform: translate(2px, 0); }
-    100% { transform: translate(0, 1px); }
-  }
-  @keyframes js-anim {
-    0% { transform: scale(1) rotate(-2deg); filter: hue-rotate(0deg); }
-    33% { transform: scale(1.05) rotate(2deg); filter: hue-rotate(180deg); }
-    66% { transform: scale(0.98) rotate(-1deg); filter: hue-rotate(90deg); }
-    100% { transform: scale(1.02) rotate(1deg); filter: hue-rotate(270deg); }
-  }
-  @keyframes pulse-red {
-    0%,100% { box-shadow: 0 0 5px rgba(255,34,0,0.3); }
-    50% { box-shadow: 0 0 15px rgba(255,34,0,0.8); }
-  }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(5px); }
-  }
+  /* JUMPSCARE */
+  #jumpscare{position:fixed;inset:0;z-index:100;display:none;background:#000;flex-direction:column;align-items:center;justify-content:center;}
+  #jumpscare.active{display:flex;}
+  .js-face{width:min(70vw,70vh);animation:js-anim .05s steps(1) infinite;}
+  .js-text{font-family:'Creepster',cursive;font-size:3rem;color:var(--red);text-shadow:0 0 30px red;margin-top:1rem;animation:flicker .2s infinite;}
+
+  /* RESULT */
+  #result-screen{flex-direction:column;align-items:center;justify-content:center;background:#000;}
+  .result-title{font-family:'Creepster',cursive;font-size:clamp(2rem,8vw,6rem);animation:flicker 2s infinite;letter-spacing:4px;text-align:center;}
+  .result-title.lose{color:var(--blood);text-shadow:0 0 40px red;}
+  .result-title.win{color:var(--green);text-shadow:0 0 40px var(--green);}
+  .result-sub{margin-top:1rem;font-size:.9rem;color:#555;letter-spacing:4px;text-align:center;padding:0 2rem;}
+
+  /* HELP MODAL — floating panel, draggable, no backdrop */
+    #help-modal {
+      position: fixed;
+      z-index: 50;
+      display: none;
+      top: 0;         /* Cambiado de 50px a 0 */
+      left: 0;        /* Añadido para que empiece desde el borde izquierdo */
+      width: 100vw;   /* Cambiado de 370px a 100vw */
+      height: 100vh;  /* Añadido para ocupar todo el alto */
+      max-width: none;/* Elimina el límite previo */
+    }
+  #help-modal.open{display:block;}
+    .help-box {
+      background: rgba(6, 6, 14, 0.98); /* Un poco más opaco para que no se vea el juego atrás */
+      border: none;                     /* Puedes quitar el borde si prefieres */
+      height: 100%;                     /* Para que use todo el alto del modal */
+      max-height: none;                 /* Quita el límite de 85vh */
+      overflow-y: auto;
+      padding: 2rem;
+      border-radius: 0;                 /* Quita el redondeado para pantalla completa */
+      display: flex;
+      flex-direction: column;
+      align-items: center;              /* Centra el contenido horizontalmente */
+    }
+  .help-drag-handle{cursor:grab;padding-bottom:.5rem;margin-bottom:.8rem;border-bottom:1px solid #111;display:flex;align-items:center;gap:.5rem;user-select:none;}
+  .help-drag-handle:active{cursor:grabbing;}
+  .handle-dots{display:flex;flex-direction:column;gap:3px;opacity:.35;}
+  .handle-dots span{display:block;width:18px;height:2px;background:var(--green);}
+  .help-title{font-family:'Creepster',cursive;font-size:1.4rem;color:var(--blood);letter-spacing:4px;flex:1;text-align:center;}
+  .help-section{margin-bottom:1.2rem;}
+  .help-section h3{font-size:.6rem;color:var(--amber);letter-spacing:4px;text-transform:uppercase;border-bottom:1px solid #1a1a2e;padding-bottom:3px;margin-bottom:8px;}
+  .help-row{display:flex;gap:.8rem;align-items:flex-start;margin-bottom:7px;font-size:.6rem;color:#777;line-height:1.7;}
+  .key{display:inline-block;padding:2px 8px;background:#111;border:1px solid #333;color:var(--green);font-size:.68rem;border-radius:2px;white-space:nowrap;flex-shrink:0;}
+  .vol-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .vol-row label{font-size:.58rem;color:#666;letter-spacing:2px;width:120px;flex-shrink:0;}
+  input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:#1a1a2e;border-radius:2px;outline:none;cursor:pointer;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--green);border-radius:50%;box-shadow:0 0 6px var(--green);}
+  .vol-val{font-size:.6rem;color:var(--green);width:28px;text-align:right;}
+    .help-close {
+      position: absolute;
+      top: 15px;
+      right: 40px; /* Aumenta este valor (antes era 10px o 15px) para alejarlo del borde derecho */
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: 'Share Tech Mono', monospace;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    
+    .help-close:hover {
+      background: var(--red);
+      color: #000;
+      box-shadow: 0 0 10px var(--red);
+    }
+
+  @keyframes flicker{0%,95%,100%{opacity:1}96%{opacity:.3}97%{opacity:1}98%{opacity:.5}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  @keyframes static-anim{0%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}50%{transform:translate(1px,-2px)}75%{transform:translate(2px,0)}100%{transform:translate(0,1px)}}
+  @keyframes js-anim{0%{transform:scale(1) rotate(-2deg);filter:hue-rotate(0deg)}33%{transform:scale(1.05) rotate(2deg);filter:hue-rotate(180deg)}66%{transform:scale(.98) rotate(-1deg);filter:hue-rotate(90deg)}100%{transform:scale(1.02) rotate(1deg);filter:hue-rotate(270deg)}}
+  @keyframes pulse-red{0%,100%{box-shadow:0 0 5px rgba(255,34,0,.3)}50%{box-shadow:0 0 15px rgba(255,34,0,.8)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 </style>
 </head>
 <body>
@@ -552,7 +194,7 @@
   <div class="subtitle">Security · Surveillance · Survive</div>
   <button class="start-btn" onclick="startGame()">▶ COMENZAR</button>
   <div class="night-label" id="night-label-title">NOCHE 1</div>
-  <div style="margin-top:2rem;font-size:0.65rem;color:#333;letter-spacing:2px;text-align:center;padding:0 2rem;">
+  <div style="margin-top:2rem;font-size:.65rem;color:#333;letter-spacing:2px;text-align:center;padding:0 2rem;">
     CIERRA LAS PUERTAS · VIGILA LAS CÁMARAS · SOBREVIVE HASTA LAS 6AM
   </div>
 </div>
@@ -562,158 +204,264 @@
   <div id="office">
     <div class="room-bg"></div>
 
-    <!-- Ceiling lights -->
+    <!-- Room architecture -->
     <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;" viewBox="0 0 800 400" preserveAspectRatio="none">
-      <defs>
-        <radialGradient id="roomLight" cx="50%" cy="0%" r="70%">
-          <stop offset="0%" stop-color="#1a1a0f" stop-opacity="0.6"/>
-          <stop offset="100%" stop-color="transparent"/>
-        </radialGradient>
-      </defs>
+      <defs><radialGradient id="roomLight" cx="50%" cy="0%" r="70%"><stop offset="0%" stop-color="#1a1a0f" stop-opacity=".5"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
       <rect width="800" height="400" fill="url(#roomLight)"/>
-      <!-- walls -->
-      <line x1="150" y1="0" x2="80" y2="280" stroke="#111" stroke-width="2"/>
-      <line x1="650" y1="0" x2="720" y2="280" stroke="#111" stroke-width="2"/>
-      <line x1="150" y1="0" x2="650" y2="0" stroke="#1a1a1a" stroke-width="1"/>
-      <!-- ceiling light fixture -->
-      <rect x="370" y="0" width="60" height="8" fill="#1a1a0f" rx="2"/>
-      <line x1="400" y1="8" x2="400" y2="30" stroke="#1a1a0f" stroke-width="2"/>
-      <ellipse cx="400" cy="32" rx="20" ry="8" fill="#111" stroke="#1a1a0f"/>
+      <line x1="155" y1="0" x2="75" y2="295" stroke="#111" stroke-width="1.5"/>
+      <line x1="645" y1="0" x2="725" y2="295" stroke="#111" stroke-width="1.5"/>
+      <line x1="155" y1="0" x2="645" y2="0" stroke="#1a1a1a"/>
+      <rect x="365" y="0" width="70" height="10" fill="#111" rx="2"/>
+      <line x1="400" y1="10" x2="400" y2="35" stroke="#111" stroke-width="2"/>
+      <ellipse cx="400" cy="37" rx="22" ry="9" fill="#111" stroke="#1a1a1a"/>
     </svg>
 
-    <!-- Left door area -->
+    <!-- Left door -->
     <div class="door-area" id="left-door-area">
-      <div class="door-frame" id="left-door-frame">
-        <div class="door-closed" id="left-door"></div>
+      <div class="door-frame"><div class="door-closed" id="left-door"></div>
         <div class="animatronic-door" id="left-door-anim">
-          <svg class="anim-face" viewBox="0 0 100 120">
-            <ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/>
-            <circle cx="35" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/>
-            <circle cx="65" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/>
-            <circle cx="35" cy="45" r="6" fill="#ff0000" opacity="0.9"/>
-            <circle cx="65" cy="45" r="6" fill="#ff0000" opacity="0.9"/>
-            <circle cx="36" cy="44" r="2" fill="#fff"/>
-            <circle cx="66" cy="44" r="2" fill="#fff"/>
-            <path d="M30 72 Q50 85 70 72" stroke="#3a1010" stroke-width="2" fill="none"/>
-            <line x1="34" y1="72" x2="32" y2="80" stroke="#3a1010" stroke-width="1.5"/>
-            <line x1="40" y1="76" x2="39" y2="84" stroke="#3a1010" stroke-width="1.5"/>
-            <line x1="50" y1="78" x2="50" y2="86" stroke="#3a1010" stroke-width="1.5"/>
-            <line x1="60" y1="76" x2="61" y2="84" stroke="#3a1010" stroke-width="1.5"/>
-            <line x1="66" y1="72" x2="68" y2="80" stroke="#3a1010" stroke-width="1.5"/>
-            <path d="M20 20 Q50 5 80 20 Q75 0 50 0 Q25 0 20 20" fill="#1a0a0a"/>
-          </svg>
+          <svg class="anim-face" viewBox="0 0 100 120"><ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/><circle cx="35" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/><circle cx="65" cy="45" r="12" fill="#050505" stroke="#2a0a0a"/><circle cx="35" cy="45" r="6" fill="#ff0000" opacity=".9"/><circle cx="65" cy="45" r="6" fill="#ff0000" opacity=".9"/><circle cx="36" cy="44" r="2" fill="#fff"/><circle cx="66" cy="44" r="2" fill="#fff"/><path d="M30 72 Q50 85 70 72" stroke="#3a1010" stroke-width="2" fill="none"/><line x1="34" y1="72" x2="32" y2="80" stroke="#3a1010" stroke-width="1.5"/><line x1="42" y1="76" x2="41" y2="84" stroke="#3a1010" stroke-width="1.5"/><line x1="50" y1="78" x2="50" y2="86" stroke="#3a1010" stroke-width="1.5"/><line x1="58" y1="76" x2="59" y2="84" stroke="#3a1010" stroke-width="1.5"/><line x1="66" y1="72" x2="68" y2="80" stroke="#3a1010" stroke-width="1.5"/><path d="M20 20 Q50 5 80 20 Q75 0 50 0 Q25 0 20 20" fill="#1a0a0a"/></svg>
         </div>
       </div>
       <button class="door-btn" id="left-door-btn" onclick="toggleDoor('left')">PUERTA</button>
       <button class="light-btn" id="left-light-btn" onmousedown="toggleLight('left',true)" onmouseup="toggleLight('left',false)" ontouchstart="toggleLight('left',true)" ontouchend="toggleLight('left',false)">LUZ</button>
     </div>
 
-    <!-- Right door area -->
+    <!-- Right door -->
     <div class="door-area" id="right-door-area">
-      <div class="door-frame" id="right-door-frame">
-        <div class="door-closed" id="right-door"></div>
+      <div class="door-frame"><div class="door-closed" id="right-door"></div>
         <div class="animatronic-door" id="right-door-anim">
-          <svg class="anim-face" viewBox="0 0 100 120">
-            <ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/>
-            <circle cx="35" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/>
-            <circle cx="65" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/>
-            <circle cx="35" cy="45" r="6" fill="#00ff00" opacity="0.7"/>
-            <circle cx="65" cy="45" r="6" fill="#00ff00" opacity="0.7"/>
-            <circle cx="36" cy="44" r="2" fill="#fff"/>
-            <circle cx="66" cy="44" r="2" fill="#fff"/>
-            <path d="M28 70 L72 70 L65 82 L35 82 Z" fill="#0a0a0a" stroke="#103010" stroke-width="1.5"/>
-            <rect x="33" y="70" width="5" height="8" fill="#103010"/>
-            <rect x="41" y="70" width="5" height="8" fill="#103010"/>
-            <rect x="49" y="70" width="5" height="8" fill="#103010"/>
-            <rect x="57" y="70" width="5" height="8" fill="#103010"/>
-            <path d="M25 20 Q50 8 75 20 L80 5 Q50 -5 20 5 Z" fill="#0a1a0a"/>
-          </svg>
+          <svg class="anim-face" viewBox="0 0 100 120"><ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/><circle cx="35" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/><circle cx="65" cy="45" r="12" fill="#050505" stroke="#0a2a0a"/><circle cx="35" cy="45" r="6" fill="#00ff00" opacity=".7"/><circle cx="65" cy="45" r="6" fill="#00ff00" opacity=".7"/><circle cx="36" cy="44" r="2" fill="#fff"/><circle cx="66" cy="44" r="2" fill="#fff"/><path d="M28 70 L72 70 L65 82 L35 82 Z" fill="#0a0a0a" stroke="#103010" stroke-width="1.5"/><rect x="33" y="70" width="5" height="8" fill="#103010"/><rect x="41" y="70" width="5" height="8" fill="#103010"/><rect x="49" y="70" width="5" height="8" fill="#103010"/><rect x="57" y="70" width="5" height="8" fill="#103010"/><path d="M25 20 Q50 8 75 20 L80 5 Q50 -5 20 5 Z" fill="#0a1a0a"/></svg>
         </div>
       </div>
       <button class="door-btn" id="right-door-btn" onclick="toggleDoor('right')">PUERTA</button>
       <button class="light-btn" id="right-light-btn" onmousedown="toggleLight('right',true)" onmouseup="toggleLight('right',false)" ontouchstart="toggleLight('right',true)" ontouchend="toggleLight('right',false)">LUZ</button>
     </div>
 
-    <!-- Corridor lights overlay -->
     <div class="corridor-light" id="left-light"></div>
     <div class="corridor-light" id="right-light"></div>
+    <div class="corridor-anim" id="left-anim"><svg viewBox="0 0 60 80"><ellipse cx="30" cy="35" rx="22" ry="26" fill="#1a0a0a"/><circle cx="22" cy="28" r="7" fill="#050505"/><circle cx="38" cy="28" r="7" fill="#050505"/><circle cx="22" cy="28" r="3" fill="#ff0000" opacity=".8"/><circle cx="38" cy="28" r="3" fill="#ff0000" opacity=".8"/><path d="M18 46 Q30 54 42 46" stroke="#3a1010" stroke-width="1.5" fill="none"/></svg></div>
+    <div class="corridor-anim" id="right-anim"><svg viewBox="0 0 60 80"><ellipse cx="30" cy="35" rx="22" ry="26" fill="#0a1a0a"/><circle cx="22" cy="28" r="7" fill="#050505"/><circle cx="38" cy="28" r="7" fill="#050505"/><circle cx="22" cy="28" r="3" fill="#00ff00" opacity=".6"/><circle cx="38" cy="28" r="3" fill="#00ff00" opacity=".6"/><path d="M16 44 L44 44 L39 52 L21 52 Z" fill="#0a0a0a" stroke="#103010"/></svg></div>
 
-    <!-- Animatronics in corridor (visible only with light) -->
-    <div class="corridor-anim" id="left-anim">
-      <svg viewBox="0 0 60 80">
-        <ellipse cx="30" cy="35" rx="22" ry="26" fill="#1a0a0a"/>
-        <circle cx="22" cy="28" r="7" fill="#050505"/>
-        <circle cx="38" cy="28" r="7" fill="#050505"/>
-        <circle cx="22" cy="28" r="3" fill="#ff0000" opacity="0.8"/>
-        <circle cx="38" cy="28" r="3" fill="#ff0000" opacity="0.8"/>
-        <path d="M18 46 Q30 54 42 46" stroke="#3a1010" stroke-width="1.5" fill="none"/>
+    <!-- DECORATED DESK -->
+    <div class="desk">
+      <svg style="position:absolute;top:0;left:0;width:100%;height:100%;" viewBox="0 0 1000 180" preserveAspectRatio="none">
+        <rect width="1000" height="180" fill="#1a1005"/>
+        <rect width="1000" height="4" fill="#3a2008" opacity=".7"/>
+        <!-- cables -->
+        <path d="M478 8 Q458 40 448 80 Q443 120 438 172" stroke="#0d0d0d" stroke-width="3" fill="none"/>
+        <path d="M522 8 Q542 40 552 80 Q557 120 562 172" stroke="#0d0d0d" stroke-width="3" fill="none"/>
+        <!-- LEFT: walkie-talkie radio -->
+        <rect x="55" y="22" width="88" height="60" rx="5" fill="#0d0d14" stroke="#1e1e2e" stroke-width="1.5"/>
+        <rect x="60" y="27" width="52" height="38" rx="3" fill="#000510" stroke="#1a1a2e"/>
+        <rect x="62" y="29" width="48" height="34" rx="2" fill="#001122" opacity=".9"/>
+        <text x="86" y="50" font-family="monospace" font-size="8" fill="#00ff41" opacity=".5" text-anchor="middle">FAZBEAR</text>
+        <text x="86" y="60" font-family="monospace" font-size="6" fill="#333" text-anchor="middle">SEC-CAM v2</text>
+        <circle cx="126" cy="34" r="7" fill="#111" stroke="#222"/><circle cx="126" cy="34" r="4" fill="#ff2200" opacity=".5"/>
+        <circle cx="126" cy="50" r="7" fill="#111" stroke="#222"/><circle cx="126" cy="50" r="4" fill="#00ff41" opacity=".3"/>
+        <circle cx="126" cy="66" r="7" fill="#111" stroke="#222"/><circle cx="126" cy="66" r="4" fill="#ffaa00" opacity=".3"/>
+        <rect x="60" y="72" width="78" height="4" rx="2" fill="#1a1a2e"/>
+        <!-- coffee cup -->
+        <ellipse cx="200" cy="74" rx="17" ry="6" fill="#1a0a00" stroke="#2a1500"/>
+        <rect x="183" y="32" width="34" height="42" rx="5" fill="#1a0a00" stroke="#2a1500" stroke-width="1.5"/>
+        <path d="M217 42 Q232 47 217 57" stroke="#2a1500" stroke-width="2" fill="none"/>
+        <ellipse cx="200" cy="33" rx="17" ry="5" fill="#0d0500" stroke="#2a1500"/>
+        <ellipse cx="200" cy="34" rx="12" ry="3" fill="#0a0300"/>
+        <path d="M195 24 Q192 16 196 10" stroke="#333" stroke-width="1" fill="none" opacity=".5"/>
+        <path d="M201 22 Q198 13 202 7" stroke="#333" stroke-width="1" fill="none" opacity=".5"/>
+        <!-- security badge -->
+        <rect x="255" y="32" width="58" height="42" rx="3" fill="#0a0a12" stroke="#1a1a2e" stroke-width="1.5"/>
+        <rect x="259" y="36" width="22" height="18" rx="2" fill="#050510" stroke="#1a1a2e"/>
+        <circle cx="270" cy="45" r="7" fill="#111" stroke="#1a1a2e"/>
+        <circle cx="270" cy="45" r="4" fill="#0a0a1a"/>
+        <rect x="284" y="38" width="26" height="3" rx="1" fill="#1a1a2e"/>
+        <rect x="284" y="44" width="18" height="2" rx="1" fill="#111"/>
+        <rect x="284" y="49" width="22" height="2" rx="1" fill="#111"/>
+        <text x="284" y="67" font-family="monospace" font-size="6" fill="#333">SECURITY</text>
+        <line x1="274" y1="32" x2="272" y2="16" stroke="#444" stroke-width="1.5"/>
+        <ellipse cx="272" cy="15" rx="4" ry="3" fill="#333"/>
+        <!-- notepad -->
+        <rect x="330" y="28" width="50" height="65" rx="2" fill="#f5f5e8" opacity=".07" stroke="#333"/>
+        <line x1="335" y1="40" x2="375" y2="40" stroke="#333" stroke-width="1"/>
+        <line x1="335" y1="48" x2="375" y2="48" stroke="#333" stroke-width="1"/>
+        <line x1="335" y1="56" x2="365" y2="56" stroke="#333" stroke-width="1"/>
+        <line x1="335" y1="64" x2="370" y2="64" stroke="#333" stroke-width="1"/>
+        <line x1="335" y1="72" x2="360" y2="72" stroke="#333" stroke-width="1"/>
+        <rect x="330" y="28" width="50" height="6" rx="2" fill="#ffaa00" opacity=".15"/>
+        <!-- RIGHT: mechanical keyboard -->
+        <rect x="640" y="18" width="200" height="72" rx="5" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1.5"/>
+        <g opacity=".7">
+          <rect x="649" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="665" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="681" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="697" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="713" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="729" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="745" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="761" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="777" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="793" y="26" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="809" y="26" width="22" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="649" y="41" width="20" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="672" y="41" width="13" height="11" rx="2" fill="#1a0a0a" stroke="#440000"/><rect x="688" y="41" width="13" height="11" rx="2" fill="#1a0a0a" stroke="#440000"/>
+          <rect x="704" y="41" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="720" y="41" width="13" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="736" y="41" width="13" height="11" rx="2" fill="#0a1a0a" stroke="#003300"/><rect x="752" y="41" width="13" height="11" rx="2" fill="#0a1a0a" stroke="#003300"/>
+          <rect x="768" y="41" width="13" height="11" rx="2" fill="#111" stroke="#222"/><rect x="784" y="41" width="13" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="800" y="41" width="31" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="660" y="56" width="105" height="11" rx="2" fill="#0a0a12" stroke="#1a1a2e"/>
+          <rect x="768" y="56" width="34" height="11" rx="2" fill="#111" stroke="#222"/>
+          <rect x="805" y="56" width="26" height="11" rx="2" fill="#111" stroke="#222"/>
+        </g>
+        <!-- mouse -->
+        <ellipse cx="873" cy="64" rx="24" ry="34" fill="#0d0d0d" stroke="#1a1a1a" stroke-width="1.5"/>
+        <line x1="873" y1="30" x2="873" y2="68" stroke="#1a1a1a" stroke-width="1"/>
+        <ellipse cx="873" cy="36" rx="7" ry="4" fill="#111" stroke="#1a1a2e"/>
+        <ellipse cx="873" cy="36" rx="4" ry="2.5" fill="#001a00" opacity=".9"/>
+        <!-- small cactus -->
+        <rect x="928" y="52" width="32" height="24" rx="3" fill="#1a0800" stroke="#2a1200"/>
+        <ellipse cx="944" cy="52" rx="16" ry="4" fill="#1a0800"/>
+        <rect x="939" y="14" width="10" height="40" rx="5" fill="#0a1a08" stroke="#103008"/>
+        <rect x="929" y="22" width="10" height="18" rx="4" fill="#0a1a08" stroke="#103008"/>
+        <rect x="949" y="28" width="10" height="14" rx="4" fill="#0a1a08" stroke="#103008"/>
+        <line x1="942" y1="20" x2="940" y2="13" stroke="#1a2a10" stroke-width="1"/>
+        <line x1="948" y1="22" x2="951" y2="15" stroke="#1a2a10" stroke-width="1"/>
+        <line x1="932" y1="27" x2="927" y2="23" stroke="#1a2a10" stroke-width="1"/>
+        <line x1="956" y1="33" x2="961" y2="29" stroke="#1a2a10" stroke-width="1"/>
+        <!-- floor edge -->
+        <rect x="0" y="167" width="1000" height="13" fill="#0a0600" opacity=".8"/>
       </svg>
     </div>
-    <div class="corridor-anim" id="right-anim">
-      <svg viewBox="0 0 60 80">
-        <ellipse cx="30" cy="35" rx="22" ry="26" fill="#0a1a0a"/>
-        <circle cx="22" cy="28" r="7" fill="#050505"/>
-        <circle cx="38" cy="28" r="7" fill="#050505"/>
-        <circle cx="22" cy="28" r="3" fill="#00ff00" opacity="0.6"/>
-        <circle cx="38" cy="28" r="3" fill="#00ff00" opacity="0.6"/>
-        <path d="M16 44 L44 44 L39 52 L21 52 Z" fill="#0a0a0a" stroke="#103010"/>
-      </svg>
-    </div>
 
-    <!-- Monitor / Desk -->
-    <div class="monitor">
-      <span style="color:#1a1a2e;font-size:0.55rem;">FAZBEAR INDUSTRIES<br>SECURITY TERMINAL<br>─────────────────<br>PRESS [CAM] TO VIEW</span>
-    </div>
-    <div class="desk"></div>
+    <div class="monitor-stand"></div>
+    <div class="monitor"><span style="color:#1a1a2e;font-size:.55rem;">FAZBEAR INDUSTRIES<br>SECURITY TERMINAL<br>─────────────────<br>PRESS [CAM] TO VIEW</span></div>
+    <button class="cam-open-btn" onclick="openCams()">[ CAM ]</button>
 
-    <!-- Camera button -->
-    <div style="position:absolute;bottom:30%;left:50%;transform:translateX(-50%);z-index:10;">
-      <button onclick="openCams()" style="padding:8px 20px;background:#0a0a10;border:1px solid #222;color:#555;font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:3px;cursor:pointer;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='#222';this.style.color='#555'">
-        [ CAM ]
-      </button>
-    </div>
+    <!-- Power out -->
+    <div id="power-out"><div class="power-out-text">SIN ENERGÍA</div><div style="font-size:.7rem;color:#1a0000;letter-spacing:3px;">ESPERANDO...</div></div>
 
-    <!-- Power out overlay -->
-    <div id="power-out">
-      <div class="power-out-text">SIN ENERGÍA</div>
-      <div style="font-size:0.7rem;color:#1a0000;letter-spacing:3px;">ESPERANDO...</div>
-    </div>
-
-    <!-- Camera screen -->
+    <!-- CAMERA SCREEN -->
     <div id="cam-screen">
-      <div class="cam-view">
+      <div class="cam-main">
         <div class="cam-static"></div>
         <div class="cam-scanlines"></div>
-        <div class="cam-room" id="cam-room-display">
-          <!-- SVG room changes per cam -->
-        </div>
-        <div class="cam-label" id="cam-label">CAM 1A — SHOW STAGE</div>
+        <div class="cam-room-svg" id="cam-room-display"></div>
+        <div class="cam-label-overlay" id="cam-label">CAM 1A — SHOW STAGE</div>
         <div class="cam-rec"><div class="rec-dot"></div>REC</div>
         <div class="cam-anim-present" id="cam-anim1"></div>
-        <div class="cam-anim-present" id="cam-anim2"></div>
+        <div class="cam-anim-present" id="cam-anim2" style="left:68%;transform:translateX(-50%);"></div>
       </div>
-      <div class="cam-tabs" id="cam-tabs"></div>
+
+      <!-- Map panel with interactive floor plan -->
+      <div class="cam-map-panel">
+        <div class="map-title">▣ MAPA DE LA FÁBRICA</div>
+        <div class="map-svg-wrap" id="map-wrap">
+          <!-- Floor plan SVG -->
+          <svg viewBox="0 0 240 330" xmlns="http://www.w3.org/2000/svg">
+            <rect width="240" height="330" fill="#050505" rx="3"/>
+            <!-- Show Stage 1A (top center) -->
+            <rect x="75" y="8" width="90" height="52" fill="#0a0a12" stroke="#1a1a2e" stroke-width="1" rx="2"/>
+            <text x="120" y="32" font-family="monospace" font-size="6.5" fill="#2a2a3a" text-anchor="middle">SHOW</text>
+            <text x="120" y="42" font-family="monospace" font-size="6.5" fill="#2a2a3a" text-anchor="middle">STAGE</text>
+            <!-- Backstage 4A (top left) -->
+            <rect x="6" y="8" width="58" height="52" fill="#0a0a0a" stroke="#151515" stroke-width="1" rx="2"/>
+            <text x="35" y="30" font-family="monospace" font-size="6" fill="#252525" text-anchor="middle">BACK-</text>
+            <text x="35" y="40" font-family="monospace" font-size="6" fill="#252525" text-anchor="middle">STAGE</text>
+            <!-- Supply Room 3 (top right) -->
+            <rect x="175" y="8" width="58" height="52" fill="#0a0a0a" stroke="#151515" stroke-width="1" rx="2"/>
+            <text x="204" y="30" font-family="monospace" font-size="6" fill="#252525" text-anchor="middle">SUPPLY</text>
+            <text x="204" y="40" font-family="monospace" font-size="6" fill="#252525" text-anchor="middle">ROOM</text>
+            <!-- Dining Area 1B (mid center) -->
+            <rect x="75" y="75" width="90" height="44" fill="#0a0a0a" stroke="#151515" stroke-width="1" rx="2"/>
+            <text x="120" y="97" font-family="monospace" font-size="6.5" fill="#252525" text-anchor="middle">DINING AREA</text>
+            <!-- West Hall 2A (mid left) - CRISPY route -->
+            <rect x="6" y="75" width="58" height="44" fill="#0a0a15" stroke="#15152a" stroke-width="1" rx="2"/>
+            <text x="35" y="97" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">W. HALL</text>
+            <!-- East Hall 2B (mid right) - VERDOR route -->
+            <rect x="175" y="75" width="58" height="44" fill="#0a0a15" stroke="#15152a" stroke-width="1" rx="2"/>
+            <text x="204" y="97" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">E. HALL</text>
+            <!-- Kitchen 6 (mid-low center) -->
+            <rect x="75" y="133" width="90" height="44" fill="#0a0a0a" stroke="#151515" stroke-width="1" rx="2"/>
+            <text x="120" y="159" font-family="monospace" font-size="6.5" fill="#252525" text-anchor="middle">KITCHEN</text>
+            <!-- West Corner 4B (low left) - CRISPY -->
+            <rect x="6" y="133" width="58" height="44" fill="#0a0a15" stroke="#15152a" stroke-width="1" rx="2"/>
+            <text x="35" y="152" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">W.</text>
+            <text x="35" y="162" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">CORNER</text>
+            <!-- East Corner 5 (low right) - VERDOR -->
+            <rect x="175" y="133" width="58" height="44" fill="#0a0a15" stroke="#15152a" stroke-width="1" rx="2"/>
+            <text x="204" y="152" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">E.</text>
+            <text x="204" y="162" font-family="monospace" font-size="6" fill="#252540" text-anchor="middle">CORNER</text>
+            <!-- YOUR OFFICE (bottom center) -->
+            <rect x="75" y="192" width="90" height="52" fill="#0d0d1e" stroke="#252545" stroke-width="1.5" rx="2"/>
+            <text x="120" y="215" font-family="monospace" font-size="6.5" fill="#353560" text-anchor="middle">TU</text>
+            <text x="120" y="226" font-family="monospace" font-size="6.5" fill="#353560" text-anchor="middle">OFICINA</text>
+            <!-- door icons -->
+            <rect x="66" y="215" width="9" height="15" fill="#080815" stroke="#25254a" stroke-width="1"/>
+            <rect x="165" y="215" width="9" height="15" fill="#080815" stroke="#25254a" stroke-width="1"/>
+            <!-- YOU icon -->
+            <circle cx="120" cy="232" r="3" fill="#252545"/>
+
+            <!-- CORRIDORS -->
+            <!-- Stage to backstage -->
+            <line x1="64" y1="34" x2="75" y2="34" stroke="#151515" stroke-width="5"/>
+            <!-- Stage to supply -->
+            <line x1="165" y1="34" x2="175" y2="34" stroke="#151515" stroke-width="5"/>
+            <!-- Stage to dining -->
+            <line x1="120" y1="60" x2="120" y2="75" stroke="#151515" stroke-width="5"/>
+            <!-- Backstage to W.Hall -->
+            <line x1="35" y1="60" x2="35" y2="75" stroke="#151515" stroke-width="5"/>
+            <!-- Supply to E.Hall -->
+            <line x1="204" y1="60" x2="204" y2="75" stroke="#151515" stroke-width="5"/>
+            <!-- Dining to W.Hall -->
+            <line x1="64" y1="97" x2="75" y2="97" stroke="#151515" stroke-width="5"/>
+            <!-- Dining to E.Hall -->
+            <line x1="165" y1="97" x2="175" y2="97" stroke="#151515" stroke-width="5"/>
+            <!-- Dining to Kitchen -->
+            <line x1="120" y1="119" x2="120" y2="133" stroke="#151515" stroke-width="5"/>
+            <!-- W.Hall to W.Corner -->
+            <line x1="35" y1="119" x2="35" y2="133" stroke="#151515" stroke-width="5"/>
+            <!-- E.Hall to E.Corner -->
+            <line x1="204" y1="119" x2="204" y2="133" stroke="#151515" stroke-width="5"/>
+            <!-- Kitchen to Office -->
+            <line x1="120" y1="177" x2="120" y2="192" stroke="#151515" stroke-width="5"/>
+            <!-- W.Corner to Left Door -->
+            <line x1="35" y1="177" x2="66" y2="222" stroke="#151515" stroke-width="5"/>
+            <!-- E.Corner to Right Door -->
+            <line x1="204" y1="177" x2="174" y2="222" stroke="#151515" stroke-width="5"/>
+
+            <!-- CRISPY path arrows (red, left side) -->
+            <circle cx="35" cy="70" r="3.5" fill="#ff000033" stroke="#ff000055" stroke-width="1"/>
+            <circle cx="35" cy="128" r="3.5" fill="#ff000033" stroke="#ff000055" stroke-width="1"/>
+            <circle cx="50" cy="205" r="3.5" fill="#ff000033" stroke="#ff000055" stroke-width="1"/>
+            <!-- VERDOR path arrows (green, right side) -->
+            <circle cx="204" cy="70" r="3.5" fill="#00ff0022" stroke="#00ff0044" stroke-width="1"/>
+            <circle cx="204" cy="128" r="3.5" fill="#00ff0022" stroke="#00ff0044" stroke-width="1"/>
+            <circle cx="178" cy="205" r="3.5" fill="#00ff0022" stroke="#00ff0044" stroke-width="1"/>
+
+            <!-- Legend -->
+            <line x1="6" y1="255" x2="234" y2="255" stroke="#111" stroke-width="1"/>
+            <circle cx="14" cy="267" r="4" fill="#ff3300" opacity=".7"/>
+            <text x="22" y="271" font-family="monospace" font-size="7" fill="#664444">CRISPY — izquierda</text>
+            <circle cx="14" cy="282" r="4" fill="#00ff41" opacity=".6"/>
+            <text x="22" y="286" font-family="monospace" font-size="7" fill="#446644">VERDOR — derecha</text>
+            <rect x="10" y="292" width="8" height="8" fill="#0d0d1e" stroke="#252545" stroke-width="1"/>
+            <text x="22" y="300" font-family="monospace" font-size="7" fill="#444466">TU OFICINA</text>
+            <text x="14" y="315" font-family="monospace" font-size="6" fill="#333">● CAM ACTIVA  ◈ ANIMATRÓNICO</text>
+          </svg>
+
+          <!-- Clickable camera buttons overlaid on map rooms -->
+          <button class="map-cam-btn" id="mbt-4A" style="top:16px;left:9px;width:52px;" onclick="selectCam('4A')">CAM 4A</button>
+          <button class="map-cam-btn" id="mbt-1A" style="top:16px;left:82px;width:68px;" onclick="selectCam('1A')">CAM 1A</button>
+          <button class="map-cam-btn" id="mbt-3"  style="top:16px;left:177px;width:52px;" onclick="selectCam('3')">CAM 3</button>
+          <button class="map-cam-btn" id="mbt-2A" style="top:83px;left:9px;width:52px;" onclick="selectCam('2A')">CAM 2A</button>
+          <button class="map-cam-btn" id="mbt-1B" style="top:83px;left:82px;width:68px;" onclick="selectCam('1B')">CAM 1B</button>
+          <button class="map-cam-btn" id="mbt-2B" style="top:83px;left:177px;width:52px;" onclick="selectCam('2B')">CAM 2B</button>
+          <button class="map-cam-btn" id="mbt-4B" style="top:142px;left:9px;width:52px;" onclick="selectCam('4B')">CAM 4B</button>
+          <button class="map-cam-btn" id="mbt-6"  style="top:142px;left:82px;width:68px;" onclick="selectCam('6')">CAM 6</button>
+          <button class="map-cam-btn" id="mbt-5"  style="top:142px;left:177px;width:52px;" onclick="selectCam('5')">CAM 5</button>
+        </div>
+        <button class="cam-close-btn" onclick="closeCams()">✕ CERRAR CÁMARAS</button>
+      </div>
     </div>
   </div>
 
   <!-- HUD -->
   <div id="hud">
-    <div class="hud-block">
-      <span class="hud-label">Noche</span>
-      <span class="hud-val" id="hud-night">1</span>
-    </div>
-    <div class="hud-block">
-      <div id="power-bar-wrap"><div id="power-bar" style="width:100%"></div></div>
-    </div>
-    <div class="hud-block">
-      <span class="hud-label">Energía</span>
-      <span class="hud-val" id="hud-power">100%</span>
-    </div>
+    <div class="hud-block"><span class="hud-label">Noche</span><span class="hud-val" id="hud-night">1</span></div>
+    <div class="hud-block"><div id="power-bar-wrap"><div id="power-bar" style="width:100%"></div></div></div>
+    <div class="hud-block"><span class="hud-label">Energía</span><span class="hud-val" id="hud-power">100%</span></div>
+    <button class="hud-btn" onclick="openHelp()">? AYUDA</button>
     <div class="clock-display" id="hud-time">12 AM</div>
-    <div class="hud-block">
-      <span class="hud-label">Estado</span>
-      <span class="hud-val" id="hud-status" style="font-size:0.65rem;letter-spacing:1px;">OK</span>
-    </div>
+    <div class="hud-block"><span class="hud-label">Estado</span><span class="hud-val" id="hud-status" style="font-size:.65rem;letter-spacing:1px;">OK</span></div>
   </div>
 </div>
 
@@ -723,10 +471,8 @@
     <ellipse cx="100" cy="110" rx="85" ry="95" fill="#1a0000" stroke="#440000" stroke-width="3"/>
     <circle cx="65" cy="85" r="28" fill="#0a0000" stroke="#440000" stroke-width="2"/>
     <circle cx="135" cy="85" r="28" fill="#0a0000" stroke="#440000" stroke-width="2"/>
-    <circle cx="65" cy="85" r="16" fill="#ff0000"/>
-    <circle cx="135" cy="85" r="16" fill="#ff0000"/>
-    <circle cx="68" cy="82" r="5" fill="#fff"/>
-    <circle cx="138" cy="82" r="5" fill="#fff"/>
+    <circle cx="65" cy="85" r="16" fill="#ff0000"/><circle cx="135" cy="85" r="16" fill="#ff0000"/>
+    <circle cx="68" cy="82" r="5" fill="#fff"/><circle cx="138" cy="82" r="5" fill="#fff"/>
     <path d="M35 145 Q100 175 165 145 L158 165 Q100 190 42 165 Z" fill="#0a0000" stroke="#440000" stroke-width="2"/>
     <line x1="55" y1="145" x2="50" y2="165" stroke="#440000" stroke-width="3"/>
     <line x1="70" y1="152" x2="68" y2="172" stroke="#440000" stroke-width="3"/>
@@ -736,7 +482,6 @@
     <line x1="130" y1="152" x2="132" y2="172" stroke="#440000" stroke-width="3"/>
     <line x1="145" y1="145" x2="150" y2="165" stroke="#440000" stroke-width="3"/>
     <path d="M20 30 Q100 5 180 30 Q170 0 100 0 Q30 0 20 30" fill="#1a0000"/>
-    <!-- Cracks / damage -->
     <line x1="100" y1="15" x2="95" y2="55" stroke="#440000" stroke-width="1.5"/>
     <line x1="95" y1="35" x2="80" y2="45" stroke="#440000" stroke-width="1"/>
     <line x1="160" y1="40" x2="150" y2="80" stroke="#440000" stroke-width="1.5"/>
@@ -751,410 +496,433 @@
   <button class="start-btn" style="margin-top:2rem;" onclick="retryGame()">↺ REINTENTAR</button>
 </div>
 
+<!-- HELP MODAL (floating panel, draggable) -->
+<div id="help-modal">
+  <div class="help-box">
+    <button class="help-close" onclick="closeHelp()">✕</button>
+    <div class="help-drag-handle" id="help-drag-handle">
+      <div class="handle-dots"><span></span><span></span><span></span></div>
+      <div class="help-title">MANUAL DE SEGURIDAD</div>
+    </div>
+
+    <div class="help-section">
+      <h3>Objetivo</h3>
+      <div class="help-row">Sobrevive desde las 12AM hasta las 6AM. Los animatrónicos <span style="color:#ff4444;margin:0 4px;font-weight:bold;">CRISPY</span> (ojos rojos) y <span style="color:#44ff44;margin:0 4px;font-weight:bold;">VERDOR</span> (ojos verdes) se mueven hacia tu oficina. Si entran, pierdes.</div>
+    </div>
+
+    <div class="help-section">
+      <h3>Controles — Teclado</h3>
+      <div class="help-row"><span class="key">A</span>&nbsp; Abrir / cerrar puerta izquierda</div>
+      <div class="help-row"><span class="key">D</span>&nbsp; Abrir / cerrar puerta derecha</div>
+      <div class="help-row"><span class="key">Q</span>&nbsp; (mantén) Encender luz izquierda del pasillo</div>
+      <div class="help-row"><span class="key">E</span>&nbsp; (mantén) Encender luz derecha del pasillo</div>
+      <div class="help-row"><span class="key">C</span>&nbsp; Abrir / cerrar panel de cámaras</div>
+      <div class="help-row"><span class="key">H</span>&nbsp; Abrir / cerrar este manual</div>
+    </div>
+
+    <div class="help-section">
+      <h3>Rutas de los animatrónicos</h3>
+      <div class="help-row" style="flex-direction:column;gap:6px;">
+        <span><span style="color:#ff4444">● CRISPY (izq):</span> Show Stage → Dining → <b style="color:#444477">West Hall (CAM 2A)</b> → <b style="color:#444477">West Corner (CAM 4B)</b> → ¡Puerta izquierda!</span>
+        <span><span style="color:#44ff44">● VERDOR (der):</span> Show Stage → Kitchen → <b style="color:#444477">East Hall (CAM 2B)</b> → <b style="color:#444477">East Corner (CAM 5)</b> → ¡Puerta derecha!</span>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Estrategia de supervivencia</h3>
+      <div class="help-row">① Abre las <b style="color:var(--amber)">cámaras</b> y haz clic en los botones del mapa para ver cada sala. Los botones parpadean en rojo si hay un animatrónico ahí.</div>
+      <div class="help-row">② Si ves a alguno cerca del pasillo (CAM 2A / 4B o CAM 2B / 5), enciende la <b style="color:#ffff88">LUZ</b> de ese lado para confirmarlo antes de cerrar la puerta.</div>
+      <div class="help-row">③ Cuando el botón de puerta parpadea en <b style="color:var(--red)">rojo</b>, ¡ciérrala de inmediato! Hay un animatrónico en la entrada.</div>
+      <div class="help-row">④ <b style="color:var(--red)">Cuida la energía.</b> Puertas cerradas, luces encendidas y cámaras abiertas drenan potencia. A 0% todo se apaga y el ataque es inevitable.</div>
+      <div class="help-row">⑤ Cada noche los animatrónicos son más rápidos y el consumo es mayor. ¡Gestiona bien tu tiempo en cámaras!</div>
+    </div>
+
+    <div class="help-section">
+      <h3>Audio</h3>
+      <div class="vol-row">
+        <label>MÚSICA AMBIENTAL</label>
+        <input type="range" id="vol-music" min="0" max="100" value="40" oninput="setVolume('music',this.value)">
+        <span class="vol-val" id="vv-music">40</span>
+      </div>
+      <div class="vol-row">
+        <label>EFECTOS DE SONIDO</label>
+        <input type="range" id="vol-sfx" min="0" max="100" value="70" oninput="setVolume('sfx',this.value)">
+        <span class="vol-val" id="vv-sfx">70</span>
+      </div>
+      <div class="vol-row">
+        <label>JUMPSCARE</label>
+        <input type="range" id="vol-jump" min="0" max="100" value="80" oninput="setVolume('jump',this.value)">
+        <span class="vol-val" id="vv-jump">80</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-const NIGHTS = [
-  { duration: 90, powerDrain: 0.08, leftSpeed: 12, rightSpeed: 18, name: "NOCHE 1" },
-  { duration: 80, powerDrain: 0.12, leftSpeed: 8,  rightSpeed: 12, name: "NOCHE 2" },
-  { duration: 75, powerDrain: 0.16, leftSpeed: 6,  rightSpeed: 8,  name: "NOCHE 3" },
-  { duration: 70, powerDrain: 0.20, leftSpeed: 4,  rightSpeed: 6,  name: "NOCHE 4" },
-  { duration: 65, powerDrain: 0.25, leftSpeed: 3,  rightSpeed: 4,  name: "NOCHE 5" },
-];
+// ─── AUDIO ENGINE (Web Audio API — sin archivos externos) ───
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+let volumes = { music:0.4, sfx:0.7, jump:0.8 };
+let musicNodes = null, musicGain = null;
 
-const CAMERAS = [
-  { id: "1A", label: "SHOW STAGE", left: false, right: false },
-  { id: "1B", label: "DINING AREA", left: false, right: false },
-  { id: "2A", label: "WEST HALL",  left: true,  right: false },
-  { id: "2B", label: "EAST HALL",  left: false, right: true  },
-  { id: "3",  label: "SUPPLY ROOM",left: false, right: false },
-  { id: "4A", label: "BACKSTAGE",  left: false, right: false },
-  { id: "4B", label: "WEST CORNER",left: true,  right: false },
-  { id: "5",  label: "EAST CORNER",left: false, right: true  },
-  { id: "6",  label: "KITCHEN",    left: false, right: false },
-];
-
-let currentNight = 0;
-let power = 100;
-let timeElapsed = 0;
-let gameRunning = false;
-let leftDoorClosed = false;
-let rightDoorClosed = false;
-let leftLightOn = false;
-let rightLightOn = false;
-let camsOpen = false;
-let activeCam = "1A";
-let gameLoop = null;
-let powerOutTimer = null;
-
-// Animatronic positions: 0=stage, 1-5=corridor, 6=door
-let leftAnimPos = 0;  // CRISPY (red eyes)
-let rightAnimPos = 0; // VERDOR (green eyes)
-let leftMoveTimer = 0;
-let rightMoveTimer = 0;
-
-function startGame() {
-  document.getElementById('title-screen').classList.remove('active');
-  document.getElementById('game-screen').classList.add('active');
-  initNight(currentNight);
+function getCtx() {
+  if (!actx) actx = new AudioCtx();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
 }
 
-function initNight(n) {
-  const night = NIGHTS[n];
-  power = 100;
-  timeElapsed = 0;
-  leftDoorClosed = false;
-  rightDoorClosed = false;
-  leftLightOn = false;
-  rightLightOn = false;
-  camsOpen = false;
-  leftAnimPos = 0;
-  rightAnimPos = 0;
-  leftMoveTimer = 0;
-  rightMoveTimer = 0;
-  gameRunning = true;
+function startAmbientMusic() {
+  if (musicNodes) return;
+  const ctx = getCtx();
+  musicGain = ctx.createGain();
+  musicGain.gain.value = volumes.music * 0.25;
+  musicGain.connect(ctx.destination);
+  const osc1 = ctx.createOscillator(); osc1.type='sawtooth'; osc1.frequency.value=55;
+  const g1=ctx.createGain(); g1.gain.value=0.15; osc1.connect(g1); g1.connect(musicGain); osc1.start();
+  const osc2=ctx.createOscillator(); osc2.type='sine'; osc2.frequency.value=110.3;
+  const g2=ctx.createGain(); g2.gain.value=0.08; osc2.connect(g2); g2.connect(musicGain); osc2.start();
+  const osc3=ctx.createOscillator(); osc3.type='sine'; osc3.frequency.value=27.5;
+  const lfo=ctx.createOscillator(); lfo.frequency.value=0.2;
+  const lfoG=ctx.createGain(); lfoG.gain.value=0.12;
+  lfo.connect(lfoG); lfoG.connect(ctx.createGain().gain);
+  const g3=ctx.createGain(); g3.gain.value=0.2;
+  osc3.connect(g3); g3.connect(musicGain); osc3.start(); lfo.start();
+  musicNodes={osc1,osc2,osc3,lfo};
+  scheduleCreak();
+}
 
-  document.getElementById('hud-night').textContent = n + 1;
-  document.getElementById('hud-status').textContent = 'OK';
-  document.getElementById('hud-status').style.color = 'var(--green)';
-  document.getElementById('left-door').classList.remove('shut');
-  document.getElementById('right-door').classList.remove('shut');
-  document.getElementById('left-door-btn').classList.remove('active','danger');
-  document.getElementById('right-door-btn').classList.remove('active','danger');
+function scheduleCreak() {
+  const delay = 9000+Math.random()*14000;
+  setTimeout(()=>{ if(gameRunning) { playSynth('creak'); scheduleCreak(); } else scheduleCreak(); }, delay);
+}
+
+function stopAmbientMusic() {
+  if (!musicNodes) return;
+  try { musicNodes.osc1.stop(); musicNodes.osc2.stop(); musicNodes.osc3.stop(); musicNodes.lfo.stop(); } catch(e){}
+  musicNodes=null;
+}
+
+function playSynth(type) {
+  const ctx = getCtx();
+  if (type==='door') {
+    // Heavy mechanical shutter: metal clank + gear grind + hydraulic hiss
+    const dur = 0.7;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      const t = i / ctx.sampleRate;
+      // noise base
+      let s = (Math.random() * 2 - 1);
+      // metal resonance: two decaying tones
+      s += Math.sin(2 * Math.PI * 180 * t) * Math.exp(-t * 18) * 1.8;
+      s += Math.sin(2 * Math.PI * 95 * t)  * Math.exp(-t * 10) * 1.2;
+      // gear clicks at 60ms intervals
+      const clickPhase = (t * 16) % 1;
+      if (clickPhase < 0.04) s += (Math.random() * 2 - 1) * Math.exp(-clickPhase * 200) * 2.5;
+      // overall envelope: sharp attack, slower decay
+      const env = Math.exp(-t * 4);
+      d[i] = s * env * 0.5;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const g = ctx.createGain(); g.gain.value = volumes.sfx * 1.1;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 40;
+    src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ctx.destination);
+    src.start();
+    // trailing hiss (hydraulic)
+    const hissOsc = ctx.createOscillator(); hissOsc.type = 'sawtooth'; hissOsc.frequency.value = 220;
+    const hissG = ctx.createGain();
+    hissG.gain.setValueAtTime(0.001, ctx.currentTime);
+    hissG.gain.linearRampToValueAtTime(volumes.sfx * 0.12, ctx.currentTime + 0.05);
+    hissG.gain.linearRampToValueAtTime(volumes.sfx * 0.06, ctx.currentTime + 0.3);
+    hissG.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.65);
+    const hissF = ctx.createBiquadFilter(); hissF.type = 'bandpass'; hissF.frequency.value = 1200; hissF.Q.value = 0.4;
+    hissOsc.connect(hissF); hissF.connect(hissG); hissG.connect(ctx.destination);
+    hissOsc.start(); hissOsc.stop(ctx.currentTime + 0.7);
+    // sub thud
+    const sub = ctx.createOscillator(); sub.type = 'sine'; sub.frequency.value = 60;
+    const subG = ctx.createGain();
+    subG.gain.setValueAtTime(volumes.sfx * 0.6, ctx.currentTime);
+    subG.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    sub.connect(subG); subG.connect(ctx.destination); sub.start(); sub.stop(ctx.currentTime + 0.26);
+  } else if (type==='light') {
+    const o=ctx.createOscillator(); o.type='square'; o.frequency.value=900;
+    const g=ctx.createGain(); g.gain.setValueAtTime(volumes.sfx*.2,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.05);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.05);
+  } else if (type==='creak') {
+    const o=ctx.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(160+Math.random()*120,ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(70+Math.random()*40,ctx.currentTime+1.4);
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(.001,ctx.currentTime);
+    g.gain.linearRampToValueAtTime(volumes.music*.18,ctx.currentTime+.25);
+    g.gain.linearRampToValueAtTime(.001,ctx.currentTime+1.4);
+    const f=ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=280; f.Q.value=.6;
+    o.connect(f); f.connect(g); g.connect(musicGain||ctx.destination);
+    o.start(); o.stop(ctx.currentTime+1.5);
+  } else if (type==='danger') {
+    [0,.07,.14].forEach((t,i)=>{ const o=ctx.createOscillator(); o.type='square'; o.frequency.value=200+i*25; const g=ctx.createGain(); g.gain.setValueAtTime(volumes.sfx*.5,ctx.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.08); o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+.09); });
+  } else if (type==='cam') {
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=1400; const g=ctx.createGain(); g.gain.setValueAtTime(volumes.sfx*.12,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.07); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+.07);
+  } else if (type==='jumpscare') {
+    const buf=ctx.createBuffer(1,ctx.sampleRate*1.8,ctx.sampleRate);
+    const d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*.45));
+    const src=ctx.createBufferSource(); src.buffer=buf;
+    const g=ctx.createGain(); g.gain.value=volumes.jump;
+    src.connect(g); g.connect(ctx.destination); src.start();
+    const sub=ctx.createOscillator(); sub.type='sine'; sub.frequency.value=55;
+    const sg=ctx.createGain(); sg.gain.setValueAtTime(volumes.jump*.9,ctx.currentTime); sg.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+1.2);
+    sub.connect(sg); sg.connect(ctx.destination); sub.start(); sub.stop(ctx.currentTime+1.3);
+  } else if (type==='powerout') {
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(440,ctx.currentTime); o.frequency.linearRampToValueAtTime(18,ctx.currentTime+2.5);
+    const g=ctx.createGain(); g.gain.setValueAtTime(volumes.sfx*.6,ctx.currentTime); g.gain.linearRampToValueAtTime(0,ctx.currentTime+2.5);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+2.6);
+  } else if (type==='win') {
+    [0,.18,.36,.54].forEach((t,i)=>{ const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=[523,659,784,1047][i]; const g=ctx.createGain(); g.gain.setValueAtTime(volumes.sfx*.28,ctx.currentTime+t); g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.35); o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+.38); });
+  }
+}
+
+function setVolume(track, val) {
+  volumes[track]=val/100;
+  document.getElementById('vv-'+track).textContent=val;
+  if (track==='music' && musicGain) musicGain.gain.value=volumes.music*.25;
+}
+
+// ─── GAME ───
+const NIGHTS=[
+  {duration:90,powerDrain:.08,leftSpeed:12,rightSpeed:18,name:"NOCHE 1"},
+  {duration:80,powerDrain:.12,leftSpeed:8, rightSpeed:12,name:"NOCHE 2"},
+  {duration:75,powerDrain:.16,leftSpeed:6, rightSpeed:8, name:"NOCHE 3"},
+  {duration:70,powerDrain:.20,leftSpeed:4, rightSpeed:6, name:"NOCHE 4"},
+  {duration:65,powerDrain:.25,leftSpeed:3, rightSpeed:4, name:"NOCHE 5"},
+];
+const CAMERAS=[
+  {id:"1A",label:"SHOW STAGE",  left:false,right:false},
+  {id:"1B",label:"DINING AREA", left:false,right:false},
+  {id:"2A",label:"WEST HALL",   left:true, right:false},
+  {id:"2B",label:"EAST HALL",   left:false,right:true },
+  {id:"3", label:"SUPPLY ROOM", left:false,right:false},
+  {id:"4A",label:"BACKSTAGE",   left:false,right:false},
+  {id:"4B",label:"WEST CORNER", left:true, right:false},
+  {id:"5", label:"EAST CORNER", left:false,right:true },
+  {id:"6", label:"KITCHEN",     left:false,right:false},
+];
+// Which camera each animatronic is visible on at each position 0-6
+const LEFT_CAM_BY_POS  = ['1A','1A','1B','2A','4B','4B','4B'];
+const RIGHT_CAM_BY_POS = ['1A','1A','6', '2B','5', '5', '5' ];
+
+let currentNight=0,power=100,timeElapsed=0,gameRunning=false;
+let leftDoorClosed=false,rightDoorClosed=false,leftLightOn=false,rightLightOn=false,camsOpen=false;
+let activeCam="1A",gameLoop=null,powerOutTimer=null;
+let leftAnimPos=0,rightAnimPos=0,leftMoveTimer=0,rightMoveTimer=0;
+
+function startGame(){document.getElementById('title-screen').classList.remove('active');document.getElementById('game-screen').classList.add('active');initNight(currentNight);}
+
+function initNight(n){
+  const night=NIGHTS[n];
+  power=100;timeElapsed=0;leftDoorClosed=false;rightDoorClosed=false;
+  leftLightOn=false;rightLightOn=false;camsOpen=false;
+  leftAnimPos=0;rightAnimPos=0;leftMoveTimer=0;rightMoveTimer=0;
+  gameRunning=true;
+  document.getElementById('hud-night').textContent=n+1;
+  document.getElementById('hud-status').textContent='OK';document.getElementById('hud-status').style.color='var(--green)';
+  document.getElementById('left-door').classList.remove('shut');document.getElementById('right-door').classList.remove('shut');
+  document.getElementById('left-door-btn').classList.remove('active','danger');document.getElementById('right-door-btn').classList.remove('active','danger');
+  document.getElementById('left-door-btn').textContent='PUERTA';document.getElementById('right-door-btn').textContent='PUERTA';
   document.getElementById('power-out').classList.remove('active');
-
-  buildCamTabs();
-  updateCamView();
-  updatePower();
-  updateAnimatronics();
-
-  if (gameLoop) clearInterval(gameLoop);
-  gameLoop = setInterval(() => gameStep(night), 1000);
+  updateCamView();updatePower();updateAnimatronics();updateMapButtons();
+  if(gameLoop)clearInterval(gameLoop);
+  gameLoop=setInterval(()=>gameStep(night),1000);
+  startAmbientMusic();
 }
 
-function gameStep(night) {
-  if (!gameRunning) return;
+function gameStep(night){
+  if(!gameRunning)return;
   timeElapsed++;
-
-  // Power drain
-  let drain = night.powerDrain;
-  if (leftDoorClosed) drain += 0.06;
-  if (rightDoorClosed) drain += 0.06;
-  if (leftLightOn) drain += 0.04;
-  if (rightLightOn) drain += 0.04;
-  if (camsOpen) drain += 0.05;
-  power = Math.max(0, power - drain);
+  let drain=night.powerDrain;
+  if(leftDoorClosed)drain+=.06;if(rightDoorClosed)drain+=.06;
+  if(leftLightOn)drain+=.04;if(rightLightOn)drain+=.04;
+  if(camsOpen)drain+=.05;
+  power=Math.max(0,power-drain);
   updatePower();
-
-  // Move animatronics
-  leftMoveTimer++;
-  rightMoveTimer++;
-  if (leftMoveTimer >= night.leftSpeed) {
-    leftMoveTimer = 0;
-    if (leftAnimPos < 6) leftAnimPos++;
-    updateAnimatronics();
-    checkAttack();
-  }
-  if (rightMoveTimer >= night.rightSpeed) {
-    rightMoveTimer = 0;
-    if (rightAnimPos < 6) rightAnimPos++;
-    updateAnimatronics();
-    checkAttack();
-  }
-
-  // Time (1 real second = ~1 game minute; night = 90 seconds = 6 hours)
-  const totalSecs = night.duration;
-  const progress = timeElapsed / totalSecs;
-  const hour = Math.floor(progress * 6);
-  const hours = ['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM'];
-  document.getElementById('hud-time').textContent = hours[Math.min(hour, 6)];
-
-  if (timeElapsed >= totalSecs) {
-    winNight();
-    return;
-  }
-
-  // Power out
-  if (power <= 0) {
-    powerOut();
-  }
-
+  leftMoveTimer++;rightMoveTimer++;
+  if(leftMoveTimer>=night.leftSpeed){leftMoveTimer=0;if(leftAnimPos<6)leftAnimPos++;updateAnimatronics();updateMapButtons();checkAttack();}
+  if(rightMoveTimer>=night.rightSpeed){rightMoveTimer=0;if(rightAnimPos<6)rightAnimPos++;updateAnimatronics();updateMapButtons();checkAttack();}
+  const progress=timeElapsed/night.duration;
+  const hour=Math.floor(progress*6);
+  document.getElementById('hud-time').textContent=['12 AM','1 AM','2 AM','3 AM','4 AM','5 AM','6 AM'][Math.min(hour,6)];
+  if(timeElapsed>=night.duration){winNight();return;}
+  if(power<=0){powerOut();return;}
   updateStatus();
 }
 
-function checkAttack() {
-  if (!gameRunning) return;
-
-  // Left animatronic at door (pos 6)
-  if (leftAnimPos >= 6) {
-    if (leftDoorClosed) {
-      // Blocked! Push back
-      leftAnimPos = 3;
-      updateAnimatronics();
-      flashDanger('left');
-    } else {
-      // JUMPSCARE
-      triggerJumpscare();
-    }
-  }
-
-  // Right animatronic at door (pos 6)
-  if (rightAnimPos >= 6) {
-    if (rightDoorClosed) {
-      rightAnimPos = 3;
-      updateAnimatronics();
-      flashDanger('right');
-    } else {
-      triggerJumpscare();
-    }
-  }
+function checkAttack(){
+  if(!gameRunning)return;
+  if(leftAnimPos>=6){if(leftDoorClosed){leftAnimPos=3;updateAnimatronics();updateMapButtons();flashDanger('left');playSynth('danger');}else triggerJumpscare();}
+  if(rightAnimPos>=6){if(rightDoorClosed){rightAnimPos=3;updateAnimatronics();updateMapButtons();flashDanger('right');playSynth('danger');}else triggerJumpscare();}
 }
 
-function updateAnimatronics() {
-  // Update corridor visibility
-  const leftInCorridor = leftAnimPos >= 4 && leftAnimPos < 6;
-  const rightInCorridor = rightAnimPos >= 4 && rightAnimPos < 6;
-
-  const la = document.getElementById('left-anim');
-  const ra = document.getElementById('right-anim');
-  la.style.opacity = leftInCorridor ? '1' : '0';
-  ra.style.opacity = rightInCorridor ? '1' : '0';
-
-  // Update door animatronic visibility (at door = pos 5 or 6 pending)
-  const leftAtDoor = leftAnimPos >= 5;
-  const rightAtDoor = rightAnimPos >= 5;
-  document.getElementById('left-door-anim').classList.toggle('visible', leftAtDoor && !leftDoorClosed);
-  document.getElementById('right-door-anim').classList.toggle('visible', rightAtDoor && !rightDoorClosed);
-
-  // Danger indicator on door button
-  document.getElementById('left-door-btn').classList.toggle('danger', leftAtDoor && !leftDoorClosed);
-  document.getElementById('right-door-btn').classList.toggle('danger', rightAtDoor && !rightDoorClosed);
-
+function updateAnimatronics(){
+  const lc=leftAnimPos>=4&&leftAnimPos<6,rc=rightAnimPos>=4&&rightAnimPos<6;
+  document.getElementById('left-anim').style.opacity=lc?'1':'0';
+  document.getElementById('right-anim').style.opacity=rc?'1':'0';
+  const la=leftAnimPos>=5,ra=rightAnimPos>=5;
+  document.getElementById('left-door-anim').classList.toggle('visible',la&&!leftDoorClosed);
+  document.getElementById('right-door-anim').classList.toggle('visible',ra&&!rightDoorClosed);
+  document.getElementById('left-door-btn').classList.toggle('danger',la&&!leftDoorClosed);
+  document.getElementById('right-door-btn').classList.toggle('danger',ra&&!rightDoorClosed);
   updateCamView();
 }
 
-function updateStatus() {
-  const statEl = document.getElementById('hud-status');
-  const threat = (leftAnimPos >= 4) || (rightAnimPos >= 4);
-  if (threat) {
-    statEl.textContent = '⚠ PELIGRO';
-    statEl.style.color = 'var(--red)';
-  } else if (power < 30) {
-    statEl.textContent = '⚡ BAJO';
-    statEl.style.color = 'var(--amber)';
-  } else {
-    statEl.textContent = 'OK';
-    statEl.style.color = 'var(--green)';
-  }
-}
-
-function toggleDoor(side) {
-  if (!gameRunning) return;
-  if (side === 'left') {
-    leftDoorClosed = !leftDoorClosed;
-    document.getElementById('left-door').classList.toggle('shut', leftDoorClosed);
-    document.getElementById('left-door-btn').classList.toggle('active', leftDoorClosed);
-    document.getElementById('left-door-btn').textContent = leftDoorClosed ? 'ABIRIR' : 'PUERTA';
-    if (leftDoorClosed) document.getElementById('left-door-anim').classList.remove('visible');
-  } else {
-    rightDoorClosed = !rightDoorClosed;
-    document.getElementById('right-door').classList.toggle('shut', rightDoorClosed);
-    document.getElementById('right-door-btn').classList.toggle('active', rightDoorClosed);
-    document.getElementById('right-door-btn').textContent = rightDoorClosed ? 'ABRIR' : 'PUERTA';
-    if (rightDoorClosed) document.getElementById('right-door-anim').classList.remove('visible');
-  }
-}
-
-function toggleLight(side, on) {
-  if (!gameRunning) return;
-  if (side === 'left') {
-    leftLightOn = on;
-    document.getElementById('left-light').classList.toggle('on', on);
-    document.getElementById('left-anim').classList.toggle('lit', on);
-    document.getElementById('left-light-btn').classList.toggle('on', on);
-  } else {
-    rightLightOn = on;
-    document.getElementById('right-light').classList.toggle('on', on);
-    document.getElementById('right-anim').classList.toggle('lit', on);
-    document.getElementById('right-light-btn').classList.toggle('on', on);
-  }
-}
-
-function openCams() {
-  if (!gameRunning || power <= 0) return;
-  camsOpen = true;
-  document.getElementById('cam-screen').classList.add('open');
-  updateCamView();
-}
-
-function closeCams() {
-  camsOpen = false;
-  document.getElementById('cam-screen').classList.remove('open');
-}
-
-function buildCamTabs() {
-  const tabs = document.getElementById('cam-tabs');
-  tabs.innerHTML = '';
-  CAMERAS.forEach(cam => {
-    const btn = document.createElement('button');
-    btn.className = 'cam-tab' + (cam.id === activeCam ? ' active' : '');
-    btn.textContent = `CAM ${cam.id}`;
-    btn.onclick = () => { activeCam = cam.id; buildCamTabs(); updateCamView(); };
-    tabs.appendChild(btn);
+function updateMapButtons(){
+  const lCam=LEFT_CAM_BY_POS[Math.min(leftAnimPos,6)];
+  const rCam=RIGHT_CAM_BY_POS[Math.min(rightAnimPos,6)];
+  CAMERAS.forEach(cam=>{
+    const btn=document.getElementById('mbt-'+cam.id);if(!btn)return;
+    btn.classList.toggle('active',cam.id===activeCam);
+    const hasL=cam.id===lCam&&leftAnimPos>=1&&leftAnimPos<=5;
+    const hasR=cam.id===rCam&&rightAnimPos>=1&&rightAnimPos<=5;
+    btn.classList.toggle('has-anim',hasL||hasR);
   });
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'cam-close';
-  closeBtn.textContent = '✕ CERRAR';
-  closeBtn.onclick = closeCams;
-  tabs.appendChild(closeBtn);
 }
 
-function updateCamView() {
-  const cam = CAMERAS.find(c => c.id === activeCam) || CAMERAS[0];
-  document.getElementById('cam-label').textContent = `CAM ${cam.id} — ${cam.label}`;
+function updateStatus(){
+  const s=document.getElementById('hud-status');
+  if(leftAnimPos>=4||rightAnimPos>=4){s.textContent='⚠ PELIGRO';s.style.color='var(--red)';}
+  else if(power<30){s.textContent='⚡ BAJO';s.style.color='var(--amber)';}
+  else{s.textContent='OK';s.style.color='var(--green)';}
+}
 
-  const a1 = document.getElementById('cam-anim1');
-  const a2 = document.getElementById('cam-anim2');
-
-  // Show animatronic on cam based on position
-  const leftCamPos = Math.floor(leftAnimPos / 1.5);
-  const rightCamPos = Math.floor(rightAnimPos / 1.5);
-
-  const leftHere = cam.left && leftAnimPos >= 1 && leftAnimPos <= 4;
-  const rightHere = cam.right && rightAnimPos >= 1 && rightAnimPos <= 4;
-
-  a1.classList.toggle('show', leftHere);
-  a2.classList.toggle('show', rightHere);
-
-  if (leftHere) {
-    a1.innerHTML = `<svg viewBox="0 0 100 120" width="100%">
-      <ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/>
-      <circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/>
-      <circle cx="35" cy="45" r="6" fill="#ff2200" opacity="0.9"/><circle cx="65" cy="45" r="6" fill="#ff2200" opacity="0.9"/>
-    </svg>`;
-  }
-  if (rightHere) {
-    a2.style.right = '20%'; a2.style.left = 'auto';
-    a2.innerHTML = `<svg viewBox="0 0 100 120" width="100%">
-      <ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/>
-      <circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/>
-      <circle cx="35" cy="45" r="6" fill="#00ff00" opacity="0.6"/><circle cx="65" cy="45" r="6" fill="#00ff00" opacity="0.6"/>
-    </svg>`;
+function toggleDoor(side){
+  if(!gameRunning)return;playSynth('door');
+  if(side==='left'){
+    leftDoorClosed=!leftDoorClosed;
+    document.getElementById('left-door').classList.toggle('shut',leftDoorClosed);
+    document.getElementById('left-door-btn').classList.toggle('active',leftDoorClosed);
+    document.getElementById('left-door-btn').textContent=leftDoorClosed?'ABRIR':'PUERTA';
+    if(leftDoorClosed)document.getElementById('left-door-anim').classList.remove('visible');
+  }else{
+    rightDoorClosed=!rightDoorClosed;
+    document.getElementById('right-door').classList.toggle('shut',rightDoorClosed);
+    document.getElementById('right-door-btn').classList.toggle('active',rightDoorClosed);
+    document.getElementById('right-door-btn').textContent=rightDoorClosed?'ABRIR':'PUERTA';
+    if(rightDoorClosed)document.getElementById('right-door-anim').classList.remove('visible');
   }
 }
 
-function updatePower() {
-  const pct = Math.max(0, Math.round(power));
-  document.getElementById('hud-power').textContent = pct + '%';
-  document.getElementById('power-bar').style.width = pct + '%';
-  const bar = document.getElementById('power-bar');
-  if (pct > 50) bar.style.background = 'var(--green)';
-  else if (pct > 25) bar.style.background = 'var(--amber)';
-  else bar.style.background = 'var(--red)';
+function toggleLight(side,on){
+  if(!gameRunning)return;if(on)playSynth('light');
+  if(side==='left'){leftLightOn=on;document.getElementById('left-light').classList.toggle('on',on);document.getElementById('left-anim').classList.toggle('lit',on);document.getElementById('left-light-btn').classList.toggle('on',on);}
+  else{rightLightOn=on;document.getElementById('right-light').classList.toggle('on',on);document.getElementById('right-anim').classList.toggle('lit',on);document.getElementById('right-light-btn').classList.toggle('on',on);}
 }
 
-function flashDanger(side) {
-  const btn = document.getElementById(side + '-door-btn');
-  btn.style.animation = 'shake 0.3s';
-  setTimeout(() => btn.style.animation = '', 300);
+function openCams(){if(!gameRunning||power<=0)return;playSynth('cam');camsOpen=true;document.getElementById('cam-screen').classList.add('open');updateCamView();updateMapButtons();}
+function closeCams(){playSynth('cam');camsOpen=false;document.getElementById('cam-screen').classList.remove('open');}
+function selectCam(id){activeCam=id;playSynth('cam');updateCamView();updateMapButtons();}
+
+function updateCamView(){
+  const cam=CAMERAS.find(c=>c.id===activeCam)||CAMERAS[0];
+  document.getElementById('cam-label').textContent=`CAM ${cam.id} — ${cam.label}`;
+  const leftHere=cam.left&&leftAnimPos>=1&&leftAnimPos<=4;
+  const rightHere=cam.right&&rightAnimPos>=1&&rightAnimPos<=4;
+  document.getElementById('cam-anim1').classList.toggle('show',leftHere);
+  document.getElementById('cam-anim2').classList.toggle('show',rightHere);
+  if(leftHere)document.getElementById('cam-anim1').innerHTML=`<svg viewBox="0 0 100 120" width="100%"><ellipse cx="50" cy="55" rx="38" ry="42" fill="#1a0a0a" stroke="#3a1010" stroke-width="2"/><circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/><circle cx="35" cy="45" r="6" fill="#ff2200" opacity=".9"/><circle cx="65" cy="45" r="6" fill="#ff2200" opacity=".9"/></svg>`;
+  if(rightHere)document.getElementById('cam-anim2').innerHTML=`<svg viewBox="0 0 100 120" width="100%"><ellipse cx="50" cy="55" rx="38" ry="42" fill="#0a1a0a" stroke="#103010" stroke-width="2"/><circle cx="35" cy="45" r="12" fill="#050505"/><circle cx="65" cy="45" r="12" fill="#050505"/><circle cx="35" cy="45" r="6" fill="#00ff00" opacity=".6"/><circle cx="65" cy="45" r="6" fill="#00ff00" opacity=".6"/></svg>`;
+  const svgs={'1A':'<svg viewBox="0 0 400 300" width="80%" opacity=".12"><rect x="50" y="50" width="300" height="200" fill="none" stroke="#00ff41" stroke-width="2"/><rect x="80" y="70" width="55" height="130" rx="6" fill="#0d1a0d" stroke="#00ff41"/><rect x="175" y="70" width="55" height="130" rx="6" fill="#0d1a0d" stroke="#00ff41"/><rect x="270" y="70" width="55" height="130" rx="6" fill="#0d1a0d" stroke="#00ff41"/><text x="200" y="275" font-family="monospace" font-size="18" fill="#00ff41" text-anchor="middle">SHOW STAGE</text></svg>',
+  '6':'<svg viewBox="0 0 400 300" width="80%" opacity=".12"><rect x="40" y="40" width="320" height="220" fill="none" stroke="#00ff41" stroke-width="2"/><rect x="60" y="60" width="130" height="80" fill="#0d1a0d" stroke="#00ff41"/><rect x="220" y="60" width="130" height="80" fill="#0d1a0d" stroke="#00ff41"/><line x1="40" y1="175" x2="360" y2="175" stroke="#00ff41" stroke-width="1" opacity=".5"/><text x="200" y="275" font-family="monospace" font-size="18" fill="#00ff41" text-anchor="middle">KITCHEN</text></svg>',
+  'default':`<svg viewBox="0 0 400 300" width="80%" opacity=".12"><rect x="40" y="40" width="320" height="220" fill="none" stroke="#00ff41" stroke-width="2"/><line x1="40" y1="40" x2="360" y2="260" stroke="#00ff41" stroke-width="1" opacity=".3"/><line x1="360" y1="40" x2="40" y2="260" stroke="#00ff41" stroke-width="1" opacity=".3"/><text x="200" y="148" font-family="monospace" font-size="14" fill="#00ff41" text-anchor="middle">${cam.label}</text></svg>`};
+  document.getElementById('cam-room-display').innerHTML=svgs[activeCam]||svgs['default'];
 }
 
-function powerOut() {
-  if (!gameRunning) return;
-  gameRunning = false;
-  clearInterval(gameLoop);
-  closeCams();
-  document.getElementById('power-out').classList.add('active');
-  document.getElementById('hud-status').textContent = 'SIN ENERGÍA';
-  document.getElementById('hud-status').style.color = 'var(--red)';
-
-  // After ~10 seconds, jumpscare
-  powerOutTimer = setTimeout(() => {
-    triggerJumpscare();
-  }, 10000 + Math.random() * 5000);
+function updatePower(){
+  const pct=Math.max(0,Math.round(power));
+  document.getElementById('hud-power').textContent=pct+'%';
+  document.getElementById('power-bar').style.width=pct+'%';
+  const bar=document.getElementById('power-bar');
+  bar.style.background=pct>50?'var(--green)':pct>25?'var(--amber)':'var(--red)';
 }
 
-function triggerJumpscare() {
-  if (!gameRunning && document.getElementById('jumpscare').classList.contains('active')) return;
-  gameRunning = false;
-  clearInterval(gameLoop);
-  if (powerOutTimer) clearTimeout(powerOutTimer);
-  closeCams();
+function flashDanger(side){const btn=document.getElementById(side+'-door-btn');btn.style.animation='shake .3s';setTimeout(()=>btn.style.animation='',300);}
 
-  document.body.style.animation = 'shake 0.4s';
-  setTimeout(() => document.body.style.animation = '', 400);
+function powerOut(){if(!gameRunning)return;gameRunning=false;clearInterval(gameLoop);playSynth('powerout');closeCams();stopAmbientMusic();document.getElementById('power-out').classList.add('active');document.getElementById('hud-status').textContent='SIN ENERGÍA';document.getElementById('hud-status').style.color='var(--red)';powerOutTimer=setTimeout(()=>triggerJumpscare(),10000+Math.random()*5000);}
 
-  const js = document.getElementById('jumpscare');
-  js.classList.add('active');
-  setTimeout(() => {
-    js.classList.remove('active');
-    showResult(false);
-  }, 2500);
-}
+function triggerJumpscare(){if(document.getElementById('jumpscare').classList.contains('active'))return;gameRunning=false;clearInterval(gameLoop);if(powerOutTimer)clearTimeout(powerOutTimer);stopAmbientMusic();closeCams();playSynth('jumpscare');document.body.style.animation='shake .4s';setTimeout(()=>document.body.style.animation='',400);const js=document.getElementById('jumpscare');js.classList.add('active');setTimeout(()=>{js.classList.remove('active');showResult(false);},2500);}
 
-function winNight() {
-  gameRunning = false;
-  clearInterval(gameLoop);
-  if (powerOutTimer) clearTimeout(powerOutTimer);
-  closeCams();
+function winNight(){gameRunning=false;clearInterval(gameLoop);if(powerOutTimer)clearTimeout(powerOutTimer);stopAmbientMusic();closeCams();playSynth('win');if(currentNight>=NIGHTS.length-1)showResult(true);else{currentNight++;showResult(true);}}
 
-  if (currentNight >= NIGHTS.length - 1) {
-    showResult(true);
-  } else {
-    currentNight++;
-    showResult(true);
-  }
-}
-
-function showResult(won) {
+function showResult(won){
   document.getElementById('game-screen').classList.remove('active');
-  const rs = document.getElementById('result-screen');
-  rs.classList.add('active');
-  const title = document.getElementById('result-title');
-  const sub = document.getElementById('result-sub');
-
-  if (won) {
-    if (currentNight >= NIGHTS.length) {
-      title.textContent = '¡SOBREVIVISTE!';
-      title.className = 'result-title win';
-      sub.textContent = 'Completaste las 5 noches — ¡Eres el guardia de seguridad más resistente!';
-    } else {
-      title.textContent = `NOCHE ${currentNight} COMPLETA`;
-      title.className = 'result-title win';
-      sub.textContent = `Mañana es la noche ${currentNight + 1}... si te atreves a volver.`;
-    }
-  } else {
-    title.textContent = 'ATRAPADO';
-    title.className = 'result-title lose';
-    sub.textContent = `Fallaste en la Noche ${currentNight + 1}. El turno termina a las 6 AM.`;
-  }
-
-  document.getElementById('night-label-title').textContent = NIGHTS[Math.min(currentNight, NIGHTS.length-1)].name;
+  document.getElementById('result-screen').classList.add('active');
+  const title=document.getElementById('result-title'),sub=document.getElementById('result-sub');
+  if(won){if(currentNight>=NIGHTS.length){title.textContent='¡SOBREVIVISTE!';title.className='result-title win';sub.textContent='Completaste las 5 noches — ¡Eres el guardia más resistente!';}else{title.textContent=`NOCHE ${currentNight} COMPLETA`;title.className='result-title win';sub.textContent=`Mañana es la noche ${currentNight+1}... si te atreves a volver.`;}}
+  else{title.textContent='ATRAPADO';title.className='result-title lose';sub.textContent=`Fallaste en la Noche ${currentNight+1}. El turno termina a las 6 AM.`;}
+  document.getElementById('night-label-title').textContent=NIGHTS[Math.min(currentNight,NIGHTS.length-1)].name;
 }
 
-function retryGame() {
-  document.getElementById('result-screen').classList.remove('active');
-  // If won all, reset to night 1
-  if (currentNight >= NIGHTS.length) {
-    currentNight = 0;
-    document.getElementById('title-screen').classList.add('active');
-    return;
-  }
-  document.getElementById('game-screen').classList.add('active');
-  initNight(currentNight);
-}
+function retryGame(){document.getElementById('result-screen').classList.remove('active');if(currentNight>=NIGHTS.length){currentNight=0;document.getElementById('title-screen').classList.add('active');return;}document.getElementById('game-screen').classList.add('active');initNight(currentNight);}
 
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (!gameRunning) return;
-  if (e.key === 'a' || e.key === 'A') toggleDoor('left');
-  if (e.key === 'd' || e.key === 'D') toggleDoor('right');
-  if (e.key === 'c' || e.key === 'C') camsOpen ? closeCams() : openCams();
-  if (e.key === 'q' || e.key === 'Q') toggleLight('left', true);
-  if (e.key === 'e' || e.key === 'E') toggleLight('right', true);
+function openHelp(){document.getElementById('help-modal').classList.add('open');}
+function closeHelp(){document.getElementById('help-modal').classList.remove('open');}
+
+// Draggable help panel
+(function(){
+  const modal = document.getElementById('help-modal');
+  const handle = document.getElementById('help-drag-handle');
+  let dragging = false, ox = 0, oy = 0;
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    const r = modal.getBoundingClientRect();
+    ox = e.clientX - r.left;
+    oy = e.clientY - r.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    let nx = e.clientX - ox;
+    let ny = e.clientY - oy;
+    nx = Math.max(0, Math.min(window.innerWidth - modal.offsetWidth, nx));
+    ny = Math.max(0, Math.min(window.innerHeight - 60, ny));
+    modal.style.left = nx + 'px';
+    modal.style.top  = ny + 'px';
+    modal.style.right = 'auto';
+  });
+  document.addEventListener('mouseup', () => dragging = false);
+  // Touch support
+  handle.addEventListener('touchstart', e => {
+    dragging = true;
+    const r = modal.getBoundingClientRect();
+    ox = e.touches[0].clientX - r.left;
+    oy = e.touches[0].clientY - r.top;
+  }, {passive:true});
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    let nx = e.touches[0].clientX - ox;
+    let ny = e.touches[0].clientY - oy;
+    nx = Math.max(0, Math.min(window.innerWidth - modal.offsetWidth, nx));
+    ny = Math.max(0, Math.min(window.innerHeight - 60, ny));
+    modal.style.left = nx + 'px';
+    modal.style.top  = ny + 'px';
+    modal.style.right = 'auto';
+  }, {passive:true});
+  document.addEventListener('touchend', () => dragging = false);
+})();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='h'||e.key==='H'){openHelp();return;}
+  if(!gameRunning)return;
+  if(e.key==='a'||e.key==='A')toggleDoor('left');
+  if(e.key==='d'||e.key==='D')toggleDoor('right');
+  if(e.key==='c'||e.key==='C')camsOpen?closeCams():openCams();
+  if(e.key==='q'||e.key==='Q')toggleLight('left',true);
+  if(e.key==='e'||e.key==='E')toggleLight('right',true);
 });
-document.addEventListener('keyup', e => {
-  if (e.key === 'q' || e.key === 'Q') toggleLight('left', false);
-  if (e.key === 'e' || e.key === 'E') toggleLight('right', false);
+document.addEventListener('keyup',e=>{
+  if(e.key==='q'||e.key==='Q')toggleLight('left',false);
+  if(e.key==='e'||e.key==='E')toggleLight('right',false);
 });
+document.addEventListener('click',()=>{if(!actx)actx=new AudioCtx();if(actx.state==='suspended')actx.resume();});
 </script>
 </body>
 </html>
