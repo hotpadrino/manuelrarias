@@ -3,114 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡Mi Mundo de Aprendizaje!</title>
-    <link href="https://fonts.googleapis.com/css2?family=Chalkboard+SE&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+    <title>¡Mi Mundo de Aprendizaje! - Aripar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Configuración Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             background-color: #e0f7fa;
             font-family: 'Comic Neue', cursive;
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Nubes Animadas */
+        .nubes-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .nube {
+            position: absolute;
+            background: white;
+            width: 150px;
+            height: 50px;
+            border-radius: 50px;
+            opacity: 0.8;
+            filter: blur(1px);
+            animation: moverNube linear infinite;
+        }
+
+        /* Diferentes nubes con distintas velocidades y posiciones */
+        .n1 { top: 10%; animation-duration: 25s; left: -200px; }
+        .n2 { top: 30%; animation-duration: 40s; left: -250px; opacity: 0.5; width: 100px; }
+        .n3 { top: 15%; animation-duration: 30s; left: -300px; width: 180px; }
+        .n4 { top: 50%; animation-duration: 50s; left: -150px; opacity: 0.4; }
+        .n5 { top: 70%; animation-duration: 35s; left: -200px; width: 130px; }
+        .n6 { top: 5%; animation-duration: 20s; left: -220px; opacity: 0.6; }
+
+        @keyframes moverNube {
+            from { transform: translateX(-10vw); }
+            to { transform: translateX(110vw); }
+        }
+
+        /* Contenido Principal */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            overflow-x: hidden;
+            padding: 60px 20px 120px 20px; /* Padding extra abajo para que no lo tape el footer */
         }
 
         h1 {
             color: #ff6f61;
-            font-size: 3rem;
-            text-shadow: 2px 2px #fff;
-            margin-bottom: 50px;
+            font-size: 3.5rem;
+            text-shadow: 4px 4px 0px #fff;
+            margin-bottom: 40px;
+            text-align: center;
         }
 
-        .contenedor {
+        .contenedor-tarjetas {
             display: flex;
-            gap: 30px;
+            gap: 35px;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 1100px;
         }
 
         .tarjeta {
-            width: 250px;
-            height: 320px;
+            width: 260px;
+            height: 330px;
             background: white;
-            border-radius: 30px;
+            border-radius: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 8px solid;
-            position: relative;
+            box-shadow: 0 15px 0px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 10px solid;
             animation: flotar 3s ease-in-out infinite;
         }
 
-        /* Colores diferentes para cada tarjeta */
         .regiones { border-color: #ffeb3b; color: #fbc02d; animation-delay: 0s; }
         .mundo { border-color: #4caf50; color: #388e3c; animation-delay: 0.5s; }
         .tablas { border-color: #2196f3; color: #1976d2; animation-delay: 1s; }
 
         .tarjeta:hover {
-            transform: scale(1.1) rotate(2deg);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            transform: scale(1.1) rotate(3deg);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.15);
         }
 
         .icono {
-            font-size: 80px;
-            margin-bottom: 20px;
+            font-size: 90px;
+            margin-bottom: 10px;
+            filter: drop-shadow(3px 3px 0px rgba(0,0,0,0.1));
         }
 
-        .titulo {
-            font-size: 1.8rem;
-            font-weight: bold;
+        .titulo-tarjeta {
+            font-size: 2.2rem;
+            font-weight: 700;
         }
 
-        /* Animación suave de flotar */
         @keyframes flotar {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
 
-        /* Decoración de fondo */
-        .nube {
-            position: absolute;
-            background: white;
-            width: 100px;
-            height: 40px;
-            border-radius: 50px;
-            z-index: -1;
-            opacity: 0.8;
+        /* FOOTER SIEMPRE VISIBLE (Sticky) */
+        .footer-infantil {
+            background-color: white;
+            border-top: 10px solid #ffccbc;
+            padding: 20px 0;
+            width: 100%;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.05);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 0 30px;
+        }
+
+        .footer-texto {
+            font-weight: 700;
+            color: #ff6f61;
+            font-size: 16px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 4px solid rgba(0,0,0,0.2);
+        }
+
+        .link-whatsapp { background-color: #4caf50; }
+        .link-email { background-color: #2196f3; }
+
+        .footer-links a:hover {
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        @media (min-width: 640px) {
+            .footer-container {
+                flex-direction: row;
+                justify-content: space-between;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>✨ ¡Elige tu aventura! ✨</h1>
-
-    <div class="contenedor">
-        <a href="regiones.html" class="tarjeta regiones">
-            <div class="icono">🗺️</div>
-            <div class="titulo">Regiones</div>
-        </a>
-
-        <a href="mundo.html" class="tarjeta mundo">
-            <div class="icono">🌍</div>
-            <div class="titulo">Mundo</div>
-        </a>
-
-        <a href="tablas.html" class="tarjeta tablas">
-            <div class="icono">🔢</div>
-            <div class="titulo">Tablas</div>
-        </a>
+    <div class="nubes-container">
+        <div class="nube n1"></div>
+        <div class="nube n2"></div>
+        <div class="nube n3"></div>
+        <div class="nube n4"></div>
+        <div class="nube n5"></div>
+        <div class="nube n6"></div>
     </div>
 
-    <div class="nube" style="top: 10%; left: 10%;"></div>
-    <div class="nube" style="top: 20%; right: 15%;"></div>
-    <div class="nube" style="bottom: 15%; left: 20%;"></div>
+    <main class="main-content">
+        <h1>✨ ¡Elige tu aventura! ✨</h1>
+
+        <div class="contenedor-tarjetas">
+            <a href="regiones.html" class="tarjeta regiones">
+                <div class="icono">🗺️</div>
+                <div class="titulo-tarjeta">Regiones</div>
+            </a>
+
+            <a href="mundo.html" class="tarjeta mundo">
+                <div class="icono">🌍</div>
+                <div class="titulo-tarjeta">Mundo</div>
+            </a>
+
+            <a href="tablas.html" class="tarjeta tablas">
+                <div class="icono">🔢</div>
+                <div class="titulo-tarjeta">Tablas</div>
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer-infantil">
+        <div class="footer-container">
+            <p class="footer-texto">🚀 © 2026 • INVERSIONES ARIPAR • ¡Aprendiendo Juntos!</p>
+            
+            <div class="footer-links">
+                <a href="https://wa.me/573128816469" class="link-whatsapp" target="_blank">
+                    <span>📱</span> WhatsApp
+                </a>
+                <a href="mailto:alucard8@gmail.com" class="link-email">
+                    <span>✉️</span> Email
+                </a>
+            </div>
+        </div>
+    </footer>
 
 </body>
 </html>
