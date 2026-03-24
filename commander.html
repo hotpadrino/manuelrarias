@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="cyber">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>E6-B COMMANDER</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ══ THEME CORE ══ */
+:root {
+  --bg: #060a0f; --bg2: #0c1420; --bg3: #0f1e2e; --panel: #081018; 
+  --border: #0d3a52; --text: #a0c4d6; --accent: #00f2ff; 
+  --accent-dim: #006677; --gold: #d4af37; --danger: #ff3e3e;
+  --font-display: 'Orbitron', sans-serif; --font-ui: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+html, body { height: 100%; margin: 0; background: var(--bg); overflow-x: hidden; scroll-behavior: smooth; }
+
+body {
+  color: var(--text); font-family: var(--font-ui);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 15px; box-sizing: border-box;
+}
+
+.app-container { width: 100%; max-width: 550px; flex: 1 0 auto; display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+header {
+  text-align: center; border: 1px solid var(--border); background: var(--panel);
+  padding: 18px; margin-bottom: 20px; border-radius: 8px; cursor: pointer;
+  transition: all 0.2s ease;
+}
+header:hover { border-color: var(--accent); background: var(--bg3); }
+header a { text-decoration: none; display: block; color: inherit; }
+.main-title { font-family: var(--font-display); color: var(--accent); margin: 0; font-size: 1.1rem; letter-spacing: 2px; }
+.sub-title { font-size: 0.75rem; color: var(--accent-dim); margin-top: 5px; font-weight: 700; letter-spacing: 1px; }
+
+/* ── NAVIGATION DASHBOARD ── */
+#dashboard { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.nav-card {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 12px 15px; border-radius: 6px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: all 0.2s;
+}
+.nav-card:hover { border-color: var(--accent); background: var(--bg2); transform: translateX(5px); }
+.nav-card span { font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 1px; color: var(--text); }
+.nav-card i { color: var(--accent-dim); font-size: 0.8rem; }
+
+/* ── MODULE STRUCTURE ── */
+.module {
+  display: none; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.module-header {
+  background: var(--bg2); padding: 12px; font-family: var(--font-display);
+  font-size: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.back-btn { 
+  background: var(--accent-dim); color: white; border: 1px solid var(--accent);
+  padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.6rem;
+}
+.back-btn:hover { background: var(--accent); color: black; }
+
+.module-body { padding: 18px; }
+
+/* ── UI ELEMENTS ── */
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.input-box { margin-bottom: 12px; }
+label { display: block; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; color: var(--accent-dim); font-weight: 700; }
+input, select {
+  width: 100%; background: #000; border: 1px solid var(--border);
+  color: var(--accent); padding: 10px; box-sizing: border-box; 
+  font-family: var(--font-mono); font-size: 0.9rem;
+}
+input:focus { outline: none; border-color: var(--accent); }
+
+button.solve {
+  width: 100%; padding: 12px; background: var(--accent-dim); border: 1px solid var(--accent);
+  color: #fff; cursor: pointer; font-family: var(--font-display); 
+  font-size: 0.7rem; margin-top: 10px; text-transform: uppercase;
+}
+button.solve:hover { background: var(--accent); color: #000; }
+
+.result-area {
+  margin-top: 15px; padding: 12px; background: rgba(0, 242, 255, 0.04);
+  border: 1px dashed var(--border); font-family: var(--font-mono); 
+  font-size: 0.9rem; color: var(--accent); line-height: 1.5; min-height: 1.5em;
+}
+
+/* ── LOG & PERSISTENCE ── */
+.log-section { margin-top: 25px; border-top: 1px solid var(--border); padding-top: 20px; }
+.disclaimer { 
+  color: var(--danger); font-size: 0.65rem; font-weight: 800; border: 1px solid var(--danger); 
+  padding: 8px; text-align: center; margin-bottom: 12px; text-transform: uppercase;
+  background: rgba(255, 62, 62, 0.05);
+}
+.notes-area { 
+  width: 100%; height: 220px; background: #04080c; border: 1px solid var(--border);
+  color: #88aabf; padding: 12px; font-family: var(--font-mono); font-size: 0.85rem;
+  box-sizing: border-box; line-height: 1.4;
+}
+.status-bar { font-size: 0.6rem; color: var(--accent-dim); margin-top: 6px; display: flex; justify-content: space-between; }
+
+/* ── FOOTER ── */
+footer {
+  width: 100%; padding: 30px 0; text-align: center; color: #445566; 
+  font-weight: 300; text-transform: uppercase; font-size: 10px; 
+  letter-spacing: 0.2em; flex-shrink: 0; border-top: 1px solid #111a24; 
+  margin-top: 40px;
+}
+.footer-content {
+  display: flex; flex-direction: column; align-items: center; 
+  gap: 15px; max-width: 550px; margin: auto; padding: 0 10px;
+}
+@media (min-width: 640px) { .footer-content { flex-direction: row; justify-content: space-between; } }
+footer a { color: inherit; text-decoration: none; transition: color 0.3s; }
+footer a:hover { color: var(--gold); }
+
+/* Table styles */
+.ref-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; font-family: var(--font-mono); color: var(--text); }
+.ref-table th, .ref-table td { border: 1px solid var(--border); padding: 5px; text-align: center; }
+.ref-table th { background: var(--bg2); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <header onclick="window.open('https://www.sportys.com/media/pdf/asae6b.pdf', '_blank')">
+        <div class="main-title">E6-B FLIGHT COMPUTER v1.1</div>
+        <div class="sub-title">Aviation Supplies & Academics, Inc.</div>
+    </header>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard">
+        <div class="nav-card" onclick="openModule('mod_tsd')"><span>1. TIME, SPEED AND DISTANCE</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_fuel')"><span>2. FUEL CONSUMPTION</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_conv')"><span>3. CONVERSIONS (DIST/VOL/WGHT)</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_tasda')"><span>4. TRUE AIRSPEED & DENSITY ALT</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_ta')"><span>5. TRUE ALTITUDE</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_climb')"><span>6. CLIMB COMPUTATIONS</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_desc')"><span>7. DESCENT COMPUTATIONS</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_grad')"><span>8. GRADIENT (FT/NM VS FT/MIN)</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_mach')"><span>9. MACH NUMBER TO TAS</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_wind')"><span>10. WIND TRIANGLE (HDG/GS/WCA)</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_windflight')"><span>11. DETERMINING WINDS IN FLIGHT</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_xw')"><span>12. CROSSWIND COMPONENT</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_off')"><span>13. OFF-COURSE CORRECTION</span><i>[ OPEN ]</i></div>
+        <div class="nav-card" onclick="openModule('mod_tables')"><span>14. CROSSWIND TABLE</span><i>[ VIEW ]</i></div>
+    </div>
+
+    <!-- MODULES: TSD -->
+    <div id="mod_tsd" class="module">
+        <div class="module-header">1. TIME - SPEED - DISTANCE <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>GS (KTS)</label><input type="number" id="tsd_gs"></div><div class="input-box"><label>DIST (NM)</label><input type="number" id="tsd_dist"></div></div>
+            <div class="input-box"><label>TIME (HH:MM o MIN)</label><input type="text" id="tsd_time"></div>
+            <button class="solve" onclick="calcTSD()">SOLVE</button>
+            <div id="res_tsd" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: FUEL -->
+    <div id="mod_fuel" class="module">
+        <div class="module-header">2. FUEL CONSUMPTION <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>BURN (GPH)</label><input type="number" id="f_gph"></div><div class="input-box"><label>REQ. (GAL)</label><input type="number" id="f_total"></div></div>
+            <div class="input-box"><label>ENDURANCE (TIME)</label><input type="text" id="f_time"></div>
+            <button class="solve" onclick="calcFuel()">SOLVE</button>
+            <div id="res_fuel" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: CONVERSIONS -->
+    <div id="mod_conv" class="module">
+        <div class="module-header">3. CONVERSIONS <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <label>DISTANCE</label>
+            <div class="grid-3">
+                <div class="input-box"><label>NM</label><input type="number" id="c_nm" oninput="convDist('nm')"></div>
+                <div class="input-box"><label>SM</label><input type="number" id="c_sm" oninput="convDist('sm')"></div>
+                <div class="input-box"><label>KM</label><input type="number" id="c_km" oninput="convDist('km')"></div>
+            </div>
+            
+            <label>VOLUME</label>
+            <div class="grid-3">
+                <div class="input-box"><label>US GAL</label><input type="number" id="c_ugal" oninput="convVol('us')"></div>
+                <div class="input-box"><label>IMP GAL</label><input type="number" id="c_igal" oninput="convVol('imp')"></div>
+                <div class="input-box"><label>LITERS</label><input type="number" id="c_l" oninput="convVol('l')"></div>
+            </div>
+
+            <label>FUEL WEIGHT (US GAL TO LBS)</label>
+            <div class="grid-2">
+                <div class="input-box"><label>AVGAS (6lb/g)</label><input type="number" id="c_avgas" readonly></div>
+                <div class="input-box"><label>JET A (6.7lb/g)</label><input type="number" id="c_jeta" readonly></div>
+            </div>
+
+            <label>GENERAL WEIGHT</label>
+            <div class="grid-2">
+                <div class="input-box"><label>LBS</label><input type="number" id="c_lbs" oninput="convWeight('lbs')"></div>
+                <div class="input-box"><label>KG</label><input type="number" id="c_kg" oninput="convWeight('kg')"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE: TAS & DA -->
+    <div id="mod_tasda" class="module">
+        <div class="module-header">4. TAS & DENSITY ALT <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>PRESS ALT (FT)</label><input type="number" id="tas_pa"></div><div class="input-box"><label>TEMP (°C)</label><input type="number" id="tas_oat"></div></div>
+            <div class="input-box"><label>CAS (KTS)</label><input type="number" id="tas_cas"></div>
+            <button class="solve" onclick="calcTAS()">CALCULATE</button>
+            <div id="res_tas" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: TRUE ALTITUDE -->
+    <div id="mod_ta" class="module">
+        <div class="module-header">5. TRUE ALTITUDE <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>PA (FT)</label><input type="number" id="ta_pa"></div><div class="input-box"><label>IND ALT (FT)</label><input type="number" id="ta_ia"></div></div>
+            <div class="grid-2"><div class="input-box"><label>OAT (°C)</label><input type="number" id="ta_oat"></div><div class="input-box"><label>STATION ALT</label><input type="number" id="ta_sa"></div></div>
+            <button class="solve" onclick="calcTrueAlt()">CALCULATE</button>
+            <div id="res_ta" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: CLIMB -->
+    <div id="mod_climb" class="module">
+        <div class="module-header">6. CLIMB COMPUTATIONS <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>RATE (FPM)</label><input type="number" id="cl_rate"></div><div class="input-box"><label>ALT DIFF (FT)</label><input type="number" id="cl_alt"></div></div>
+            <div class="input-box"><label>GROUND SPEED (GS)</label><input type="number" id="cl_gs"></div>
+            <button class="solve" onclick="calcClimbDesc('cl')">CALCULATE</button>
+            <div id="res_cl" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: DESCENT -->
+    <div id="mod_desc" class="module">
+        <div class="module-header">7. DESCENT COMPUTATIONS <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>RATE (FPM)</label><input type="number" id="de_rate"></div><div class="input-box"><label>ALT DIFF (FT)</label><input type="number" id="de_alt"></div></div>
+            <div class="input-box"><label>GROUND SPEED (GS)</label><input type="number" id="de_gs"></div>
+            <button class="solve" onclick="calcClimbDesc('de')">CALCULATE</button>
+            <div id="res_de" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: GRADIENT -->
+    <div id="mod_grad" class="module">
+        <div class="module-header">8. GRADIENT (FT/NM VS FT/MIN) <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>GS (KTS)</label><input type="number" id="gr_gs"></div><div class="input-box"><label>FT PER NM</label><input type="number" id="gr_fnm"></div></div>
+            <button class="solve" onclick="calcGrad()">SOLVE FPM</button>
+            <div id="res_gr" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: MACH -->
+    <div id="mod_mach" class="module">
+        <div class="module-header">9. MACH TO TAS <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="input-box"><label>MACH NUMBER</label><input type="number" id="m_num" step="0.01"></div>
+            <div class="input-box"><label>OAT (°C)</label><input type="number" id="m_oat"></div>
+            <button class="solve" onclick="calcMach()">CALCULATE TAS</button>
+            <div id="res_mach" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: WIND TRIANGLE -->
+    <div id="mod_wind" class="module">
+        <div class="module-header">10. WIND TRIANGLE <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>COURSE (°)</label><input type="number" id="w_crs"></div><div class="input-box"><label>TAS (KTS)</label><input type="number" id="w_tas"></div></div>
+            <div class="grid-2"><div class="input-box"><label>WIND DIR (°)</label><input type="number" id="w_wdir"></div><div class="input-box"><label>WIND VEL (KTS)</label><input type="number" id="w_wvel"></div></div>
+            <button class="solve" onclick="calcWindTriangle()">CALCULATE HDG & GS</button>
+            <div id="res_wind" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: WINDS IN FLIGHT -->
+    <div id="mod_windflight" class="module">
+        <div class="module-header">11. DETERMINING WINDS IN FLIGHT <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>TAS (KTS)</label><input type="number" id="wf_tas"></div><div class="input-box"><label>GS (KTS)</label><input type="number" id="wf_gs"></div></div>
+            <div class="grid-2"><div class="input-box"><label>HEADING (°)</label><input type="number" id="wf_hdg"></div><div class="input-box"><label>TRACK (°)</label><input type="number" id="wf_trk"></div></div>
+            <button class="solve" onclick="calcWindFlight()">CALCULATE WIND</button>
+            <div id="res_wf" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: CROSSWIND -->
+    <div id="mod_xw" class="module">
+        <div class="module-header">12. CROSSWIND COMPONENT <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>RUNWAY HDG</label><input type="number" id="xw_rwy"></div><div class="input-box"><label>WIND DIR</label><input type="number" id="xw_wdir"></div></div>
+            <div class="input-box"><label>WIND VELOCITY (KTS)</label><input type="number" id="xw_vel"></div>
+            <button class="solve" onclick="calcXW()">CALCULATE COMPONENTS</button>
+            <div id="res_xw" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: OFF-COURSE -->
+    <div id="mod_off" class="module">
+        <div class="module-header">13. OFF-COURSE CORRECTION <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <div class="grid-2"><div class="input-box"><label>DIST. FLOWN</label><input type="number" id="oc_df"></div><div class="input-box"><label>DIST. OFF</label><input type="number" id="oc_do"></div></div>
+            <div class="input-box"><label>DIST. REMAINING</label><input type="number" id="oc_dr"></div>
+            <button class="solve" onclick="calcOffCourse()">CALCULATE CORRECTION</button>
+            <div id="res_oc" class="result-area">INPUT DATA</div>
+        </div>
+    </div>
+
+    <!-- MODULE: TABLES -->
+    <div id="mod_tables" class="module">
+        <div class="module-header">14. CROSSWIND TABLE <button class="back-btn" onclick="history.back()">BACK</button></div>
+        <div class="module-body">
+            <table class="ref-table">
+                <thead><tr><th>ANGULO</th><th>X-WIND %</th><th>HEAD %</th></tr></thead>
+                <tbody>
+                    <tr><td>10°</td><td>17%</td><td>98%</td></tr>
+                    <tr><td>20°</td><td>34%</td><td>94%</td></tr>
+                    <tr><td>30°</td><td>50%</td><td>87%</td></tr>
+                    <tr><td>45°</td><td>71%</td><td>71%</td></tr>
+                    <tr><td>60°</td><td>87%</td><td>50%</td></tr>
+                    <tr><td>90°</td><td>100%</td><td>0%</td></tr>
+                </tbody>
+            </table>
+            <div class="result-area" style="font-size:0.7rem">Multiplica el % por la velocidad del viento.</div>
+        </div>
+    </div>
+
+    <!-- MISSION LOG AREA -->
+    <div class="log-section">
+        <div class="disclaimer">⚠ EDUCATIONAL PURPOSES ONLY — NOT FOR REAL FLIGHT OPERATIONS</div>
+        <textarea id="app_notes" class="notes-area" oninput="saveNotes()" placeholder="LOG SYSTEM ACTIVE..."></textarea>
+        <div class="status-bar">
+            <span id="notes_status">MEMORY LOADED</span>
+            <span style="color:var(--gold); cursor:pointer" onclick="clearNotes()">[CLEAR ALL LOGS]</span>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <p>© 2026 • INVERSIONES ARIPAR • Aviation Management</p>
+        <div style="display: flex; gap: 20px;">
+            <a href="https://wa.me/573128816469" target="_blank">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com">Email</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+/* ── NAVIGATION ENGINE WITH HISTORY ── */
+function openModule(id, push = true) {
+    document.getElementById('dashboard').style.display = 'none';
+    document.querySelectorAll('.module').forEach(m => m.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+    window.scrollTo(0,0);
+    
+    if (push) {
+        history.pushState({ moduleId: id }, "", "#" + id);
+    }
+}
+
+function showDashboard(push = true) {
+    document.querySelectorAll('.module').forEach(m => m.style.display = 'none');
+    document.getElementById('dashboard').style.display = 'grid';
+    window.scrollTo(0,0);
+    
+    if (push) {
+        history.pushState({ moduleId: 'home' }, "", "#home");
+    }
+}
+
+window.onpopstate = function(event) {
+    if (event.state && event.state.moduleId && event.state.moduleId !== 'home') {
+        openModule(event.state.moduleId, false);
+    } else {
+        showDashboard(false);
+    }
+};
+
+/* ── HELPER FUNCTIONS ── */
+function parseTime(t) {
+    if(!t) return 0;
+    if (t.includes(':')) {
+        const p = t.split(':');
+        return parseFloat(p[0]) + (parseFloat(p[1]||0) / 60);
+    }
+    return parseFloat(t) / 60;
+}
+function formatTime(dec) {
+    const h = Math.floor(dec);
+    const m = Math.round((dec - h) * 60);
+    return `${h}h ${m < 10 ? '0'+m : m}m`;
+}
+
+/* ── CALCULATION ENGINES ── */
+
+function calcTSD() {
+    let gs = parseFloat(document.getElementById('tsd_gs').value);
+    let ds = parseFloat(document.getElementById('tsd_dist').value);
+    let ts = document.getElementById('tsd_time').value;
+    let r = document.getElementById('res_tsd');
+    if (gs && ds) r.innerText = "TIME: " + formatTime(ds / gs);
+    else if (ds && ts) r.innerText = "SPEED: " + (ds / parseTime(ts)).toFixed(1) + " KTS";
+    else if (gs && ts) r.innerText = "DISTANCE: " + (gs * parseTime(ts)).toFixed(1) + " NM";
+}
+
+function calcFuel() {
+    let b = parseFloat(document.getElementById('f_gph').value);
+    let q = parseFloat(document.getElementById('f_total').value);
+    let t = document.getElementById('f_time').value;
+    let r = document.getElementById('res_fuel');
+    if (b && t) r.innerText = "FUEL REQ: " + (b * parseTime(t)).toFixed(1) + " GAL";
+    else if (q && t) r.innerText = "BURN RATE: " + (q / parseTime(t)).toFixed(1) + " GPH";
+    else if (b && q) r.innerText = "ENDURANCE: " + formatTime(q / b);
+}
+
+function convDist(source) {
+    let nm = document.getElementById('c_nm'), sm = document.getElementById('c_sm'), km = document.getElementById('c_km');
+    let v = parseFloat(document.getElementById('c_'+source).value);
+    if(isNaN(v)) return;
+    if(source==='nm'){ sm.value=(v*1.15078).toFixed(1); km.value=(v*1.852).toFixed(1); }
+    if(source==='sm'){ nm.value=(v/1.15078).toFixed(1); km.value=(v*1.60934).toFixed(1); }
+    if(source==='km'){ nm.value=(v/1.852).toFixed(1); sm.value=(v/1.60934).toFixed(1); }
+    updateFuelWeights();
+}
+
+function convVol(source) {
+    let u = document.getElementById('c_ugal'), i = document.getElementById('c_igal'), l = document.getElementById('c_l');
+    let v = parseFloat(document.getElementById('c_'+(source==='us'?'ugal':source==='imp'?'igal':'l')).value);
+    if(isNaN(v)) return;
+    if(source==='us'){ i.value=(v*0.8327).toFixed(1); l.value=(v*3.78541).toFixed(1); }
+    if(source==='imp'){ u.value=(v/0.8327).toFixed(1); l.value=(v*4.54609).toFixed(1); }
+    if(source==='l'){ u.value=(v/3.78541).toFixed(1); i.value=(v/4.54609).toFixed(1); }
+    updateFuelWeights();
+}
+
+function convWeight(source) {
+    let lb = document.getElementById('c_lbs'), kg = document.getElementById('c_kg');
+    let v = parseFloat(document.getElementById('c_'+source).value);
+    if(isNaN(v)) return;
+    if(source==='lbs') kg.value = (v * 0.453592).toFixed(1);
+    else lb.value = (v / 0.453592).toFixed(1);
+}
+
+function updateFuelWeights() {
+    let us = parseFloat(document.getElementById('c_ugal').value);
+    if(!isNaN(us)) {
+        document.getElementById('c_avgas').value = (us * 6).toFixed(1);
+        document.getElementById('c_jeta').value = (us * 6.7).toFixed(1);
+    }
+}
+
+function calcTAS() {
+    let pa = parseFloat(document.getElementById('tas_pa').value), oat = parseFloat(document.getElementById('tas_oat').value), cas = parseFloat(document.getElementById('tas_cas').value);
+    if(isNaN(pa)||isNaN(oat)||isNaN(cas)) return;
+    let isa = 15 - (2 * (pa / 1000));
+    let da = pa + (120 * (oat - isa));
+    let tas = cas * (1 + (0.02 * (da / 1000)));
+    document.getElementById('res_tas').innerHTML = `TAS: ${Math.round(tas)} KTS<br>DENSITY ALT: ${Math.round(da)} FT`;
+}
+
+function calcTrueAlt() {
+    let pa = parseFloat(document.getElementById('ta_pa').value), ia = parseFloat(document.getElementById('ta_ia').value), oat = parseFloat(document.getElementById('ta_oat').value), sa = parseFloat(document.getElementById('ta_sa').value || 0);
+    let isaAtPA = 15 - (2 * (pa / 1000));
+    let trueAlt = sa + (ia - sa) * ((273.15 + oat) / (273.15 + isaAtPA));
+    document.getElementById('res_ta').innerText = `TRUE ALTITUDE: ${Math.round(trueAlt)} FT MSL`;
+}
+
+function calcClimbDesc(m) {
+    let r = parseFloat(document.getElementById(m+'_rate').value), a = parseFloat(document.getElementById(m+'_alt').value), gs = parseFloat(document.getElementById(m+'_gs').value);
+    if(!r || !a) return;
+    let time = a / r;
+    let dist = gs ? (gs * (time/60)) : null;
+    document.getElementById('res_'+m).innerHTML = `TIME: ${time.toFixed(1)} MIN${dist ? '<br>DISTANCE: '+dist.toFixed(1)+' NM' : ''}`;
+}
+
+function calcGrad() {
+    let gs = parseFloat(document.getElementById('gr_gs').value), fnm = parseFloat(document.getElementById('gr_fnm').value);
+    document.getElementById('res_gr').innerText = `FPM REQ: ${Math.round((fnm * gs) / 60)} FT/MIN`;
+}
+
+function calcMach() {
+    let m = parseFloat(document.getElementById('m_num').value), oat = parseFloat(document.getElementById('m_oat').value);
+    let tas = m * 38.967 * Math.sqrt(oat + 273.15);
+    document.getElementById('res_mach').innerText = `TAS: ${Math.round(tas)} KTS`;
+}
+
+function calcWindTriangle() {
+    const wd = parseFloat(document.getElementById('w_wdir').value)*Math.PI/180, wv = parseFloat(document.getElementById('w_wvel').value), tc = parseFloat(document.getElementById('w_crs').value)*Math.PI/180, tas = parseFloat(document.getElementById('w_tas').value);
+    const wca = Math.asin((wv * Math.sin(wd - tc)) / tas);
+    const gs = Math.sqrt(tas*tas + wv*wv - 2*tas*wv*Math.cos(tc - wd + wca));
+    let hdg = (tc + wca)*180/Math.PI; if(hdg<0) hdg+=360;
+    document.getElementById('res_wind').innerHTML = `HDG: ${Math.round(hdg)}°<br>GS: ${Math.round(gs)} KTS<br>WCA: ${Math.round(wca*180/Math.PI)}°`;
+}
+
+function calcWindFlight() {
+    let tas = parseFloat(document.getElementById('wf_tas').value), gs = parseFloat(document.getElementById('wf_gs').value), hdg = parseFloat(document.getElementById('wf_hdg').value)*Math.PI/180, trk = parseFloat(document.getElementById('wf_trk').value)*Math.PI/180;
+    let wx = gs * Math.sin(trk) - tas * Math.sin(hdg), wy = gs * Math.cos(trk) - tas * Math.cos(hdg);
+    let wvel = Math.sqrt(wx*wx + wy*wy);
+    let wdir = Math.atan2(wx, wy)*180/Math.PI + 180; if(wdir>=360) wdir-=360;
+    document.getElementById('res_wf').innerHTML = `WIND: ${Math.round(wdir)}° @ ${Math.round(wvel)} KTS`;
+}
+
+function calcXW() {
+    let r = parseFloat(document.getElementById('xw_rwy').value), d = parseFloat(document.getElementById('xw_wdir').value), v = parseFloat(document.getElementById('xw_vel').value);
+    let diff = (d - r)*Math.PI/180;
+    let head = v * Math.cos(diff), cross = v * Math.sin(diff);
+    document.getElementById('res_xw').innerHTML = `X-WIND: ${Math.abs(Math.round(cross))} KTS<br>HEAD/TAIL: ${Math.round(head)} KTS`;
+}
+
+function calcOffCourse() {
+    let df = parseFloat(document.getElementById('oc_df').value), d_off = parseFloat(document.getElementById('oc_do').value), dr = parseFloat(document.getElementById('oc_dr').value);
+    let c1 = (d_off / df) * 60, c2 = (d_off / dr) * 60;
+    document.getElementById('res_oc').innerHTML = `HEADING CORR: ${Math.round(c1 + c2)}°<br>(1st Leg: ${Math.round(c1)}° | 2nd Leg: ${Math.round(c2)}°)`;
+}
+
+/* ── PERSISTENCE ── */
+function saveNotes() {
+    const t = document.getElementById('app_notes').value;
+    localStorage.setItem('e6b_full_notes', t);
+    document.getElementById('notes_status').innerText = '✓ AUTO-SAVED';
+}
+function clearNotes() {
+    if(confirm('¿BORRAR TODO EL LOG?')) {
+        document.getElementById('app_notes').value = "";
+        localStorage.removeItem('e6b_full_notes');
+        document.getElementById('notes_status').innerText = 'LOG CLEARED';
+    }
+}
+
+window.onload = () => {
+    const s = localStorage.getItem('e6b_full_notes') || "";
+    document.getElementById('app_notes').value = s;
+    history.replaceState({ moduleId: 'home' }, "", "#home");
+};
+</script>
+
+</body>
+</html>
