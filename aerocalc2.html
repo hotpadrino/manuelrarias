@@ -561,6 +561,22 @@ textarea { resize:vertical; min-height:180px; font-family: var(--font-ui); font-
   header { padding:0 12px; }
   .cat-panel.active { padding: 12px; }
 }
+
+/* ── FOOTER ── */
+footer {
+  width: 100%; padding: 30px 0; text-align: center; color: #637b94; 
+  font-weight: 300; text-transform: uppercase; font-size: 12px; 
+  letter-spacing: 0.2em; flex-shrink: 0; border-top: 1px solid #111a24; 
+  margin-top: 40px;
+}
+.footer-content {
+  display: flex; flex-direction: column; align-items: center; 
+  gap: 15px; max-width: 550px; margin: auto; padding: 0 10px;
+}
+@media (min-width: 640px) { .footer-content { flex-direction: row; justify-content: space-between; } }
+footer a { color: inherit; text-decoration: none; transition: color 0.3s; }
+footer a:hover { color: var(--gold); }
+
 </style>
 </head>
 <body data-theme="cyber">
@@ -956,6 +972,16 @@ textarea { resize:vertical; min-height:180px; font-family: var(--font-ui); font-
 </section>
 
 </main>
+
+<footer>
+    <div class="footer-content">
+        <p>© 2026 • INVERSIONES ARIPAR • Aviation Management</p>
+        <div style="display: flex; gap: 20px;">
+            <a href="https://wa.me/573128816469" target="_blank">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com">Email</a>
+        </div>
+    </div>
+</footer>
 
 <script>
 /* ── CLOCK ── */
