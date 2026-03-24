@@ -92,7 +92,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 
 /* Patrones de Camuflaje (solo se activan en los temas camo) */
-body { background-color: var(--bg); background-image: none; color: var(--text); font-family: var(--font-body); font-size: 15px; min-height: 100vh; }
+body { background-color: var(--bg); background-image: none; color: var(--text); font-family: var(--font-body); font-size: 15px; min-height: 100vh; display: flex; flex-direction: column; }
 [data-theme="camo-green"] body {
   background-image: radial-gradient(#3b421a 15%, transparent 16%), radial-gradient(#5b6628 15%, transparent 16%);
   background-size: 60px 60px; background-position: 0 0, 30px 30px;
@@ -193,6 +193,46 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
   height: 40px; width: 40px; border-radius: var(--radius); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
 }
 .wb-m { background: transparent !important; border-style: dashed !important; color: var(--accent) !important; }
+
+/* ══ FOOTER ══ */
+.site-footer {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--text2);
+  font-weight: 300;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  background: transparent;
+}
+.site-footer-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+@media (min-width: 640px) {
+  .site-footer-inner { flex-direction: row; }
+}
+.site-footer a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.site-footer a:hover {
+  color: var(--accent);
+}
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
 </style>
 </head>
 <body data-theme="blue">
@@ -427,6 +467,16 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
 </section>
 
 </main>
+
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <p>© 2026 • INVERSIONES ARIPAR • Real Estate Management</p>
+        <div class="footer-links">
+            <a href="https://wa.me/573128816469" target="_blank">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com">Email</a>
+        </div>
+    </div>
+</footer>
 
 <script>
 /* ── NAV (Historial del Navegador) ── */
