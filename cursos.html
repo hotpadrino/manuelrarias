@@ -3,27 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Entrenamiento FAC - Supabase</title>
+    <title>CONTROL DE ENTRENAMIENTO CAMAN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .login-box { max-width: 400px; margin: 80px auto; border-radius: 12px; }
+        :root {
+            --azul-fac: #003366;
+            --azul-claro: #e3f2fd;
+        }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 100px; }
+        
+        /* Encabezado Fijo */
+        .header-caman {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--azul-fac);
+            color: white;
+            padding: 10px 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-caman img { height: 60px; margin-right: 15px; }
+        .header-title { font-weight: 800; letter-spacing: 1px; margin: 0; font-size: 1.5rem; }
+
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: var(--azul-fac); border: none; }
+        .btn-primary:hover { background-color: #002244; }
+        
         .hidden { display: none; }
-        /* Semáforo de vencimientos */
-        .vence-3-meses { background-color: #fff3cd !important; border-left: 6px solid #ffc107; } /* Amarillo */
-        .vencido { background-color: #f8d7da !important; border-left: 6px solid #dc3545; }       /* Rojo */
-        .table-container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        /* Semáforo de Vencimientos */
+        .vence-3-meses { background-color: #fff3cd !important; border-left: 8px solid #ffc107; }
+        .vencido { background-color: #f8d7da !important; border-left: 8px solid #dc3545; }
+        
+        .table thead { background-color: var(--azul-fac); color: white; }
+        .login-box { max-width: 400px; margin: 50px auto; }
     </style>
 </head>
 <body>
 
+<header class="header-caman">
+    <div class="d-flex align-items-center">
+        <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="Logo CAMAN">
+        <h1 class="header-title">CONTROL DE ENTRENAMIENTO CAMAN</h1>
+    </div>
+    <div id="userInfo" class="text-end hidden">
+        <span id="userName" class="badge bg-light text-dark me-2">Cargando...</span>
+        <button onclick="signOut()" class="btn btn-outline-light btn-sm">Salir</button>
+    </div>
+</header>
+
 <div class="container">
-    <div id="authSection" class="card login-box shadow-lg p-4">
-        <div class="text-center mb-4">
-            <h4 class="fw-bold">Sistema de Entrenamiento</h4>
-            <p class="text-muted small">Autenticación Requerida</p>
-        </div>
+    <div id="authSection" class="card login-box p-4">
+        <h4 class="text-center mb-4 text-primary">Ingreso al Sistema</h4>
         <div class="mb-3">
             <input type="email" id="email" class="form-control" placeholder="Correo electrónico">
         </div>
@@ -33,42 +70,36 @@
         <button onclick="signIn()" id="loginBtn" class="btn btn-primary w-100">Entrar</button>
     </div>
 
-    <div id="mainSection" class="hidden py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-primary fw-bold">Registro de Capacitaciones</h2>
-            <button onclick="signOut()" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
-        </div>
-
-        <div class="card p-3 mb-4 shadow-sm border-0">
-            <label class="form-label fw-bold">Consultar por Número de Cédula:</label>
+    <div id="mainSection" class="hidden">
+        <div class="card p-3 mb-4 bg-white">
+            <h6 class="text-muted fw-bold">CONSULTA DE PERSONAL</h6>
             <div class="input-group">
-                <input type="text" id="searchCedula" class="form-control" placeholder="Ej: 80041689">
+                <input type="text" id="searchCedula" class="form-control" placeholder="Número de Cédula (Ej: 1111)">
                 <button onclick="fetchData()" class="btn btn-dark px-4">Consultar</button>
             </div>
-            <div class="form-text">Los usuarios pueden ver todos los registros asociados a la cédula.</div>
         </div>
 
-        <div id="adminForm" class="card p-3 mb-4 border-primary shadow-sm hidden">
-            <h5 class="text-primary mb-3">Añadir Nuevo Registro de Entrenamiento</h5>
-            <div class="row g-2">
-                <div class="col-md-2"><input type="text" id="inCedula" class="form-control" placeholder="Cédula"></div>
-                <div class="col-md-4"><input type="text" id="inCurso" class="form-control" placeholder="Nombre del Curso"></div>
-                <div class="col-md-2"><label class="small text-muted">Fecha Realización</label><input type="date" id="inFecha" class="form-control"></div>
-                <div class="col-md-2"><label class="small text-muted">Fecha Vencimiento</label><input type="date" id="inVence" class="form-control"></div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button onclick="upsertData()" class="btn btn-success w-100">Guardar</button>
+        <div id="adminForm" class="card p-4 mb-4 border-primary hidden">
+            <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">Gestionar Nuevo Registro</h5>
+            <div class="row g-3">
+                <div class="col-md-3"><input type="text" id="inCedula" class="form-control" placeholder="Cédula"></div>
+                <div class="col-md-4"><input type="text" id="inCurso" class="form-control" placeholder="Curso"></div>
+                <div class="col-md-2"><label class="small text-muted">Realización</label><input type="date" id="inFecha" class="form-control"></div>
+                <div class="col-md-2"><label class="small text-muted">Vencimiento</label><input type="date" id="inVence" class="form-control"></div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button onclick="upsertData()" class="btn btn-success w-100">OK</button>
                 </div>
             </div>
         </div>
 
-        <div class="table-container shadow-sm border-0">
-            <table class="table table-hover">
-                <thead class="table-light">
+        <div class="card overflow-hidden">
+            <table class="table table-hover m-0">
+                <thead>
                     <tr>
                         <th>Cédula</th>
-                        <th>Curso / Capacitación</th>
+                        <th>Nombre del Curso</th>
                         <th>Realizado</th>
-                        <th>Vence</th>
+                        <th>Vencimiento</th>
                         <th id="thAcciones" class="hidden text-center">Gestión</th>
                     </tr>
                 </thead>
@@ -80,55 +111,59 @@
 </div>
 
 <script>
-    // Credenciales de tu proyecto
     const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let sessionUser = null;
-    const ADMIN_EMAIL = 'admin@tuempresa.com'; // <--- CAMBIA ESTO por tu correo de admin
+    let isAdmin = false;
 
-    // --- AUTENTICACIÓN ---
     async function signIn() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const btn = document.getElementById('loginBtn');
         
         btn.disabled = true;
-        btn.innerText = "Validando...";
-
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
-            alert("Error: " + error.message);
+            alert("Acceso denegado: " + error.message);
             btn.disabled = false;
-            btn.innerText = "Entrar";
             return;
         }
         
         sessionUser = data.user;
-        renderDashboard();
+        await checkUserRole();
     }
 
-    function signOut() {
-        _supabase.auth.signOut().then(() => location.reload());
+    async function checkUserRole() {
+        const { data } = await _supabase
+            .from('usuarios')
+            .select('es_admin, nombre')
+            .eq('email', sessionUser.email)
+            .single();
+
+        if (data) {
+            isAdmin = data.es_admin;
+            document.getElementById('userName').innerText = `${data.nombre} [${isAdmin ? 'ADMIN' : 'USUARIO'}]`;
+        }
+        renderUI();
     }
 
-    function renderDashboard() {
+    function renderUI() {
         document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('userInfo').classList.remove('hidden');
         document.getElementById('mainSection').classList.remove('hidden');
 
-        // Lógica de visibilidad según rol
-        if (sessionUser.email === ADMIN_EMAIL) { 
+        if (isAdmin) {
             document.getElementById('adminForm').classList.remove('hidden');
             document.getElementById('thAcciones').classList.remove('hidden');
         }
     }
 
-    // --- MANEJO DE DATOS ---
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value;
-        if (!cedula) return alert("Ingrese una cédula para filtrar");
+        if (!cedula) return alert("Ingrese cédula");
 
         const { data, error } = await _supabase
             .from('entrenamientos')
@@ -136,11 +171,6 @@
             .eq('cedula', cedula)
             .order('fecha_vencimiento', { ascending: true });
 
-        if (error) return console.error(error);
-        renderTable(data);
-    }
-
-    function renderTable(data) {
         const tbody = document.getElementById('dataTable');
         tbody.innerHTML = '';
 
@@ -149,17 +179,12 @@
             const alertStatus = getStatusClass(row.fecha_vencimiento);
             if (alertStatus) tr.className = alertStatus;
 
-            const isPageAdmin = (sessionUser.email === ADMIN_EMAIL);
-
             tr.innerHTML = `
-                <td class="fw-bold">${row.cedula}</td>
-                <td>${row.curso}</td>
+                <td>${row.cedula}</td>
+                <td class="fw-bold text-uppercase">${row.curso}</td>
                 <td>${row.fecha_realizacion}</td>
                 <td>${row.fecha_vencimiento}</td>
-                ${isPageAdmin ? `
-                    <td class="text-center">
-                        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${row.id}')">Borrar</button>
-                    </td>` : `<td class="hidden"></td>`}
+                ${isAdmin ? `<td class="text-center"><button class="btn btn-outline-danger btn-sm" onclick="deleteRecord('${row.id}')">Borrar</button></td>` : ''}
             `;
             tbody.appendChild(tr);
         });
@@ -172,32 +197,19 @@
             fecha_realizacion: document.getElementById('inFecha').value,
             fecha_vencimiento: document.getElementById('inVence').value
         };
-
-        if (!payload.cedula || !payload.curso || !payload.fecha_vencimiento) {
-            return alert("Por favor complete Cédula, Curso y Fecha de Vencimiento");
-        }
-
         const { error } = await _supabase.from('entrenamientos').insert([payload]);
-
-        if (error) {
-            alert("Error al guardar en la nube: " + error.message);
-        } else {
-            // Limpiar campos
+        if (error) alert(error.message); else { 
             document.getElementById('inCedula').value = "";
             document.getElementById('inCurso').value = "";
-            document.getElementById('inFecha').value = "";
-            document.getElementById('inVence').value = "";
-            fetchData();
-            alert("Registro guardado exitosamente");
+            fetchData(); 
         }
     }
 
     async function deleteRecord(id) {
-        if (!confirm("¿Está seguro de eliminar este registro del servidor?")) return;
-        
-        const { error } = await _supabase.from('entrenamientos').delete().eq('id', id);
-        if (error) alert(error.message);
-        else fetchData();
+        if (confirm("¿Eliminar registro?")) {
+            await _supabase.from('entrenamientos').delete().eq('id', id);
+            fetchData();
+        }
     }
 
     function getStatusClass(fecha) {
@@ -205,12 +217,12 @@
         const vence = new Date(fecha);
         const diffMs = vence - hoy;
         const diffDias = diffMs / (1000 * 60 * 60 * 24);
-
         if (diffMs < 0) return 'vencido';
         if (diffDias <= 90) return 'vence-3-meses';
         return '';
     }
-</script>
 
+    function signOut() { _supabase.auth.signOut().then(() => location.reload()); }
+</script>
 </body>
 </html>
