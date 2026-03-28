@@ -6,235 +6,770 @@
     <title>CONTROL DE ENTRENAMIENTO CAMAN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ═══════════════════════════════════════════
+           PALETA AERONÁUTICA MILITAR
+        ═══════════════════════════════════════════ */
         :root {
-            --azul-fac: #003366;
-            --azul-claro: #e3f2fd;
-            --gris-fondo: #f4f7f9;
+            --azul-aviador:     #0a1628;
+            --azul-cielo:       #1a3a6e;
+            --azul-acento:      #2d7dd2;
+            --azul-brillo:      #4da6ff;
+
+            --morado-autoridad: #2d1b69;
+            --morado-medio:     #4a2c8a;
+            --morado-acento:    #7c4dff;
+
+            --radar-fondo:      #030d08;
+            --radar-verde:      #00ff41;
+            --radar-verde-dim:  #00a82b;
+            --radar-grid:       rgba(0,255,65,0.12);
+
+            --nvg-fondo:        #0d0000;
+            --nvg-rojo:         #ff1a1a;
+            --nvg-rojo-dim:     #8b0000;
+
+            --arena-militar:    #c8a96e;
+            --arena-oscura:     #8b7355;
+            --arena-fondo:      #2a1f0e;
+
+            --verde-selva:      #2d5a27;
+            --verde-claro:      #4a8b3f;
+            --verde-lima:       #7ab648;
+
+            --negro-base:       #080c10;
+            --gris-panel:       #111827;
+            --gris-borde:       #1f2d3d;
+            --gris-texto:       #8fa3b8;
+            --blanco-tenue:     #d4dde8;
+
+            --font-display:     'Orbitron', sans-serif;
+            --font-mono:        'Share Tech Mono', monospace;
+            --font-body:        'Barlow Condensed', sans-serif;
         }
-        
-        /* ESTRUCTURA BASE PARA FOOTER AL FONDO (CORREGIDA) */
-        body { 
-            background-color: var(--gris-fondo); 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            padding-top: 90px;
+
+        /* ═══════════════════════════════════════════
+           BASE
+        ═══════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            background-color: var(--azul-aviador);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(45,125,210,0.15) 0%, transparent 60%),
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 39px,
+                    rgba(45,125,210,0.04) 39px,
+                    rgba(45,125,210,0.04) 40px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 39px,
+                    rgba(45,125,210,0.04) 39px,
+                    rgba(45,125,210,0.04) 40px
+                );
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--blanco-tenue);
+            padding-top: 74px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            margin: 0; /* Asegura que no haya márgenes ocultos */
+            margin: 0;
         }
 
         .main-content {
-            flex-grow: 1; /* Empuja el footer hacia abajo */
+            flex-grow: 1;
             width: 100%;
-            padding-bottom: 40px; /* Da un poco de respiro antes del footer */
+            padding-bottom: 40px;
         }
-        
-        /* HEADER FIJO */
+
+        /* ═══════════════════════════════════════════
+           HEADER — AZUL AVIADOR
+        ═══════════════════════════════════════════ */
         .header-caman {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0; 
-            box-sizing: border-box; 
-            background-color: var(--azul-fac);
-            color: white;
-            padding: 12px 24px;
+            top: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, var(--azul-aviador) 0%, var(--azul-cielo) 100%);
+            border-bottom: 2px solid var(--azul-acento);
+            box-shadow:
+                0 1px 0 rgba(77,166,255,0.3),
+                0 4px 24px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(77,166,255,0.1);
+            padding: 10px 24px;
             z-index: 1050;
-            box-shadow: 0 4px 15px rgba(0,51,102,0.2);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
+        /* Esquinas tipo HUD */
+        .header-caman::before,
+        .header-caman::after {
+            content: '';
+            position: absolute;
+            width: 14px; height: 14px;
+            bottom: -1px;
+            border-color: var(--azul-brillo);
+            border-style: solid;
+            opacity: 0.6;
+        }
+        .header-caman::before { left: 8px;  border-width: 0 0 2px 2px; }
+        .header-caman::after  { right: 8px; border-width: 0 2px 2px 0; }
+
         .brand-section {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 14px;
             min-width: 0;
         }
 
-        .header-caman img { height: 50px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-
-        .header-title { 
-            font-weight: 800; 
-            font-size: 1.25rem; 
-            margin: 0; 
-            letter-spacing: 0.5px;
-            white-space: nowrap;
+        .header-caman img {
+            height: 44px; width: auto;
+            filter: drop-shadow(0 0 8px rgba(77,166,255,0.5));
         }
 
-        /* SECCIÓN DE USUARIO */
+        .header-title-wrap { display: flex; flex-direction: column; gap: 1px; }
+
+        .header-label {
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--azul-brillo);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .header-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            margin: 0;
+            letter-spacing: 2px;
+            color: #fff;
+            white-space: nowrap;
+            text-shadow: 0 0 20px rgba(77,166,255,0.4);
+        }
+
+        /* ═══════════════════════════════════════════
+           SECCIÓN DE USUARIO
+        ═══════════════════════════════════════════ */
         .user-section {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 4px;
             flex-shrink: 0;
-            max-width: 45%; 
+            max-width: 45%;
         }
 
         #userName {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #e3f2fd;
-            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--azul-brillo);
             text-align: right;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; 
+            text-overflow: ellipsis;
         }
 
         .btn-logout {
-            font-size: 0.75rem;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-weight: bold;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 3px 14px;
+            border-radius: 3px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border: 1px solid var(--azul-brillo);
+            color: var(--azul-brillo);
+            background: transparent;
             transition: all 0.2s;
             white-space: nowrap;
         }
-
-        /* TARJETAS MODERNAS */
-        .card-modern {
-            background: white;
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        .btn-logout:hover {
+            background: var(--azul-brillo);
+            color: var(--azul-aviador);
+            box-shadow: 0 0 12px rgba(77,166,255,0.5);
         }
 
-        /* DISEÑO DE TABLA */
-        .table-custom {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
+        /* ═══════════════════════════════════════════
+           PANEL DE LOGIN — MORADO AUTORIDAD
+        ═══════════════════════════════════════════ */
+        #authSection {
+            background: linear-gradient(145deg, rgba(45,27,105,0.95) 0%, rgba(26,8,60,0.98) 100%);
+            border: 1px solid var(--morado-acento);
+            border-radius: 4px;
+            box-shadow:
+                0 0 0 1px rgba(124,77,255,0.2),
+                0 20px 60px rgba(0,0,0,0.7),
+                inset 0 1px 0 rgba(124,77,255,0.2);
+            position: relative;
+            overflow: hidden;
         }
-        
-        .table-custom thead th {
-            background-color: transparent;
-            color: #6c757d;
-            font-size: 0.8rem;
+
+        #authSection::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--morado-acento), transparent);
+        }
+
+        .auth-icon {
+            width: 56px; height: 56px;
+            background: rgba(124,77,255,0.15);
+            border: 1px solid rgba(124,77,255,0.4);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto;
+            font-size: 1.5rem;
+            color: var(--morado-acento);
+            box-shadow: 0 0 20px rgba(124,77,255,0.3);
+        }
+
+        .auth-title {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #edf2f7;
-            padding: 16px;
+            color: var(--morado-acento);
+            text-align: center;
+            margin-top: 10px;
         }
 
-        .table-custom tbody tr:hover { background-color: #f8fafc; }
-
-        .table-custom tbody td {
-            padding: 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #edf2f7;
-            color: #2d3748;
+        .form-control-aero {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(124,77,255,0.3) !important;
+            border-radius: 3px !important;
+            color: #fff !important;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .form-control-aero::placeholder { color: rgba(200,169,255,0.4); }
+        .form-control-aero:focus {
+            background: rgba(124,77,255,0.08) !important;
+            border-color: var(--morado-acento) !important;
+            box-shadow: 0 0 0 3px rgba(124,77,255,0.15) !important;
+            outline: none;
         }
 
-        .vence-3-meses { background-color: rgba(255, 193, 7, 0.05) !important; }
-        .vence-3-meses td:first-child { border-left: 6px solid #ffc107; }
-
-        .vencido { background-color: rgba(220, 53, 69, 0.05) !important; }
-        .vencido td:first-child { border-left: 6px solid #dc3545; }
-
-        .badge-status { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 600; }
-
-        /* FOOTER ESTILO INVERSIONES ARIPAR (CORREGIDO) */
-        .footer-aripar {
-            background-color: #1a202c;
-            color: #a0aec0;
-            padding: 30px 0;
-            border-top: 4px solid var(--azul-fac);
-            width: 100%; /* Forzamos a que ocupe todo el ancho */
-            margin-top: auto; /* La magia de Flexbox: empuja el footer hasta el fondo exacto */
+        .btn-autoridad {
+            background: linear-gradient(135deg, var(--morado-autoridad), var(--morado-medio));
+            border: 1px solid var(--morado-acento);
+            color: #fff;
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            border-radius: 3px;
+            transition: all 0.25s;
+            text-shadow: 0 0 10px rgba(124,77,255,0.5);
+        }
+        .btn-autoridad:hover {
+            background: linear-gradient(135deg, var(--morado-medio), var(--morado-acento));
+            box-shadow: 0 0 24px rgba(124,77,255,0.5);
+            color: #fff;
         }
 
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
+        /* ═══════════════════════════════════════════
+           PANEL PRINCIPAL — AZUL AVIADOR
+        ═══════════════════════════════════════════ */
+        .card-aviador {
+            background: rgba(10,22,40,0.9);
+            border: 1px solid var(--gris-borde);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-aviador::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, var(--azul-acento) 30%, var(--azul-brillo) 50%, var(--azul-acento) 70%, transparent 100%);
         }
 
-        .footer-content p { margin: 0; font-size: 0.9rem; letter-spacing: 0.5px; }
-
-        .footer-links { display: flex; gap: 20px; }
-
-        .footer-links a {
-            color: #e2e8f0;
-            text-decoration: none;
-            font-size: 0.95rem;
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--azul-brillo);
+            opacity: 0.8;
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: color 0.3s ease;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
+            margin-bottom: 14px;
+        }
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--azul-acento), transparent);
+            opacity: 0.4;
         }
 
-        .footer-links a.whatsapp:hover { color: #25D366; background: rgba(37, 211, 102, 0.1); }
-        .footer-links a.email:hover { color: #63b3ed; background: rgba(99, 179, 237, 0.1); }
-
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .header-title { display: none; } 
-            .footer-content { text-align: center; }
-            .footer-links { flex-direction: column; gap: 10px; width: 100%; }
-            .footer-links a { justify-content: center; }
+        .input-aero {
+            background: rgba(13,25,48,0.8) !important;
+            border: 1px solid var(--gris-borde) !important;
+            border-radius: 3px !important;
+            color: #fff !important;
+            font-family: var(--font-mono);
+            transition: all 0.2s;
+        }
+        .input-aero::placeholder { color: rgba(143,163,184,0.4); }
+        .input-aero:focus {
+            background: rgba(45,125,210,0.08) !important;
+            border-color: var(--azul-acento) !important;
+            box-shadow: 0 0 0 3px rgba(45,125,210,0.12) !important;
+            outline: none;
         }
 
+        .btn-buscar {
+            background: linear-gradient(135deg, var(--azul-cielo), var(--azul-acento));
+            border: none;
+            color: #fff;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            border-radius: 0 3px 3px 0 !important;
+            padding: 0 24px;
+            transition: all 0.2s;
+        }
+        .btn-buscar:hover {
+            background: linear-gradient(135deg, var(--azul-acento), var(--azul-brillo));
+            box-shadow: 0 0 16px rgba(45,125,210,0.5);
+            color: #fff;
+        }
+
+        /* ═══════════════════════════════════════════
+           PANEL ADMIN — ARENA MILITAR
+        ═══════════════════════════════════════════ */
+        #adminForm {
+            background: linear-gradient(135deg, rgba(42,31,14,0.95), rgba(20,14,5,0.98)) !important;
+            border: 1px solid rgba(200,169,110,0.3) !important;
+            border-radius: 4px !important;
+            position: relative;
+            overflow: hidden;
+        }
+        #adminForm::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--arena-militar), transparent);
+        }
+
+        .admin-label {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--arena-militar);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .admin-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--arena-oscura), transparent);
+        }
+
+        .input-arena {
+            background: rgba(42,31,14,0.6) !important;
+            border: 1px solid rgba(200,169,110,0.25) !important;
+            border-radius: 3px !important;
+            color: var(--arena-militar) !important;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .input-arena::placeholder { color: rgba(200,169,110,0.3); }
+        .input-arena:focus {
+            border-color: var(--arena-militar) !important;
+            box-shadow: 0 0 0 3px rgba(200,169,110,0.12) !important;
+            outline: none;
+        }
+        .input-arena::-webkit-calendar-picker-indicator { filter: invert(0.6) sepia(1) saturate(2) hue-rotate(5deg); }
+
+        .label-arena {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--arena-oscura);
+        }
+
+        .btn-guardar {
+            background: linear-gradient(135deg, var(--arena-oscura), var(--arena-militar));
+            border: 1px solid var(--arena-militar);
+            color: var(--azul-aviador);
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+        .btn-guardar:hover {
+            background: var(--arena-militar);
+            box-shadow: 0 0 16px rgba(200,169,110,0.4);
+            color: #000;
+        }
+
+        /* ═══════════════════════════════════════════
+           TABLA — RADAR (negro + verde)
+        ═══════════════════════════════════════════ */
+        .card-radar {
+            background: var(--radar-fondo);
+            border: 1px solid rgba(0,255,65,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .card-radar::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--radar-verde), transparent);
+        }
+
+        /* Scanline sutil */
+        .card-radar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,255,65,0.015) 2px,
+                rgba(0,255,65,0.015) 4px
+            );
+            pointer-events: none;
+        }
+
+        .table-radar {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+
+        .table-radar thead th {
+            background: rgba(0,255,65,0.06);
+            color: var(--radar-verde);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 1px solid rgba(0,255,65,0.2);
+            padding: 14px 16px;
+            font-weight: 400;
+        }
+
+        .table-radar tbody tr { transition: background 0.15s; }
+        .table-radar tbody tr:hover { background: rgba(0,255,65,0.04); }
+
+        .table-radar tbody td {
+            padding: 13px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(0,255,65,0.08);
+            color: rgba(0,255,65,0.75);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .td-curso {
+            color: #fff !important;
+            font-family: var(--font-body) !important;
+            font-size: 0.95rem !important;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════════════════
+           BADGES DE ESTADO
+        ═══════════════════════════════════════════ */
+
+        /* Vigente — Verde Selva */
+        .badge-vigente {
+            background: rgba(45,90,39,0.4);
+            border: 1px solid var(--verde-claro);
+            color: var(--verde-lima);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            padding: 4px 12px;
+            border-radius: 2px;
+        }
+
+        /* Vence pronto — Arena Militar */
+        .badge-pronto {
+            background: rgba(139,115,85,0.25);
+            border: 1px solid var(--arena-oscura);
+            color: var(--arena-militar);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            padding: 4px 12px;
+            border-radius: 2px;
+        }
+
+        /* Vencido — NVG (negro + rojo) */
+        .badge-vencido {
+            background: rgba(139,0,0,0.25);
+            border: 1px solid var(--nvg-rojo-dim);
+            color: var(--nvg-rojo);
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            padding: 4px 12px;
+            border-radius: 2px;
+            animation: nvg-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes nvg-pulse {
+            0%, 100% { box-shadow: 0 0 4px rgba(255,26,26,0.3); }
+            50%       { box-shadow: 0 0 10px rgba(255,26,26,0.6); }
+        }
+
+        /* Filas coloreadas */
+        .vence-3-meses { background: rgba(200,169,110,0.04) !important; }
+        .vence-3-meses td:first-child { border-left: 3px solid var(--arena-oscura); }
+
+        .vencido { background: rgba(255,26,26,0.04) !important; }
+        .vencido td:first-child { border-left: 3px solid var(--nvg-rojo-dim); }
+
+        /* Botón eliminar */
+        .btn-eliminar {
+            background: rgba(139,0,0,0.2);
+            border: 1px solid var(--nvg-rojo-dim);
+            color: var(--nvg-rojo);
+            width: 30px; height: 30px;
+            border-radius: 3px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-eliminar:hover {
+            background: var(--nvg-rojo);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255,26,26,0.5);
+        }
+
+        /* ═══════════════════════════════════════════
+           ESTADO VACÍO
+        ═══════════════════════════════════════════ */
+        .empty-state {
+            color: rgba(0,255,65,0.3);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* ═══════════════════════════════════════════
+           SPINNER RADAR
+        ═══════════════════════════════════════════ */
+        .spinner-radar {
+            width: 32px; height: 32px;
+            border: 2px solid rgba(0,255,65,0.1);
+            border-top-color: var(--radar-verde);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ═══════════════════════════════════════════
+           FOOTER — COMPACTO MULTI-TEMA
+        ═══════════════════════════════════════════ */
+        .footer-aero {
+            background: linear-gradient(180deg, var(--negro-base), #04080e);
+            border-top: 1px solid var(--gris-borde);
+            padding: 14px 0;
+            width: 100%;
+            margin-top: auto;
+            position: relative;
+        }
+        .footer-aero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--morado-acento) 20%,
+                var(--azul-brillo) 40%,
+                var(--radar-verde-dim) 60%,
+                var(--arena-oscura) 80%,
+                transparent 100%);
+            opacity: 0.5;
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--gris-texto);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer-brand .dot {
+            width: 6px; height: 6px;
+            background: var(--radar-verde);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--radar-verde);
+            animation: blink 2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity:1; } 50% { opacity:0.2; }
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-btn {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 1px;
+            padding: 5px 14px;
+            border-radius: 2px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: 1px solid;
+        }
+        .footer-btn.wa {
+            border-color: rgba(37,211,102,0.3);
+            color: rgba(37,211,102,0.6);
+            background: rgba(37,211,102,0.04);
+        }
+        .footer-btn.wa:hover {
+            border-color: #25D366;
+            color: #25D366;
+            background: rgba(37,211,102,0.1);
+            box-shadow: 0 0 10px rgba(37,211,102,0.2);
+        }
+        .footer-btn.em {
+            border-color: rgba(77,166,255,0.3);
+            color: rgba(77,166,255,0.6);
+            background: rgba(77,166,255,0.04);
+        }
+        .footer-btn.em:hover {
+            border-color: var(--azul-brillo);
+            color: var(--azul-brillo);
+            background: rgba(77,166,255,0.1);
+            box-shadow: 0 0 10px rgba(77,166,255,0.2);
+        }
+
+        /* ═══════════════════════════════════════════
+           UTILITARIOS
+        ═══════════════════════════════════════════ */
         .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .header-title { font-size: 0.75rem; letter-spacing: 1px; }
+            .header-label { display: none; }
+            .footer-inner { flex-direction: column; align-items: center; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            .header-title-wrap { display: none; }
+        }
     </style>
 </head>
 <body>
 
+<!-- ══════════════════════════════════
+     HEADER
+══════════════════════════════════ -->
 <header class="header-caman">
     <div class="brand-section">
         <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
-        <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
+        <div class="header-title-wrap">
+            <span class="header-label">Fuerza Aérea Colombiana</span>
+            <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
+        </div>
     </div>
-    
+
     <div id="userInfo" class="user-section hidden">
         <span id="userName">Cargando...</span>
-        <button onclick="signOut()" class="btn btn-outline-light btn-logout"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
+        <button onclick="signOut()" class="btn btn-logout"><i class="bi bi-box-arrow-right me-1"></i>SALIR</button>
     </div>
 </header>
 
+<!-- ══════════════════════════════════
+     CONTENIDO PRINCIPAL
+══════════════════════════════════ -->
 <main class="main-content container">
-    <div id="authSection" class="card-modern mx-auto p-5 mt-5" style="max-width: 400px;">
+
+    <!-- LOGIN -->
+    <div id="authSection" class="mx-auto p-5 mt-5" style="max-width:400px;">
         <div class="text-center mb-4">
-            <i class="bi bi-shield-lock text-primary" style="font-size: 2.5rem;"></i>
-            <h5 class="fw-bold text-dark mt-2">Acceso al Sistema</h5>
+            <div class="auth-icon"><i class="bi bi-shield-lock-fill"></i></div>
+            <p class="auth-title mt-3">Acceso al Sistema</p>
         </div>
-        <input type="email" id="email" class="form-control form-control-lg mb-3" placeholder="Correo institucional" style="border-radius: 10px;">
-        <input type="password" id="password" class="form-control form-control-lg mb-4" placeholder="Contraseña" style="border-radius: 10px;">
-        <button onclick="signIn()" id="loginBtn" class="btn btn-primary btn-lg w-100" style="border-radius: 10px; font-weight: 600;">Entrar</button>
+        <input type="email"    id="email"    class="form-control form-control-lg mb-3 form-control-aero" placeholder="Correo institucional">
+        <input type="password" id="password" class="form-control form-control-lg mb-4 form-control-aero" placeholder="Contraseña">
+        <button onclick="signIn()" id="loginBtn" class="btn btn-lg w-100 btn-autoridad">ENTRAR</button>
     </div>
 
+    <!-- SECCIÓN PRINCIPAL -->
     <div id="mainSection" class="hidden mt-4">
-        
-        <div class="card-modern p-4 mb-4">
-            <label class="form-label fw-bold text-secondary mb-3"><i class="bi bi-search me-2"></i>CONSULTA DE PERSONAL</label>
-            <div class="input-group input-group-lg shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                <input type="text" id="searchCedula" class="form-control border-0 bg-light" placeholder="Ingrese número de cédula...">
-                <button onclick="fetchData()" class="btn btn-dark px-4 fw-bold">Buscar</button>
+
+        <!-- Buscador -->
+        <div class="card-aviador p-4 mb-4">
+            <div class="section-label"><i class="bi bi-search"></i> CONSULTA DE PERSONAL</div>
+            <div class="input-group input-group-lg" style="border-radius:3px; overflow:hidden;">
+                <input type="text" id="searchCedula" class="form-control border-0 input-aero" placeholder="Ingrese número de cédula...">
+                <button onclick="fetchData()" class="btn btn-buscar fw-bold">BUSCAR</button>
             </div>
         </div>
 
-        <div id="adminForm" class="card-modern p-4 mb-4 hidden border border-primary border-opacity-25">
-            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-plus-circle me-2"></i>Registrar Nuevo Curso</h6>
+        <!-- Formulario Admin -->
+        <div id="adminForm" class="p-4 mb-4 hidden">
+            <div class="admin-label"><i class="bi bi-plus-circle-fill"></i> REGISTRAR NUEVO CURSO</div>
             <div class="row g-3">
-                <div class="col-12 col-md-2"><input type="text" id="inCedula" class="form-control bg-light" placeholder="Cédula"></div>
-                <div class="col-12 col-md-4"><input type="text" id="inCurso" class="form-control bg-light" placeholder="Nombre del Curso"></div>
-                <div class="col-6 col-md-2"><label class="small text-muted mb-1">Realización</label><input type="date" id="inFecha" class="form-control bg-light"></div>
-                <div class="col-6 col-md-2"><label class="small text-muted mb-1">Vencimiento</label><input type="date" id="inVence" class="form-control bg-light"></div>
-                <div class="col-12 col-md-2 d-flex align-items-end"><button onclick="upsertData()" class="btn btn-primary w-100 fw-bold"><i class="bi bi-save me-2"></i>Guardar</button></div>
+                <div class="col-12 col-md-2"><input type="text" id="inCedula" class="form-control input-arena" placeholder="Cédula"></div>
+                <div class="col-12 col-md-4"><input type="text" id="inCurso"  class="form-control input-arena" placeholder="Nombre del Curso"></div>
+                <div class="col-6 col-md-2">
+                    <label class="label-arena mb-1">Realización</label>
+                    <input type="date" id="inFecha" class="form-control input-arena">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="label-arena mb-1">Vencimiento</label>
+                    <input type="date" id="inVence" class="form-control input-arena">
+                </div>
+                <div class="col-12 col-md-2 d-flex align-items-end">
+                    <button onclick="upsertData()" class="btn btn-guardar w-100 fw-bold">
+                        <i class="bi bi-save me-1"></i>GUARDAR
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="card-modern overflow-hidden">
+        <!-- Tabla Radar -->
+        <div class="card-radar">
             <div class="table-responsive">
-                <table class="table table-custom w-100">
+                <table class="table-radar w-100">
                     <thead>
                         <tr>
                             <th class="ps-4">Cédula</th>
@@ -246,32 +781,40 @@
                     </thead>
                     <tbody id="dataTable">
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                Ingrese una cédula para ver los resultados
+                            <td colspan="5" class="text-center py-5 empty-state">
+                                <i class="bi bi-broadcast fs-2 d-block mb-2" style="color:rgba(0,255,65,0.2)"></i>
+                                &gt;_ INGRESE UNA CÉDULA PARA INICIAR ESCANEO
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
     </div>
 </main>
 
-<footer class="footer-aripar">
-    <div class="container footer-content">
-        <p class="fw-bold"><i class="bi bi-buildings me-2"></i>© 2026 • Inversiones Aripar • Gestión Documental</p>
+<!-- ══════════════════════════════════
+     FOOTER
+══════════════════════════════════ -->
+<footer class="footer-aero">
+    <div class="container footer-inner">
+        <div class="footer-brand">
+            <span class="dot"></span>
+            &copy; 2026 &nbsp;|&nbsp; INVERSIONES ARIPAR &nbsp;|&nbsp; GESTIÓN DOCUMENTAL
+        </div>
         <div class="footer-links">
-            <a href="https://wa.me/573128816469" class="whatsapp" target="_blank">
-                <i class="bi bi-whatsapp"></i> WhatsApp
+            <a href="https://wa.me/573128816469" class="footer-btn wa" target="_blank">
+                <i class="bi bi-whatsapp"></i> WHATSAPP
             </a>
-            <a href="mailto:alucard8@gmail.com" class="email">
-                <i class="bi bi-envelope-at"></i> Email
+            <a href="/cdn-cgi/l/email-protection#07666b72646675633f47606a666e6b2964686a" class="footer-btn em">
+                <i class="bi bi-envelope-at"></i> EMAIL
             </a>
         </div>
     </div>
 </footer>
 
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
     const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
@@ -284,13 +827,13 @@
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const btn = document.getElementById('loginBtn');
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Cargando...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>VERIFICANDO...';
         btn.disabled = true;
-        
+
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
         if (error) {
             alert("Error: " + error.message);
-            btn.innerHTML = 'Entrar';
+            btn.innerHTML = 'ENTRAR';
             btn.disabled = false;
             return;
         }
@@ -308,12 +851,12 @@
         if (data) {
             isAdmin = data.es_admin;
             const icono = isAdmin ? '<i class="bi bi-person-badge me-1"></i>' : '<i class="bi bi-person me-1"></i>';
-            document.getElementById('userName').innerHTML = `${icono} ${data.nombre} (${isAdmin ? 'Admin' : 'Usuario'})`;
+            document.getElementById('userName').innerHTML = `${icono} ${data.nombre} (${isAdmin ? 'ADMIN' : 'USUARIO'})`;
             renderUI();
         } else {
             console.error("Error al cargar perfil o permisos RLS.");
             const btn = document.getElementById('loginBtn');
-            btn.innerHTML = 'Entrar';
+            btn.innerHTML = 'ENTRAR';
             btn.disabled = false;
         }
     }
@@ -333,7 +876,7 @@
         if (!cedula) return;
 
         const tbody = document.getElementById('dataTable');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-radar mx-auto"></div></td></tr>';
 
         const { data, error } = await _supabase
             .from('entrenamientos')
@@ -342,29 +885,27 @@
             .order('fecha_vencimiento', { ascending: true });
 
         if (error) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error: ${error.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4" style="color:var(--nvg-rojo);font-family:var(--font-mono);font-size:0.8rem">ERROR: ${error.message}</td></tr>`;
             return;
         }
 
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-search fs-2 d-block mb-2"></i>No se encontraron cursos para esta cédula.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 empty-state"><i class="bi bi-search fs-2 d-block mb-2" style="color:rgba(0,255,65,0.2)"></i>&gt;_ SIN REGISTROS PARA ESTA CÉDULA</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
-
         data.forEach(row => {
             const tr = document.createElement('tr');
             const statusInfo = getStatusInfo(row.fecha_vencimiento);
-            
             if (statusInfo.class) tr.className = statusInfo.class;
 
             tr.innerHTML = `
-                <td class="ps-4 fw-medium">${row.cedula}</td>
-                <td class="fw-bold text-dark">${row.curso}</td>
-                <td><i class="bi bi-calendar3 me-2 text-muted"></i>${row.fecha_vencimiento}</td>
-                <td><span class="badge ${statusInfo.badgeClass} badge-status">${statusInfo.text}</span></td>
-                ${isAdmin ? `<td class="text-center"><button class="btn btn-light text-danger btn-sm rounded-circle shadow-sm" onclick="deleteRecord('${row.id}')" title="Eliminar"><i class="bi bi-trash3-fill"></i></button></td>` : ''}
+                <td class="ps-4" style="font-family:var(--font-mono);font-size:0.8rem;color:rgba(0,255,65,0.5)">${row.cedula}</td>
+                <td class="td-curso">${row.curso}</td>
+                <td style="font-family:var(--font-mono);font-size:0.8rem"><i class="bi bi-calendar3 me-2" style="opacity:0.4"></i>${row.fecha_vencimiento}</td>
+                <td><span class="${statusInfo.badgeClass}">${statusInfo.text}</span></td>
+                ${isAdmin ? `<td class="text-center"><button class="btn-eliminar" onclick="deleteRecord('${row.id}')" title="Eliminar"><i class="bi bi-trash3-fill"></i></button></td>` : ''}
             `;
             tbody.appendChild(tr);
         });
@@ -373,14 +914,15 @@
     async function upsertData() {
         const payload = {
             cedula: document.getElementById('inCedula').value,
-            curso: document.getElementById('inCurso').value,
+            curso:  document.getElementById('inCurso').value,
             fecha_realizacion: document.getElementById('inFecha').value,
             fecha_vencimiento: document.getElementById('inVence').value
         };
         const { error } = await _supabase.from('entrenamientos').insert([payload]);
-        if (error) alert(error.message); else { 
+        if (error) alert(error.message);
+        else {
             document.getElementById('inCurso').value = "";
-            fetchData(); 
+            fetchData();
         }
     }
 
@@ -395,17 +937,16 @@
         const hoy = new Date();
         const vence = new Date(fecha);
         const diffDias = (vence - hoy) / (1000 * 60 * 60 * 24);
-        
-        if (vence < hoy) {
-            return { class: 'vencido', badgeClass: 'bg-danger', text: 'Vencido' };
-        }
-        if (diffDias <= 90) {
-            return { class: 'vence-3-meses', badgeClass: 'bg-warning text-dark', text: 'Vence pronto' };
-        }
-        return { class: '', badgeClass: 'bg-success', text: 'Vigente' };
+
+        if (vence < hoy)      return { class: 'vencido',        badgeClass: 'badge-vencido', text: 'VENCIDO'      };
+        if (diffDias <= 90)   return { class: 'vence-3-meses',  badgeClass: 'badge-pronto',  text: 'VENCE PRONTO' };
+        return                       { class: '',                badgeClass: 'badge-vigente', text: 'VIGENTE'      };
     }
 
-    function signOut() { _supabase.auth.signOut().then(() => location.reload()); }
+    async function signOut() {
+        await _supabase.auth.signOut();
+        location.reload();
+    }
 </script>
 </body>
 </html>
