@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ══════════════════════════════════════════════════
+           VARIABLES (TEMA CLARO POR DEFECTO)
+        ══════════════════════════════════════════════════ */
         :root, [data-theme="light"] {
             --t-bg: #f4f7f9; --t-card: #ffffff; --t-text: #2d3748; --t-text-muted: #718096;
             --t-border: #e2e8f0; --t-input-bg: #f8fafc; --t-accent: #2d7dd2; --t-h1: #003366;
@@ -29,33 +32,29 @@
         .header-title { font-family:'Orbitron', sans-serif; font-weight:700; font-size:1rem; margin:0; letter-spacing:2px; color:var(--t-header-text); }
         .btn-theme { background: transparent; border: 1px solid var(--t-accent); color: var(--t-accent); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; }
 
+        /* MENU CARDS */
+        .menu-card { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 8px; transition: all .3s; cursor: pointer; height: 100%; }
+        .menu-card:hover { transform: translateY(-5px); border-color: var(--t-accent); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+
         /* COMPONENTES */
         .card-custom { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .form-control-custom { background: var(--t-input-bg)!important; border: 1px solid var(--t-border)!important; color: var(--t-text)!important; font-family:'Share Tech Mono', monospace; font-size: 0.85rem; }
         .btn-primary-custom { background: var(--t-accent); border: none; color: #fff; font-family:'Orbitron', sans-serif; border-radius: 3px; transition: 0.2s; }
-        .btn-primary-custom:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .form-label-custom { font-family:'Share Tech Mono', monospace; font-size:0.65rem; color: var(--t-text-muted); text-transform: uppercase; margin-bottom: 2px; display: block; }
 
-        /* FICHA Y EDICIÓN HORIZONTAL */
+        /* FICHA HORIZONTAL */
         .profile-card { background: var(--t-input-bg); border-left: 4px solid var(--t-accent); padding: 12px 20px; }
-        .profile-data-box { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 4px; padding: 5px 10px; }
+        .profile-data-box { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 4px; padding: 5px 8px; }
         .profile-data-label { font-family: 'Share Tech Mono', monospace; font-size: 0.55rem; color: var(--t-text-muted); text-transform: uppercase; }
-        .profile-data-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1rem; }
+        .profile-data-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.95rem; }
 
         /* TABLAS */
         .table-custom { width:100%; border-collapse: separate; border-spacing: 0; }
         .table-custom thead th { color: var(--t-text-muted); font-family:'Share Tech Mono', monospace; font-size:.7rem; text-transform:uppercase; border-bottom: 2px solid var(--t-border); padding:10px 15px; }
-        .table-custom tbody td { padding:10px 15px; border-bottom:1px solid var(--t-border); color: var(--t-text); font-size: 0.95rem; }
-
-        .badge-vigente { color:#28a745; border:1px solid #28a745; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-family:'Share Tech Mono'; }
-        .badge-vencido { color:#dc3545; border:1px solid #dc3545; padding:2px 8px; border-radius:4px; font-size:0.7rem; font-family:'Share Tech Mono'; }
+        .table-custom tbody td { padding:10px 15px; border-bottom:1px solid var(--t-border); color: var(--t-text); font-size: 0.9rem; }
 
         .hidden { display:none!important; }
-        
-        /* FOOTER */
         .footer-aero { background: #04080e; border-top: 1px solid #1f2d3d; padding: 15px 0; margin-top: auto; color: #8fa3b8; font-family: 'Share Tech Mono'; font-size: 0.7rem; }
-
-        @media (max-width: 768px) { .header-title { font-size: 0.8rem; } .header-label { display:none; } }
     </style>
 </head>
 <body>
@@ -63,15 +62,12 @@
 <header class="header-caman">
     <div class="d-flex align-items-center gap-3">
         <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
-        <div>
-            <span class="header-label d-block text-accent" style="font-size:0.5rem; letter-spacing:2px;">FUERZA AÉREA COLOMBIANA</span>
-            <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
-        </div>
+        <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
     </div>
     <div class="d-flex align-items-center gap-3">
-        <button class="btn-theme" onclick="toggleTheme()"><i class="bi bi-moon-fill" id="themeIcon"></i></button>
+        <button class="btn-theme" onclick="toggleTheme()"><i class="bi bi-sun-fill" id="themeIcon"></i></button>
         <div id="userInfo" class="hidden text-end">
-            <small id="userName" class="d-block text-accent" style="font-family:'Share Tech Mono';"></small>
+            <small id="userName" class="d-block text-accent fw-bold" style="font-family:'Share Tech Mono';"></small>
             <button onclick="signOut()" class="btn btn-sm btn-outline-danger py-0" style="font-size:0.6rem;">SALIR</button>
         </div>
     </div>
@@ -79,101 +75,111 @@
 
 <main class="main-content container mt-4">
     <div id="authSection" class="card-custom mx-auto p-5 mt-5" style="max-width:400px;">
-        <div class="text-center mb-4"><i class="bi bi-shield-lock-fill text-accent fs-1"></i><h5 class="mt-2">ACCESO TRIPULANTES</h5></div>
-        <input type="email" id="email" class="form-control mb-3 form-control-custom" placeholder="Correo institucional">
+        <div class="text-center mb-4"><i class="bi bi-shield-lock-fill text-accent fs-1"></i><h5 class="mt-2">SISTEMA DE GESTIÓN</h5></div>
+        <input type="email" id="email" class="form-control mb-3 form-control-custom" placeholder="Email">
         <input type="password" id="password" class="form-control mb-4 form-control-custom" placeholder="Contraseña">
         <button onclick="signIn()" id="loginBtn" class="btn btn-primary-custom w-100 py-2">ENTRAR</button>
     </div>
 
-    <div id="appModule" class="hidden">
-        
-        <div class="card-custom p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="section-label m-0"><i class="bi bi-people-fill me-1"></i> BÚSQUEDA INTELIGENTE DE PERSONAL</span>
-                <button id="btnNuevoPersonal" class="btn btn-sm btn-success hidden" onclick="startNewPerson()"><i class="bi bi-person-plus-fill me-1"></i> NUEVO PERSONAL</button>
-            </div>
-            <div class="input-group">
-                <input type="text" id="advancedSearchInput" class="form-control form-control-custom" placeholder="Nombre, Dependencia, Taller, Cargo o Curso...">
-                <button onclick="fetchAdvancedSearch()" class="btn btn-primary-custom px-4"><i class="bi bi-search"></i></button>
-            </div>
-            
-            <div id="advancedResults" class="mt-3 hidden">
-                <div class="table-responsive card-custom">
-                    <table class="table-custom">
-                        <thead><tr><th>CÉDULA</th><th>NOMBRE</th><th>DEPENDENCIA / TALLER</th><th>CARGO</th><th class="text-center">ACCIONES</th></tr></thead>
-                        <tbody id="advancedDataTable"></tbody>
-                    </table>
+    <div id="menuSection" class="hidden mt-5">
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-5">
+                <div class="menu-card p-5 text-center" onclick="navigate('personas')">
+                    <i class="bi bi-people fs-1 text-success"></i>
+                    <h4 class="mt-3">BÚSQUEDA INTELIGENTE</h4>
+                    <p class="text-muted small">Filtros por nombre, grado, dependencia o curso.</p>
                 </div>
             </div>
-        </div>
-
-        <div class="card-custom p-3 mb-3">
-            <span class="section-label d-block mb-2"><i class="bi bi-journal-text me-1"></i> CONSULTA DE CURSOS POR CÉDULA</span>
-            <div class="input-group mb-3">
-                <input type="text" id="searchCedula" class="form-control form-control-custom" placeholder="Cédula exacta...">
-                <button onclick="fetchData()" class="btn btn-primary-custom px-4">BUSCAR CURSOS</button>
-            </div>
-
-            <div id="profileCard" class="profile-card mb-3 hidden card-custom">
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-3 border-end">
-                        <div class="profile-subtitle">C.C. <span id="lblCedula"></span></div>
-                        <div class="profile-title" id="lblNombre"></div>
-                    </div>
-                    <div class="col-md-9">
-                        <div class="d-flex gap-2 flex-wrap">
-                            <div class="profile-data-box flex-fill"><div class="profile-data-label">Dep/Taller</div><div class="profile-data-value" id="lblDepTaller"></div></div>
-                            <div class="profile-data-box flex-fill"><div class="profile-data-label">Cargo</div><div class="profile-data-value" id="lblCargo"></div></div>
-                            <div class="profile-data-box"><div class="profile-data-label">Inglés</div><div class="profile-data-value text-center" id="lblIngles"></div></div>
-                            <div class="profile-data-box"><div class="profile-data-label">Pericia</div><div class="profile-data-value text-center" id="lblPericia"></div></div>
-                        </div>
-                    </div>
+            <div class="col-md-5">
+                <div class="menu-card p-5 text-center" onclick="navigate('cursos')">
+                    <i class="bi bi-person-vcard fs-1 text-primary"></i>
+                    <h4 class="mt-3">CURSOS POR CÉDULA</h4>
+                    <p class="text-muted small">Historial detallado y gestión de tripulante.</p>
                 </div>
-            </div>
-
-            <div id="cursosContainer" class="hidden">
-                <div class="table-responsive card-custom">
-                    <table class="table-custom">
-                        <thead><tr><th>CURSO ASIGNADO</th><th>REALIZACIÓN</th><th>VENCIMIENTO</th><th>ESTADO</th><th id="thAcciones" class="hidden"></th></tr></thead>
-                        <tbody id="dataTable"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="adminForm" class="card-custom p-3 border-primary hidden shadow-lg">
-            <div class="d-flex justify-content-between mb-2">
-                <span id="adminFormTitle" class="fw-bold text-accent" style="font-family:'Orbitron'; font-size:0.7rem;">ADMINISTRACIÓN</span>
-                <button class="btn btn-sm btn-outline-secondary py-0" onclick="cancelEdit()">CANCELAR</button>
-            </div>
-            <input type="hidden" id="inId">
-            
-            <div class="row g-2 align-items-end mb-2">
-                <div class="col-md-1"><label class="form-label-custom">Cédula</label><input type="text" id="inCedula" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-3"><label class="form-label-custom">Nombre Completo</label><input type="text" id="inNombre" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-2"><label class="form-label-custom">Dependencia</label><input type="text" id="inDependencia" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-2"><label class="form-label-custom">Taller</label><input type="text" id="inTaller" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-2"><label class="form-label-custom">Cargo</label><input type="text" id="inCargo" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-1"><label class="form-label-custom">Inglés</label><input type="text" id="inIngles" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-1"><label class="form-label-custom">Pericia</label><input type="text" id="inPericia" class="form-control form-control-custom form-control-sm"></div>
-            </div>
-            <div class="row g-2 align-items-end border-top pt-2" id="rowCursoEdit">
-                <div class="col-md-5"><label class="form-label-custom">Nombre del Curso</label><input type="text" id="inCurso" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-2"><label class="form-label-custom">Fecha Realización</label><input type="date" id="inFecha" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-2"><label class="form-label-custom">Fecha Vencimiento</label><input type="date" id="inVence" class="form-control form-control-custom form-control-sm"></div>
-                <div class="col-md-3"><button onclick="saveData()" class="btn btn-primary-custom btn-sm w-100" style="height:31px;">GUARDAR CAMBIOS</button></div>
-            </div>
-            <div class="row g-2 hidden" id="rowSoloPersonal">
-                <div class="col-md-12 text-end"><button onclick="saveOnlyPerson()" class="btn btn-success btn-sm px-5">GUARDAR DATOS PERSONALES</button></div>
             </div>
         </div>
     </div>
+
+    <div id="sectionPersonas" class="hidden">
+        <button class="btn btn-sm btn-outline-secondary mb-3" onclick="navigate('menu')"><i class="bi bi-arrow-left"></i> VOLVER</button>
+        <div class="card-custom p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="section-label m-0">LISTADO DE PERSONAL</span>
+                <button id="btnNuevoAdmin" class="btn btn-sm btn-success hidden" onclick="startNewPerson()"><i class="bi bi-person-plus"></i> NUEVO</button>
+            </div>
+            <div class="input-group">
+                <input type="text" id="advancedSearchInput" class="form-control form-control-custom" placeholder="Escriba algo o deje en blanco para ver todo...">
+                <button onclick="fetchAdvancedSearch()" class="btn btn-primary-custom px-4"><i class="bi bi-search"></i></button>
+            </div>
+            <div class="table-responsive mt-3 card-custom">
+                <table class="table-custom">
+                    <thead><tr><th>CÉDULA</th><th>GRADO</th><th>NOMBRE</th><th>DEPENDENCIA</th><th>ACCIONES</th></tr></thead>
+                    <tbody id="advancedDataTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="sectionCursos" class="hidden">
+        <button class="btn btn-sm btn-outline-secondary mb-3" onclick="navigate('menu')"><i class="bi bi-arrow-left"></i> VOLVER</button>
+        <div class="card-custom p-3 mb-3">
+            <div class="input-group">
+                <input type="text" id="searchCedula" class="form-control form-control-custom" placeholder="Cédula exacta...">
+                <button onclick="fetchData()" class="btn btn-primary-custom px-4">CONSULTAR</button>
+            </div>
+        </div>
+
+        <div id="profileCard" class="profile-card mb-3 hidden card-custom">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <div class="pe-3 border-end">
+                    <small class="profile-subtitle d-block" id="lblCedula"></small>
+                    <span class="profile-title" id="lblNombre"></span>
+                </div>
+                <div class="profile-data-box"><div class="profile-data-label">Grado</div><div class="profile-data-value" id="lblGrado"></div></div>
+                <div class="profile-data-box"><div class="profile-data-label">Dependencia</div><div class="profile-data-value" id="lblDep"></div></div>
+                <div class="profile-data-box"><div class="profile-data-label">Cargo</div><div class="profile-data-value" id="lblCargo"></div></div>
+                <div class="profile-data-box"><div class="profile-data-label">Inglés</div><div class="profile-data-value" id="lblIngles"></div></div>
+                <div class="profile-data-box"><div class="profile-data-label">Pericia</div><div class="profile-data-value" id="lblPericia"></div></div>
+            </div>
+        </div>
+
+        <div id="cursosContainer" class="hidden table-responsive card-custom">
+            <table class="table-custom">
+                <thead><tr><th>CURSO</th><th>REALIZACIÓN</th><th>VENCIMIENTO</th><th>ESTADO</th><th id="thAcciones"></th></tr></thead>
+                <tbody id="dataTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="adminForm" class="card-custom p-3 border-primary hidden shadow-lg mt-4">
+        <div class="d-flex justify-content-between mb-2">
+            <span id="adminFormTitle" class="fw-bold text-primary small">GESTIÓN DE DATOS</span>
+            <button class="btn btn-sm btn-outline-secondary py-0" onclick="cancelEdit()">CERRAR</button>
+        </div>
+        <input type="hidden" id="inId">
+        <div class="row g-2 align-items-end mb-3">
+            <div class="col-md-1"><label class="form-label-custom">Cédula</label><input type="text" id="inCedula" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-1"><label class="form-label-custom">Grado</label><input type="text" id="inGrado" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-3"><label class="form-label-custom">Nombre</label><input type="text" id="inNombre" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label-custom">Dependencia</label><input type="text" id="inDep" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label-custom">Taller</label><input type="text" id="inTaller" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-1"><label class="form-label-custom">Inglés</label><input type="text" id="inIngles" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label-custom">Cargo</label><input type="text" id="inCargo" class="form-control form-control-custom form-control-sm"></div>
+        </div>
+        <div id="rowCurso" class="row g-2 align-items-end border-top pt-2">
+            <div class="col-md-6"><label class="form-label-custom">Curso</label><input type="text" id="inCurso" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label-custom">F. Realización</label><input type="date" id="inF1" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><label class="form-label-custom">F. Vencimiento</label><input type="date" id="inF2" class="form-control form-control-custom form-control-sm"></div>
+            <div class="col-md-2"><button onclick="saveData()" class="btn btn-primary-custom btn-sm w-100">GUARDAR</button></div>
+        </div>
+        <div id="rowSoloPersona" class="hidden text-end pt-2"><button onclick="saveOnlyPerson()" class="btn btn-success btn-sm px-4">GUARDAR TRIPULANTE</button></div>
+    </div>
 </main>
 
-<footer class="footer-aero">
-    <div class="container d-flex justify-content-between align-items-center">
-        <span>&copy; 2026 FUERZA AÉREA COLOMBIANA | CAMAN</span>
-        <div><i class="bi bi-shield-check me-2"></i>SISTEMA SEGURO</div>
+<footer class="footer-aero mt-5">
+    <div class="container d-flex justify-content-between">
+        <span>© 2026 FAC | CONTROL DE ENTRENAMIENTO</span>
+        <span>MANUEL ARIAS - CAMAN</span>
     </div>
 </footer>
 
@@ -186,97 +192,90 @@
     let isAdmin = false;
     let editingId = null;
 
-    /* LOGIN */
+    /* NAVEGACIÓN CON PUSH HISTORIAL */
+    function navigate(view, push = true) {
+        document.getElementById('menuSection').classList.add('hidden');
+        document.getElementById('sectionPersonas').classList.add('hidden');
+        document.getElementById('sectionCursos').classList.add('hidden');
+        document.getElementById('authSection').classList.add('hidden');
+
+        if(view === 'menu') document.getElementById('menuSection').classList.remove('hidden');
+        if(view === 'personas') document.getElementById('sectionPersonas').classList.remove('hidden');
+        if(view === 'cursos') document.getElementById('sectionCursos').classList.remove('hidden');
+
+        if(push) history.pushState({view: view}, "", `?v=${view}`);
+    }
+
+    window.onpopstate = (e) => { if(e.state) navigate(e.state.view, false); };
+
+    /* AUTH */
     async function signIn() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) { alert("Error: " + error.message); return; }
+        const { data, error } = await _supabase.auth.signInWithPassword({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        });
+        if(error) return alert("Acceso denegado");
         sessionUser = data.user;
         checkRole();
     }
 
     async function checkRole() {
-        const { data } = await _supabase.from('entrenamiento_usuarios').select('es_admin, nombre').eq('email', sessionUser.email).single();
-        if (data) {
+        const { data } = await _supabase.from('entrenamiento_usuarios').select('*').eq('email', sessionUser.email).single();
+        if(data) {
             isAdmin = data.es_admin;
-            document.getElementById('userName').innerText = data.nombre + (isAdmin ? " (ADMIN)" : "");
-            document.getElementById('authSection').classList.add('hidden');
-            document.getElementById('appModule').classList.remove('hidden');
+            document.getElementById('userName').innerText = data.nombre + (isAdmin ? " (ADM)" : "");
+            if(isAdmin) document.getElementById('btnNuevoAdmin').classList.remove('hidden');
+            navigate('menu');
             document.getElementById('userInfo').classList.remove('hidden');
-            if (isAdmin) {
-                document.getElementById('thAcciones').classList.remove('hidden');
-                document.getElementById('btnNuevoPersonal').classList.remove('hidden');
-            }
         }
     }
 
     function signOut() { _supabase.auth.signOut(); location.reload(); }
 
-    /* BÚSQUEDA INTELIGENTE */
+    /* BÚSQUEDA PERSONAS */
     async function fetchAdvancedSearch() {
         const term = document.getElementById('advancedSearchInput').value.trim();
         const tbody = document.getElementById('advancedDataTable');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3">Buscando...</td></tr>';
-        document.getElementById('advancedResults').classList.remove('hidden');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Buscando...</td></tr>';
 
         let query = _supabase.from('entrenamiento_alumno').select('*');
-        if (term !== "") {
-            query = query.or(`nombre.ilike.%${term}%,dependencia.ilike.%${term}%,taller.ilike.%${term}%,cargo.ilike.%${term}%`);
-        }
+        if(term) query = query.or(`nombre.ilike.%${term}%,cedula.ilike.%${term}%,dependencia.ilike.%${term}%,grado.ilike.%${term}%`);
         
-        const { data: alumnos, error } = await query.order('nombre', { ascending: true });
-        
+        const { data } = await query.order('nombre', {ascending: true});
         tbody.innerHTML = '';
-        if (alumnos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Sin resultados</td></tr>';
-            return;
-        }
-
-        alumnos.forEach(al => {
+        data.forEach(al => {
             const tr = document.createElement('tr');
-            const acciones = isAdmin ? `
-                <div class="d-flex gap-1 justify-content-center">
-                    <button class="btn btn-sm btn-outline-primary py-0" onclick="editPersonOnly('${al.cedula}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-primary py-0" onclick="goToCedula('${al.cedula}')">VER CURSOS</button>
-                </div>` : 
-                `<button class="btn btn-sm btn-primary py-0 w-100" onclick="goToCedula('${al.cedula}')">VER CURSOS</button>`;
-            
-            tr.innerHTML = `
-                <td>${al.cedula}</td>
-                <td class="fw-bold">${al.nombre || 'N/A'}</td>
-                <td>${al.dependencia || ''} / ${al.taller || ''}</td>
-                <td>${al.cargo || 'N/A'}</td>
-                <td>${acciones}</td>`;
+            const btnEdit = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0 me-1" onclick="editPersonOnly('${al.cedula}')"><i class="bi bi-pencil"></i></button>` : '';
+            tr.innerHTML = `<td>${al.cedula}</td><td>${al.grado || ''}</td><td class="fw-bold">${al.nombre}</td><td>${al.dependencia || ''}</td>
+            <td class="text-center">${btnEdit}<button class="btn btn-sm btn-primary py-0" onclick="goToCedula('${al.cedula}')">VER</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function goToCedula(cedula) {
+        navigate('cursos');
         document.getElementById('searchCedula').value = cedula;
         fetchData();
-        window.scrollTo({ top: 400, behavior: 'smooth' });
     }
 
-    /* GESTIÓN DE CURSOS */
+    /* GESTIÓN CURSOS */
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value.trim();
-        if (!cedula) return;
+        if(!cedula) return;
 
-        // Cargar Perfil
         const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
-        if (al) {
-            document.getElementById('lblCedula').innerText = al.cedula;
+        if(al) {
+            document.getElementById('lblCedula').innerText = "C.C. " + al.cedula;
             document.getElementById('lblNombre').innerText = al.nombre;
-            document.getElementById('lblDepTaller').innerText = (al.dependencia || 'N/A') + " / " + (al.taller || 'N/A');
-            document.getElementById('lblCargo').innerText = al.cargo || 'N/A';
-            document.getElementById('lblIngles').innerText = al.nivel_ingles || 'N/A';
-            document.getElementById('lblPericia').innerText = al.nivel_pericia || 'N/A';
+            document.getElementById('lblGrado').innerText = al.grado || 'N/D';
+            document.getElementById('lblDep').innerText = al.dependencia || 'N/D';
+            document.getElementById('lblCargo').innerText = al.cargo || 'N/D';
+            document.getElementById('lblIngles').innerText = al.nivel_ingles || 'N/D';
+            document.getElementById('lblPericia').innerText = al.nivel_pericia || 'N/D';
             document.getElementById('profileCard').classList.remove('hidden');
         }
 
-        // Cargar Cursos
-        const { data: cursos } = await _supabase.from('entrenamiento').select('*').eq('cedula', cedula).order('fecha_vencimiento', { ascending: true });
+        const { data: cursos } = await _supabase.from('entrenamiento').select('*').eq('cedula', cedula).order('fecha_vencimiento', {ascending: true});
         const tbody = document.getElementById('dataTable');
         tbody.innerHTML = '';
         document.getElementById('cursosContainer').classList.remove('hidden');
@@ -285,65 +284,53 @@
             const tr = document.createElement('tr');
             const hoy = new Date();
             const vence = new Date(c.fecha_vencimiento);
-            const statusClass = vence < hoy ? 'badge-vencido' : 'badge-vigente';
-            const statusTxt = vence < hoy ? 'VENCIDO' : 'VIGENTE';
-            
-            const acciones = isAdmin ? `
-                <td class="text-center">
-                    <button class="btn btn-sm btn-outline-success py-0 me-1" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-sm btn-outline-danger py-0" onclick="deleteRecord('${c.id}')"><i class="bi bi-trash"></i></button>
-                </td>` : '';
-
-            tr.innerHTML = `
-                <td class="fw-bold">${c.curso}</td>
-                <td>${c.fecha_realizacion || 'N/A'}</td>
-                <td>${c.fecha_vencimiento}</td>
-                <td><span class="${statusClass}">${statusTxt}</span></td>
-                ${acciones}`;
+            const status = vence < hoy ? '<span class="text-danger small fw-bold">VENCIDO</span>' : '<span class="text-success small fw-bold">VIGENTE</span>';
+            const acciones = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
+            tr.innerHTML = `<td class="fw-bold">${c.curso}</td><td>${c.fecha_realizacion || ''}</td><td>${c.fecha_vencimiento}</td><td>${status}</td><td class="text-center">${acciones}</td>`;
             tbody.appendChild(tr);
         });
     }
 
-    /* FUNCIONES ADMIN: NUEVO / EDITAR PERSONAL */
+    /* ADMIN FUNCTIONS */
     function startNewPerson() {
         cancelEdit();
-        document.getElementById('adminFormTitle').innerText = "REGISTRAR NUEVO PERSONAL";
-        document.getElementById('rowCursoEdit').classList.add('hidden');
-        document.getElementById('rowSoloPersonal').classList.remove('hidden');
+        document.getElementById('adminFormTitle').innerText = "REGISTRAR TRIPULANTE";
+        document.getElementById('rowCurso').classList.add('hidden');
+        document.getElementById('rowSoloPersona').classList.remove('hidden');
         document.getElementById('adminForm').classList.remove('hidden');
     }
 
     async function editPersonOnly(cedula) {
         const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
-        if (al) {
+        if(al) {
             document.getElementById('inCedula').value = al.cedula;
+            document.getElementById('inGrado').value = al.grado || '';
             document.getElementById('inNombre').value = al.nombre;
-            document.getElementById('inDependencia').value = al.dependencia;
-            document.getElementById('inTaller').value = al.taller;
-            document.getElementById('inCargo').value = al.cargo;
-            document.getElementById('inIngles').value = al.nivel_ingles;
-            document.getElementById('inPericia').value = al.nivel_pericia;
-            
-            document.getElementById('adminFormTitle').innerText = "EDITAR DATOS DE PERSONAL";
-            document.getElementById('rowCursoEdit').classList.add('hidden');
-            document.getElementById('rowSoloPersonal').classList.remove('hidden');
+            document.getElementById('inDep').value = al.dependencia || '';
+            document.getElementById('inTaller').value = al.taller || '';
+            document.getElementById('inCargo').value = al.cargo || '';
+            document.getElementById('inIngles').value = al.nivel_ingles || '';
+            document.getElementById('adminFormTitle').innerText = "EDITAR TRIPULANTE";
+            document.getElementById('rowCurso').classList.add('hidden');
+            document.getElementById('rowSoloPersona').classList.remove('hidden');
             document.getElementById('adminForm').classList.remove('hidden');
         }
     }
 
     async function saveOnlyPerson() {
-        const payload = {
+        const p = {
             cedula: document.getElementById('inCedula').value,
+            grado: document.getElementById('inGrado').value,
             nombre: document.getElementById('inNombre').value,
-            dependencia: document.getElementById('inDependencia').value,
+            dependencia: document.getElementById('inDep').value,
             taller: document.getElementById('inTaller').value,
             cargo: document.getElementById('inCargo').value,
-            nivel_ingles: document.getElementById('inIngles').value,
-            nivel_pericia: document.getElementById('inPericia').value
+            nivel_ingles: document.getElementById('inIngles').value
         };
-        const { error } = await _supabase.from('entrenamiento_alumno').upsert([payload]);
-        if (error) alert(error.message);
-        else { alert("Datos guardados"); cancelEdit(); fetchAdvancedSearch(); }
+        await _supabase.from('entrenamiento_alumno').upsert([p]);
+        alert("Tripulante guardado");
+        cancelEdit();
+        fetchAdvancedSearch();
     }
 
     function startEditCurso(c) {
@@ -351,49 +338,29 @@
         document.getElementById('inId').value = c.id;
         document.getElementById('inCedula').value = c.cedula;
         document.getElementById('inCurso').value = c.curso;
-        document.getElementById('inFecha').value = c.fecha_realizacion;
-        document.getElementById('inVence').value = c.fecha_vencimiento;
-        
-        // Autocompletar datos personales desde la ficha actual
-        document.getElementById('inNombre').value = document.getElementById('lblNombre').innerText;
-        
-        document.getElementById('adminFormTitle').innerText = "MODIFICAR CURSO";
-        document.getElementById('rowCursoEdit').classList.remove('hidden');
-        document.getElementById('rowSoloPersonal').classList.add('hidden');
+        document.getElementById('inF1').value = c.fecha_realizacion;
+        document.getElementById('inF2').value = c.fecha_vencimiento;
+        document.getElementById('rowCurso').classList.remove('hidden');
+        document.getElementById('rowSoloPersona').classList.add('hidden');
         document.getElementById('adminForm').classList.remove('hidden');
     }
 
     async function saveData() {
-        // Guardar/Actualizar Curso
-        const cursoPayload = {
+        const c = {
             cedula: document.getElementById('inCedula').value,
             curso: document.getElementById('inCurso').value,
-            fecha_realizacion: document.getElementById('inFecha').value,
-            fecha_vencimiento: document.getElementById('inVence').value
+            fecha_realizacion: document.getElementById('inF1').value,
+            fecha_vencimiento: document.getElementById('inF2').value
         };
-        
-        let error;
-        if (editingId) {
-            ({ error } = await _supabase.from('entrenamiento').update(cursoPayload).eq('id', editingId));
-        } else {
-            ({ error } = await _supabase.from('entrenamiento').insert([cursoPayload]));
-        }
-
-        if (error) alert(error.message);
-        else { cancelEdit(); fetchData(); }
-    }
-
-    async function deleteRecord(id) {
-        if (confirm("¿Eliminar este curso?")) {
-            await _supabase.from('entrenamiento').delete().eq('id', id);
-            fetchData();
-        }
+        if(editingId) await _supabase.from('entrenamiento').update(c).eq('id', editingId);
+        else await _supabase.from('entrenamiento').insert([c]);
+        cancelEdit();
+        fetchData();
     }
 
     function cancelEdit() {
         editingId = null;
         document.getElementById('adminForm').classList.add('hidden');
-        ['inCedula', 'inNombre', 'inDependencia', 'inTaller', 'inCargo', 'inIngles', 'inPericia', 'inCurso', 'inFecha', 'inVence'].forEach(id => document.getElementById(id).value = '');
     }
 
     function toggleTheme() {
@@ -402,6 +369,15 @@
         document.documentElement.setAttribute('data-theme', next);
         document.getElementById('themeIcon').className = next === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill';
     }
+
+    /* ENTER EN INPUTS */
+    document.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            if(document.activeElement.id === 'password') signIn();
+            if(document.activeElement.id === 'searchCedula') fetchData();
+            if(document.activeElement.id === 'advancedSearchInput') fetchAdvancedSearch();
+        }
+    });
 </script>
 </body>
 </html>
