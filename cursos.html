@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="aviador">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ═══════════════════════════════════════════
-           PALETA AERONÁUTICA MILITAR
-        ═══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════
+           TOKENS GLOBALES
+        ══════════════════════════════════════════════════ */
         :root {
             --azul-aviador:     #0a1628;
             --azul-cielo:       #1a3a6e;
@@ -25,9 +25,7 @@
             --radar-fondo:      #030d08;
             --radar-verde:      #00ff41;
             --radar-verde-dim:  #00a82b;
-            --radar-grid:       rgba(0,255,65,0.12);
 
-            --nvg-fondo:        #0d0000;
             --nvg-rojo:         #ff1a1a;
             --nvg-rojo-dim:     #8b0000;
 
@@ -40,7 +38,6 @@
             --verde-lima:       #7ab648;
 
             --negro-base:       #080c10;
-            --gris-panel:       #111827;
             --gris-borde:       #1f2d3d;
             --gris-texto:       #8fa3b8;
             --blanco-tenue:     #d4dde8;
@@ -48,659 +45,209 @@
             --font-display:     'Orbitron', sans-serif;
             --font-mono:        'Share Tech Mono', monospace;
             --font-body:        'Barlow Condensed', sans-serif;
+
+            /* Tokens del tema activo */
+            --t-bg:       var(--azul-aviador);
+            --t-h1:       var(--azul-aviador);
+            --t-h2:       var(--azul-cielo);
+            --t-hborder:  var(--azul-acento);
+            --t-hglow:    rgba(77,166,255,0.3);
+            --t-accent:   var(--azul-brillo);
+            --t-grid:     rgba(45,125,210,0.04);
+            --t-grad:     rgba(45,125,210,0.15);
         }
 
-        /* ═══════════════════════════════════════════
+        /* ══════════════════════════════════════════════════
+           TEMAS
+        ══════════════════════════════════════════════════ */
+        [data-theme="aviador"]   { --t-bg:#0a1628; --t-h1:#0a1628; --t-h2:#1a3a6e; --t-hborder:#2d7dd2; --t-hglow:rgba(77,166,255,.3);   --t-accent:#4da6ff; --t-grid:rgba(45,125,210,.04); --t-grad:rgba(45,125,210,.15); }
+        [data-theme="autoridad"] { --t-bg:#0e0820; --t-h1:#2d1b69; --t-h2:#4a2c8a; --t-hborder:#7c4dff; --t-hglow:rgba(124,77,255,.4);  --t-accent:#7c4dff; --t-grid:rgba(124,77,255,.04); --t-grad:rgba(124,77,255,.12); }
+        [data-theme="radar"]     { --t-bg:#030d08; --t-h1:#020f05; --t-h2:#042a0c; --t-hborder:#00a82b; --t-hglow:rgba(0,255,65,.25);    --t-accent:#00ff41; --t-grid:rgba(0,255,65,.04);   --t-grad:rgba(0,255,65,.08);  }
+        [data-theme="nvg"]       { --t-bg:#0a0000; --t-h1:#150000; --t-h2:#2a0000; --t-hborder:#8b0000; --t-hglow:rgba(255,26,26,.3);    --t-accent:#ff1a1a; --t-grid:rgba(255,26,26,.03);  --t-grad:rgba(255,26,26,.08); }
+        [data-theme="arena"]     { --t-bg:#2a1f0e; --t-h1:#1a1008; --t-h2:#2e1f0c; --t-hborder:#8b7355; --t-hglow:rgba(200,169,110,.3); --t-accent:#c8a96e; --t-grid:rgba(200,169,110,.04); --t-grad:rgba(200,169,110,.08);}
+        [data-theme="selva"]     { --t-bg:#060f05; --t-h1:#0a1a08; --t-h2:#2d5a27; --t-hborder:#4a8b3f; --t-hglow:rgba(74,139,63,.35);  --t-accent:#7ab648; --t-grid:rgba(74,139,63,.04);  --t-grad:rgba(74,139,63,.10); }
+
+        /* ══════════════════════════════════════════════════
            BASE
-        ═══════════════════════════════════════════ */
+        ══════════════════════════════════════════════════ */
         *, *::before, *::after { box-sizing: border-box; }
 
         body {
-            background-color: var(--azul-aviador);
+            background-color: var(--t-bg);
             background-image:
-                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(45,125,210,0.15) 0%, transparent 60%),
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 39px,
-                    rgba(45,125,210,0.04) 39px,
-                    rgba(45,125,210,0.04) 40px
-                ),
-                repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 39px,
-                    rgba(45,125,210,0.04) 39px,
-                    rgba(45,125,210,0.04) 40px
-                );
+                radial-gradient(ellipse 80% 50% at 50% -10%, var(--t-grad) 0%, transparent 60%),
+                repeating-linear-gradient(0deg,  transparent, transparent 39px, var(--t-grid) 39px, var(--t-grid) 40px),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, var(--t-grid) 39px, var(--t-grid) 40px);
             font-family: var(--font-body);
-            font-size: 1rem;
             color: var(--blanco-tenue);
             padding-top: 74px;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             margin: 0;
+            transition: background-color 0.4s ease;
         }
+        .main-content { flex-grow: 1; width: 100%; padding-bottom: 40px; }
 
-        .main-content {
-            flex-grow: 1;
-            width: 100%;
-            padding-bottom: 40px;
-        }
-
-        /* ═══════════════════════════════════════════
-           HEADER — AZUL AVIADOR
-        ═══════════════════════════════════════════ */
+        /* ══════════════════════════════════════════════════
+           HEADER
+        ══════════════════════════════════════════════════ */
         .header-caman {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: linear-gradient(135deg, var(--azul-aviador) 0%, var(--azul-cielo) 100%);
-            border-bottom: 2px solid var(--azul-acento);
-            box-shadow:
-                0 1px 0 rgba(77,166,255,0.3),
-                0 4px 24px rgba(0,0,0,0.6),
-                inset 0 1px 0 rgba(77,166,255,0.1);
-            padding: 10px 24px;
+            position: fixed; top: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, var(--t-h1) 0%, var(--t-h2) 100%);
+            border-bottom: 2px solid var(--t-hborder);
+            box-shadow: 0 1px 0 var(--t-hglow), 0 4px 24px rgba(0,0,0,.6), inset 0 1px 0 var(--t-hglow);
+            padding: 10px 20px;
             z-index: 1050;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            transition: background 0.4s, border-color 0.4s;
         }
+        .header-caman::before, .header-caman::after {
+            content: ''; position: absolute; width: 14px; height: 14px; bottom: -1px;
+            border-color: var(--t-accent); border-style: solid; opacity: .6;
+        }
+        .header-caman::before { left:8px;  border-width:0 0 2px 2px; }
+        .header-caman::after  { right:8px; border-width:0 2px 2px 0; }
 
-        /* Esquinas tipo HUD */
-        .header-caman::before,
-        .header-caman::after {
-            content: '';
-            position: absolute;
-            width: 14px; height: 14px;
-            bottom: -1px;
-            border-color: var(--azul-brillo);
-            border-style: solid;
-            opacity: 0.6;
-        }
-        .header-caman::before { left: 8px;  border-width: 0 0 2px 2px; }
-        .header-caman::after  { right: 8px; border-width: 0 2px 2px 0; }
+        .brand-section { display:flex; align-items:center; gap:14px; min-width:0; }
+        .header-caman img { height:44px; filter:drop-shadow(0 0 8px var(--t-hglow)); }
+        .header-title-wrap { display:flex; flex-direction:column; gap:1px; }
+        .header-label { font-family:var(--font-mono); font-size:.6rem; color:var(--t-accent); letter-spacing:3px; text-transform:uppercase; opacity:.7; }
+        .header-title { font-family:var(--font-display); font-weight:700; font-size:1rem; margin:0; letter-spacing:2px; color:#fff; white-space:nowrap; text-shadow:0 0 20px var(--t-hglow); }
 
-        .brand-section {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            min-width: 0;
+        /* ── Selector de tema ── */
+        .theme-switcher { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+        .theme-label { font-family:var(--font-mono); font-size:.58rem; color:rgba(255,255,255,.35); letter-spacing:2px; text-transform:uppercase; white-space:nowrap; }
+        .theme-dot {
+            width:20px; height:20px; border-radius:50%;
+            border:2px solid transparent; cursor:pointer; transition:all .2s;
         }
+        .theme-dot:hover { transform:scale(1.25); }
+        .theme-dot.active { border-color:#fff; box-shadow:0 0 8px rgba(255,255,255,.6); }
+        .theme-dot[data-t="aviador"]   { background:radial-gradient(circle at 40% 40%,#4da6ff,#0a1628); }
+        .theme-dot[data-t="autoridad"] { background:radial-gradient(circle at 40% 40%,#7c4dff,#2d1b69); }
+        .theme-dot[data-t="radar"]     { background:radial-gradient(circle at 40% 40%,#00ff41,#030d08); }
+        .theme-dot[data-t="nvg"]       { background:radial-gradient(circle at 40% 40%,#ff1a1a,#0a0000); }
+        .theme-dot[data-t="arena"]     { background:radial-gradient(circle at 40% 40%,#c8a96e,#2a1f0e); }
+        .theme-dot[data-t="selva"]     { background:radial-gradient(circle at 40% 40%,#7ab648,#060f05); }
 
-        .header-caman img {
-            height: 44px; width: auto;
-            filter: drop-shadow(0 0 8px rgba(77,166,255,0.5));
-        }
+        /* ── Usuario ── */
+        .user-section { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; max-width:40%; }
+        #userName { font-family:var(--font-mono); font-size:.78rem; color:var(--t-accent); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .btn-logout { font-family:var(--font-mono); font-size:.7rem; padding:3px 14px; border-radius:3px; font-weight:600; letter-spacing:1px; border:1px solid var(--t-accent); color:var(--t-accent); background:transparent; transition:all .2s; white-space:nowrap; cursor:pointer; }
+        .btn-logout:hover { background:var(--t-accent); color:var(--t-bg); box-shadow:0 0 12px var(--t-hglow); }
 
-        .header-title-wrap { display: flex; flex-direction: column; gap: 1px; }
+        /* ══════════════════════════════════════════════════
+           LOGIN — Morado Autoridad (fijo)
+        ══════════════════════════════════════════════════ */
+        #authSection { background:linear-gradient(145deg,rgba(45,27,105,.95),rgba(26,8,60,.98)); border:1px solid var(--morado-acento); border-radius:4px; box-shadow:0 0 0 1px rgba(124,77,255,.2),0 20px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(124,77,255,.2); position:relative; overflow:hidden; }
+        #authSection::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,var(--morado-acento),transparent); }
+        .auth-icon { width:56px; height:56px; background:rgba(124,77,255,.15); border:1px solid rgba(124,77,255,.4); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:1.5rem; color:var(--morado-acento); box-shadow:0 0 20px rgba(124,77,255,.3); }
+        .auth-title { font-family:var(--font-display); font-size:.85rem; letter-spacing:3px; text-transform:uppercase; color:var(--morado-acento); text-align:center; margin-top:10px; }
+        .form-control-aero { background:rgba(255,255,255,.05)!important; border:1px solid rgba(124,77,255,.3)!important; border-radius:3px!important; color:#fff!important; font-family:var(--font-mono); transition:all .2s; }
+        .form-control-aero::placeholder { color:rgba(200,169,255,.4); }
+        .form-control-aero:focus { background:rgba(124,77,255,.08)!important; border-color:var(--morado-acento)!important; box-shadow:0 0 0 3px rgba(124,77,255,.15)!important; outline:none; }
+        .btn-autoridad { background:linear-gradient(135deg,var(--morado-autoridad),var(--morado-medio)); border:1px solid var(--morado-acento); color:#fff; font-family:var(--font-display); font-size:.8rem; letter-spacing:2px; border-radius:3px; transition:all .25s; }
+        .btn-autoridad:hover { background:linear-gradient(135deg,var(--morado-medio),var(--morado-acento)); box-shadow:0 0 24px rgba(124,77,255,.5); color:#fff; }
 
-        .header-label {
-            font-family: var(--font-mono);
-            font-size: 0.6rem;
-            color: var(--azul-brillo);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            opacity: 0.7;
-        }
+        /* ══════════════════════════════════════════════════
+           BUSCADOR
+        ══════════════════════════════════════════════════ */
+        .card-aviador { background:rgba(10,22,40,.85); border:1px solid var(--gris-borde); border-radius:4px; position:relative; overflow:hidden; transition:background .4s; }
+        .card-aviador::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--t-accent) 50%,transparent); opacity:.5; }
+        .section-label { font-family:var(--font-mono); font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--t-accent); opacity:.9; display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+        .section-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--t-hborder),transparent); opacity:.4; }
+        .input-aero { background:rgba(13,25,48,.8)!important; border:1px solid var(--gris-borde)!important; border-radius:3px!important; color:#fff!important; font-family:var(--font-mono); transition:all .2s; }
+        .input-aero::placeholder { color:rgba(143,163,184,.4); }
+        .input-aero:focus { background:rgba(45,125,210,.08)!important; border-color:var(--t-hborder)!important; box-shadow:0 0 0 3px var(--t-grid)!important; outline:none; }
+        .btn-buscar { background:linear-gradient(135deg,var(--t-h2),var(--t-hborder)); border:none; color:#fff; font-family:var(--font-display); font-size:.75rem; letter-spacing:2px; border-radius:0 3px 3px 0!important; padding:0 24px; transition:all .2s; }
+        .btn-buscar:hover { filter:brightness(1.2); box-shadow:0 0 16px var(--t-hglow); color:#fff; }
 
-        .header-title {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 1rem;
-            margin: 0;
-            letter-spacing: 2px;
-            color: #fff;
-            white-space: nowrap;
-            text-shadow: 0 0 20px rgba(77,166,255,0.4);
-        }
+        /* ══════════════════════════════════════════════════
+           PANEL ADMIN — Arena Militar (fijo)
+        ══════════════════════════════════════════════════ */
+        #adminForm { background:linear-gradient(135deg,rgba(42,31,14,.95),rgba(20,14,5,.98))!important; border:1px solid rgba(200,169,110,.3)!important; border-radius:4px!important; position:relative; overflow:hidden; }
+        #adminForm::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--arena-militar),transparent); }
+        .admin-label { font-family:var(--font-mono); font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--arena-militar); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
+        .admin-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--arena-oscura),transparent); }
 
-        /* ═══════════════════════════════════════════
-           SECCIÓN DE USUARIO
-        ═══════════════════════════════════════════ */
-        .user-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            flex-shrink: 0;
-            max-width: 45%;
-        }
+        /* Banner modo edición */
+        #editBanner { background:rgba(200,169,110,.1); border:1px solid rgba(200,169,110,.4); border-radius:3px; padding:6px 14px; margin-bottom:12px; font-family:var(--font-mono); font-size:.72rem; letter-spacing:2px; color:var(--arena-militar); display:none; align-items:center; gap:10px; }
+        #editBanner.visible { display:flex; }
+        .cancel-edit { margin-left:auto; cursor:pointer; color:var(--nvg-rojo); border:1px solid var(--nvg-rojo-dim); padding:1px 10px; border-radius:2px; font-size:.65rem; background:rgba(139,0,0,.15); transition:all .2s; }
+        .cancel-edit:hover { background:var(--nvg-rojo); color:#fff; }
 
-        #userName {
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            color: var(--azul-brillo);
-            text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .input-arena { background:rgba(42,31,14,.6)!important; border:1px solid rgba(200,169,110,.25)!important; border-radius:3px!important; color:var(--arena-militar)!important; font-family:var(--font-mono); font-size:.85rem; transition:all .2s; }
+        .input-arena::placeholder { color:rgba(200,169,110,.3); }
+        .input-arena:focus { border-color:var(--arena-militar)!important; box-shadow:0 0 0 3px rgba(200,169,110,.12)!important; outline:none; }
+        .input-arena::-webkit-calendar-picker-indicator { filter:invert(.6) sepia(1) saturate(2) hue-rotate(5deg); }
+        .label-arena { font-family:var(--font-mono); font-size:.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--arena-oscura); }
+        .btn-guardar { background:linear-gradient(135deg,var(--arena-oscura),var(--arena-militar)); border:1px solid var(--arena-militar); color:var(--azul-aviador); font-family:var(--font-display); font-size:.7rem; font-weight:700; letter-spacing:2px; border-radius:3px; transition:all .2s; }
+        .btn-guardar:hover { background:var(--arena-militar); box-shadow:0 0 16px rgba(200,169,110,.4); color:#000; }
 
-        .btn-logout {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            padding: 3px 14px;
-            border-radius: 3px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            border: 1px solid var(--azul-brillo);
-            color: var(--azul-brillo);
-            background: transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .btn-logout:hover {
-            background: var(--azul-brillo);
-            color: var(--azul-aviador);
-            box-shadow: 0 0 12px rgba(77,166,255,0.5);
-        }
+        /* ══════════════════════════════════════════════════
+           TABLA RADAR (fija, siempre verde sobre negro)
+        ══════════════════════════════════════════════════ */
+        .card-radar { background:var(--radar-fondo); border:1px solid rgba(0,255,65,.2); border-radius:4px; overflow:hidden; position:relative; }
+        .card-radar::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--radar-verde),transparent); }
+        .card-radar::after { content:''; position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.015) 2px,rgba(0,255,65,.015) 4px); }
+        .table-radar { margin:0; border-collapse:separate; border-spacing:0; width:100%; }
+        .table-radar thead th { background:rgba(0,255,65,.06); color:var(--radar-verde); font-family:var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:3px; border-bottom:1px solid rgba(0,255,65,.2); padding:14px 16px; font-weight:400; }
+        .table-radar tbody tr { transition:background .15s; }
+        .table-radar tbody tr:hover { background:rgba(0,255,65,.04); }
+        .table-radar tbody td { padding:11px 16px; vertical-align:middle; border-bottom:1px solid rgba(0,255,65,.08); color:rgba(0,255,65,.75); font-family:var(--font-mono); font-size:.82rem; }
+        .td-curso { color:#fff!important; font-family:var(--font-body)!important; font-size:.95rem!important; font-weight:600; }
 
-        /* ═══════════════════════════════════════════
-           PANEL DE LOGIN — MORADO AUTORIDAD
-        ═══════════════════════════════════════════ */
-        #authSection {
-            background: linear-gradient(145deg, rgba(45,27,105,0.95) 0%, rgba(26,8,60,0.98) 100%);
-            border: 1px solid var(--morado-acento);
-            border-radius: 4px;
-            box-shadow:
-                0 0 0 1px rgba(124,77,255,0.2),
-                0 20px 60px rgba(0,0,0,0.7),
-                inset 0 1px 0 rgba(124,77,255,0.2);
-            position: relative;
-            overflow: hidden;
-        }
+        /* Badges */
+        .badge-vigente  { background:rgba(45,90,39,.4);   border:1px solid var(--verde-claro);  color:var(--verde-lima);    font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; }
+        .badge-pronto   { background:rgba(139,115,85,.25); border:1px solid var(--arena-oscura); color:var(--arena-militar); font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; }
+        .badge-vencido  { background:rgba(139,0,0,.25);   border:1px solid var(--nvg-rojo-dim); color:var(--nvg-rojo);      font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; animation:nvg-pulse 2s ease-in-out infinite; }
+        @keyframes nvg-pulse { 0%,100%{box-shadow:0 0 4px rgba(255,26,26,.3);} 50%{box-shadow:0 0 10px rgba(255,26,26,.6);} }
 
-        #authSection::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--morado-acento), transparent);
-        }
+        .vence-3-meses { background:rgba(200,169,110,.04)!important; }
+        .vence-3-meses td:first-child { border-left:3px solid var(--arena-oscura); }
+        .vencido { background:rgba(255,26,26,.04)!important; }
+        .vencido td:first-child { border-left:3px solid var(--nvg-rojo-dim); }
 
-        .auth-icon {
-            width: 56px; height: 56px;
-            background: rgba(124,77,255,0.15);
-            border: 1px solid rgba(124,77,255,0.4);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto;
-            font-size: 1.5rem;
-            color: var(--morado-acento);
-            box-shadow: 0 0 20px rgba(124,77,255,0.3);
-        }
+        /* Botones de acción */
+        .btn-accion { width:28px; height:28px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:.78rem; transition:all .2s; cursor:pointer; border:1px solid; }
+        .btn-eliminar { background:rgba(139,0,0,.2);  border-color:var(--nvg-rojo-dim); color:var(--nvg-rojo); }
+        .btn-eliminar:hover { background:var(--nvg-rojo);   color:#fff; box-shadow:0 0 12px rgba(255,26,26,.5);  border-color:var(--nvg-rojo); }
+        .btn-editar   { background:rgba(45,90,39,.2);  border-color:var(--verde-claro);  color:var(--verde-lima); }
+        .btn-editar:hover   { background:var(--verde-selva); color:#fff; box-shadow:0 0 12px rgba(74,139,63,.5); border-color:var(--verde-lima); }
+        .acciones-wrap { display:flex; align-items:center; justify-content:center; gap:6px; }
 
-        .auth-title {
-            font-family: var(--font-display);
-            font-size: 0.85rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--morado-acento);
-            text-align: center;
-            margin-top: 10px;
-        }
+        /* Vacío */
+        .empty-state { color:rgba(0,255,65,.3); font-family:var(--font-mono); font-size:.8rem; letter-spacing:1px; }
 
-        .form-control-aero {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid rgba(124,77,255,0.3) !important;
-            border-radius: 3px !important;
-            color: #fff !important;
-            font-family: var(--font-mono);
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .form-control-aero::placeholder { color: rgba(200,169,255,0.4); }
-        .form-control-aero:focus {
-            background: rgba(124,77,255,0.08) !important;
-            border-color: var(--morado-acento) !important;
-            box-shadow: 0 0 0 3px rgba(124,77,255,0.15) !important;
-            outline: none;
-        }
+        /* Spinner */
+        .spinner-radar { width:32px; height:32px; border:2px solid rgba(0,255,65,.1); border-top-color:var(--radar-verde); border-radius:50%; animation:spin .8s linear infinite; }
+        @keyframes spin { to{transform:rotate(360deg);} }
 
-        .btn-autoridad {
-            background: linear-gradient(135deg, var(--morado-autoridad), var(--morado-medio));
-            border: 1px solid var(--morado-acento);
-            color: #fff;
-            font-family: var(--font-display);
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            border-radius: 3px;
-            transition: all 0.25s;
-            text-shadow: 0 0 10px rgba(124,77,255,0.5);
-        }
-        .btn-autoridad:hover {
-            background: linear-gradient(135deg, var(--morado-medio), var(--morado-acento));
-            box-shadow: 0 0 24px rgba(124,77,255,0.5);
-            color: #fff;
-        }
+        /* ══════════════════════════════════════════════════
+           FOOTER
+        ══════════════════════════════════════════════════ */
+        .footer-aero { background:linear-gradient(180deg,var(--negro-base),#04080e); border-top:1px solid var(--gris-borde); padding:14px 0; width:100%; margin-top:auto; position:relative; }
+        .footer-aero::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent 0%,var(--morado-acento) 20%,var(--azul-brillo) 40%,var(--radar-verde-dim) 60%,var(--arena-oscura) 80%,transparent 100%); opacity:.5; }
+        .footer-inner { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+        .footer-brand { font-family:var(--font-mono); font-size:.68rem; color:var(--gris-texto); letter-spacing:2px; display:flex; align-items:center; gap:6px; }
+        .footer-brand .dot { width:6px; height:6px; background:var(--radar-verde); border-radius:50%; box-shadow:0 0 6px var(--radar-verde); animation:blink 2s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+        .footer-links { display:flex; gap:8px; }
+        .footer-btn { font-family:var(--font-mono); font-size:.68rem; letter-spacing:1px; padding:5px 14px; border-radius:2px; text-decoration:none; display:flex; align-items:center; gap:6px; transition:all .2s; border:1px solid; }
+        .footer-btn.wa { border-color:rgba(37,211,102,.3); color:rgba(37,211,102,.6); background:rgba(37,211,102,.04); }
+        .footer-btn.wa:hover { border-color:#25D366; color:#25D366; background:rgba(37,211,102,.1); box-shadow:0 0 10px rgba(37,211,102,.2); }
+        .footer-btn.em { border-color:rgba(77,166,255,.3); color:rgba(77,166,255,.6); background:rgba(77,166,255,.04); }
+        .footer-btn.em:hover { border-color:var(--azul-brillo); color:var(--azul-brillo); background:rgba(77,166,255,.1); box-shadow:0 0 10px rgba(77,166,255,.2); }
 
-        /* ═══════════════════════════════════════════
-           PANEL PRINCIPAL — AZUL AVIADOR
-        ═══════════════════════════════════════════ */
-        .card-aviador {
-            background: rgba(10,22,40,0.9);
-            border: 1px solid var(--gris-borde);
-            border-radius: 4px;
-            position: relative;
-            overflow: hidden;
-        }
-        .card-aviador::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent 0%, var(--azul-acento) 30%, var(--azul-brillo) 50%, var(--azul-acento) 70%, transparent 100%);
-        }
-
-        .section-label {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--azul-brillo);
-            opacity: 0.8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-        .section-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, var(--azul-acento), transparent);
-            opacity: 0.4;
-        }
-
-        .input-aero {
-            background: rgba(13,25,48,0.8) !important;
-            border: 1px solid var(--gris-borde) !important;
-            border-radius: 3px !important;
-            color: #fff !important;
-            font-family: var(--font-mono);
-            transition: all 0.2s;
-        }
-        .input-aero::placeholder { color: rgba(143,163,184,0.4); }
-        .input-aero:focus {
-            background: rgba(45,125,210,0.08) !important;
-            border-color: var(--azul-acento) !important;
-            box-shadow: 0 0 0 3px rgba(45,125,210,0.12) !important;
-            outline: none;
-        }
-
-        .btn-buscar {
-            background: linear-gradient(135deg, var(--azul-cielo), var(--azul-acento));
-            border: none;
-            color: #fff;
-            font-family: var(--font-display);
-            font-size: 0.75rem;
-            letter-spacing: 2px;
-            border-radius: 0 3px 3px 0 !important;
-            padding: 0 24px;
-            transition: all 0.2s;
-        }
-        .btn-buscar:hover {
-            background: linear-gradient(135deg, var(--azul-acento), var(--azul-brillo));
-            box-shadow: 0 0 16px rgba(45,125,210,0.5);
-            color: #fff;
-        }
-
-        /* ═══════════════════════════════════════════
-           PANEL ADMIN — ARENA MILITAR
-        ═══════════════════════════════════════════ */
-        #adminForm {
-            background: linear-gradient(135deg, rgba(42,31,14,0.95), rgba(20,14,5,0.98)) !important;
-            border: 1px solid rgba(200,169,110,0.3) !important;
-            border-radius: 4px !important;
-            position: relative;
-            overflow: hidden;
-        }
-        #adminForm::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--arena-militar), transparent);
-        }
-
-        .admin-label {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--arena-militar);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-        .admin-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: linear-gradient(90deg, var(--arena-oscura), transparent);
-        }
-
-        .input-arena {
-            background: rgba(42,31,14,0.6) !important;
-            border: 1px solid rgba(200,169,110,0.25) !important;
-            border-radius: 3px !important;
-            color: var(--arena-militar) !important;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .input-arena::placeholder { color: rgba(200,169,110,0.3); }
-        .input-arena:focus {
-            border-color: var(--arena-militar) !important;
-            box-shadow: 0 0 0 3px rgba(200,169,110,0.12) !important;
-            outline: none;
-        }
-        .input-arena::-webkit-calendar-picker-indicator { filter: invert(0.6) sepia(1) saturate(2) hue-rotate(5deg); }
-
-        .label-arena {
-            font-family: var(--font-mono);
-            font-size: 0.65rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--arena-oscura);
-        }
-
-        .btn-guardar {
-            background: linear-gradient(135deg, var(--arena-oscura), var(--arena-militar));
-            border: 1px solid var(--arena-militar);
-            color: var(--azul-aviador);
-            font-family: var(--font-display);
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            border-radius: 3px;
-            transition: all 0.2s;
-        }
-        .btn-guardar:hover {
-            background: var(--arena-militar);
-            box-shadow: 0 0 16px rgba(200,169,110,0.4);
-            color: #000;
-        }
-
-        /* ═══════════════════════════════════════════
-           TABLA — RADAR (negro + verde)
-        ═══════════════════════════════════════════ */
-        .card-radar {
-            background: var(--radar-fondo);
-            border: 1px solid rgba(0,255,65,0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            position: relative;
-        }
-        .card-radar::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--radar-verde), transparent);
-        }
-
-        /* Scanline sutil */
-        .card-radar::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,255,65,0.015) 2px,
-                rgba(0,255,65,0.015) 4px
-            );
-            pointer-events: none;
-        }
-
-        .table-radar {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
-            width: 100%;
-        }
-
-        .table-radar thead th {
-            background: rgba(0,255,65,0.06);
-            color: var(--radar-verde);
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            border-bottom: 1px solid rgba(0,255,65,0.2);
-            padding: 14px 16px;
-            font-weight: 400;
-        }
-
-        .table-radar tbody tr { transition: background 0.15s; }
-        .table-radar tbody tr:hover { background: rgba(0,255,65,0.04); }
-
-        .table-radar tbody td {
-            padding: 13px 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid rgba(0,255,65,0.08);
-            color: rgba(0,255,65,0.75);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-        }
-
-        .td-curso {
-            color: #fff !important;
-            font-family: var(--font-body) !important;
-            font-size: 0.95rem !important;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        /* ═══════════════════════════════════════════
-           BADGES DE ESTADO
-        ═══════════════════════════════════════════ */
-
-        /* Vigente — Verde Selva */
-        .badge-vigente {
-            background: rgba(45,90,39,0.4);
-            border: 1px solid var(--verde-claro);
-            color: var(--verde-lima);
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            letter-spacing: 2px;
-            padding: 4px 12px;
-            border-radius: 2px;
-        }
-
-        /* Vence pronto — Arena Militar */
-        .badge-pronto {
-            background: rgba(139,115,85,0.25);
-            border: 1px solid var(--arena-oscura);
-            color: var(--arena-militar);
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            letter-spacing: 2px;
-            padding: 4px 12px;
-            border-radius: 2px;
-        }
-
-        /* Vencido — NVG (negro + rojo) */
-        .badge-vencido {
-            background: rgba(139,0,0,0.25);
-            border: 1px solid var(--nvg-rojo-dim);
-            color: var(--nvg-rojo);
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            letter-spacing: 2px;
-            padding: 4px 12px;
-            border-radius: 2px;
-            animation: nvg-pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes nvg-pulse {
-            0%, 100% { box-shadow: 0 0 4px rgba(255,26,26,0.3); }
-            50%       { box-shadow: 0 0 10px rgba(255,26,26,0.6); }
-        }
-
-        /* Filas coloreadas */
-        .vence-3-meses { background: rgba(200,169,110,0.04) !important; }
-        .vence-3-meses td:first-child { border-left: 3px solid var(--arena-oscura); }
-
-        .vencido { background: rgba(255,26,26,0.04) !important; }
-        .vencido td:first-child { border-left: 3px solid var(--nvg-rojo-dim); }
-
-        /* Botón eliminar */
-        .btn-eliminar {
-            background: rgba(139,0,0,0.2);
-            border: 1px solid var(--nvg-rojo-dim);
-            color: var(--nvg-rojo);
-            width: 30px; height: 30px;
-            border-radius: 3px;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .btn-eliminar:hover {
-            background: var(--nvg-rojo);
-            color: #fff;
-            box-shadow: 0 0 12px rgba(255,26,26,0.5);
-        }
-
-        /* ═══════════════════════════════════════════
-           ESTADO VACÍO
-        ═══════════════════════════════════════════ */
-        .empty-state {
-            color: rgba(0,255,65,0.3);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-        }
-
-        /* ═══════════════════════════════════════════
-           SPINNER RADAR
-        ═══════════════════════════════════════════ */
-        .spinner-radar {
-            width: 32px; height: 32px;
-            border: 2px solid rgba(0,255,65,0.1);
-            border-top-color: var(--radar-verde);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ═══════════════════════════════════════════
-           FOOTER — COMPACTO MULTI-TEMA
-        ═══════════════════════════════════════════ */
-        .footer-aero {
-            background: linear-gradient(180deg, var(--negro-base), #04080e);
-            border-top: 1px solid var(--gris-borde);
-            padding: 14px 0;
-            width: 100%;
-            margin-top: auto;
-            position: relative;
-        }
-        .footer-aero::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg,
-                transparent 0%,
-                var(--morado-acento) 20%,
-                var(--azul-brillo) 40%,
-                var(--radar-verde-dim) 60%,
-                var(--arena-oscura) 80%,
-                transparent 100%);
-            opacity: 0.5;
-        }
-
-        .footer-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .footer-brand {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            color: var(--gris-texto);
-            letter-spacing: 2px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .footer-brand .dot {
-            width: 6px; height: 6px;
-            background: var(--radar-verde);
-            border-radius: 50%;
-            box-shadow: 0 0 6px var(--radar-verde);
-            animation: blink 2s ease-in-out infinite;
-        }
-        @keyframes blink {
-            0%,100% { opacity:1; } 50% { opacity:0.2; }
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 8px;
-        }
-
-        .footer-btn {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            letter-spacing: 1px;
-            padding: 5px 14px;
-            border-radius: 2px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            border: 1px solid;
-        }
-        .footer-btn.wa {
-            border-color: rgba(37,211,102,0.3);
-            color: rgba(37,211,102,0.6);
-            background: rgba(37,211,102,0.04);
-        }
-        .footer-btn.wa:hover {
-            border-color: #25D366;
-            color: #25D366;
-            background: rgba(37,211,102,0.1);
-            box-shadow: 0 0 10px rgba(37,211,102,0.2);
-        }
-        .footer-btn.em {
-            border-color: rgba(77,166,255,0.3);
-            color: rgba(77,166,255,0.6);
-            background: rgba(77,166,255,0.04);
-        }
-        .footer-btn.em:hover {
-            border-color: var(--azul-brillo);
-            color: var(--azul-brillo);
-            background: rgba(77,166,255,0.1);
-            box-shadow: 0 0 10px rgba(77,166,255,0.2);
-        }
-
-        /* ═══════════════════════════════════════════
-           UTILITARIOS
-        ═══════════════════════════════════════════ */
-        .hidden { display: none !important; }
-
-        @media (max-width: 768px) {
-            .header-title { font-size: 0.75rem; letter-spacing: 1px; }
-            .header-label { display: none; }
-            .footer-inner { flex-direction: column; align-items: center; text-align: center; }
-        }
-        @media (max-width: 480px) {
-            .header-title-wrap { display: none; }
-        }
+        /* Utilitarios */
+        .hidden { display:none!important; }
+        @media (max-width:768px) { .header-title{font-size:.75rem;} .header-label,.theme-label{display:none;} .footer-inner{flex-direction:column;align-items:center;} }
+        @media (max-width:480px) { .header-title-wrap{display:none;} .theme-dot{width:16px;height:16px;} }
     </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════
-     HEADER
-══════════════════════════════════ -->
+<!-- ══════════ HEADER ══════════ -->
 <header class="header-caman">
     <div class="brand-section">
         <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
@@ -710,15 +257,24 @@
         </div>
     </div>
 
+    <!-- Selector de tema -->
+    <div class="theme-switcher" title="Cambiar tema de color">
+        <span class="theme-label">TEMA</span>
+        <div class="theme-dot active" data-t="aviador"   title="Azul Aviador"></div>
+        <div class="theme-dot"        data-t="autoridad" title="Morado Autoridad"></div>
+        <div class="theme-dot"        data-t="radar"     title="Radar Verde"></div>
+        <div class="theme-dot"        data-t="nvg"       title="NVG Rojo"></div>
+        <div class="theme-dot"        data-t="arena"     title="Arena Militar"></div>
+        <div class="theme-dot"        data-t="selva"     title="Verde Selva"></div>
+    </div>
+
     <div id="userInfo" class="user-section hidden">
         <span id="userName">Cargando...</span>
-        <button onclick="signOut()" class="btn btn-logout"><i class="bi bi-box-arrow-right me-1"></i>SALIR</button>
+        <button onclick="signOut()" class="btn-logout"><i class="bi bi-box-arrow-right me-1"></i>SALIR</button>
     </div>
 </header>
 
-<!-- ══════════════════════════════════
-     CONTENIDO PRINCIPAL
-══════════════════════════════════ -->
+<!-- ══════════ MAIN ══════════ -->
 <main class="main-content container">
 
     <!-- LOGIN -->
@@ -738,7 +294,7 @@
         <!-- Buscador -->
         <div class="card-aviador p-4 mb-4">
             <div class="section-label"><i class="bi bi-search"></i> CONSULTA DE PERSONAL</div>
-            <div class="input-group input-group-lg" style="border-radius:3px; overflow:hidden;">
+            <div class="input-group input-group-lg" style="border-radius:3px;overflow:hidden;">
                 <input type="text" id="searchCedula" class="form-control border-0 input-aero" placeholder="Ingrese número de cédula...">
                 <button onclick="fetchData()" class="btn btn-buscar fw-bold">BUSCAR</button>
             </div>
@@ -746,10 +302,26 @@
 
         <!-- Formulario Admin -->
         <div id="adminForm" class="p-4 mb-4 hidden">
-            <div class="admin-label"><i class="bi bi-plus-circle-fill"></i> REGISTRAR NUEVO CURSO</div>
+            <div class="admin-label">
+                <i class="bi bi-pencil-square"></i>
+                <span id="adminFormTitle">REGISTRAR NUEVO CURSO</span>
+            </div>
+
+            <!-- Banner modo edición -->
+            <div id="editBanner">
+                <i class="bi bi-pencil-fill me-1"></i>
+                EDITANDO ID: <strong id="editIdLabel" style="color:#fff;margin-left:4px"></strong>
+                <span class="cancel-edit" onclick="cancelEdit()">✕ CANCELAR</span>
+            </div>
+
+            <input type="hidden" id="inId">
             <div class="row g-3">
-                <div class="col-12 col-md-2"><input type="text" id="inCedula" class="form-control input-arena" placeholder="Cédula"></div>
-                <div class="col-12 col-md-4"><input type="text" id="inCurso"  class="form-control input-arena" placeholder="Nombre del Curso"></div>
+                <div class="col-12 col-md-2">
+                    <input type="text" id="inCedula" class="form-control input-arena" placeholder="Cédula">
+                </div>
+                <div class="col-12 col-md-4">
+                    <input type="text" id="inCurso" class="form-control input-arena" placeholder="Nombre del Curso">
+                </div>
                 <div class="col-6 col-md-2">
                     <label class="label-arena mb-1">Realización</label>
                     <input type="date" id="inFecha" class="form-control input-arena">
@@ -759,7 +331,7 @@
                     <input type="date" id="inVence" class="form-control input-arena">
                 </div>
                 <div class="col-12 col-md-2 d-flex align-items-end">
-                    <button onclick="upsertData()" class="btn btn-guardar w-100 fw-bold">
+                    <button onclick="saveData()" id="btnGuardar" class="btn btn-guardar w-100 fw-bold">
                         <i class="bi bi-save me-1"></i>GUARDAR
                     </button>
                 </div>
@@ -776,13 +348,13 @@
                             <th>Capacitación</th>
                             <th>Vencimiento</th>
                             <th>Estado</th>
-                            <th id="thAcciones" class="hidden text-center">Acción</th>
+                            <th id="thAcciones" class="hidden text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="dataTable">
                         <tr>
                             <td colspan="5" class="text-center py-5 empty-state">
-                                <i class="bi bi-broadcast fs-2 d-block mb-2" style="color:rgba(0,255,65,0.2)"></i>
+                                <i class="bi bi-broadcast fs-2 d-block mb-2" style="color:rgba(0,255,65,.2)"></i>
                                 &gt;_ INGRESE UNA CÉDULA PARA INICIAR ESCANEO
                             </td>
                         </tr>
@@ -790,13 +362,10 @@
                 </table>
             </div>
         </div>
-
     </div>
 </main>
 
-<!-- ══════════════════════════════════
-     FOOTER
-══════════════════════════════════ -->
+<!-- ══════════ FOOTER ══════════ -->
 <footer class="footer-aero">
     <div class="container footer-inner">
         <div class="footer-brand">
@@ -807,7 +376,7 @@
             <a href="https://wa.me/573128816469" class="footer-btn wa" target="_blank">
                 <i class="bi bi-whatsapp"></i> WHATSAPP
             </a>
-            <a href="mailto:manuel.arias@fac.mil.co" class="footer-btn em">
+            <a href="/cdn-cgi/l/email-protection#07666b72646675633f47606a666e6b2964686a" class="footer-btn em">
                 <i class="bi bi-envelope-at"></i> EMAIL
             </a>
         </div>
@@ -816,48 +385,61 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
+    /* ══════════ SUPABASE ══════════ */
     const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let sessionUser = null;
-    let isAdmin = false;
+    let isAdmin     = false;
+    let editingId   = null;   // null = inserción | string = edición
 
+    /* ══════════ TEMA ══════════ */
+    const THEME_KEY = 'caman_theme';
+
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === t));
+        try { localStorage.setItem(THEME_KEY, t); } catch(e) {}
+    }
+
+    document.querySelectorAll('.theme-dot').forEach(dot =>
+        dot.addEventListener('click', () => applyTheme(dot.dataset.t))
+    );
+
+    // Restaurar tema guardado
+    try { applyTheme(localStorage.getItem(THEME_KEY) || 'aviador'); } catch(e) { applyTheme('aviador'); }
+
+    /* ══════════ AUTH ══════════ */
     async function signIn() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const btn = document.getElementById('loginBtn');
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>VERIFICANDO...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>VERIFICANDO...';
         btn.disabled = true;
 
         const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
         if (error) {
             alert("Error: " + error.message);
-            btn.innerHTML = 'ENTRAR';
-            btn.disabled = false;
-            return;
+            btn.innerHTML = 'ENTRAR'; btn.disabled = false; return;
         }
         sessionUser = data.user;
         await checkUserRole();
     }
 
     async function checkUserRole() {
-        const { data, error } = await _supabase
-            .from('entrenamientos_usuarios')
-            .select('es_admin, nombre')
-            .eq('email', sessionUser.email)
-            .single();
+        const { data } = await _supabase
+            .from('entrenamientos_usuarios').select('es_admin, nombre')
+            .eq('email', sessionUser.email).single();
 
         if (data) {
             isAdmin = data.es_admin;
-            const icono = isAdmin ? '<i class="bi bi-person-badge me-1"></i>' : '<i class="bi bi-person me-1"></i>';
-            document.getElementById('userName').innerHTML = `${icono} ${data.nombre} (${isAdmin ? 'ADMIN' : 'USUARIO'})`;
+            const ico = isAdmin ? '<i class="bi bi-person-badge me-1"></i>' : '<i class="bi bi-person me-1"></i>';
+            document.getElementById('userName').innerHTML = `${ico} ${data.nombre} (${isAdmin ? 'ADMIN' : 'USUARIO'})`;
             renderUI();
         } else {
-            console.error("Error al cargar perfil o permisos RLS.");
             const btn = document.getElementById('loginBtn');
-            btn.innerHTML = 'ENTRAR';
-            btn.disabled = false;
+            btn.innerHTML = 'ENTRAR'; btn.disabled = false;
         }
     }
 
@@ -871,6 +453,12 @@
         }
     }
 
+    async function signOut() {
+        await _supabase.auth.signOut();
+        location.reload();
+    }
+
+    /* ══════════ CRUD ══════════ */
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value;
         if (!cedula) return;
@@ -878,74 +466,117 @@
         const tbody = document.getElementById('dataTable');
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-radar mx-auto"></div></td></tr>';
 
-        const { data, error } = await _supabase
-            .from('entrenamientos')
-            .select('*')
-            .eq('cedula', cedula)
-            .order('fecha_vencimiento', { ascending: true });
+        const { data, error } = await _supabase.from('entrenamientos').select('*')
+            .eq('cedula', cedula).order('fecha_vencimiento', { ascending: true });
 
         if (error) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4" style="color:var(--nvg-rojo);font-family:var(--font-mono);font-size:0.8rem">ERROR: ${error.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4" style="color:var(--nvg-rojo);font-family:var(--font-mono);font-size:.8rem">ERROR: ${error.message}</td></tr>`;
             return;
         }
-
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 empty-state"><i class="bi bi-search fs-2 d-block mb-2" style="color:rgba(0,255,65,0.2)"></i>&gt;_ SIN REGISTROS PARA ESTA CÉDULA</td></tr>';
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 empty-state"><i class="bi bi-search fs-2 d-block mb-2" style="color:rgba(0,255,65,.2)"></i>&gt;_ SIN REGISTROS PARA ESTA CÉDULA</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
         data.forEach(row => {
             const tr = document.createElement('tr');
-            const statusInfo = getStatusInfo(row.fecha_vencimiento);
-            if (statusInfo.class) tr.className = statusInfo.class;
+            const s  = getStatusInfo(row.fecha_vencimiento);
+            if (s.class) tr.className = s.class;
+
+            // Escapamos el objeto para pasarlo al onclick sin problemas de comillas
+            const rowJson = JSON.stringify(row).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+            const accionesHtml = isAdmin ? `
+                <td>
+                    <div class="acciones-wrap">
+                        <button class="btn-accion btn-editar"
+                            onclick='startEdit(${JSON.stringify(row)})'
+                            title="Editar registro">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-accion btn-eliminar"
+                            onclick="deleteRecord('${row.id}')"
+                            title="Eliminar registro">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                </td>` : '';
 
             tr.innerHTML = `
-                <td class="ps-4" style="font-family:var(--font-mono);font-size:0.8rem;color:rgba(0,255,65,0.5)">${row.cedula}</td>
+                <td class="ps-4" style="font-family:var(--font-mono);font-size:.8rem;color:rgba(0,255,65,.5)">${row.cedula}</td>
                 <td class="td-curso">${row.curso}</td>
-                <td style="font-family:var(--font-mono);font-size:0.8rem"><i class="bi bi-calendar3 me-2" style="opacity:0.4"></i>${row.fecha_vencimiento}</td>
-                <td><span class="${statusInfo.badgeClass}">${statusInfo.text}</span></td>
-                ${isAdmin ? `<td class="text-center"><button class="btn-eliminar" onclick="deleteRecord('${row.id}')" title="Eliminar"><i class="bi bi-trash3-fill"></i></button></td>` : ''}
+                <td style="font-family:var(--font-mono);font-size:.8rem"><i class="bi bi-calendar3 me-2" style="opacity:.4"></i>${row.fecha_vencimiento}</td>
+                <td><span class="${s.badgeClass}">${s.text}</span></td>
+                ${accionesHtml}
             `;
             tbody.appendChild(tr);
         });
     }
 
-    async function upsertData() {
+    /* ── Iniciar modo edición ── */
+    function startEdit(row) {
+        editingId = row.id;
+        document.getElementById('inId').value     = row.id;
+        document.getElementById('inCedula').value = row.cedula        || '';
+        document.getElementById('inCurso').value  = row.curso         || '';
+        document.getElementById('inFecha').value  = row.fecha_realizacion || '';
+        document.getElementById('inVence').value  = row.fecha_vencimiento  || '';
+
+        document.getElementById('editIdLabel').textContent    = row.id;
+        document.getElementById('adminFormTitle').textContent = 'MODIFICAR CURSO';
+        document.getElementById('editBanner').classList.add('visible');
+        document.getElementById('btnGuardar').innerHTML       = '<i class="bi bi-arrow-repeat me-1"></i>ACTUALIZAR';
+
+        document.getElementById('adminForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ── Cancelar edición ── */
+    function cancelEdit() {
+        editingId = null;
+        ['inId','inCedula','inCurso','inFecha','inVence'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('adminFormTitle').textContent = 'REGISTRAR NUEVO CURSO';
+        document.getElementById('editBanner').classList.remove('visible');
+        document.getElementById('btnGuardar').innerHTML = '<i class="bi bi-save me-1"></i>GUARDAR';
+    }
+
+    /* ── Guardar (insert o update según editingId) ── */
+    async function saveData() {
         const payload = {
-            cedula: document.getElementById('inCedula').value,
-            curso:  document.getElementById('inCurso').value,
+            cedula:            document.getElementById('inCedula').value,
+            curso:             document.getElementById('inCurso').value,
             fecha_realizacion: document.getElementById('inFecha').value,
             fecha_vencimiento: document.getElementById('inVence').value
         };
-        const { error } = await _supabase.from('entrenamientos').insert([payload]);
-        if (error) alert(error.message);
-        else {
-            document.getElementById('inCurso').value = "";
-            fetchData();
+
+        let error;
+        if (editingId) {
+            ({ error } = await _supabase.from('entrenamientos').update(payload).eq('id', editingId));
+        } else {
+            ({ error } = await _supabase.from('entrenamientos').insert([payload]));
         }
+
+        if (error) { alert(error.message); return; }
+        cancelEdit();
+        fetchData();
     }
 
+    /* ── Eliminar ── */
     async function deleteRecord(id) {
         if (confirm("¿Confirmar eliminación de este registro?")) {
             await _supabase.from('entrenamientos').delete().eq('id', id);
+            if (editingId === id) cancelEdit();
             fetchData();
         }
     }
 
+    /* ── Estado ── */
     function getStatusInfo(fecha) {
-        const hoy = new Date();
-        const vence = new Date(fecha);
-        const diffDias = (vence - hoy) / (1000 * 60 * 60 * 24);
-
-        if (vence < hoy)      return { class: 'vencido',        badgeClass: 'badge-vencido', text: 'VENCIDO'      };
-        if (diffDias <= 90)   return { class: 'vence-3-meses',  badgeClass: 'badge-pronto',  text: 'VENCE PRONTO' };
-        return                       { class: '',                badgeClass: 'badge-vigente', text: 'VIGENTE'      };
-    }
-
-    async function signOut() {
-        await _supabase.auth.signOut();
-        location.reload();
+        const hoy = new Date(), vence = new Date(fecha);
+        const diff = (vence - hoy) / (1000 * 60 * 60 * 24);
+        if (vence < hoy) return { class:'vencido',       badgeClass:'badge-vencido', text:'VENCIDO'      };
+        if (diff  <= 90) return { class:'vence-3-meses', badgeClass:'badge-pronto',  text:'VENCE PRONTO' };
+        return                  { class:'',               badgeClass:'badge-vigente', text:'VIGENTE'      };
     }
 </script>
 </body>
