@@ -161,34 +161,35 @@
         }
     }
 
-    async function fetchData() {
-        const cedula = document.getElementById('searchCedula').value;
-        if (!cedula) return alert("Ingrese cédula");
+async function fetchData() {
+    const cedula = document.getElementById('searchCedula').value;
+    if (!cedula) return alert("Ingrese cédula");
 
-        const { data, error } = await _supabase
-            .from('entrenamientos')
-            .select('*')
-            .eq('cedula', cedula)
-            .order('fecha_vencimiento', { ascending: true });
+    const { data, error } = await _supabase
+        .from('entrenamientos')
+        .select('*')
+        .eq('cedula', cedula)
+        .order('fecha_vencimiento', { ascending: true });
 
-        const tbody = document.getElementById('dataTable');
-        tbody.innerHTML = '';
-
-        data.forEach(row => {
-            const tr = document.createElement('tr');
-            const alertStatus = getStatusClass(row.fecha_vencimiento);
-            if (alertStatus) tr.className = alertStatus;
-
-            tr.innerHTML = `
-                <td>${row.cedula}</td>
-                <td class="fw-bold text-uppercase">${row.curso}</td>
-                <td>${row.fecha_realizacion}</td>
-                <td>${row.fecha_vencimiento}</td>
-                ${isAdmin ? `<td class="text-center"><button class="btn btn-outline-danger btn-sm" onclick="deleteRecord('${row.id}')">Borrar</button></td>` : ''}
-            `;
-            tbody.appendChild(tr);
-        });
+    // --- PROTECCIÓN CONTRA ERRORES ---
+    if (error) {
+        console.error("Error detectado:", error.message);
+        return; // Detiene la ejecución para que no llegue al forEach
     }
+
+    if (!data) {
+        console.warn("No se recibieron datos");
+        return;
+    }
+    // ---------------------------------
+
+    const tbody = document.getElementById('dataTable');
+    tbody.innerHTML = '';
+
+    data.forEach(row => {
+        // Tu lógica de renderizado aquí...
+    });
+}
 
     async function upsertData() {
         const payload = {
