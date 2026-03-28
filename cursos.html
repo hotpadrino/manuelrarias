@@ -82,6 +82,20 @@
             font-family: 'Share Tech Mono'; font-size: 0.7rem;
         }
 
+        /* Colores de alerta con alto contraste */
+        .status-vencido { 
+            background-color: #dc3545 !important; color: white !important; 
+            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #a71d2a;
+        }
+        .status-alerta { 
+            background-color: #ffc107 !important; color: #000 !important; 
+            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #d39e00;
+        }
+        .status-vigente { 
+            background-color: #198754 !important; color: white !important; 
+            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #0f5132;
+        }
+                
         /* FOOTER */
         .footer-aero { 
             background: #0d1117; color: #8b949e; padding: 30px 0; border-top: 3px solid var(--accent); 
@@ -339,8 +353,21 @@
         const cedula = document.getElementById('searchCedula').value.trim();
         if(!cedula) return;
     
-        // ... (Mantén aquí tu código existente para cargar la ficha del alumno) ...
+        // Cargar datos del alumno (Ficha)
+        const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
+        if(al) {
+            document.getElementById('lblCedula').innerText = `ID MILITAR: ${al.cedula}`;
+            document.getElementById('lblNombre').innerText = al.nombre.toUpperCase();
+            document.getElementById('lblGradoFicha').innerText = al.grado || '---';
+            document.getElementById('lblDep').innerText = al.dependencia || '---';
+            document.getElementById('lblTallerFicha').innerText = al.taller || '---';
+            document.getElementById('lblCargo').innerText = al.cargo || '---';
+            document.getElementById('lblIngles').innerText = al.nivel_ingles || '---';
+            document.getElementById('lblPericia').innerText = al.nivel_pericia || '---';
+            document.getElementById('profileCard').classList.remove('hidden');
+        }
     
+        // Cargar Cursos
         const { data: cursos, count } = await _supabase.from('entrenamiento')
             .select('*', { count: 'exact' })
             .eq('cedula', cedula)
@@ -352,24 +379,33 @@
         document.getElementById('cursosContainer').classList.remove('hidden');
     
         const hoy = new Date();
-        const tresMesesEnMS = 90 * 24 * 60 * 60 * 1000; // 90 días en milisegundos
+        // Definimos el margen de 3 meses (90 días)
+        const fechaLimiteAlerta = new Date();
+        fechaLimiteAlerta.setDate(hoy.getDate() + 90);
     
         cursos.forEach(c => {
             const tr = document.createElement('tr');
             const fechaVence = new Date(c.fecha_vencimiento);
-            const diferencia = fechaVence - hoy;
-    
-            let statusHTML = '';
             
-            if (diferencia < 0) {
-                // CASO 1: VENCIDO (ROJO)
-                statusHTML = '<span class="badge bg-danger text-white"><i class="bi bi-x-octagon me-1"></i> VENCIDO / NO OP</span>';
-            } else if (diferencia <= tresMesesEnMS) {
-                // CASO 2: PRÓXIMO A VENCER (AMARILLO) - Menos de 3 meses
-                statusHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i> ALERTA < 3 MESES</span>';
+            let claseStatus = '';
+            let textoStatus = '';
+            let iconStatus = '';
+    
+            if (fechaVence < hoy) {
+                // ROJO: Ya se pasó la fecha
+                claseStatus = 'status-vencido';
+                textoStatus = 'VENCIDO / NO OP';
+                iconStatus = 'bi-x-octagon-fill';
+            } else if (fechaVence <= fechaLimiteAlerta) {
+                // AMARILLO: Falta menos de o justo 90 días
+                claseStatus = 'status-alerta';
+                textoStatus = 'ALERTA < 3 MESES';
+                iconStatus = 'bi-exclamation-triangle-fill';
             } else {
-                // CASO 3: VIGENTE (VERDE)
-                statusHTML = '<span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> VIGENTE</span>';
+                // VERDE: Todo en orden
+                claseStatus = 'status-vigente';
+                textoStatus = 'VIGENTE';
+                iconStatus = 'bi-check-circle-fill';
             }
     
             const acc = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
@@ -377,8 +413,12 @@
             tr.innerHTML = `
                 <td class="fw-bold text-primary">${c.curso}</td>
                 <td>${c.fecha_realizacion || '---'}</td>
-                <td class="${diferencia <= tresMesesEnMS ? 'fw-bold' : ''}">${c.fecha_vencimiento}</td>
-                <td class="text-center">${statusHTML}</td>
+                <td class="fw-bold">${c.fecha_vencimiento}</td>
+                <td class="text-center">
+                    <span class="${claseStatus}">
+                        <i class="bi ${iconStatus} me-2"></i>${textoStatus}
+                    </span>
+                </td>
                 <td class="text-center">${acc}</td>
             `;
             tbody.appendChild(tr);
