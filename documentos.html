@@ -3,409 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONTROL DE ENTRENAMIENTO CAMAN</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Base de Datos Documental - Certificación</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
     <style>
-        :root {
-            --azul-fac: #003366;
-            --azul-claro: #e3f2fd;
-            --gris-fondo: #f4f7f9;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f9; margin: 20px; color: #333; }
+        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { color: #003366; text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px; margin-bottom: 20px; }
+        
+        /* Contador destacado */
+        #counterDisplay { 
+            background-color: #eef6ff; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+            font-weight: bold; 
+            color: #003366; 
+            border-left: 6px solid #0055ff;
+            font-size: 1.1em;
+            display: block; /* Asegura visibilidad */
+        }
+
+        .table-wrapper { max-height: 65vh; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; min-width: 900px; }
+        
+        th { background-color: #003366; color: white; padding: 12px; position: sticky; top: 0; z-index: 10; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.4; }
+        
+        .doc-highlight { color: #0055ff; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .filter-input { 
+            width: 100%; padding: 6px; margin-top: 8px; border: 1px solid #ccc; 
+            border-radius: 4px; box-sizing: border-box; font-weight: normal; color: #333;
         }
         
-        /* ESTRUCTURA BASE PARA FOOTER AL FONDO (CORREGIDA) */
-        body { 
-            background-color: var(--gris-fondo); 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            padding-top: 90px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0; /* Asegura que no haya márgenes ocultos */
-        }
-
-        .main-content {
-            flex-grow: 1; /* Empuja el footer hacia abajo */
-            width: 100%;
-            padding-bottom: 40px; /* Da un poco de respiro antes del footer */
-        }
+        .date-col { width: 110px; }
+        .doc-col { width: 160px; }
+        .title-col { width: 280px; }
         
-        /* HEADER FIJO */
-        .header-caman {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0; 
-            box-sizing: border-box; 
-            background-color: var(--azul-fac);
-            color: white;
-            padding: 12px 24px;
-            z-index: 1050;
-            box-shadow: 0 4px 15px rgba(0,51,102,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            min-width: 0;
-        }
-
-        .header-caman img { height: 50px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-
-        .header-title { 
-            font-weight: 800; 
-            font-size: 1.25rem; 
-            margin: 0; 
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        /* SECCIÓN DE USUARIO */
-        .user-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            flex-shrink: 0;
-            max-width: 45%; 
-        }
-
-        #userName {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #e3f2fd;
-            width: 100%;
-            text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; 
-        }
-
-        .btn-logout {
-            font-size: 0.75rem;
-            padding: 3px 12px;
-            border-radius: 20px;
+        /* Estilos para el Footer */
+        footer {
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 1px solid #e2e8f0;
+            color: #64748b; /* text-slate-400 */
             font-weight: bold;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        /* TARJETAS MODERNAS */
-        .card-modern {
-            background: white;
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        /* DISEÑO DE TABLA */
-        .table-custom {
-            margin-bottom: 0;
-            border-collapse: separate;
-            border-spacing: 0;
+            text-transform: uppercase;
+            font-size: 10px; /* text-[9px] ajustado para legibilidad */
+            flex-shrink: 0;
         }
         
-        .table-custom thead th {
-            background-color: transparent;
-            color: #6c757d;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #edf2f7;
-            padding: 16px;
-        }
-
-        .table-custom tbody tr:hover { background-color: #f8fafc; }
-
-        .table-custom tbody td {
-            padding: 16px;
-            vertical-align: middle;
-            border-bottom: 1px solid #edf2f7;
-            color: #2d3748;
-        }
-
-        .vence-3-meses { background-color: rgba(255, 193, 7, 0.05) !important; }
-        .vence-3-meses td:first-child { border-left: 6px solid #ffc107; }
-
-        .vencido { background-color: rgba(220, 53, 69, 0.05) !important; }
-        .vencido td:first-child { border-left: 6px solid #dc3545; }
-
-        .badge-status { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 600; }
-
-        /* FOOTER ESTILO INVERSIONES ARIPAR (CORREGIDO) */
-        .footer-aripar {
-            background-color: #1a202c;
-            color: #a0aec0;
-            padding: 30px 0;
-            border-top: 4px solid var(--azul-fac);
-            width: 100%; /* Forzamos a que ocupe todo el ancho */
-            margin-top: auto; /* La magia de Flexbox: empuja el footer hasta el fondo exacto */
-        }
-
         .footer-content {
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+            gap: 10px;
         }
-
-        .footer-content p { margin: 0; font-size: 0.9rem; letter-spacing: 0.5px; }
-
-        .footer-links { display: flex; gap: 20px; }
-
-        .footer-links a {
-            color: #e2e8f0;
-            text-decoration: none;
-            font-size: 0.95rem;
+        
+        /* Media query para que sea horizontal en pantallas grandes */
+        @media (min-width: 640px) {
+            .footer-content {
+                flex-direction: row;
+            }
+        }
+        
+        .footer-links {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: color 0.3s ease;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
+            gap: 20px;
         }
-
-        .footer-links a.whatsapp:hover { color: #25D366; background: rgba(37, 211, 102, 0.1); }
-        .footer-links a.email:hover { color: #63b3ed; background: rgba(99, 179, 237, 0.1); }
-
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .header-title { display: none; } 
-            .footer-content { text-align: center; }
-            .footer-links { flex-direction: column; gap: 10px; width: 100%; }
-            .footer-links a { justify-content: center; }
+        
+        .footer-links a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
         }
-
-        .hidden { display: none !important; }
+        
+        .footer-links a.whatsapp:hover { color: #25d366; }
+        .footer-links a.email:hover { color: #003366; }
     </style>
 </head>
 <body>
 
-<header class="header-caman">
-    <div class="brand-section">
-        <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
-        <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
-    </div>
+<div class="container">
+    <h2>Base de Datos Documental - Certificación</h2>
     
-    <div id="userInfo" class="user-section hidden">
-        <span id="userName">Cargando...</span>
-        <button onclick="signOut()" class="btn btn-outline-light btn-logout"><i class="bi bi-box-arrow-right me-1"></i>Salir</button>
+    <div id="counterDisplay">Iniciando sistema...</div>
+    
+    <div class="table-wrapper">
+        <table id="techTable">
+            <thead>
+                <tr>
+                    <th class="date-col">Fecha<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th class="doc-col">Documento<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th class="title-col">Título<br><input type="text" class="filter-input" onkeyup="filterTable()" placeholder="Filtro..."></th>
+                    <th>Observaciones (Búsqueda Global)<br><input type="text" class="filter-input" id="globalFilter" onkeyup="filterTable()" placeholder="Buscar en toda la fila..."></th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
     </div>
-</header>
+</div>
 
-<main class="main-content container">
-    <div id="authSection" class="card-modern mx-auto p-5 mt-5" style="max-width: 400px;">
-        <div class="text-center mb-4">
-            <i class="bi bi-shield-lock text-primary" style="font-size: 2.5rem;"></i>
-            <h5 class="fw-bold text-dark mt-2">Acceso al Sistema</h5>
-        </div>
-        <input type="email" id="email" class="form-control form-control-lg mb-3" placeholder="Correo institucional" style="border-radius: 10px;">
-        <input type="password" id="password" class="form-control form-control-lg mb-4" placeholder="Contraseña" style="border-radius: 10px;">
-        <button onclick="signIn()" id="loginBtn" class="btn btn-primary btn-lg w-100" style="border-radius: 10px; font-weight: 600;">Entrar</button>
-    </div>
-
-    <div id="mainSection" class="hidden mt-4">
-        
-        <div class="card-modern p-4 mb-4">
-            <label class="form-label fw-bold text-secondary mb-3"><i class="bi bi-search me-2"></i>CONSULTA DE PERSONAL</label>
-            <div class="input-group input-group-lg shadow-sm" style="border-radius: 12px; overflow: hidden;">
-                <input type="text" id="searchCedula" class="form-control border-0 bg-light" placeholder="Ingrese número de cédula...">
-                <button onclick="fetchData()" class="btn btn-dark px-4 fw-bold">Buscar</button>
+<footer>
+        <div class="footer-content">
+            <p>© 2026 • Inversiones Aripar • Gestión Documental</p>
+            <div class="footer-links">
+                <a href="https://wa.me/573128816469" class="whatsapp" target="_blank">WhatsApp</a>
+                <a href="mailto:alucard8@gmail.com" class="email">Email</a>
             </div>
         </div>
-
-        <div id="adminForm" class="card-modern p-4 mb-4 hidden border border-primary border-opacity-25">
-            <h6 class="text-primary fw-bold mb-3"><i class="bi bi-plus-circle me-2"></i>Registrar Nuevo Curso</h6>
-            <div class="row g-3">
-                <div class="col-12 col-md-2"><input type="text" id="inCedula" class="form-control bg-light" placeholder="Cédula"></div>
-                <div class="col-12 col-md-4"><input type="text" id="inCurso" class="form-control bg-light" placeholder="Nombre del Curso"></div>
-                <div class="col-6 col-md-2"><label class="small text-muted mb-1">Realización</label><input type="date" id="inFecha" class="form-control bg-light"></div>
-                <div class="col-6 col-md-2"><label class="small text-muted mb-1">Vencimiento</label><input type="date" id="inVence" class="form-control bg-light"></div>
-                <div class="col-12 col-md-2 d-flex align-items-end"><button onclick="upsertData()" class="btn btn-primary w-100 fw-bold"><i class="bi bi-save me-2"></i>Guardar</button></div>
-            </div>
-        </div>
-
-        <div class="card-modern overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-custom w-100">
-                    <thead>
-                        <tr>
-                            <th class="ps-4">Cédula</th>
-                            <th>Capacitación</th>
-                            <th>Vencimiento</th>
-                            <th>Estado</th>
-                            <th id="thAcciones" class="hidden text-center">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataTable">
-                        <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
-                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                                Ingrese una cédula para ver los resultados
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</main>
-
-<footer class="footer-aripar">
-    <div class="container footer-content">
-        <p class="fw-bold"><i class="bi bi-buildings me-2"></i>© 2026 • Inversiones Aripar • Gestión Documental</p>
-        <div class="footer-links">
-            <a href="https://wa.me/573128816469" class="whatsapp" target="_blank">
-                <i class="bi bi-whatsapp"></i> WhatsApp
-            </a>
-            <a href="mailto:alucard8@gmail.com" class="email">
-                <i class="bi bi-envelope-at"></i> Email
-            </a>
-        </div>
-    </div>
 </footer>
-
+    
 <script>
-    const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Datos de ejemplo en caso de que el CSV no sea accesible
+    const fallbackData = [
+        ["20-nov-07", "AC 120-94", "Aircraft Electrical Wiring Interconnection Systems Training Program", "FAA The objective of this EWIS training program is to give operators or maintenance repair organizations a model for developing their own EWIS training program. It will help ensure that proper processes, procedures, methods, techniques, and practices are used when performing maintenance."],
+        ["20-may-24", "AC 20-158B", "The Certification of Aircraft Electrical and Electronic Systems for Operation in High-Intensity Radiated Fields (HIRF)", "Provides guidance for a new type certificate (TC) or change to an existing TC when the certification basis requires addressing HIRF requirements."],
+        ["28-oct-10", "AC 20-170", "Integrated Modular Avionics Development", "Verification, Integration and Approval using RTCA/DO-297 and Technical Standard Order C153."],
+        ["04-may-77", "AC 20-41A", "Substitute Technical Standard Order (TSO) Aircraft Equipment", "Sets forth acceptable means for complying with rules governing substitution of TSO equipment."],
+        ["14-sep-18", "AC 20-62E", "ELIGIBILITY, QUALITY, AND IDENTIFICATION OF AERONAUTICAL REPLACEMENT PARTS", "Class I, II and III Product definitions and certification requirements."],
+        ["29-sep-05", "AC 23-13A", "Fatigue, Fail-Safe, and Damage Tolerance Evaluation of Metallic Structure", "Guidance for demonstrating compliance with Part 23 regarding fatigue and fail-safe."],
+        ["08-sep-98", "AC 43.13-1B", "Acceptable Methods, Techniques, and Practices - Aircraft Inspection and Repair", "Prácticas Estándar para Reparaciones."],
+        ["03-mar-08", "AC 43.13-2B", "Acceptable Methods, Techniques, and Practices - Aircraft Alterations", "Prácticas Estándar para Modificaciones."],
+        ["03-feb-06", "ADS-44-HDBK", "AERONAUTICAL DESIGN STANDARD HANDBOOK ARMAMENT AIRWORTHINESS QUALIFICATION", "Guidelines to qualify an armament system for use on-board U.S. Army air vehicles."],
+        ["19-dic-05", "ADS-45-HDBK", "AERONAUTICAL DESIGN STANDARD: DATA AND TEST PROCEDURES FOR AIRWORTHINESS RELEASE", "Guidelines prior to issuance of Contractor Flight Release (CFR) or Airworthiness Release (AWR)."],
+        ["02-abr-17", "AECTP-600", "THE TEN STEP METHOD FOR EVALUATING MATERIEL LIFE", "Process to determine ability of materiel to meet extended life requirements."],
+        ["28-may-20", "AFMAN 91-201", "AIR FORCE MANUAL EXPLOSIVES SAFETY STANDARDS", "Air Force policy for explosives safety criteria and precautions."],
+        ["10-ago-12", "ARP 1870", "Aerospace Systems Electrical Bonding and Grounding", "Minimum requirements for bonding and grounding for EMC and Safety."],
+        ["21-dic-10", "ARP 4754A", "GUIDELINES FOR DEVELOPMENT OF CIVIL AIRCRAFT AND SYSTEMS", "Validation of requirements and verification of design implementation."],
+        ["01-dic-96", "ARP 4761", "GUIDELINES AND METHODS FOR CONDUCTING SAFETY ASSESSMENT", "Systematic means to show compliance with FAR/JAR 25.1309."],
+        ["05-dic-18", "ARP 5414", "Aircraft Lightning Zone", "Defines lightning strike zones and provides guidelines for locating them."],
+        ["11-ene-03", "ARP 5583A", "Guide to Certification of Aircraft in HIRF Environment", "Best engineering practices for HIRF protection certification."],
+        ["09-ene-24", "ASTM D4054-23", "Evaluation of New Aviation Turbine Fuels", "Guide for producer of alternative fuel with testing requirements."],
+        ["04-nov-22", "ASTM D7566-22", "Aviation Turbine Fuel Containing Synthesized Hydrocarbons", "Minimum property requirements for synthesized hydrocarbons."],
+        ["01-jun-20", "ASTM F2490-20", "Aircraft Electrical Load and Power Source Capacity Analysis", "How to prepare an ELA to meet FAA requirements."],
+        ["28-jun-04", "CONPES 3293", "REPOSICIÓN AVIONES DE COMBATE TÁCTICO FAC", "Adquisición de 24 aviones turbohélice nuevos (Super Tucano)."],
+        ["09-jun-08", "CONPES 3522", "LINEAMIENTOS ACUERDOS DE COOPERACIÓN INDUSTRIAL - OFFSETS", "Convenios para acceder a tecnologías y conocimientos competitivos."],
+        ["14-jul-08", "CONPES 3533", "ADECUACIÓN SISTEMA PROPIEDAD INTELECTUAL", "Incentivar la investigación y clima de seguridad para inversión."],
+        ["08-ago-16", "CONPES 3866", "POLÍTICA NACIONAL DE DESARROLLO PRODUCTIVO", "Instrumentos para resolver fallas de mercado y productividad."],
+        ["13-ene-20", "CONPES 3983", "POLÍTICA DE DESARROLLO ESPACIAL", "Colombia como mercado potencial en uso de servicios satelitales."],
+        ["30-nov-20", "CONPES 4011", "POLÍTICA NACIONAL DE EMPRENDIMIENTO", "Habilidades y mecanismos de financiamiento para innovación."],
+        ["08-dic-10", "DO-160", "Environmental Conditions and Test Procedures", "Secciones 4 a 26: Temperatura, Vibración, EMI, Rayos, etc."],
+        ["05-ene-12", "DO-178C", "Software Considerations in Airborne Systems", "Guía para crear software seguro, niveles A a E."],
+        ["22-jun-23", "DO-220B", "MOPS For Airborne Weather Radar Systems", "Añade requisitos para detección de cristales de hielo en alta altitud."],
+        ["19-abr-00", "DO-254", "Design Assurance Guidance for Electronic Hardware", "Planeación, validación y diseño de hardware electrónico."],
+        ["08-nov-05", "DO-297", "Integrated Modular Avionics (IMA) Certification", "Guía para desarrolladores e integradores de sistemas IMA."],
+        ["06-ago-14", "DO-326A", "Airworthiness Security Process Specification", "Amenaza de interacción electrónica no autorizada a la seguridad."],
+        ["13-dic-11", "DO-330", "Software Tool Qualification Considerations", "Procesos para calificar herramientas de desarrollo y prueba."],
+        ["10-sep-20", "DO-355A", "Information Security Guidance for Continuing Airworthiness", "Asegurar que amenazas de seguridad se confinen en niveles aceptables."],
+        ["12-dic-14", "MIL-HDBK-516C", "AIRWORTHINESS CERTIFICATION CRITERIA", "Foundational document to define the air system's airworthiness certification basis."],
+        ["15-sep-20", "MIL-STD-1472H", "DESIGN CRITERIA STANDARD: HUMAN ENGINEERING", "Practices to be applied in the design of systems, equipment and facilities."],
+        ["24-nov-80", "MIL-STD-1629A", "FAILURE MODE, EFFECTS AND CRITICALITY ANALYSIS", "Procedures for performing FMECA to evaluate impact of failures."],
+        ["11-dic-15", "MIL-STD-461G", "EMI CONTROL OF SUBSYSTEMS AND EQUIPMENT", "Control of electromagnetic interference characteristics."],
+        ["31-ene-19", "MIL-STD-810H", "ENVIRONMENTAL ENGINEERING CONSIDERATIONS", "Influences that environmental stresses have on materiel."],
+        ["18-jun-20", "STANAG 3733", "LASER PULSE REPETITION FREQUENCIES (PRF)", "Criteria for categorization of laser designator systems for mission selection."],
+        ["01-nov-18", "STANAG 4241", "BULLET IMPACT MUNITION TEST PROCEDURES", "Test requirements for reaction of munitions to small arms projectiles."],
+        ["28-nov-19", "STANAG 4370", "ENVIRONMENTAL TESTING", "Guidelines on management and standardization of environmental testing."],
+        ["01-mar-20", "STANAG 4382", "SLOW HEATING TEST PROCEDURES FOR MUNITIONS", "Standard test procedure for assessing munition response to slow heat sources."],
+        ["01-dic-20", "STANAG 4396", "SYMPATHETIC REACTION TEST PROCEDURES", "Evidence of potential for munitions to react to adjacent explosions."],
+        ["01-mar-19", "STANAG 4496", "FRAGMENT IMPACT TEST PROCEDURES", "Test procedures for munition reaction to fragment strikes."],
+        ["08-oct-01", "STANAG 4518", "SAFE DISPOSAL OF MUNITIONS", "Standardized design safety principles and assessment for safe disposal."],
+        ["01-nov-18", "STANAG 4526", "SHAPED CHARGE JET MUNITION TEST", "Reaction of munitions to threats from shaped charge weapons."],
+        ["03-sep-09", "STANAG 4671", "UAV SYSTEMS AIRWORTHINESS REQUIREMENTS", "Airworthiness standards for military UAVs (150kg to 20000kg)."],
+        ["24-oct-23", "STANAG 4703", "LIGHT UAS AIRWORTHINESS REQUIREMENTS", "AEP-83 Edition C. Requirements for Light UAS ≤ 150 kg."],
+        ["16-jun-17", "STANAG 4737", "UAS WEAPONS INTEGRATION", "AEP-82 Edition A. Guidelines for integration of weapons on unmanned platforms."],
+        ["PDTE", "STANAG 4746", "LIGHT ROTARY WING UAS AIRWORTHINESS", "AEP-89. EN ESTUDIO, SIN PUBLICAR (a 16feb26)."]
+    ];
 
-    let sessionUser = null;
-    let isAdmin = false;
-
-    async function signIn() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const btn = document.getElementById('loginBtn');
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Cargando...';
-        btn.disabled = true;
+async function init() {
+    const tbody = document.getElementById('tableBody');
+    try {
+        const response = await fetch('documentos.csv');
+        if (!response.ok) throw new Error('No se pudo leer el archivo');
         
-        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            alert("Error: " + error.message);
-            btn.innerHTML = 'Entrar';
-            btn.disabled = false;
-            return;
-        }
-        sessionUser = data.user;
-        await checkUserRole();
-    }
+        // 1. Obtenemos los datos como un "buffer" binario (sin procesar)
+        const buffer = await response.arrayBuffer();
+        
+        // 2. Usamos TextDecoder para forzar la codificación de Windows/Excel en español
+        // Esto arreglará los símbolos §, ñ, tildes y caracteres especiales.
+        // const decoder = new TextDecoder('windows-1252');
+        const decoder = new TextDecoder('utf-8');
+        const data = decoder.decode(buffer);
+        
+        const rows = data.split(/\r?\n/).slice(1);
+        tbody.innerHTML = ''; 
+        let count = 0;
 
-    async function checkUserRole() {
-        const { data, error } = await _supabase
-            .from('entrenamientos_usuarios')
-            .select('es_admin, nombre')
-            .eq('email', sessionUser.email)
-            .single();
-
-        if (data) {
-            isAdmin = data.es_admin;
-            const icono = isAdmin ? '<i class="bi bi-person-badge me-1"></i>' : '<i class="bi bi-person me-1"></i>';
-            document.getElementById('userName').innerHTML = `${icono} ${data.nombre} (${isAdmin ? 'Admin' : 'Usuario'})`;
-            renderUI();
-        } else {
-            console.error("Error al cargar perfil o permisos RLS.");
-            const btn = document.getElementById('loginBtn');
-            btn.innerHTML = 'Entrar';
-            btn.disabled = false;
-        }
-    }
-
-    function renderUI() {
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('userInfo').classList.remove('hidden');
-        document.getElementById('mainSection').classList.remove('hidden');
-        if (isAdmin) {
-            document.getElementById('adminForm').classList.remove('hidden');
-            document.getElementById('thAcciones').classList.remove('hidden');
-        }
-    }
-
-    async function fetchData() {
-        const cedula = document.getElementById('searchCedula').value;
-        if (!cedula) return;
-
-        const tbody = document.getElementById('dataTable');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div></td></tr>';
-
-        const { data, error } = await _supabase
-            .from('entrenamientos')
-            .select('*')
-            .eq('cedula', cedula)
-            .order('fecha_vencimiento', { ascending: true });
-
-        if (error) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-danger">Error: ${error.message}</td></tr>`;
-            return;
-        }
-
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-search fs-2 d-block mb-2"></i>No se encontraron cursos para esta cédula.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = '';
-
-        data.forEach(row => {
-            const tr = document.createElement('tr');
-            const statusInfo = getStatusInfo(row.fecha_vencimiento);
-            
-            if (statusInfo.class) tr.className = statusInfo.class;
-
-            tr.innerHTML = `
-                <td class="ps-4 fw-medium">${row.cedula}</td>
-                <td class="fw-bold text-dark">${row.curso}</td>
-                <td><i class="bi bi-calendar3 me-2 text-muted"></i>${row.fecha_vencimiento}</td>
-                <td><span class="badge ${statusInfo.badgeClass} badge-status">${statusInfo.text}</span></td>
-                ${isAdmin ? `<td class="text-center"><button class="btn btn-light text-danger btn-sm rounded-circle shadow-sm" onclick="deleteRecord('${row.id}')" title="Eliminar"><i class="bi bi-trash3-fill"></i></button></td>` : ''}
-            `;
-            tbody.appendChild(tr);
+        rows.forEach(line => {
+            if (line.trim() === '') return;
+            // Si tu CSV usa punto y coma como separador:
+            const cols = line.split(';');
+            if (cols.length >= 4) {
+                renderRow(cols);
+                count++;
+            }
         });
+        updateCounter(count);
+
+    } catch (error) {
+        console.warn("Cargando datos de respaldo (CSV no detectado o bloqueado)");
+        tbody.innerHTML = ''; 
+        fallbackData.forEach(cols => renderRow(cols));
+        updateCounter(fallbackData.length);
+    }
+}
+    
+    function renderRow(cols) {
+        const tbody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${cols[0] || ''}</td>
+            <td class="doc-highlight">${cols[1] || ''}</td>
+            <td>${cols[2] || ''}</td>
+            <td>${cols[3] || ''}</td>
+        `;
+        tbody.appendChild(tr);
     }
 
-    async function upsertData() {
-        const payload = {
-            cedula: document.getElementById('inCedula').value,
-            curso: document.getElementById('inCurso').value,
-            fecha_realizacion: document.getElementById('inFecha').value,
-            fecha_vencimiento: document.getElementById('inVence').value
-        };
-        const { error } = await _supabase.from('entrenamientos').insert([payload]);
-        if (error) alert(error.message); else { 
-            document.getElementById('inCurso').value = "";
-            fetchData(); 
+    function filterTable() {
+        const inputs = document.getElementsByClassName("filter-input");
+        const globalInput = document.getElementById("globalFilter").value.toUpperCase();
+        const tr = document.getElementById("techTable").getElementsByTagName("tr");
+        let visibleCount = 0;
+
+        for (let i = 1; i < tr.length; i++) {
+            let rowText = tr[i].innerText.toUpperCase();
+            let matchesGlobal = rowText.indexOf(globalInput) > -1;
+            
+            let matchesSpecific = true;
+            // Solo verificamos los primeros 3 filtros individuales
+            for (let j = 0; j < 3; j++) {
+                const val = inputs[j].value.toUpperCase();
+                const cell = tr[i].getElementsByTagName("td")[j];
+                if (cell && val && cell.innerText.toUpperCase().indexOf(val) === -1) {
+                    matchesSpecific = false;
+                    break;
+                }
+            }
+
+            if (matchesGlobal && matchesSpecific) {
+                tr[i].style.display = "";
+                visibleCount++;
+            } else {
+                tr[i].style.display = "none";
+            }
         }
+        updateCounter(visibleCount);
     }
 
-    async function deleteRecord(id) {
-        if (confirm("¿Confirmar eliminación de este registro?")) {
-            await _supabase.from('entrenamientos').delete().eq('id', id);
-            fetchData();
-        }
+    function updateCounter(n) {
+        document.getElementById('counterDisplay').textContent = `Mostrando todos los registros (${n})`;
     }
 
-    function getStatusInfo(fecha) {
-        const hoy = new Date();
-        const vence = new Date(fecha);
-        const diffDias = (vence - hoy) / (1000 * 60 * 60 * 24);
-        
-        if (vence < hoy) {
-            return { class: 'vencido', badgeClass: 'bg-danger', text: 'Vencido' };
-        }
-        if (diffDias <= 90) {
-            return { class: 'vence-3-meses', badgeClass: 'bg-warning text-dark', text: 'Vence pronto' };
-        }
-        return { class: '', badgeClass: 'bg-success', text: 'Vigente' };
-    }
-
-    function signOut() { _supabase.auth.signOut().then(() => location.reload()); }
+    window.onload = init;
 </script>
 </body>
 </html>
