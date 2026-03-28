@@ -138,7 +138,7 @@
 
     async function checkUserRole() {
         const { data } = await _supabase
-            .from('usuarios')
+            .from('entrenamientos_usuarios')
             .select('es_admin, nombre')
             .eq('email', sessionUser.email)
             .single();
