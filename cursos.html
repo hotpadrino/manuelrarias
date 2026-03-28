@@ -17,36 +17,28 @@
             --azul-cielo:       #1a3a6e;
             --azul-acento:      #2d7dd2;
             --azul-brillo:      #4da6ff;
-
             --morado-autoridad: #2d1b69;
             --morado-medio:     #4a2c8a;
             --morado-acento:    #7c4dff;
-
             --radar-fondo:      #030d08;
             --radar-verde:      #00ff41;
             --radar-verde-dim:  #00a82b;
-
             --nvg-rojo:         #ff1a1a;
             --nvg-rojo-dim:     #8b0000;
-
             --arena-militar:    #c8a96e;
             --arena-oscura:     #8b7355;
             --arena-fondo:      #2a1f0e;
-
             --verde-selva:      #2d5a27;
             --verde-claro:      #4a8b3f;
             --verde-lima:       #7ab648;
-
             --negro-base:       #080c10;
             --gris-borde:       #1f2d3d;
             --gris-texto:       #8fa3b8;
             --blanco-tenue:     #d4dde8;
-
             --font-display:     'Orbitron', sans-serif;
             --font-mono:        'Share Tech Mono', monospace;
             --font-body:        'Barlow Condensed', sans-serif;
 
-            /* Tokens del tema activo */
             --t-bg:       var(--azul-aviador);
             --t-h1:       var(--azul-aviador);
             --t-h2:       var(--azul-cielo);
@@ -57,9 +49,6 @@
             --t-grad:     rgba(45,125,210,0.15);
         }
 
-        /* ══════════════════════════════════════════════════
-           TEMAS
-        ══════════════════════════════════════════════════ */
         [data-theme="aviador"]   { --t-bg:#0a1628; --t-h1:#0a1628; --t-h2:#1a3a6e; --t-hborder:#2d7dd2; --t-hglow:rgba(77,166,255,.3);   --t-accent:#4da6ff; --t-grid:rgba(45,125,210,.04); --t-grad:rgba(45,125,210,.15); }
         [data-theme="autoridad"] { --t-bg:#0e0820; --t-h1:#2d1b69; --t-h2:#4a2c8a; --t-hborder:#7c4dff; --t-hglow:rgba(124,77,255,.4);  --t-accent:#7c4dff; --t-grid:rgba(124,77,255,.04); --t-grad:rgba(124,77,255,.12); }
         [data-theme="radar"]     { --t-bg:#030d08; --t-h1:#020f05; --t-h2:#042a0c; --t-hborder:#00a82b; --t-hglow:rgba(0,255,65,.25);    --t-accent:#00ff41; --t-grid:rgba(0,255,65,.04);   --t-grad:rgba(0,255,65,.08);  }
@@ -67,9 +56,6 @@
         [data-theme="arena"]     { --t-bg:#2a1f0e; --t-h1:#1a1008; --t-h2:#2e1f0c; --t-hborder:#8b7355; --t-hglow:rgba(200,169,110,.3); --t-accent:#c8a96e; --t-grid:rgba(200,169,110,.04); --t-grad:rgba(200,169,110,.08);}
         [data-theme="selva"]     { --t-bg:#060f05; --t-h1:#0a1a08; --t-h2:#2d5a27; --t-hborder:#4a8b3f; --t-hglow:rgba(74,139,63,.35);  --t-accent:#7ab648; --t-grid:rgba(74,139,63,.04);  --t-grad:rgba(74,139,63,.10); }
 
-        /* ══════════════════════════════════════════════════
-           BASE
-        ══════════════════════════════════════════════════ */
         *, *::before, *::after { box-sizing: border-box; }
 
         body {
@@ -88,9 +74,7 @@
         }
         .main-content { flex-grow: 1; width: 100%; padding-bottom: 40px; }
 
-        /* ══════════════════════════════════════════════════
-           HEADER
-        ══════════════════════════════════════════════════ */
+        /* HEADER */
         .header-caman {
             position: fixed; top: 0; left: 0; right: 0;
             background: linear-gradient(135deg, var(--t-h1) 0%, var(--t-h2) 100%);
@@ -107,7 +91,6 @@
         }
         .header-caman::before { left:8px;  border-width:0 0 2px 2px; }
         .header-caman::after  { right:8px; border-width:0 2px 2px 0; }
-
         .brand-section { display:flex; align-items:center; gap:14px; min-width:0; }
         .header-caman img { height:44px; filter:drop-shadow(0 0 8px var(--t-hglow)); }
         .header-title-wrap { display:flex; flex-direction:column; gap:1px; }
@@ -131,9 +114,7 @@
         .btn-logout { font-family:var(--font-mono); font-size:.7rem; padding:3px 14px; border-radius:3px; font-weight:600; letter-spacing:1px; border:1px solid var(--t-accent); color:var(--t-accent); background:transparent; transition:all .2s; white-space:nowrap; cursor:pointer; }
         .btn-logout:hover { background:var(--t-accent); color:var(--t-bg); box-shadow:0 0 12px var(--t-hglow); }
 
-        /* ══════════════════════════════════════════════════
-           LOGIN & BUSCADOR
-        ══════════════════════════════════════════════════ */
+        /* AUTH & MENU */
         #authSection { background:linear-gradient(145deg,rgba(45,27,105,.95),rgba(26,8,60,.98)); border:1px solid var(--morado-acento); border-radius:4px; box-shadow:0 0 0 1px rgba(124,77,255,.2),0 20px 60px rgba(0,0,0,.7),inset 0 1px 0 rgba(124,77,255,.2); position:relative; overflow:hidden; }
         #authSection::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,transparent,var(--morado-acento),transparent); }
         .auth-icon { width:56px; height:56px; background:rgba(124,77,255,.15); border:1px solid rgba(124,77,255,.4); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:1.5rem; color:var(--morado-acento); box-shadow:0 0 20px rgba(124,77,255,.3); }
@@ -143,6 +124,15 @@
         .btn-autoridad { background:linear-gradient(135deg,var(--morado-autoridad),var(--morado-medio)); border:1px solid var(--morado-acento); color:#fff; font-family:var(--font-display); font-size:.8rem; letter-spacing:2px; border-radius:3px; transition:all .25s; }
         .btn-autoridad:hover { background:linear-gradient(135deg,var(--morado-medio),var(--morado-acento)); box-shadow:0 0 24px rgba(124,77,255,.5); color:#fff; }
 
+        .menu-card { background:rgba(10,22,40,.85); border:1px solid var(--gris-borde); border-radius:8px; position:relative; overflow:hidden; transition:all .3s; cursor:pointer; height: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .menu-card:hover { transform:translateY(-8px); border-color:var(--t-accent); box-shadow:0 15px 40px rgba(0,0,0,0.8), 0 0 20px var(--t-hglow); }
+        .menu-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--t-accent) 50%,transparent); opacity:0; transition:opacity .3s; }
+        .menu-card:hover::before { opacity:1; }
+
+        .btn-volver { background: transparent; color: var(--t-accent); border: 1px solid var(--t-accent); font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 2px; border-radius: 3px; padding: 6px 16px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-volver:hover { background: var(--t-accent); color: var(--t-bg); box-shadow: 0 0 15px var(--t-hglow); }
+
+        /* BUSCADOR */
         .card-aviador { background:rgba(10,22,40,.85); border:1px solid var(--gris-borde); border-radius:4px; position:relative; overflow:hidden; transition:background .4s; }
         .card-aviador::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--t-accent) 50%,transparent); opacity:.5; }
         .section-label { font-family:var(--font-mono); font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--t-accent); opacity:.9; display:flex; align-items:center; gap:8px; margin-bottom:14px; }
@@ -152,20 +142,16 @@
         .btn-buscar { background:linear-gradient(135deg,var(--t-h2),var(--t-hborder)); border:none; color:#fff; font-family:var(--font-display); font-size:.75rem; letter-spacing:2px; border-radius:0 3px 3px 0!important; padding:0 24px; transition:all .2s; }
         .btn-buscar:hover { filter:brightness(1.2); box-shadow:0 0 16px var(--t-hglow); color:#fff; }
 
-        /* ══════════════════════════════════════════════════
-           TARJETA DE PERFIL ALUMNO
-        ══════════════════════════════════════════════════ */
+        /* PERFIL ALUMNO (Mejorado con nuevos campos) */
         .profile-card { background: rgba(0,0,0,0.3); border: 1px solid var(--t-hborder); border-left: 4px solid var(--t-accent); border-radius: 4px; padding: 20px; box-shadow: inset 0 0 40px var(--t-grid); }
         .profile-title { font-family: var(--font-body); font-size: 1.5rem; font-weight: 700; color: #fff; text-transform: uppercase; margin-bottom: 2px; }
         .profile-subtitle { font-family: var(--font-mono); font-size: 0.85rem; color: var(--t-accent); letter-spacing: 1px; }
-        .profile-data-box { background: rgba(255,255,255,0.03); border: 1px solid var(--gris-borde); border-radius: 4px; padding: 10px 15px; margin-bottom: 10px; }
-        .profile-data-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px; }
-        .profile-data-value { font-family: var(--font-body); font-size: 1.1rem; color: var(--blanco-tenue); font-weight: 600; }
+        .profile-data-box { background: rgba(255,255,255,0.03); border: 1px solid var(--gris-borde); border-radius: 4px; padding: 10px 12px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+        .profile-data-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--gris-texto); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+        .profile-data-value { font-family: var(--font-body); font-size: 1.1rem; color: var(--blanco-tenue); font-weight: 600; line-height: 1.2;}
         .icon-profile-bg { background: linear-gradient(135deg, var(--t-h2), transparent); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--t-accent); box-shadow: 0 0 20px var(--t-hglow); }
 
-        /* ══════════════════════════════════════════════════
-           PANEL ADMIN
-        ══════════════════════════════════════════════════ */
+        /* PANEL ADMIN (Optimizado para Escritorio) */
         #adminForm { background:linear-gradient(135deg,rgba(42,31,14,.95),rgba(20,14,5,.98))!important; border:1px solid rgba(200,169,110,.3)!important; border-radius:4px!important; position:relative; overflow:hidden; }
         #adminForm::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--arena-militar),transparent); }
         .admin-label { font-family:var(--font-mono); font-size:.72rem; letter-spacing:3px; text-transform:uppercase; color:var(--arena-militar); display:flex; align-items:center; gap:8px; margin-bottom:14px; }
@@ -179,13 +165,11 @@
         .input-arena { background:rgba(42,31,14,.6)!important; border:1px solid rgba(200,169,110,.25)!important; border-radius:3px!important; color:var(--arena-militar)!important; font-family:var(--font-mono); font-size:.85rem; transition:all .2s; }
         .input-arena:focus { border-color:var(--arena-militar)!important; box-shadow:0 0 0 3px rgba(200,169,110,.12)!important; outline:none; }
         .input-arena::-webkit-calendar-picker-indicator { filter:invert(.6) sepia(1) saturate(2) hue-rotate(5deg); }
-        .label-arena { font-family:var(--font-mono); font-size:.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--arena-oscura); }
+        .label-arena { font-family:var(--font-mono); font-size:.65rem; letter-spacing:1px; text-transform:uppercase; color:var(--arena-oscura); margin-bottom: 2px; }
         .btn-guardar { background:linear-gradient(135deg,var(--arena-oscura),var(--arena-militar)); border:1px solid var(--arena-militar); color:var(--azul-aviador); font-family:var(--font-display); font-size:.7rem; font-weight:700; letter-spacing:2px; border-radius:3px; transition:all .2s; }
         .btn-guardar:hover { background:var(--arena-militar); box-shadow:0 0 16px rgba(200,169,110,.4); color:#000; }
 
-        /* ══════════════════════════════════════════════════
-           TABLA RADAR
-        ══════════════════════════════════════════════════ */
+        /* TABLA RADAR */
         .card-radar { background:var(--radar-fondo); border:1px solid rgba(0,255,65,.2); border-radius:4px; overflow:hidden; position:relative; }
         .card-radar::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--radar-verde),transparent); }
         .card-radar::after { content:''; position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.015) 2px,rgba(0,255,65,.015) 4px); }
@@ -196,18 +180,15 @@
         .table-radar tbody td { padding:11px 16px; vertical-align:middle; border-bottom:1px solid rgba(0,255,65,.08); color:rgba(0,255,65,.75); font-family:var(--font-mono); font-size:.82rem; }
         .td-curso { color:#fff!important; font-family:var(--font-body)!important; font-size:1.05rem!important; font-weight:600; letter-spacing: 0.5px;}
 
-        /* Badges */
         .badge-vigente  { background:rgba(45,90,39,.4);   border:1px solid var(--verde-claro);  color:var(--verde-lima);    font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; }
         .badge-pronto   { background:rgba(139,115,85,.25); border:1px solid var(--arena-oscura); color:var(--arena-militar); font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; }
         .badge-vencido  { background:rgba(139,0,0,.25);   border:1px solid var(--nvg-rojo-dim); color:var(--nvg-rojo);      font-family:var(--font-mono); font-size:.68rem; letter-spacing:2px; padding:4px 12px; border-radius:2px; animation:nvg-pulse 2s ease-in-out infinite; }
         @keyframes nvg-pulse { 0%,100%{box-shadow:0 0 4px rgba(255,26,26,.3);} 50%{box-shadow:0 0 10px rgba(255,26,26,.6);} }
-
         .vence-3-meses { background:rgba(200,169,110,.04)!important; }
         .vence-3-meses td:first-child { border-left:3px solid var(--arena-oscura); }
         .vencido { background:rgba(255,26,26,.04)!important; }
         .vencido td:first-child { border-left:3px solid var(--nvg-rojo-dim); }
 
-        /* Botones de acción */
         .btn-accion { width:28px; height:28px; border-radius:3px; display:inline-flex; align-items:center; justify-content:center; font-size:.78rem; transition:all .2s; cursor:pointer; border:1px solid; }
         .btn-eliminar { background:rgba(139,0,0,.2);  border-color:var(--nvg-rojo-dim); color:var(--nvg-rojo); }
         .btn-eliminar:hover { background:var(--nvg-rojo);   color:#fff; box-shadow:0 0 12px rgba(255,26,26,.5);  border-color:var(--nvg-rojo); }
@@ -219,9 +200,7 @@
         .spinner-radar { width:32px; height:32px; border:2px solid rgba(0,255,65,.1); border-top-color:var(--radar-verde); border-radius:50%; animation:spin .8s linear infinite; }
         @keyframes spin { to{transform:rotate(360deg);} }
 
-        /* ══════════════════════════════════════════════════
-           FOOTER
-        ══════════════════════════════════════════════════ */
+        /* FOOTER */
         .footer-aero { background:linear-gradient(180deg,var(--negro-base),#04080e); border-top:1px solid var(--gris-borde); padding:14px 0; width:100%; margin-top:auto; position:relative; }
         .footer-aero::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent 0%,var(--morado-acento) 20%,var(--azul-brillo) 40%,var(--radar-verde-dim) 60%,var(--arena-oscura) 80%,transparent 100%); opacity:.5; }
         .footer-inner { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
@@ -237,9 +216,7 @@
 
         .hidden { display:none!important; }
 
-        /* ══════════════════════════════════════════════════
-           RESPONSIVO
-        ══════════════════════════════════════════════════ */
+        /* RESPONSIVO */
         @media (max-width: 768px) { 
             .header-title { display: none; } 
             .header-label, .theme-label { display: none; } 
@@ -291,10 +268,33 @@
         <button onclick="signIn()" id="loginBtn" class="btn btn-lg w-100 btn-autoridad">ENTRAR</button>
     </div>
 
-    <div id="mainSection" class="hidden mt-4">
+    <div id="menuSection" class="hidden mt-5 text-center">
+        <h3 style="color:var(--t-accent); font-family:var(--font-display); letter-spacing: 2px; margin-bottom: 40px;">SELECCIONE UN MÓDULO</h3>
+        <div class="row justify-content-center gap-4">
+            <div class="col-12 col-md-5">
+                <div class="menu-card p-5" onclick="showSearchCursos()">
+                    <i class="bi bi-person-vcard" style="font-size: 3rem; color:var(--t-accent)"></i>
+                    <h4 class="mt-4" style="color: #fff; font-family: var(--font-body); font-weight: 700;">BUSCAR CURSOS POR CÉDULA</h4>
+                    <p style="color:var(--gris-texto); font-size:0.9rem; font-family: var(--font-mono); margin-top: 15px;">Gestionar el historial de capacitación de un tripulante específico y editar su información.</p>
+                </div>
+            </div>
+            <div class="col-12 col-md-5">
+                <div class="menu-card p-5" onclick="showSearchPersonas()">
+                    <i class="bi bi-people" style="font-size: 3rem; color:var(--radar-verde)"></i>
+                    <h4 class="mt-4" style="color: #fff; font-family: var(--font-body); font-weight: 700;">BUSCAR PERSONAS</h4>
+                    <p style="color:var(--gris-texto); font-size:0.9rem; font-family: var(--font-mono); margin-top: 15px;">Filtro avanzado multicriterio por nombre, cargo, taller, dependencia o curso realizado.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchCursosSection" class="hidden mt-4">
+        <div class="mb-3">
+            <button onclick="showMenu()" class="btn-volver"><i class="bi bi-arrow-left"></i> VOLVER AL MENÚ</button>
+        </div>
 
         <div class="card-aviador p-4 mb-4">
-            <div class="section-label"><i class="bi bi-search"></i> BÚSQUEDA DE PERSONAL</div>
+            <div class="section-label"><i class="bi bi-search"></i> BÚSQUEDA DE PERSONAL (POR CÉDULA)</div>
             <div class="input-group input-group-lg" style="border-radius:3px;overflow:hidden;">
                 <input type="text" id="searchCedula" class="form-control border-0 input-aero" placeholder="Ingrese número de cédula exacto...">
                 <button onclick="fetchData()" class="btn btn-buscar fw-bold">CONSULTAR</button>
@@ -316,22 +316,34 @@
                         </div>
                     </div>
                     <div class="row mt-2 g-2">
-                        <div class="col-12 col-md-4">
+                        <div class="col-6 col-md-4 col-lg-2">
                             <div class="profile-data-box">
                                 <div class="profile-data-label"><i class="bi bi-building me-1"></i>Dependencia</div>
                                 <div class="profile-data-value" id="lblDependencia">---</div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-6 col-md-4 col-lg-2">
                             <div class="profile-data-box">
                                 <div class="profile-data-label"><i class="bi bi-tools me-1"></i>Taller</div>
                                 <div class="profile-data-value" id="lblTaller">---</div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-4 col-lg-4">
                             <div class="profile-data-box">
                                 <div class="profile-data-label"><i class="bi bi-award me-1"></i>Cargo / Inspector</div>
                                 <div class="profile-data-value" id="lblCargo">---</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-2">
+                            <div class="profile-data-box">
+                                <div class="profile-data-label"><i class="bi bi-translate me-1"></i>Inglés</div>
+                                <div class="profile-data-value" id="lblIngles">---</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-2">
+                            <div class="profile-data-box">
+                                <div class="profile-data-label"><i class="bi bi-star me-1"></i>Pericia</div>
+                                <div class="profile-data-value" id="lblPericia">---</div>
                             </div>
                         </div>
                     </div>
@@ -353,37 +365,45 @@
 
             <input type="hidden" id="inId">
             <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-2">
-                    <label class="label-arena mb-1">Cédula</label>
+                <div class="col-12 col-md-4 col-lg-2">
+                    <label class="label-arena">Cédula</label>
                     <input type="text" id="inCedula" class="form-control input-arena" placeholder="Ej. 1111">
                 </div>
-                <div class="col-12 col-md-3">
-                    <label class="label-arena mb-1">Nombre</label>
+                <div class="col-12 col-md-8 col-lg-3">
+                    <label class="label-arena">Nombre</label>
                     <input type="text" id="inNombre" class="form-control input-arena" placeholder="Grado y Nombre">
                 </div>
-                <div class="col-12 col-md-3">
-                    <label class="label-arena mb-1">Dependencia</label>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="label-arena">Dependencia</label>
                     <input type="text" id="inDependencia" class="form-control input-arena" placeholder="Ej. SECAL">
                 </div>
-                <div class="col-12 col-md-4">
-                    <label class="label-arena mb-1">Taller</label>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="label-arena">Taller</label>
                     <input type="text" id="inTaller" class="form-control input-arena" placeholder="Ej. CALIDAD">
                 </div>
-
-                <div class="col-12 col-md-4">
-                    <label class="label-arena mb-1">Cargo / Inspector</label>
-                    <input type="text" id="inCargo" class="form-control input-arena" placeholder="Ej. INSPECTOR BELL 212">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="label-arena">Cargo / Inspector</label>
+                    <input type="text" id="inCargo" class="form-control input-arena" placeholder="Ej. INSPECTOR">
                 </div>
-                <div class="col-12 col-md-4">
-                    <label class="label-arena mb-1">Capacitación / Curso</label>
+
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="label-arena">Nivel Inglés</label>
+                    <input type="text" id="inIngles" class="form-control input-arena" placeholder="Ej. B2">
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="label-arena">Nivel Pericia</label>
+                    <input type="text" id="inPericia" class="form-control input-arena" placeholder="Ej. Avanzado">
+                </div>
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label class="label-arena">Capacitación / Curso</label>
                     <input type="text" id="inCurso" class="form-control input-arena" placeholder="Nombre del Curso">
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="label-arena mb-1">Realización</label>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="label-arena">Realización</label>
                     <input type="date" id="inFecha" class="form-control input-arena">
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="label-arena mb-1">Vencimiento</label>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label class="label-arena">Vencimiento</label>
                     <input type="date" id="inVence" class="form-control input-arena">
                 </div>
 
@@ -412,6 +432,47 @@
                             <td colspan="5" class="text-center py-5 empty-state">
                                 <i class="bi bi-broadcast fs-2 d-block mb-2" style="color:rgba(0,255,65,.2)"></i>
                                 &gt;_ INGRESE UNA CÉDULA PARA MOSTRAR HISTORIAL DE ENTRENAMIENTO
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchPersonasSection" class="hidden mt-4">
+        <div class="mb-3">
+            <button onclick="showMenu()" class="btn-volver"><i class="bi bi-arrow-left"></i> VOLVER AL MENÚ</button>
+        </div>
+
+        <div class="card-aviador p-4 mb-4">
+            <div class="section-label" style="color: var(--radar-verde);"><i class="bi bi-search"></i> BÚSQUEDA INTELIGENTE DE PERSONAL</div>
+            <p style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--gris-texto); margin-bottom: 15px;">
+                Ingrese dependencia, taller, cargo, nombre de la persona o nombre del curso para localizar a todo el personal que coincida.
+            </p>
+            <div class="input-group input-group-lg" style="border-radius:3px;overflow:hidden;">
+                <input type="text" id="advancedSearchInput" class="form-control border-0 input-aero" placeholder="Ej: SECAL, Calidad, Juan, o C-212...">
+                <button onclick="fetchAdvancedSearch()" class="btn btn-buscar fw-bold" style="background: linear-gradient(135deg, var(--radar-verde-dim), var(--radar-verde)); color: #000;">BUSCAR</button>
+            </div>
+        </div>
+
+        <div class="card-radar">
+            <div class="table-responsive">
+                <table class="table-radar w-100">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Cédula</th>
+                            <th>Nombre</th>
+                            <th>Dependencia / Taller</th>
+                            <th>Cargo</th>
+                            <th class="text-center">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="advancedDataTable">
+                        <tr>
+                            <td colspan="5" class="text-center py-5 empty-state">
+                                <i class="bi bi-funnel fs-2 d-block mb-2" style="color:rgba(0,255,65,.2)"></i>
+                                &gt;_ ESPERANDO PARÁMETROS DE BÚSQUEDA
                             </td>
                         </tr>
                     </tbody>
@@ -462,7 +523,7 @@
 
     try { applyTheme(localStorage.getItem(THEME_KEY) || 'aviador'); } catch(e) { applyTheme('aviador'); }
 
-    /* ══════════ AUTH ══════════ */
+    /* ══════════ AUTH & MENU ══════════ */
     async function signIn() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
@@ -480,7 +541,6 @@
     }
 
     async function checkUserRole() {
-        // Consultamos la tabla de usuarios
         const { data } = await _supabase
             .from('entrenamiento_usuarios').select('es_admin, nombre')
             .eq('email', sessionUser.email).single();
@@ -489,20 +549,12 @@
             isAdmin = data.es_admin;
             const ico = isAdmin ? '<i class="bi bi-person-badge me-1"></i>' : '<i class="bi bi-person me-1"></i>';
             document.getElementById('userName').innerHTML = `${ico} ${data.nombre} (${isAdmin ? 'ADMIN' : 'USUARIO'})`;
-            renderUI();
+            
+            showMenu();
+            document.getElementById('userInfo').classList.remove('hidden');
         } else {
             const btn = document.getElementById('loginBtn');
             btn.innerHTML = 'ENTRAR'; btn.disabled = false;
-        }
-    }
-
-    function renderUI() {
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('userInfo').classList.remove('hidden');
-        document.getElementById('mainSection').classList.remove('hidden');
-        if (isAdmin) {
-            document.getElementById('adminForm').classList.remove('hidden');
-            document.getElementById('thAcciones').classList.remove('hidden');
         }
     }
 
@@ -511,26 +563,47 @@
         location.reload();
     }
 
-    /* ══════════ AUTOCOMPLETADO FORMULARIO ADMIN ══════════ */
+    function showMenu() {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('searchCursosSection').classList.add('hidden');
+        document.getElementById('searchPersonasSection').classList.add('hidden');
+        document.getElementById('menuSection').classList.remove('hidden');
+    }
+
+    function showSearchCursos() {
+        document.getElementById('menuSection').classList.add('hidden');
+        document.getElementById('searchPersonasSection').classList.add('hidden');
+        document.getElementById('searchCursosSection').classList.remove('hidden');
+        
+        if (isAdmin) {
+            document.getElementById('adminForm').classList.remove('hidden');
+            document.getElementById('thAcciones').classList.remove('hidden');
+        }
+    }
+
+    function showSearchPersonas() {
+        document.getElementById('menuSection').classList.add('hidden');
+        document.getElementById('searchCursosSection').classList.add('hidden');
+        document.getElementById('searchPersonasSection').classList.remove('hidden');
+    }
+
+    /* ══════════ MÓDULO 1: GESTIÓN POR CÉDULA ══════════ */
     document.getElementById('inCedula').addEventListener('blur', async function() {
         const cedulaBuscada = this.value.trim();
         if (!cedulaBuscada || editingId) return;
 
-        // Buscar en la tabla de alumnos
         const { data } = await _supabase
-            .from('entrenamiento_alumno')
-            .select('*')
-            .eq('cedula', cedulaBuscada)
-            .single();
+            .from('entrenamiento_alumno').select('*').eq('cedula', cedulaBuscada).single();
 
         if (data) {
             document.getElementById('inNombre').value = data.nombre || '';
             document.getElementById('inDependencia').value = data.dependencia || '';
             document.getElementById('inTaller').value = data.taller || '';
             document.getElementById('inCargo').value = data.cargo || '';
+            document.getElementById('inIngles').value = data.nivel_ingles || '';
+            document.getElementById('inPericia').value = data.nivel_pericia || '';
             
-            // Destello visual
-            ['inNombre', 'inDependencia', 'inTaller', 'inCargo'].forEach(id => {
+            ['inNombre', 'inDependencia', 'inTaller', 'inCargo', 'inIngles', 'inPericia'].forEach(id => {
                 const el = document.getElementById(id);
                 el.style.borderColor = 'var(--radar-verde)';
                 setTimeout(() => el.style.borderColor = '', 1000);
@@ -538,23 +611,17 @@
         }
     });
 
-    /* ══════════ BUSCADOR PRINCIPAL (Perfil y Cursos) ══════════ */
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value.trim();
         if (!cedula) return;
 
         const tbody = document.getElementById('dataTable');
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-radar mx-auto"></div></td></tr>';
-        
-        // Ocultar tarjeta mientras carga
         document.getElementById('profileCard').classList.add('hidden');
 
-        // 1. CARGAR PERFIL (entrenamiento_alumno)
+        // 1. CARGAR PERFIL
         const { data: alumno } = await _supabase
-            .from('entrenamiento_alumno')
-            .select('*')
-            .eq('cedula', cedula)
-            .single();
+            .from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
 
         if (alumno) {
             document.getElementById('lblCedula').innerText = alumno.cedula;
@@ -562,23 +629,22 @@
             document.getElementById('lblDependencia').innerText = alumno.dependencia || 'N/A';
             document.getElementById('lblTaller').innerText = alumno.taller || 'N/A';
             document.getElementById('lblCargo').innerText = alumno.cargo || 'N/A';
-            document.getElementById('profileCard').classList.remove('hidden');
+            document.getElementById('lblIngles').innerText = alumno.nivel_ingles || 'N/A';
+            document.getElementById('lblPericia').innerText = alumno.nivel_pericia || 'N/A';
         } else {
-            // Si el perfil no existe, mostramos advertencia en el bloque pero igual buscamos cursos
             document.getElementById('lblCedula').innerText = cedula;
             document.getElementById('lblNombre').innerText = "PERFIL NO ENCONTRADO EN BASE DE ALUMNOS";
             document.getElementById('lblDependencia').innerText = '---';
             document.getElementById('lblTaller').innerText = '---';
             document.getElementById('lblCargo').innerText = '---';
-            document.getElementById('profileCard').classList.remove('hidden');
+            document.getElementById('lblIngles').innerText = '---';
+            document.getElementById('lblPericia').innerText = '---';
         }
+        document.getElementById('profileCard').classList.remove('hidden');
 
-        // 2. CARGAR CURSOS (entrenamiento)
+        // 2. CARGAR CURSOS
         const { data: cursos, error } = await _supabase
-            .from('entrenamiento')
-            .select('*')
-            .eq('cedula', cedula)
-            .order('fecha_vencimiento', { ascending: true });
+            .from('entrenamiento').select('*').eq('cedula', cedula).order('fecha_vencimiento', { ascending: true });
 
         if (error) {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4" style="color:var(--nvg-rojo);font-family:var(--font-mono);font-size:.8rem">ERROR: ${error.message}</td></tr>`;
@@ -596,22 +662,14 @@
             if (s.class) tr.className = s.class;
 
             const rowJson = JSON.stringify(row).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
             const accionesHtml = isAdmin ? `
                 <td>
                     <div class="acciones-wrap">
-                        <button class="btn-accion btn-editar"
-                            onclick='startEdit(${rowJson})' title="Editar curso">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button class="btn-accion btn-eliminar"
-                            onclick="deleteRecord('${row.id}')" title="Eliminar curso">
-                            <i class="bi bi-trash3-fill"></i>
-                        </button>
+                        <button class="btn-accion btn-editar" onclick='startEdit(${rowJson})' title="Editar curso"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn-accion btn-eliminar" onclick="deleteRecord('${row.id}')" title="Eliminar curso"><i class="bi bi-trash3-fill"></i></button>
                     </div>
                 </td>` : '';
 
-            // Tabla simplificada ya que el perfil está arriba
             tr.innerHTML = `
                 <td class="td-curso ps-4"><i class="bi bi-journal-check me-2" style="color:var(--t-accent); opacity: 0.7;"></i>${row.curso}</td>
                 <td style="font-family:var(--font-mono);font-size:.8rem;color:rgba(255,255,255,0.7);"><i class="bi bi-calendar-event me-2" style="opacity:.4"></i>${row.fecha_realizacion || 'N/A'}</td>
@@ -623,7 +681,6 @@
         });
     }
 
-    /* ── Iniciar modo edición ── */
     function startEdit(row) {
         editingId = row.id;
         document.getElementById('inId').value     = row.id;
@@ -632,45 +689,44 @@
         document.getElementById('inFecha').value  = row.fecha_realizacion || '';
         document.getElementById('inVence').value  = row.fecha_vencimiento  || '';
 
-        // Copiamos los datos del perfil si existen en pantalla (para que el Admin los pueda corregir)
         const profNombre = document.getElementById('lblNombre').innerText;
         document.getElementById('inNombre').value      = (profNombre !== 'NO ENCONTRADO' && profNombre !== 'PERFIL NO ENCONTRADO EN BASE DE ALUMNOS') ? profNombre : '';
         document.getElementById('inDependencia').value = document.getElementById('lblDependencia').innerText !== '---' ? document.getElementById('lblDependencia').innerText : '';
         document.getElementById('inTaller').value      = document.getElementById('lblTaller').innerText !== '---' ? document.getElementById('lblTaller').innerText : '';
         document.getElementById('inCargo').value       = document.getElementById('lblCargo').innerText !== '---' ? document.getElementById('lblCargo').innerText : '';
+        document.getElementById('inIngles').value      = document.getElementById('lblIngles').innerText !== '---' && document.getElementById('lblIngles').innerText !== 'N/A' ? document.getElementById('lblIngles').innerText : '';
+        document.getElementById('inPericia').value     = document.getElementById('lblPericia').innerText !== '---' && document.getElementById('lblPericia').innerText !== 'N/A' ? document.getElementById('lblPericia').innerText : '';
 
         document.getElementById('editIdLabel').textContent    = row.id;
-        document.getElementById('adminFormTitle').textContent = 'MODIFICAR CURSO';
+        document.getElementById('adminFormTitle').textContent = 'MODIFICAR CURSO Y PERFIL';
         document.getElementById('editBanner').classList.add('visible');
         document.getElementById('btnGuardar').innerHTML       = '<i class="bi bi-arrow-repeat me-1"></i>ACTUALIZAR DATOS';
 
         document.getElementById('adminForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    /* ── Cancelar edición ── */
     function cancelEdit() {
         editingId = null;
-        ['inId','inCedula','inNombre','inDependencia','inTaller','inCargo','inCurso','inFecha','inVence'].forEach(id => document.getElementById(id).value = '');
+        ['inId','inCedula','inNombre','inDependencia','inTaller','inCargo','inIngles','inPericia','inCurso','inFecha','inVence'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('adminFormTitle').textContent = 'ADMINISTRAR CURSO Y PERFIL';
         document.getElementById('editBanner').classList.remove('visible');
         document.getElementById('btnGuardar').innerHTML = '<i class="bi bi-save me-1"></i>GUARDAR / ACTUALIZAR DATOS';
     }
 
-    /* ── Guardar (Alumno y Curso simultáneamente) ── */
     async function saveData() {
         const cedulaIn = document.getElementById('inCedula').value.trim();
         if (!cedulaIn) { alert("La cédula es obligatoria."); return; }
 
-        // 1. Objeto para la tabla entrenamiento_alumno
         const perfilPayload = {
             cedula: cedulaIn,
             nombre: document.getElementById('inNombre').value || null,
             dependencia: document.getElementById('inDependencia').value || null,
             taller: document.getElementById('inTaller').value || null,
-            cargo: document.getElementById('inCargo').value || null
+            cargo: document.getElementById('inCargo').value || null,
+            nivel_ingles: document.getElementById('inIngles').value || null,
+            nivel_pericia: document.getElementById('inPericia').value || null
         };
 
-        // 2. Objeto para la tabla de cursos (entrenamiento)
         const cursoPayload = {
             cedula: cedulaIn,
             curso: document.getElementById('inCurso').value,
@@ -683,14 +739,9 @@
             return;
         }
 
-        // A. Hacemos "Upsert" (Insertar o actualizar) el perfil del alumno
-        const { error: errPerfil } = await _supabase
-            .from('entrenamiento_alumno')
-            .upsert([perfilPayload]);
-        
+        const { error: errPerfil } = await _supabase.from('entrenamiento_alumno').upsert([perfilPayload]);
         if(errPerfil) { alert("Error al guardar perfil: " + errPerfil.message); return; }
 
-        // B. Guardamos o actualizamos el curso
         let errorCurso;
         if (editingId) {
             ({ error: errorCurso } = await _supabase.from('entrenamiento').update(cursoPayload).eq('id', editingId));
@@ -701,13 +752,10 @@
         if (errorCurso) { alert(errorCurso.message); return; }
         
         cancelEdit();
-        
-        // Refrescar tabla buscando a la persona recién editada
         document.getElementById('searchCedula').value = cedulaIn;
         fetchData();
     }
 
-    /* ── Eliminar Curso ── */
     async function deleteRecord(id) {
         if (confirm("¿Confirmar eliminación del registro de este curso?")) {
             await _supabase.from('entrenamiento').delete().eq('id', id);
@@ -716,13 +764,76 @@
         }
     }
 
-    /* ── Estado Matemático ── */
     function getStatusInfo(fecha) {
         const hoy = new Date(), vence = new Date(fecha);
         const diff = (vence - hoy) / (1000 * 60 * 60 * 24);
         if (vence < hoy) return { class:'vencido',       badgeClass:'badge-vencido', text:'VENCIDO'      };
         if (diff  <= 90) return { class:'vence-3-meses', badgeClass:'badge-pronto',  text:'VENCE PRONTO' };
         return                  { class:'',               badgeClass:'badge-vigente', text:'VIGENTE'      };
+    }
+
+    /* ══════════ MÓDULO 2: BÚSQUEDA AVANZADA MULTICRITERIO ══════════ */
+    async function fetchAdvancedSearch() {
+        const term = document.getElementById('advancedSearchInput').value.trim();
+        if (!term) return;
+
+        const tbody = document.getElementById('advancedDataTable');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-radar mx-auto"></div></td></tr>';
+
+        // 1. Buscar en Alumnos
+        const { data: alumnosData } = await _supabase
+            .from('entrenamiento_alumno')
+            .select('*')
+            .or(`nombre.ilike.%${term}%,dependencia.ilike.%${term}%,taller.ilike.%${term}%,cargo.ilike.%${term}%`);
+
+        // 2. Buscar en Cursos
+        const { data: cursosData } = await _supabase
+            .from('entrenamiento')
+            .select('cedula')
+            .ilike('curso', `%${term}%`);
+
+        let cedulasSet = new Set();
+        if (alumnosData) alumnosData.forEach(a => cedulasSet.add(a.cedula));
+        if (cursosData)  cursosData.forEach(c => cedulasSet.add(c.cedula));
+        
+        const cedulasArray = Array.from(cedulasSet);
+
+        if (cedulasArray.length === 0) {
+             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 empty-state"><i class="bi bi-emoji-frown fs-2 d-block mb-2" style="color:rgba(0,255,65,.2)"></i>&gt;_ NO SE ENCONTRARON COINCIDENCIAS</td></tr>';
+             return;
+        }
+
+        const { data: finalAlumnos } = await _supabase
+            .from('entrenamiento_alumno')
+            .select('*')
+            .in('cedula', cedulasArray);
+
+        if (finalAlumnos && finalAlumnos.length > 0) {
+            tbody.innerHTML = '';
+            finalAlumnos.forEach(al => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4" style="color:var(--t-accent); font-family:var(--font-mono);">${al.cedula}</td>
+                    <td style="color:#fff; font-weight:600; font-size:1.05rem;">${al.nombre || 'N/A'}</td>
+                    <td style="font-family:var(--font-mono); font-size:0.8rem; color:rgba(0,255,65,.75)">${al.dependencia || ''} ${al.taller ? ' - ' + al.taller : ''}</td>
+                    <td style="font-family:var(--font-mono); font-size:0.8rem; color:rgba(0,255,65,.75)">${al.cargo || 'N/A'}</td>
+                    <td class="text-center">
+                        <button onclick="goToCedula('${al.cedula}')" class="btn btn-sm btn-outline-light" style="font-family:var(--font-mono); font-size:0.7rem; color:var(--radar-verde); border-color:var(--radar-verde)">
+                            VER CURSOS <i class="bi bi-box-arrow-in-right ms-1"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+             tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 empty-state">ERROR AL RECUPERAR DATOS</td></tr>';
+        }
+    }
+
+    function goToCedula(cedula) {
+        showSearchCursos(); 
+        document.getElementById('searchCedula').value = cedula; 
+        fetchData(); 
     }
 </script>
 </body>
