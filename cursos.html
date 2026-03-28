@@ -1,492 +1,1278 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA GESTIÓN ENTRENAMIENTO - CAMAN</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* ══════════════════════════════════════════════════
-           CONFIGURACIÓN DE TEMAS (AERONÁUTICO)
-        ══════════════════════════════════════════════════ */
-        :root, [data-theme="light"] {
-            --bg: #f0f4f8; --card: #ffffff; --text: #1a202c; --muted: #718096;
-            --border: #e2e8f0; --accent: #0056b3; --header-grad: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-            --input-bg: #ffffff; --row-hover: #f8fafc; --shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        [data-theme="dark"] {
-            --bg: #0b0e14; --card: #161b22; --text: #c9d1d9; --muted: #8b949e;
-            --border: #30363d; --accent: #58a6ff; --header-grad: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
-            --input-bg: #0d1117; --row-hover: #1c2128; --shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SISTEMA DE ENTRENAMIENTO — CAMAN</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ══════════════════════════════════════════════════════════
+   TOKENS DE TEMA
+══════════════════════════════════════════════════════════ */
+:root, [data-theme="light"] {
+  --bg:           #eef1f6;
+  --surface:      #ffffff;
+  --surface-2:    #f5f7fa;
+  --surface-3:    #eaecf1;
+  --text:         #0d1117;
+  --text-2:       #3d4a5a;
+  --text-3:       #7a8a9a;
+  --border:       #dce2ec;
+  --border-2:     #c6cfe0;
+  --accent:       #1557b0;
+  --accent-light: #dbeafe;
+  --accent-glow:  rgba(21,87,176,.15);
+  --accent-2:     #0a3d7a;
+  --nav-bg:       #0a1628;
+  --nav-border:   #1557b0;
+  --nav-text:     #e8edf5;
+  --input-bg:     #ffffff;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.12);
+  --row-hover:    #f0f4ff;
+  --status-v-bg:  #fef2f2; --status-v-text: #991b1b; --status-v-border: #fca5a5;
+  --status-a-bg:  #fffbeb; --status-a-text: #92400e; --status-a-border: #fcd34d;
+  --status-g-bg:  #f0fdf4; --status-g-text: #166534; --status-g-border: #86efac;
+  --profile-bg:   linear-gradient(135deg, #0a1628 0%, #1557b0 100%);
+  --hud-line:     rgba(21,87,176,.12);
+}
 
-        body { 
-            background-color: var(--bg); font-family: 'Barlow', sans-serif; color: var(--text); 
-            margin: 0; padding-top: 70px; min-height: 100vh; display: flex; flex-direction: column; 
-        }
+[data-theme="dark"] {
+  --bg:           #080c12;
+  --surface:      #0f1620;
+  --surface-2:    #141d2b;
+  --surface-3:    #1a2438;
+  --text:         #cdd6e8;
+  --text-2:       #8ea4c0;
+  --text-3:       #4d6480;
+  --border:       #1e2d42;
+  --border-2:     #253550;
+  --accent:       #4da6ff;
+  --accent-light: #0c2040;
+  --accent-glow:  rgba(77,166,255,.12);
+  --accent-2:     #7bc8ff;
+  --nav-bg:       #060a10;
+  --nav-border:   #1e3a6e;
+  --nav-text:     #8ea4c0;
+  --input-bg:     #0d1421;
+  --shadow-sm:    0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.4);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.5);
+  --row-hover:    #131f30;
+  --status-v-bg:  #120a0a; --status-v-text: #fca5a5; --status-v-border: #7f1d1d;
+  --status-a-bg:  #120f00; --status-a-text: #fde68a; --status-a-border: #78350f;
+  --status-g-bg:  #061210; --status-g-text: #86efac; --status-g-border: #14532d;
+  --profile-bg:   linear-gradient(135deg, #060a10 0%, #0a1e3a 100%);
+  --hud-line:     rgba(77,166,255,.08);
+}
 
-        /* HEADER ESTILO CABINA */
-        .navbar-aero { 
-            position: fixed; top: 0; width: 100%; height: 70px; background: var(--header-grad);
-            border-bottom: 2px solid var(--accent); z-index: 1000; display: flex; align-items: center; padding: 0 25px;
-        }
-        .navbar-brand-aero { font-family: 'Orbitron', sans-serif; color: white !important; letter-spacing: 2px; font-size: 1.1rem; }
-        #userName { font-family: 'Share Tech Mono', monospace; color: #58a6ff; font-size: 0.85rem; }
+/* ══════════════════════════════════════════════════════════
+   RESET Y BASE
+══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
 
-        /* CONTENEDORES PRINCIPALES */
-        .main-content { flex: 1; padding: 25px; max-width: 1600px; margin: 0 auto; width: 100%; }
-        .card-aero { 
-            background: var(--card); border: 1px solid var(--border); border-radius: 8px; 
-            box-shadow: var(--shadow); padding: 20px; margin-bottom: 25px;
-        }
+html { scroll-behavior: smooth; }
 
-        /* FICHA DE TRIPULANTE HORIZONTAL (WIDE) */
-        .profile-strip { 
-            display: grid; grid-template-columns: 250px 1fr; gap: 20px; align-items: center;
-            background: var(--input-bg); border-left: 5px solid var(--accent); padding: 20px;
-        }
-        .profile-main-info h2 { font-family: 'Orbitron', sans-serif; margin: 0; font-size: 1.5rem; color: var(--accent); }
-        .data-grid-aero { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; 
-        }
-        .data-item { background: var(--card); padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; }
-        .data-label { font-family: 'Share Tech Mono'; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; }
-        .data-value { font-weight: 700; font-size: 0.95rem; display: block; }
+body {
+  background: var(--bg);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  margin: 0;
+  padding-top: 64px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background .3s, color .3s;
+  overflow-x: hidden;
+}
 
-        /* TABLAS MODERNAS */
-        .table-aero { width: 100%; border-collapse: separate; border-spacing: 0; }
-        .table-aero thead th { 
-            background: var(--bg); padding: 12px 15px; font-family: 'Share Tech Mono'; 
-            font-size: 0.75rem; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border);
-        }
-        .table-aero tbody td { padding: 14px 15px; border-bottom: 1px solid var(--border); transition: 0.2s; }
-        .table-aero tbody tr:hover { background: var(--row-hover); }
+/* ══════════════════════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════════════════════ */
+.navbar-aero {
+  position: fixed; top: 0; left: 0; right: 0; height: 64px;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: 0 2px 20px rgba(0,0,0,.4);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px; z-index: 1000;
+}
 
-        /* FORMULARIOS HORIZONTALES */
-        .admin-form-row { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; 
-        }
+/* Línea de acento inferior tipo HUD */
+.navbar-aero::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--nav-border) 20%, #4da6ff 50%, var(--nav-border) 80%, transparent 100%);
+  opacity: .7;
+}
 
-        /* BOTONES Y UI */
-        .btn-aero { 
-            font-family: 'Orbitron', sans-serif; font-size: 0.75rem; padding: 10px 20px; 
-            border-radius: 4px; text-transform: uppercase; transition: 0.3s;
-        }
-        .btn-theme { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; }
-        
-        .counter-badge { 
-            background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; 
-            font-family: 'Share Tech Mono'; font-size: 0.7rem;
-        }
+.nav-brand {
+  display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0;
+}
 
-        /* Colores de alerta con alto contraste */
-        .status-vencido { 
-            background-color: #dc3545 !important; color: white !important; 
-            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #a71d2a;
-        }
-        .status-alerta { 
-            background-color: #ffc107 !important; color: #000 !important; 
-            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #d39e00;
-        }
-        .status-vigente { 
-            background-color: #198754 !important; color: white !important; 
-            font-weight: bold; padding: 4px 12px; border-radius: 4px; border: 1px solid #0f5132;
-        }
-                
-        /* FOOTER */
-        .footer-aero { 
-            background: #0d1117; color: #8b949e; padding: 30px 0; border-top: 3px solid var(--accent); 
-            font-family: 'Share Tech Mono'; font-size: 0.8rem;
-        }
+.nav-brand img { height: 38px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(77,166,255,.3)); }
 
-        /* RESPONSIVE */
-        @media (max-width: 992px) {
-            .profile-strip { grid-template-columns: 1fr; text-align: center; }
-            .navbar-brand-aero span { display: none; }
-            .main-content { padding: 15px; }
-        }
+.nav-titles { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 
-        .hidden { display: none !important; }
-    </style>
+.nav-supertitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .55rem; letter-spacing: 3px; text-transform: uppercase;
+  color: #4da6ff; opacity: .7;
+}
+
+.nav-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: .9rem; font-weight: 700;
+  color: #fff; letter-spacing: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+/* Botón tema */
+.btn-theme {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.7);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .2s; font-size: .95rem;
+  flex-shrink: 0;
+}
+.btn-theme:hover { background: rgba(255,255,255,.14); color: #fff; border-color: rgba(255,255,255,.3); }
+
+/* Info usuario */
+.user-chip {
+  display: flex; align-items: center; gap: 10px;
+}
+.user-chip-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; color: #fff; flex-shrink: 0;
+}
+.user-chip-info { display: flex; flex-direction: column; }
+.user-name { font-family: 'Share Tech Mono', monospace; font-size: .72rem; color: #fff; line-height: 1.2; }
+.user-role { font-size: .6rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; font-family: 'Share Tech Mono', monospace; }
+.btn-signout {
+  font-family: 'Share Tech Mono', monospace; font-size: .62rem; letter-spacing: 1px;
+  padding: 4px 12px; border-radius: 3px;
+  border: 1px solid rgba(239,68,68,.4); color: rgba(239,68,68,.8);
+  background: rgba(239,68,68,.06); cursor: pointer; transition: all .2s;
+}
+.btn-signout:hover { background: rgba(239,68,68,.15); border-color: #ef4444; color: #ef4444; }
+
+/* ══════════════════════════════════════════════════════════
+   LAYOUT PRINCIPAL
+══════════════════════════════════════════════════════════ */
+.main-wrap {
+  flex: 1;
+  width: 100%; max-width: 1800px;
+  margin: 0 auto;
+  padding: 28px 28px 48px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   COMPONENTES COMUNES
+══════════════════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-body { padding: 24px; }
+
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: .75rem; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title i { font-size: 1rem; }
+
+.badge-count {
+  font-family: 'Share Tech Mono', monospace; font-size: .65rem; letter-spacing: 1px;
+  padding: 3px 10px; border-radius: 20px;
+  background: var(--accent-light); color: var(--accent);
+  border: 1px solid rgba(21,87,176,.2);
+}
+
+/* Inputs */
+.input-aero {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-2) !important;
+  border-radius: 6px !important;
+  color: var(--text) !important;
+  font-size: .9rem;
+  padding: 9px 14px;
+  transition: all .2s;
+  width: 100%;
+}
+.input-aero::placeholder { color: var(--text-3); }
+.input-aero:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+  outline: none !important;
+}
+.input-aero::-webkit-calendar-picker-indicator { opacity: .5; cursor: pointer; }
+
+label.lbl { font-size: .72rem; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-3); display: block; margin-bottom: 5px; }
+
+/* Botones */
+.btn-primary-aero {
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 6px;
+  font-family: 'Orbitron', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 10px 22px; cursor: pointer;
+  transition: all .25s;
+}
+.btn-primary-aero:hover { background: var(--accent-2); box-shadow: 0 4px 16px var(--accent-glow); }
+
+.btn-ghost {
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border-2); border-radius: 6px;
+  font-family: 'Inter', sans-serif; font-size: .8rem; font-weight: 500;
+  padding: 8px 16px; cursor: pointer; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-ghost:hover { background: var(--surface-2); border-color: var(--accent); color: var(--accent); }
+
+.btn-success-aero {
+  background: #166534; color: #fff; border: none; border-radius: 6px;
+  font-family: 'Orbitron', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: 1.5px; padding: 10px 22px; cursor: pointer; transition: all .2s;
+}
+.btn-success-aero:hover { background: #14532d; box-shadow: 0 4px 16px rgba(22,101,52,.3); }
+
+/* Icono-botones de tabla */
+.btn-icon {
+  width: 30px; height: 30px;
+  border-radius: 6px; border: 1px solid var(--border-2);
+  background: var(--surface-2); color: var(--text-2);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .78rem; cursor: pointer; transition: all .2s; flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.btn-icon.danger:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+
+/* ══════════════════════════════════════════════════════════
+   PANTALLA LOGIN
+══════════════════════════════════════════════════════════ */
+#authSection {
+  max-width: 420px; margin: 60px auto 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.auth-header {
+  background: linear-gradient(135deg, #0a1628 0%, #0d2550 100%);
+  padding: 32px 32px 24px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid rgba(77,166,255,.2);
+}
+.auth-header::after {
+  content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, #4da6ff, transparent);
+}
+.auth-icon-wrap {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(77,166,255,.12); border: 1px solid rgba(77,166,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px; font-size: 1.6rem; color: #4da6ff;
+}
+.auth-title { font-family: 'Orbitron', sans-serif; font-size: .85rem; letter-spacing: 3px; color: #fff; margin: 0; }
+.auth-sub { font-family: 'Share Tech Mono', monospace; font-size: .65rem; color: rgba(77,166,255,.7); letter-spacing: 2px; margin-top: 4px; }
+
+.auth-body { padding: 28px 32px 32px; }
+
+/* ══════════════════════════════════════════════════════════
+   MENÚ PRINCIPAL
+══════════════════════════════════════════════════════════ */
+#menuSection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 800px;
+  margin: 60px auto 0;
+}
+
+.menu-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 36px 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s;
+  box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+}
+.menu-card::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--card-color, var(--accent));
+  transition: height .25s;
+}
+.menu-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--border-2); }
+.menu-card:hover::before { height: 5px; }
+.menu-card .menu-icon { font-size: 2.4rem; margin-bottom: 16px; display: block; }
+.menu-card h5 { font-family: 'Orbitron', sans-serif; font-size: .8rem; font-weight: 700; letter-spacing: 2px; color: var(--text); margin: 0 0 8px; }
+.menu-card p { font-size: .82rem; color: var(--text-3); margin: 0; line-height: 1.5; }
+
+/* ══════════════════════════════════════════════════════════
+   BARRA SUPERIOR DE SECCIÓN (breadcrumb + acciones)
+══════════════════════════════════════════════════════════ */
+.section-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.breadcrumb-aero {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Share Tech Mono', monospace; font-size: .72rem;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--text-3);
+}
+.breadcrumb-aero .bc-sep { color: var(--border-2); }
+.breadcrumb-aero .bc-active { color: var(--accent); }
+
+/* ══════════════════════════════════════════════════════════
+   BÚSQUEDA
+══════════════════════════════════════════════════════════ */
+.search-bar {
+  display: flex; gap: 0; overflow: hidden;
+  border: 1px solid var(--border-2); border-radius: 8px;
+  background: var(--input-bg);
+  box-shadow: var(--shadow-sm);
+}
+.search-bar-icon {
+  display: flex; align-items: center; padding: 0 14px;
+  color: var(--text-3); font-size: .95rem; flex-shrink: 0;
+}
+.search-bar input {
+  flex: 1; border: none; outline: none;
+  background: transparent; color: var(--text);
+  font-size: .9rem; padding: 11px 0;
+  min-width: 0;
+}
+.search-bar input::placeholder { color: var(--text-3); }
+.search-bar .search-btn {
+  background: var(--accent); color: #fff; border: none;
+  font-family: 'Orbitron', sans-serif; font-size: .65rem;
+  letter-spacing: 1.5px; padding: 0 24px; cursor: pointer;
+  transition: all .2s; flex-shrink: 0;
+}
+.search-bar .search-btn:hover { background: var(--accent-2); }
+
+/* ══════════════════════════════════════════════════════════
+   FICHA DE TRIPULANTE
+══════════════════════════════════════════════════════════ */
+.profile-card {
+  background: var(--profile-bg);
+  border-radius: 10px; overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+/* Patrón HUD de fondo */
+.profile-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(0deg,  transparent, transparent 39px, var(--hud-line) 39px, var(--hud-line) 40px),
+                    repeating-linear-gradient(90deg, transparent, transparent 79px, var(--hud-line) 79px, var(--hud-line) 80px);
+  pointer-events: none; z-index: 0;
+}
+
+.profile-inner { position: relative; z-index: 1; padding: 24px 28px; }
+
+.profile-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px; align-items: start;
+  margin-bottom: 20px;
+}
+
+.profile-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.8rem);
+  font-weight: 700; color: #fff;
+  margin: 0; line-height: 1.2;
+}
+.profile-id {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: .7rem; letter-spacing: 2px;
+  color: rgba(77,166,255,.8); margin-bottom: 8px;
+}
+.profile-grado {
+  display: inline-flex; align-items: center;
+  background: rgba(77,166,255,.18); border: 1px solid rgba(77,166,255,.3);
+  color: #7bc8ff; border-radius: 4px;
+  font-family: 'Orbitron', sans-serif; font-size: .62rem;
+  letter-spacing: 1.5px; padding: 4px 12px;
+}
+
+.profile-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+.pf-item {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 6px; padding: 10px 14px;
+  backdrop-filter: blur(4px);
+}
+.pf-label {
+  font-family: 'Share Tech Mono', monospace; font-size: .6rem;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: rgba(255,255,255,.4); margin-bottom: 4px;
+}
+.pf-value { font-size: .88rem; font-weight: 600; color: #fff; }
+
+/* ══════════════════════════════════════════════════════════
+   TABLA AERONÁUTICA
+══════════════════════════════════════════════════════════ */
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+table.tbl-aero {
+  width: 100%; border-collapse: collapse;
+  min-width: 560px;
+}
+table.tbl-aero thead tr {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+table.tbl-aero thead th {
+  font-family: 'Share Tech Mono', monospace; font-size: .65rem;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-3); font-weight: 400;
+  padding: 12px 16px; white-space: nowrap;
+}
+table.tbl-aero tbody td {
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+  font-size: .875rem; color: var(--text-2);
+  transition: background .15s;
+}
+table.tbl-aero tbody tr:last-child td { border-bottom: none; }
+table.tbl-aero tbody tr:hover td { background: var(--row-hover); }
+
+/* Badges de estado */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 20px;
+  font-size: .72rem; font-weight: 600; letter-spacing: .5px;
+  border: 1px solid; white-space: nowrap;
+}
+.status-badge.vencido  { background: var(--status-v-bg); color: var(--status-v-text); border-color: var(--status-v-border); }
+.status-badge.alerta   { background: var(--status-a-bg); color: var(--status-a-text); border-color: var(--status-a-border); }
+.status-badge.vigente  { background: var(--status-g-bg); color: var(--status-g-text); border-color: var(--status-g-border); }
+
+/* Estado vacío / cargando */
+.tbl-empty {
+  text-align: center; padding: 48px 20px;
+  color: var(--text-3); font-size: .85rem;
+}
+.tbl-empty i { display: block; font-size: 2rem; margin-bottom: 10px; opacity: .35; }
+
+/* ══════════════════════════════════════════════════════════
+   PANEL ADMIN (formulario)
+══════════════════════════════════════════════════════════ */
+.admin-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.admin-panel-header {
+  background: linear-gradient(90deg, var(--surface-2), var(--surface));
+  border-bottom: 2px solid var(--accent);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-panel-title {
+  font-family: 'Orbitron', sans-serif; font-size: .72rem;
+  font-weight: 700; letter-spacing: 2px; color: var(--accent);
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-close-panel {
+  background: none; border: 1px solid var(--border-2); color: var(--text-3);
+  width: 28px; height: 28px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .75rem; transition: all .2s;
+}
+.btn-close-panel:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
+
+.admin-panel-body { padding: 24px; }
+
+/* Grid adaptativo para formularios */
+.form-grid-person {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.form-grid-person .span2 { grid-column: span 2; }
+
+.form-grid-course {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 16px; align-items: end;
+}
+
+@media (max-width: 768px) {
+  .form-grid-person .span2 { grid-column: span 1; }
+  .form-grid-course { grid-template-columns: 1fr 1fr; }
+  .form-grid-course .btn-save-wrap { grid-column: span 2; }
+}
+@media (max-width: 480px) {
+  .form-grid-course { grid-template-columns: 1fr; }
+  .form-grid-course .btn-save-wrap { grid-column: span 1; }
+}
+
+/* Divider entre secciones del form */
+.form-divider {
+  border: none; border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════════════ */
+.footer-aero {
+  background: #060a10;
+  border-top: 1px solid #1a2d4a;
+  padding: 0;
+  font-family: 'Share Tech Mono', monospace;
+  position: relative;
+}
+.footer-aero::before {
+  content: ''; display: block; height: 2px;
+  background: linear-gradient(90deg, #1557b0 0%, #4da6ff 33%, #0ea5e9 50%, #4da6ff 66%, #1557b0 100%);
+  opacity: .6;
+}
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 20px;
+  padding: 18px 28px;
+}
+.footer-brand { display: flex; align-items: center; gap: 14px; }
+.footer-brand img { height: 32px; opacity: .7; filter: grayscale(30%); }
+.footer-brand-text {}
+.footer-brand-name { font-size: .68rem; letter-spacing: 2px; color: #4a6b8a; text-transform: uppercase; }
+.footer-brand-sub  { font-size: .6rem;  letter-spacing: 1px; color: #2d4460; margin-top: 2px; }
+
+.footer-center { text-align: center; }
+.footer-copy { font-size: .6rem; letter-spacing: 1px; color: #2d4460; }
+.footer-dot {
+  width: 6px; height: 6px; background: #1557b0; border-radius: 50%;
+  box-shadow: 0 0 6px #1557b0; margin: 6px auto;
+  animation: fpulse 3s ease-in-out infinite;
+}
+@keyframes fpulse { 0%,100%{opacity:1;box-shadow:0 0 6px #1557b0;} 50%{opacity:.3;box-shadow:none;} }
+
+.footer-links { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.footer-link {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .63rem; letter-spacing: 1px; color: #3a5570;
+  text-decoration: none; transition: color .2s;
+}
+.footer-link:hover { color: #4da6ff; }
+.footer-link .fl-icon { font-size: .85rem; }
+.footer-link .fl-icon.wa { color: #25d366; }
+.footer-link .fl-icon.em { color: #4da6ff; }
+
+@media (max-width: 640px) {
+  .footer-inner { grid-template-columns: 1fr; text-align: center; padding: 20px 20px; }
+  .footer-brand { justify-content: center; }
+  .footer-links { align-items: center; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .main-wrap { padding: 16px 16px 40px; }
+  .nav-titles { display: none; }
+  .profile-top { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .nav-brand img { height: 32px; }
+  body { padding-top: 60px; }
+  .navbar-aero { height: 60px; padding: 0 16px; }
+  .user-chip-info { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILITARIOS
+══════════════════════════════════════════════════════════ */
+.hidden { display: none !important; }
+
+.spinner-sm {
+  width: 22px; height: 22px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Cursor pointer global en interactivos sin btn */
+[onclick] { cursor: pointer; }
+</style>
 </head>
 <body>
 
-<nav class="navbar-aero justify-content-between">
-    <div class="d-flex align-items-center gap-3">
-        <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" height="40" alt="Logo">
-        <a class="navbar-brand-aero text-decoration-none" href="#"><span>GESTIÓN</span> ENTRENAMIENTO</a>
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="navbar-aero">
+  <div class="nav-brand">
+    <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
+    <div class="nav-titles">
+      <span class="nav-supertitle">Fuerza Aeroespacial Colombiana</span>
+      <span class="nav-title">SISTEMA DE ENTRENAMIENTO</span>
     </div>
-    
-    <div class="d-flex align-items-center gap-4">
-        <button class="btn-theme" onclick="toggleTheme()"><i class="bi bi-brightness-high-fill" id="themeIcon"></i></button>
-        <div id="userInfo" class="hidden text-end">
-            <span id="userName" class="fw-bold d-block"></span>
-            <a href="#" onclick="signOut()" class="text-danger text-decoration-none small" style="font-size: 0.65rem;">DESCONECTAR SISTEMA</a>
-        </div>
+  </div>
+
+  <div class="nav-right">
+    <button class="btn-theme" onclick="toggleTheme()" title="Cambiar tema" id="btnTheme">
+      <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+    </button>
+
+    <div id="userInfo" class="user-chip hidden">
+      <div class="user-chip-avatar"><i class="bi bi-person-fill"></i></div>
+      <div class="user-chip-info">
+        <span class="user-name" id="userName">—</span>
+        <span class="user-role" id="userRole">OPERADOR</span>
+      </div>
+      <button class="btn-signout" onclick="signOut()"><i class="bi bi-power me-1"></i>SALIR</button>
     </div>
+  </div>
 </nav>
 
-<main class="main-content">
-    
-    <div id="authSection" class="card-aero mx-auto mt-5" style="max-width: 450px;">
-        <div class="text-center mb-4">
-            <i class="bi bi-radar fs-1 text-primary"></i>
-            <h4 class="mt-3 fw-bold">AUTENTICACIÓN DE MANDO</h4>
-        </div>
-        <div class="mb-3">
-            <label class="form-label-custom">Credencial Digital (Email)</label>
-            <input type="email" id="email" class="form-control form-control-custom py-2" placeholder="usuario@fac.mil.co">
-        </div>
-        <div class="mb-4">
-            <label class="form-label-custom">Código de Acceso</label>
-            <input type="password" id="password" class="form-control form-control-custom py-2" placeholder="••••••••">
-        </div>
-        <button onclick="signIn()" id="loginBtn" class="btn btn-primary w-100 btn-aero">INICIAR OPERACIÓN</button>
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main-wrap">
+
+  <!-- ─── LOGIN ─── -->
+  <div id="authSection">
+    <div class="auth-header">
+      <div class="auth-icon-wrap"><i class="bi bi-radar"></i></div>
+      <h2 class="auth-title">AUTENTICACIÓN</h2>
+      <p class="auth-sub">SISTEMA CAMAN · CONTROL OPERACIONAL</p>
+    </div>
+    <div class="auth-body">
+      <div class="mb-3">
+        <label class="lbl">Credencial digital</label>
+        <input type="email" id="email" class="input-aero" placeholder="usuario@fac.mil.co">
+      </div>
+      <div class="mb-4">
+        <label class="lbl">Código de acceso</label>
+        <input type="password" id="password" class="input-aero" placeholder="••••••••">
+      </div>
+      <button onclick="signIn()" id="loginBtn" class="btn-primary-aero w-100">INICIAR OPERACIÓN</button>
+    </div>
+  </div>
+
+  <!-- ─── MENÚ PRINCIPAL ─── -->
+  <div id="menuSection" class="hidden">
+    <div class="menu-card" style="--card-color:#22c55e" onclick="navigate('personas')">
+      <i class="menu-icon bi bi-person-bounding-box" style="color:#22c55e"></i>
+      <h5>PERSONAL</h5>
+      <p>Censo de tripulantes, grados y datos maestros de la unidad.</p>
+    </div>
+    <div class="menu-card" style="--card-color:#3b82f6" onclick="navigate('cursos')">
+      <i class="menu-icon bi bi-journal-check" style="color:#3b82f6"></i>
+      <h5>LOG DE ENTRENAMIENTO</h5>
+      <p>Historial de capacitaciones, fechas de realización y vencimientos.</p>
+    </div>
+  </div>
+
+  <!-- ─── SECCIÓN PERSONAS ─── -->
+  <div id="sectionPersonas" class="hidden">
+    <div class="section-bar">
+      <div class="breadcrumb-aero">
+        <span onclick="navigate('menu')" style="cursor:pointer">INICIO</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-active">PERSONAL</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span id="countPersonas" class="badge-count hidden">0</span>
+        <button id="btnNuevoAdmin" class="btn-ghost hidden" onclick="startNewPerson()">
+          <i class="bi bi-person-plus-fill"></i> ALTA DE PERSONAL
+        </button>
+        <button class="btn-ghost" onclick="navigate('menu')">
+          <i class="bi bi-chevron-left"></i> Regresar
+        </button>
+      </div>
     </div>
 
-    <div id="menuSection" class="hidden">
-        <div class="row g-4 justify-content-center pt-5">
-            <div class="col-md-5 col-lg-4">
-                <div class="card-aero text-center p-5 border-bottom border-5 border-success" style="cursor: pointer;" onclick="navigate('personas')">
-                    <i class="bi bi-person-bounding-box fs-1 text-success"></i>
-                    <h5 class="mt-3 fw-bold">BÚSQUEDA DE PERSONAL</h5>
-                    <p class="text-muted small">Censo de tripulantes y datos maestros.</p>
-                </div>
-            </div>
-            <div class="col-md-5 col-lg-4">
-                <div class="card-aero text-center p-5 border-bottom border-5 border-primary" style="cursor: pointer;" onclick="navigate('cursos')">
-                    <i class="bi bi-journal-check fs-1 text-primary"></i>
-                    <h5 class="mt-3 fw-bold">LOG DE ENTRENAMIENTO</h5>
-                    <p class="text-muted small">Historial de cursos y vencimientos.</p>
-                </div>
-            </div>
+    <div class="card">
+      <div class="section-head">
+        <span class="section-title"><i class="bi bi-people-fill"></i> BASE DE DATOS TRIPULANTES</span>
+        <div class="search-bar" style="width:clamp(260px,40vw,500px)">
+          <span class="search-bar-icon"><i class="bi bi-search"></i></span>
+          <input type="text" id="advancedSearchInput" placeholder="Nombre, cédula, grado, dependencia…">
+          <button class="search-btn" onclick="fetchAdvancedSearch()">BUSCAR</button>
         </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl-aero">
+          <thead>
+            <tr>
+              <th>ID / CÉDULA</th>
+              <th>GRADO</th>
+              <th>NOMBRE Y APELLIDOS</th>
+              <th>DEPENDENCIA</th>
+              <th>TALLER</th>
+              <th style="text-align:center">GESTIÓN</th>
+            </tr>
+          </thead>
+          <tbody id="advancedDataTable">
+            <tr><td colspan="6" class="tbl-empty"><i class="bi bi-people"></i>Realice una búsqueda para ver tripulantes.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div id="sectionPersonas" class="hidden">
-        <div class="d-flex justify-content-between mb-3">
-            <button class="btn btn-sm btn-outline-secondary" onclick="navigate('menu')"><i class="bi bi-chevron-left"></i> REGRESAR</button>
-            <button id="btnNuevoAdmin" class="btn btn-sm btn-success hidden" onclick="startNewPerson()"><i class="bi bi-plus-lg"></i> ALTA DE PERSONAL</button>
+    <!-- Admin form personas -->
+    <div id="adminFormPersona" class="admin-panel hidden">
+      <div class="admin-panel-header">
+        <span class="admin-panel-title" id="personaFormTitle"><i class="bi bi-person-gear"></i> NUEVO REGISTRO DE PERSONAL</span>
+        <button class="btn-close-panel" onclick="cancelEditPersona()">✕</button>
+      </div>
+      <div class="admin-panel-body">
+        <div class="form-grid-person">
+          <div>
+            <label class="lbl">Cédula / ID</label>
+            <input type="text" id="pCedula" class="input-aero" placeholder="Número de identificación">
+          </div>
+          <div>
+            <label class="lbl">Grado</label>
+            <input type="text" id="pGrado" class="input-aero" placeholder="Ej. MY, TC, CT...">
+          </div>
+          <div class="span2">
+            <label class="lbl">Nombre Completo</label>
+            <input type="text" id="pNombre" class="input-aero" placeholder="Apellidos y nombres">
+          </div>
+          <div>
+            <label class="lbl">Dependencia</label>
+            <input type="text" id="pDep" class="input-aero" placeholder="Dependencia o unidad">
+          </div>
+          <div>
+            <label class="lbl">Taller / Especialidad</label>
+            <input type="text" id="pTaller" class="input-aero" placeholder="Ej. T-600, Motores...">
+          </div>
+          <div>
+            <label class="lbl">Cargo</label>
+            <input type="text" id="pCargo" class="input-aero" placeholder="Cargo actual">
+          </div>
+          <div>
+            <label class="lbl">Nivel Inglés</label>
+            <input type="text" id="pIngles" class="input-aero" placeholder="Ej. B2, C1...">
+          </div>
+          <div>
+            <label class="lbl">Nivel de Pericia</label>
+            <input type="text" id="pPericia" class="input-aero" placeholder="Ej. Aprendiz, Expert...">
+          </div>
         </div>
-        
-        <div class="card-aero">
-            <div class="d-flex align-items-center gap-3 mb-4">
-                <h5 class="m-0 fw-bold">BASE DE DATOS TRIPULANTES</h5>
-                <span id="countPersonas" class="counter-badge hidden">0 RESULTADOS</span>
-            </div>
-            <div class="input-group mb-4">
-                <input type="text" id="advancedSearchInput" class="form-control form-control-custom" placeholder="Filtrar por nombre, grado, dependencia o especialidad...">
-                <button onclick="fetchAdvancedSearch()" class="btn btn-primary px-4"><i class="bi bi-search"></i></button>
-            </div>
-            <div class="table-responsive">
-                <table class="table-aero">
-                    <thead><tr><th>ID/CÉDULA</th><th>GRADO</th><th>NOMBRE Y APELLIDOS</th><th>DEPENDENCIA / TALLER</th><th class="text-center">GESTIÓN</th></tr></thead>
-                    <tbody id="advancedDataTable"></tbody>
-                </table>
-            </div>
+        <hr class="form-divider">
+        <div style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+          <button class="btn-ghost" onclick="cancelEditPersona()">Cancelar</button>
+          <button class="btn-success-aero" onclick="savePersona()">GUARDAR DATOS</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── SECCIÓN CURSOS ─── -->
+  <div id="sectionCursos" class="hidden">
+    <div class="section-bar">
+      <div class="breadcrumb-aero">
+        <span onclick="navigate('menu')" style="cursor:pointer">INICIO</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-active">LOG DE ENTRENAMIENTO</span>
+      </div>
+      <button class="btn-ghost" onclick="navigate('menu')"><i class="bi bi-chevron-left"></i> Regresar</button>
     </div>
 
-    <div id="sectionCursos" class="hidden">
-        <button class="btn btn-sm btn-outline-secondary mb-3" onclick="navigate('menu')"><i class="bi bi-chevron-left"></i> REGRESAR</button>
-        
-        <div class="card-aero mb-4">
-            <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-search"></i></span>
-                <input type="text" id="searchCedula" class="form-control form-control-custom border-start-0" placeholder="Ingrese C.C. para desplegar historial de vuelo y curso...">
-                <button onclick="fetchData()" class="btn btn-primary px-5">CONSULTAR</button>
-            </div>
+    <!-- Buscador -->
+    <div class="card mb-4" style="overflow:visible">
+      <div class="card-body" style="padding:16px 24px">
+        <div class="search-bar">
+          <span class="search-bar-icon"><i class="bi bi-person-badge"></i></span>
+          <input type="text" id="searchCedula" placeholder="Ingrese cédula para desplegar historial de cursos y perfil…">
+          <button class="search-btn" onclick="fetchData()">CONSULTAR</button>
         </div>
-
-        <div id="profileCard" class="card-aero profile-strip hidden">
-            <div class="profile-main-info">
-                <small class="text-muted" id="lblCedula"></small>
-                <h2 id="lblNombre"></h2>
-                <div class="badge bg-primary mt-1" id="lblGradoFicha" style="font-family: 'Orbitron'; font-size: 0.7rem;"></div>
-            </div>
-            <div class="data-grid-aero">
-                <div class="data-item"><span class="data-label">Dependencia</span><span class="data-value" id="lblDep"></span></div>
-                <div class="data-item"><span class="data-label">Taller / Especialidad</span><span class="data-value" id="lblTallerFicha"></span></div>
-                <div class="data-item"><span class="data-label">Cargo Actual</span><span class="data-value" id="lblCargo"></span></div>
-                <div class="data-item"><span class="data-label">Nivel Inglés</span><span class="data-value text-center" id="lblIngles"></span></div>
-                <div class="data-item"><span class="data-label">Pericia</span><span class="data-value text-center" id="lblPericia"></span></div>
-            </div>
-        </div>
-
-        <div id="cursosContainer" class="hidden">
-            <div class="d-flex align-items-center gap-3 mb-2 px-1">
-                <h6 class="m-0 fw-bold small text-muted text-uppercase">Historial de Capacitación</h6>
-                <span id="countCursos" class="counter-badge">0</span>
-            </div>
-            <div class="card-aero p-0 overflow-hidden">
-                <table class="table-aero">
-                    <thead><tr><th>IDENTIFICADOR CURSO</th><th>FECHA REALIZACIÓN</th><th>FECHA VENCIMIENTO</th><th>ESTATUS OPERATIVO</th><th id="thAcciones"></th></tr></thead>
-                    <tbody id="dataTable"></tbody>
-                </table>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <div id="adminForm" class="card-aero border-primary border-2 hidden mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 id="adminFormTitle" class="fw-bold text-primary m-0">MODIFICAR REGISTRO OPERATIVO</h6>
-            <button class="btn-close" onclick="cancelEdit()"></button>
+    <!-- Ficha tripulante (layout 2 cols en wide) -->
+    <div id="profileCard" class="profile-card hidden mb-4">
+      <div class="profile-inner">
+        <div class="profile-top">
+          <div>
+            <div class="profile-id" id="lblCedula"></div>
+            <h2 class="profile-name" id="lblNombre"></h2>
+            <div class="profile-grado mt-2" id="lblGradoFicha"></div>
+          </div>
+          <!-- Botón editar perfil solo admin -->
+          <div id="btnEditProfileWrap" class="hidden">
+            <button class="btn-ghost" onclick="editPersonOnly(document.getElementById('searchCedula').value)"
+                    style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:rgba(255,255,255,.06)">
+              <i class="bi bi-pencil-square"></i> Editar perfil
+            </button>
+          </div>
         </div>
+        <div class="profile-fields">
+          <div class="pf-item"><div class="pf-label">Dependencia</div><div class="pf-value" id="lblDep"></div></div>
+          <div class="pf-item"><div class="pf-label">Taller / Especialidad</div><div class="pf-value" id="lblTallerFicha"></div></div>
+          <div class="pf-item"><div class="pf-label">Cargo</div><div class="pf-value" id="lblCargo"></div></div>
+          <div class="pf-item"><div class="pf-label">Nivel Inglés</div><div class="pf-value" id="lblIngles"></div></div>
+          <div class="pf-item"><div class="pf-label">Pericia</div><div class="pf-value" id="lblPericia"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de cursos -->
+    <div id="cursosContainer" class="hidden">
+      <div class="card">
+        <div class="section-head">
+          <span class="section-title"><i class="bi bi-journal-check"></i> HISTORIAL DE CAPACITACIÓN</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span id="countCursos" class="badge-count">0 cursos</span>
+            <button id="btnNuevoCurso" class="btn-ghost hidden" onclick="startNewCurso()">
+              <i class="bi bi-plus-lg"></i> Nuevo curso
+            </button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl-aero">
+            <thead>
+              <tr>
+                <th>CAPACITACIÓN</th>
+                <th>FECHA REALIZACIÓN</th>
+                <th>FECHA VENCIMIENTO</th>
+                <th>ESTATUS</th>
+                <th id="thAcciones" style="text-align:center" class="hidden">ACCIÓN</th>
+              </tr>
+            </thead>
+            <tbody id="dataTable">
+              <tr><td colspan="5" class="tbl-empty"><i class="bi bi-journal"></i>Sin registros.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin form cursos -->
+    <div id="adminFormCurso" class="admin-panel hidden">
+      <div class="admin-panel-header">
+        <span class="admin-panel-title" id="cursoFormTitle"><i class="bi bi-pencil-square"></i> REGISTRAR CAPACITACIÓN</span>
+        <button class="btn-close-panel" onclick="cancelEditCurso()">✕</button>
+      </div>
+      <div class="admin-panel-body">
         <input type="hidden" id="inId">
-        
-        <div class="admin-form-row mb-3">
-            <div><label class="form-label-custom">Identificación</label><input type="text" id="inCedula" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Grado</label><input type="text" id="inGrado" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Nombre Completo</label><input type="text" id="inNombre" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Dependencia</label><input type="text" id="inDep" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Taller</label><input type="text" id="inTaller" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Nivel Inglés</label><input type="text" id="inIngles" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Pericia</label><input type="text" id="inPericia" class="form-control form-control-custom"></div>
+        <div class="form-grid-course">
+          <div>
+            <label class="lbl">Nombre del curso / capacitación</label>
+            <input type="text" id="inCurso" class="input-aero" placeholder="Nombre completo del curso">
+          </div>
+          <div>
+            <label class="lbl">Fecha de realización</label>
+            <input type="date" id="inF1" class="input-aero">
+          </div>
+          <div>
+            <label class="lbl">Fecha de vencimiento</label>
+            <input type="date" id="inF2" class="input-aero">
+          </div>
+          <div class="btn-save-wrap" style="display:flex;gap:8px;align-items:flex-end">
+            <button class="btn-ghost" onclick="cancelEditCurso()">Cancelar</button>
+            <button class="btn-primary-aero" id="btnSaveCurso" onclick="saveCurso()">GUARDAR</button>
+          </div>
         </div>
-
-        <div id="rowCurso" class="admin-form-row border-top pt-3 align-items-end">
-            <div style="grid-column: span 2;"><label class="form-label-custom">Nombre de la Capacitación</label><input type="text" id="inCurso" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Fecha Realización</label><input type="date" id="inF1" class="form-control form-control-custom"></div>
-            <div><label class="form-label-custom">Fecha Vencimiento</label><input type="date" id="inF2" class="form-control form-control-custom"></div>
-            <div><button onclick="saveData()" class="btn btn-primary w-100 btn-aero">ACTUALIZAR CURSO</button></div>
-        </div>
-        
-        <div id="rowSoloPersona" class="hidden text-end pt-3">
-            <button onclick="saveOnlyPerson()" class="btn btn-success px-5 btn-aero">GUARDAR DATOS MAESTROS</button>
-        </div>
+        <input type="hidden" id="inCedula">
+      </div>
     </div>
-</main>
 
+  </div><!-- /sectionCursos -->
+</div><!-- /main-wrap -->
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
 <footer class="footer-aero">
-    <div class="container">
-        <div class="row g-4 align-items-center">
-            <div class="col-md-6 text-center text-md-start">
-                <span class="d-block fw-bold text-white mb-1">FUERZA AÉREA COLOMBIANA</span>
-                <span class="d-block text-muted">Comando Aéreo de Mantenimiento (CAMAN)</span>
-                <span class="d-block mt-2">© 2026 - Control de Entrenamiento Aeronáutico</span>
-            </div>
-            <div class="col-md-6 text-center text-md-end">
-                <div class="d-flex flex-column gap-2">
-                    <a href="https://wa.me/573128816469" target="_blank" class="text-decoration-none text-muted">
-                        <i class="bi bi-whatsapp text-success me-2"></i> SOPORTE TÉCNICO (WHATSAPP)
-                    </a>
-                    <a href="mailto:alucard8@gmail.com" class="text-decoration-none text-muted">
-                        <i class="bi bi-envelope-at text-primary me-2"></i> CANAL OFICIAL (EMAIL)
-                    </a>
-                </div>
-            </div>
-        </div>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
+      <div class="footer-brand-text">
+        <div class="footer-brand-name">Fuerza Aeroespacial Colombiana</div>
+        <div class="footer-brand-sub">CAMAN · Control de Entrenamiento Aeronáutico</div>
+      </div>
     </div>
+    <div class="footer-center">
+      <div class="footer-dot"></div>
+      <div class="footer-copy">© 2026 · INVERSIONES ARIPAR · GESTIÓN DOCUMENTAL</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://wa.me/573128816469" target="_blank" class="footer-link">
+        <i class="bi bi-whatsapp fl-icon wa"></i> SOPORTE WHATSAPP
+      </a>
+      <a href="/cdn-cgi/l/email-protection#a0c1ccd5c3c1d2c498e0c7cdc1c9cc8ec3cfcd" class="footer-link">
+        <i class="bi bi-envelope-at fl-icon em"></i> CANAL OFICIAL EMAIL
+      </a>
+    </div>
+  </div>
 </footer>
 
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
-    const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+/* ══════════════════════════════════════════════════════════
+   SUPABASE
+══════════════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let sessionUser = null; let isAdmin = false; let editingId = null;
+let sessionUser = null, isAdmin = false, editingId = null;
 
-    /* NAVEGACIÓN Y HISTORIAL */
-    function navigate(view, push = true) {
-        document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
-        if(view === 'menu') document.getElementById('menuSection').classList.remove('hidden');
-        if(view === 'personas') document.getElementById('sectionPersonas').classList.remove('hidden');
-        if(view === 'cursos') document.getElementById('sectionCursos').classList.remove('hidden');
-        if(push) history.pushState({view}, "", `?v=${view}`);
+/* ══════════════════════════════════════════════════════════
+   TEMA
+══════════════════════════════════════════════════════════ */
+(function () {
+  const saved = localStorage.getItem('caman_theme') || 'dark';
+  setTheme(saved);
+})();
+
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const ico = document.getElementById('themeIcon');
+  if (ico) ico.className = t === 'dark' ? 'bi bi-brightness-high-fill' : 'bi bi-moon-stars-fill';
+  try { localStorage.setItem('caman_theme', t); } catch(e){}
+}
+
+function toggleTheme() {
+  const curr = document.documentElement.getAttribute('data-theme');
+  setTheme(curr === 'dark' ? 'light' : 'dark');
+}
+
+/* ══════════════════════════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════════════════════════ */
+function navigate(view, push = true) {
+  ['authSection','menuSection','sectionPersonas','sectionCursos'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  if (view === 'menu')     document.getElementById('menuSection').classList.remove('hidden');
+  if (view === 'personas') document.getElementById('sectionPersonas').classList.remove('hidden');
+  if (view === 'cursos')   document.getElementById('sectionCursos').classList.remove('hidden');
+  if (push) history.pushState({view}, '', `?v=${view}`);
+  window.scrollTo(0, 0);
+}
+window.onpopstate = e => { if (e.state) navigate(e.state.view, false); };
+
+/* ══════════════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════════════ */
+async function signIn() {
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'VERIFICANDO…'; btn.disabled = true;
+  const { data, error } = await _supabase.auth.signInWithPassword({
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value
+  });
+  if (error) {
+    alert('Credenciales incorrectas.');
+    btn.textContent = 'INICIAR OPERACIÓN'; btn.disabled = false; return;
+  }
+  sessionUser = data.user;
+  await checkRole();
+}
+
+async function checkRole() {
+  const { data } = await _supabase.from('entrenamiento_usuarios')
+    .select('*').eq('email', sessionUser.email).single();
+  if (data) {
+    isAdmin = data.es_admin;
+    document.getElementById('userName').textContent  = data.nombre.toUpperCase();
+    document.getElementById('userRole').textContent  = isAdmin ? 'ADMINISTRADOR' : 'OPERADOR';
+    document.getElementById('userInfo').classList.remove('hidden');
+    document.getElementById('authSection').classList.add('hidden');
+    if (isAdmin) {
+      document.getElementById('btnNuevoAdmin').classList.remove('hidden');
+      document.getElementById('btnNuevoCurso').classList.remove('hidden');
+      document.getElementById('thAcciones').classList.remove('hidden');
+      document.getElementById('btnEditProfileWrap').classList.remove('hidden');
     }
-    window.onpopstate = (e) => { if(e.state) navigate(e.state.view, false); };
+    navigate('menu');
+  }
+}
 
-    /* AUTH */
-    async function signIn() {
-        const { data, error } = await _supabase.auth.signInWithPassword({
-            email: document.getElementById('email').value, password: document.getElementById('password').value
-        });
-        if(error) return alert("Credenciales de seguridad incorrectas.");
-        sessionUser = data.user; checkRole();
+function signOut() { _supabase.auth.signOut(); location.reload(); }
+
+/* ══════════════════════════════════════════════════════════
+   BÚSQUEDA DE PERSONAL
+══════════════════════════════════════════════════════════ */
+async function fetchAdvancedSearch() {
+  const term  = document.getElementById('advancedSearchInput').value.trim();
+  const tbody = document.getElementById('advancedDataTable');
+  const badge = document.getElementById('countPersonas');
+  tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><span class="spinner-sm"></span></td></tr>`;
+
+  let query = _supabase.from('entrenamiento_alumno').select('*', { count: 'exact' });
+  if (term) query = query.or(`nombre.ilike.%${term}%,cedula.ilike.%${term}%,dependencia.ilike.%${term}%,grado.ilike.%${term}%`);
+  const { data, count } = await query.order('nombre', { ascending: true });
+
+  badge.textContent = `${count || 0} tripulantes`;
+  badge.classList.remove('hidden');
+
+  if (!data || !data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty"><i class="bi bi-people"></i>Sin resultados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = '';
+  data.forEach(al => {
+    const tr = document.createElement('tr');
+    const editBtn = isAdmin
+      ? `<button class="btn-icon" onclick="editPersonOnly('${al.cedula}')" title="Editar persona"><i class="bi bi-pencil-square"></i></button>`
+      : '';
+    tr.innerHTML = `
+      <td style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--text-3)">${al.cedula}</td>
+      <td style="font-weight:600">${al.grado || '—'}</td>
+      <td style="font-weight:600;color:var(--text)">${al.nombre}</td>
+      <td>${al.dependencia || '—'}</td>
+      <td>${al.taller || '—'}</td>
+      <td style="text-align:center">
+        <div style="display:flex;gap:6px;justify-content:center">
+          ${editBtn}
+          <button class="btn-icon" onclick="goToCedula('${al.cedula}')" title="Ver log de entrenamiento" style="background:var(--accent-light);border-color:var(--accent);color:var(--accent)">
+            <i class="bi bi-journal-arrow-up"></i>
+          </button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function goToCedula(cedula) {
+  navigate('cursos');
+  document.getElementById('searchCedula').value = cedula;
+  fetchData();
+}
+
+/* ══════════════════════════════════════════════════════════
+   GESTIÓN DE CURSOS — FETCH
+══════════════════════════════════════════════════════════ */
+async function fetchData() {
+  const cedula = document.getElementById('searchCedula').value.trim();
+  if (!cedula) return;
+
+  // Perfil
+  const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
+  const profileCard = document.getElementById('profileCard');
+  if (al) {
+    document.getElementById('lblCedula').textContent    = `ID MILITAR: ${al.cedula}`;
+    document.getElementById('lblNombre').textContent    = al.nombre.toUpperCase();
+    document.getElementById('lblGradoFicha').textContent = al.grado || '—';
+    document.getElementById('lblDep').textContent       = al.dependencia || '—';
+    document.getElementById('lblTallerFicha').textContent = al.taller || '—';
+    document.getElementById('lblCargo').textContent     = al.cargo || '—';
+    document.getElementById('lblIngles').textContent    = al.nivel_ingles || '—';
+    document.getElementById('lblPericia').textContent   = al.nivel_pericia || '—';
+    profileCard.classList.remove('hidden');
+  } else {
+    profileCard.classList.add('hidden');
+  }
+
+  // Cursos
+  const tbody = document.getElementById('dataTable');
+  tbody.innerHTML = `<tr><td colspan="5" class="tbl-empty"><span class="spinner-sm"></span></td></tr>`;
+
+  const { data: cursos, count } = await _supabase.from('entrenamiento')
+    .select('*', { count: 'exact' })
+    .eq('cedula', cedula)
+    .order('fecha_vencimiento', { ascending: true });
+
+  document.getElementById('countCursos').textContent = `${count || 0} cursos`;
+  document.getElementById('cursosContainer').classList.remove('hidden');
+
+  if (!cursos || !cursos.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="tbl-empty"><i class="bi bi-journal"></i>No se encontraron cursos registrados.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = '';
+  const hoy = new Date();
+  const limite = new Date(); limite.setDate(hoy.getDate() + 90);
+
+  cursos.forEach(c => {
+    const tr = document.createElement('tr');
+    const fv = new Date(c.fecha_vencimiento);
+    let cls, txt, ico;
+    if (fv < hoy)       { cls = 'vencido'; txt = 'VENCIDO / NO OP';   ico = 'bi-x-octagon-fill'; }
+    else if (fv <= limite) { cls = 'alerta';  txt = 'ALERTA < 3 MESES'; ico = 'bi-exclamation-triangle-fill'; }
+    else                { cls = 'vigente'; txt = 'VIGENTE';           ico = 'bi-check-circle-fill'; }
+
+    const acc = isAdmin
+      ? `<td style="text-align:center">
+           <button class="btn-icon" onclick='startEditCurso(${JSON.stringify(c)})' title="Editar curso"><i class="bi bi-pencil-fill"></i></button>
+         </td>`
+      : '';
+
+    tr.innerHTML = `
+      <td style="font-weight:600;color:var(--text)">${c.curso}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:.8rem">${c.fecha_realizacion || '—'}</td>
+      <td style="font-family:'Share Tech Mono',monospace;font-size:.8rem;font-weight:600">${c.fecha_vencimiento}</td>
+      <td><span class="status-badge ${cls}"><i class="bi ${ico}"></i>${txt}</span></td>
+      ${acc}`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN CURSOS
+══════════════════════════════════════════════════════════ */
+function startNewCurso() {
+  editingId = null;
+  document.getElementById('inId').value = '';
+  document.getElementById('inCurso').value = '';
+  document.getElementById('inF1').value = '';
+  document.getElementById('inF2').value = '';
+  document.getElementById('inCedula').value = document.getElementById('searchCedula').value;
+  document.getElementById('cursoFormTitle').innerHTML = '<i class="bi bi-plus-circle-fill"></i> NUEVA CAPACITACIÓN';
+  document.getElementById('btnSaveCurso').textContent = 'GUARDAR';
+  document.getElementById('adminFormCurso').classList.remove('hidden');
+  document.getElementById('adminFormCurso').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function startEditCurso(c) {
+  editingId = c.id;
+  document.getElementById('inId').value    = c.id;
+  document.getElementById('inCedula').value = c.cedula;
+  document.getElementById('inCurso').value  = c.curso;
+  document.getElementById('inF1').value     = c.fecha_realizacion || '';
+  document.getElementById('inF2').value     = c.fecha_vencimiento || '';
+  document.getElementById('cursoFormTitle').innerHTML = '<i class="bi bi-pencil-square"></i> MODIFICAR CAPACITACIÓN';
+  document.getElementById('btnSaveCurso').textContent = 'ACTUALIZAR';
+  document.getElementById('adminFormCurso').classList.remove('hidden');
+  document.getElementById('adminFormCurso').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEditCurso() {
+  editingId = null;
+  document.getElementById('adminFormCurso').classList.add('hidden');
+}
+
+async function saveCurso() {
+  const payload = {
+    cedula:            document.getElementById('inCedula').value,
+    curso:             document.getElementById('inCurso').value,
+    fecha_realizacion: document.getElementById('inF1').value,
+    fecha_vencimiento: document.getElementById('inF2').value,
+  };
+  if (editingId) {
+    await _supabase.from('entrenamiento').update(payload).eq('id', editingId);
+  } else {
+    await _supabase.from('entrenamiento').insert([payload]);
+  }
+  cancelEditCurso();
+  fetchData();
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN PERSONAS
+══════════════════════════════════════════════════════════ */
+function startNewPerson() {
+  ['pCedula','pGrado','pNombre','pDep','pTaller','pCargo','pIngles','pPericia'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('personaFormTitle').innerHTML = '<i class="bi bi-person-plus-fill"></i> NUEVO REGISTRO DE PERSONAL';
+  document.getElementById('adminFormPersona').classList.remove('hidden');
+  document.getElementById('adminFormPersona').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function editPersonOnly(cedula) {
+  const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
+  if (al) {
+    document.getElementById('pCedula').value  = al.cedula;
+    document.getElementById('pGrado').value   = al.grado   || '';
+    document.getElementById('pNombre').value  = al.nombre  || '';
+    document.getElementById('pDep').value     = al.dependencia || '';
+    document.getElementById('pTaller').value  = al.taller  || '';
+    document.getElementById('pCargo').value   = al.cargo   || '';
+    document.getElementById('pIngles').value  = al.nivel_ingles  || '';
+    document.getElementById('pPericia').value = al.nivel_pericia || '';
+    document.getElementById('personaFormTitle').innerHTML = '<i class="bi bi-person-gear"></i> MODIFICAR DATOS DE PERSONAL';
+
+    // Mostrar en la sección correcta
+    const inPersonas = !document.getElementById('sectionPersonas').classList.contains('hidden');
+    const formEl = document.getElementById('adminFormPersona');
+    formEl.classList.remove('hidden');
+    formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Si estamos en cursos, mover el form al DOM de cursos
+    if (!inPersonas) {
+      document.getElementById('sectionCursos').appendChild(formEl);
     }
+  }
+}
 
-    async function checkRole() {
-        const { data } = await _supabase.from('entrenamiento_usuarios').select('*').eq('email', sessionUser.email).single();
-        if(data) {
-            isAdmin = data.es_admin;
-            document.getElementById('userName').innerText = `ID: ${data.nombre.toUpperCase()} [${isAdmin ? 'ADM' : 'OP'}]`;
-            if(isAdmin) document.getElementById('btnNuevoAdmin').classList.remove('hidden');
-            navigate('menu'); document.getElementById('userInfo').classList.remove('hidden');
-            document.getElementById('authSection').classList.add('hidden');
-        }
-    }
+function cancelEditPersona() {
+  document.getElementById('adminFormPersona').classList.add('hidden');
+  // Regresar al DOM de personas si estaba movido
+  document.getElementById('sectionPersonas').appendChild(document.getElementById('adminFormPersona'));
+}
 
-    function signOut() { _supabase.auth.signOut(); location.reload(); }
+async function savePersona() {
+  const p = {
+    cedula:       document.getElementById('pCedula').value,
+    grado:        document.getElementById('pGrado').value,
+    nombre:       document.getElementById('pNombre').value,
+    dependencia:  document.getElementById('pDep').value,
+    taller:       document.getElementById('pTaller').value,
+    cargo:        document.getElementById('pCargo').value,
+    nivel_ingles: document.getElementById('pIngles').value,
+    nivel_pericia:document.getElementById('pPericia').value,
+  };
+  await _supabase.from('entrenamiento_alumno').upsert([p]);
+  cancelEditPersona();
+  fetchAdvancedSearch();
+}
 
-    /* BÚSQUEDA GLOBAL */
-    async function fetchAdvancedSearch() {
-        const term = document.getElementById('advancedSearchInput').value.trim();
-        const tbody = document.getElementById('advancedDataTable');
-        const countSpan = document.getElementById('countPersonas');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
-        
-        let query = _supabase.from('entrenamiento_alumno').select('*', { count: 'exact' });
-        if(term) query = query.or(`nombre.ilike.%${term}%,cedula.ilike.%${term}%,dependencia.ilike.%${term}%,grado.ilike.%${term}%`);
-        const { data, count } = await query.order('nombre', {ascending: true});
-        
-        countSpan.innerText = `${count || 0} TRIPULANTES`;
-        countSpan.classList.remove('hidden');
-        tbody.innerHTML = '';
-        data.forEach(al => {
-            const tr = document.createElement('tr');
-            const edit = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0 me-1" onclick="editPersonOnly('${al.cedula}')"><i class="bi bi-pencil-square"></i></button>` : '';
-            tr.innerHTML = `<td>${al.cedula}</td><td class="fw-bold">${al.grado || ''}</td><td class="text-uppercase">${al.nombre}</td><td>${al.dependencia || ''}</td>
-            <td class="text-center">${edit}<button class="btn btn-sm btn-primary py-0 px-3" onclick="goToCedula('${al.cedula}')">ABRIR LOG</button></td>`;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function goToCedula(cedula) {
-        navigate('cursos'); document.getElementById('searchCedula').value = cedula; fetchData();
-    }
-
-    /* GESTIÓN DE CURSOS */
-    async function fetchData() {
-        const cedula = document.getElementById('searchCedula').value.trim();
-        if(!cedula) return;
-    
-        // Cargar datos del alumno (Ficha)
-        const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
-        if(al) {
-            document.getElementById('lblCedula').innerText = `ID MILITAR: ${al.cedula}`;
-            document.getElementById('lblNombre').innerText = al.nombre.toUpperCase();
-            document.getElementById('lblGradoFicha').innerText = al.grado || '---';
-            document.getElementById('lblDep').innerText = al.dependencia || '---';
-            document.getElementById('lblTallerFicha').innerText = al.taller || '---';
-            document.getElementById('lblCargo').innerText = al.cargo || '---';
-            document.getElementById('lblIngles').innerText = al.nivel_ingles || '---';
-            document.getElementById('lblPericia').innerText = al.nivel_pericia || '---';
-            document.getElementById('profileCard').classList.remove('hidden');
-        }
-    
-        // Cargar Cursos
-        const { data: cursos, count } = await _supabase.from('entrenamiento')
-            .select('*', { count: 'exact' })
-            .eq('cedula', cedula)
-            .order('fecha_vencimiento', {ascending: true});
-    
-        const tbody = document.getElementById('dataTable'); 
-        document.getElementById('countCursos').innerText = count || 0;
-        tbody.innerHTML = '';
-        document.getElementById('cursosContainer').classList.remove('hidden');
-    
-        const hoy = new Date();
-        // Definimos el margen de 3 meses (90 días)
-        const fechaLimiteAlerta = new Date();
-        fechaLimiteAlerta.setDate(hoy.getDate() + 90);
-    
-        cursos.forEach(c => {
-            const tr = document.createElement('tr');
-            const fechaVence = new Date(c.fecha_vencimiento);
-            
-            let claseStatus = '';
-            let textoStatus = '';
-            let iconStatus = '';
-    
-            if (fechaVence < hoy) {
-                // ROJO: Ya se pasó la fecha
-                claseStatus = 'status-vencido';
-                textoStatus = 'VENCIDO / NO OP';
-                iconStatus = 'bi-x-octagon-fill';
-            } else if (fechaVence <= fechaLimiteAlerta) {
-                // AMARILLO: Falta menos de o justo 90 días
-                claseStatus = 'status-alerta';
-                textoStatus = 'ALERTA < 3 MESES';
-                iconStatus = 'bi-exclamation-triangle-fill';
-            } else {
-                // VERDE: Todo en orden
-                claseStatus = 'status-vigente';
-                textoStatus = 'VIGENTE';
-                iconStatus = 'bi-check-circle-fill';
-            }
-    
-            const acc = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
-            
-            tr.innerHTML = `
-                <td class="fw-bold text-primary">${c.curso}</td>
-                <td>${c.fecha_realizacion || '---'}</td>
-                <td class="fw-bold">${c.fecha_vencimiento}</td>
-                <td class="text-center">
-                    <span class="${claseStatus}">
-                        <i class="bi ${iconStatus} me-2"></i>${textoStatus}
-                    </span>
-                </td>
-                <td class="text-center">${acc}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function startNewPerson() {
-        cancelEdit(); document.getElementById('rowCurso').classList.add('hidden');
-        document.getElementById('rowSoloPersona').classList.remove('hidden');
-        document.getElementById('adminForm').classList.remove('hidden');
-        document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
-    }
-
-    async function editPersonOnly(cedula) {
-        const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
-        if(al) {
-            document.getElementById('inCedula').value = al.cedula; document.getElementById('inGrado').value = al.grado || '';
-            document.getElementById('inNombre').value = al.nombre; document.getElementById('inDep').value = al.dependencia || '';
-            document.getElementById('inTaller').value = al.taller || ''; document.getElementById('inIngles').value = al.nivel_ingles || ''; 
-            document.getElementById('inPericia').value = al.nivel_pericia || '';
-            document.getElementById('rowCurso').classList.add('hidden'); document.getElementById('rowSoloPersona').classList.remove('hidden');
-            document.getElementById('adminForm').classList.remove('hidden');
-            document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
-        }
-    }
-
-    async function saveOnlyPerson() {
-        const p = {
-            cedula: document.getElementById('inCedula').value, grado: document.getElementById('inGrado').value,
-            nombre: document.getElementById('inNombre').value, dependencia: document.getElementById('inDep').value,
-            taller: document.getElementById('inTaller').value, nivel_ingles: document.getElementById('inIngles').value, 
-            nivel_pericia: document.getElementById('inPericia').value
-        };
-        await _supabase.from('entrenamiento_alumno').upsert([p]); cancelEdit(); fetchAdvancedSearch();
-    }
-
-    function startEditCurso(c) {
-        editingId = c.id; document.getElementById('inId').value = c.id;
-        document.getElementById('inCedula').value = c.cedula; document.getElementById('inCurso').value = c.curso;
-        document.getElementById('inF1').value = c.fecha_realizacion; document.getElementById('inF2').value = c.fecha_vencimiento;
-        document.getElementById('rowCurso').classList.remove('hidden'); document.getElementById('rowSoloPersona').classList.add('hidden');
-        document.getElementById('adminForm').classList.remove('hidden');
-        document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
-    }
-
-    async function saveData() {
-        const c = { cedula: document.getElementById('inCedula').value, curso: document.getElementById('inCurso').value, fecha_realizacion: document.getElementById('inF1').value, fecha_vencimiento: document.getElementById('inF2').value };
-        if(editingId) await _supabase.from('entrenamiento').update(c).eq('id', editingId);
-        else await _supabase.from('entrenamiento').insert([c]);
-        cancelEdit(); fetchData();
-    }
-
-    function cancelEdit() { editingId = null; document.getElementById('adminForm').classList.add('hidden'); }
-
-    function toggleTheme() {
-        const curr = document.documentElement.getAttribute('data-theme');
-        const next = curr === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        document.getElementById('themeIcon').className = next === 'dark' ? 'bi bi-moon-stars-fill' : 'bi bi-brightness-high-fill';
-    }
-
-    document.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
-            if(document.activeElement.id === 'password') signIn();
-            if(document.activeElement.id === 'searchCedula') fetchData();
-            if(document.activeElement.id === 'advancedSearchInput') fetchAdvancedSearch();
-        }
-    });
+/* ══════════════════════════════════════════════════════════
+   TECLADO
+══════════════════════════════════════════════════════════ */
+document.addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    if (document.activeElement.id === 'password')        signIn();
+    if (document.activeElement.id === 'searchCedula')    fetchData();
+    if (document.activeElement.id === 'advancedSearchInput') fetchAdvancedSearch();
+  }
+});
 </script>
 </body>
 </html>
