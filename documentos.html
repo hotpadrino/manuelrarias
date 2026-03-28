@@ -14,7 +14,7 @@
             --gris-fondo: #f4f7f9;
         }
         
-        /* ESTRUCTURA BASE PARA FOOTER AL FONDO */
+        /* ESTRUCTURA BASE PARA FOOTER AL FONDO (CORREGIDA) */
         body { 
             background-color: var(--gris-fondo); 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
@@ -22,18 +22,22 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            margin: 0; /* Asegura que no haya márgenes ocultos */
         }
 
         .main-content {
             flex-grow: 1; /* Empuja el footer hacia abajo */
+            width: 100%;
+            padding-bottom: 40px; /* Da un poco de respiro antes del footer */
         }
         
-        /* HEADER FIJO Y MODERNO */
+        /* HEADER FIJO */
         .header-caman {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            right: 0; 
+            box-sizing: border-box; 
             background-color: var(--azul-fac);
             color: white;
             padding: 12px 24px;
@@ -48,6 +52,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            min-width: 0;
         }
 
         .header-caman img { height: 50px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
@@ -57,19 +62,28 @@
             font-size: 1.25rem; 
             margin: 0; 
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
+        /* SECCIÓN DE USUARIO */
         .user-section {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 4px;
+            flex-shrink: 0;
+            max-width: 45%; 
         }
 
         #userName {
             font-size: 0.85rem;
             font-weight: 600;
             color: #e3f2fd;
+            width: 100%;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; 
         }
 
         .btn-logout {
@@ -78,6 +92,7 @@
             border-radius: 20px;
             font-weight: bold;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         /* TARJETAS MODERNAS */
@@ -89,7 +104,7 @@
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        /* DISEÑO DE TABLA ACTUALIZADO */
+        /* DISEÑO DE TABLA */
         .table-custom {
             margin-bottom: 0;
             border-collapse: separate;
@@ -106,13 +121,7 @@
             padding: 16px;
         }
 
-        .table-custom tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
-        .table-custom tbody tr:hover {
-            background-color: #f8fafc;
-        }
+        .table-custom tbody tr:hover { background-color: #f8fafc; }
 
         .table-custom tbody td {
             padding: 16px;
@@ -121,35 +130,22 @@
             color: #2d3748;
         }
 
-        /* ALERTAS DE COLOR SUAVIZADAS (Modernas) */
-        .vence-3-meses { 
-            background-color: rgba(255, 193, 7, 0.05) !important; 
-        }
-        .vence-3-meses td:first-child {
-            border-left: 6px solid #ffc107;
-        }
+        .vence-3-meses { background-color: rgba(255, 193, 7, 0.05) !important; }
+        .vence-3-meses td:first-child { border-left: 6px solid #ffc107; }
 
-        .vencido { 
-            background-color: rgba(220, 53, 69, 0.05) !important; 
-        }
-        .vencido td:first-child {
-            border-left: 6px solid #dc3545;
-        }
+        .vencido { background-color: rgba(220, 53, 69, 0.05) !important; }
+        .vencido td:first-child { border-left: 6px solid #dc3545; }
 
-        .badge-status {
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
+        .badge-status { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 600; }
 
-        /* FOOTER ESTILO INVERSIONES ARIPAR */
+        /* FOOTER ESTILO INVERSIONES ARIPAR (CORREGIDO) */
         .footer-aripar {
             background-color: #1a202c;
             color: #a0aec0;
             padding: 30px 0;
             border-top: 4px solid var(--azul-fac);
-            margin-top: 40px;
+            width: 100%; /* Forzamos a que ocupe todo el ancho */
+            margin-top: auto; /* La magia de Flexbox: empuja el footer hasta el fondo exacto */
         }
 
         .footer-content {
@@ -159,16 +155,9 @@
             gap: 15px;
         }
 
-        .footer-content p {
-            margin: 0;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-        }
+        .footer-content p { margin: 0; font-size: 0.9rem; letter-spacing: 0.5px; }
 
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
+        .footer-links { display: flex; gap: 20px; }
 
         .footer-links a {
             color: #e2e8f0;
@@ -188,7 +177,7 @@
 
         /* RESPONSIVO */
         @media (max-width: 768px) {
-            .header-title { display: none; } /* Oculta texto en móviles para priorizar logo y usuario */
+            .header-title { display: none; } 
             .footer-content { text-align: center; }
             .footer-links { flex-direction: column; gap: 10px; width: 100%; }
             .footer-links a { justify-content: center; }
@@ -322,7 +311,10 @@
             document.getElementById('userName').innerHTML = `${icono} ${data.nombre} (${isAdmin ? 'Admin' : 'Usuario'})`;
             renderUI();
         } else {
-            console.error("Error al cargar perfil.");
+            console.error("Error al cargar perfil o permisos RLS.");
+            const btn = document.getElementById('loginBtn');
+            btn.innerHTML = 'Entrar';
+            btn.disabled = false;
         }
     }
 
@@ -399,7 +391,6 @@
         }
     }
 
-    // Lógica mejorada para devolver estilos y textos
     function getStatusInfo(fecha) {
         const hoy = new Date();
         const vence = new Date(fecha);
