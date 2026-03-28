@@ -337,29 +337,50 @@
     /* GESTIÓN DE CURSOS */
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value.trim();
-        const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
-        if(al) {
-            document.getElementById('lblCedula').innerText = `ID MILITAR: ${al.cedula}`;
-            document.getElementById('lblNombre').innerText = al.nombre.toUpperCase();
-            document.getElementById('lblGradoFicha').innerText = al.grado || '---';
-            document.getElementById('lblDep').innerText = al.dependencia || '---';
-            document.getElementById('lblTallerFicha').innerText = al.taller || '---';
-            document.getElementById('lblCargo').innerText = al.cargo || '---';
-            document.getElementById('lblIngles').innerText = al.nivel_ingles || '---';
-            document.getElementById('lblPericia').innerText = al.nivel_pericia || '---';
-            document.getElementById('profileCard').classList.remove('hidden');
-        }
-        const { data: cursos, count } = await _supabase.from('entrenamiento').select('*', { count: 'exact' }).eq('cedula', cedula).order('fecha_vencimiento', {ascending: true});
+        if(!cedula) return;
+    
+        // ... (Mantén aquí tu código existente para cargar la ficha del alumno) ...
+    
+        const { data: cursos, count } = await _supabase.from('entrenamiento')
+            .select('*', { count: 'exact' })
+            .eq('cedula', cedula)
+            .order('fecha_vencimiento', {ascending: true});
+    
         const tbody = document.getElementById('dataTable'); 
         document.getElementById('countCursos').innerText = count || 0;
         tbody.innerHTML = '';
         document.getElementById('cursosContainer').classList.remove('hidden');
+    
+        const hoy = new Date();
+        const tresMesesEnMS = 90 * 24 * 60 * 60 * 1000; // 90 días en milisegundos
+    
         cursos.forEach(c => {
             const tr = document.createElement('tr');
-            const vencido = new Date(c.fecha_vencimiento) < new Date();
-            const status = vencido ? '<span class="badge bg-danger">VENCIDO / NO OPERATIVO</span>' : '<span class="badge bg-success">VIGENTE</span>';
+            const fechaVence = new Date(c.fecha_vencimiento);
+            const diferencia = fechaVence - hoy;
+    
+            let statusHTML = '';
+            
+            if (diferencia < 0) {
+                // CASO 1: VENCIDO (ROJO)
+                statusHTML = '<span class="badge bg-danger text-white"><i class="bi bi-x-octagon me-1"></i> VENCIDO / NO OP</span>';
+            } else if (diferencia <= tresMesesEnMS) {
+                // CASO 2: PRÓXIMO A VENCER (AMARILLO) - Menos de 3 meses
+                statusHTML = '<span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i> ALERTA < 3 MESES</span>';
+            } else {
+                // CASO 3: VIGENTE (VERDE)
+                statusHTML = '<span class="badge bg-success text-white"><i class="bi bi-check-circle me-1"></i> VIGENTE</span>';
+            }
+    
             const acc = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
-            tr.innerHTML = `<td class="fw-bold text-primary">${c.curso}</td><td>${c.fecha_realizacion || ''}</td><td>${c.fecha_vencimiento}</td><td class="text-center">${status}</td><td class="text-center">${acc}</td>`;
+            
+            tr.innerHTML = `
+                <td class="fw-bold text-primary">${c.curso}</td>
+                <td>${c.fecha_realizacion || '---'}</td>
+                <td class="${diferencia <= tresMesesEnMS ? 'fw-bold' : ''}">${c.fecha_vencimiento}</td>
+                <td class="text-center">${statusHTML}</td>
+                <td class="text-center">${acc}</td>
+            `;
             tbody.appendChild(tr);
         });
     }
