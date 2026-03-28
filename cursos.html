@@ -14,10 +14,10 @@
         body { 
             background-color: #f4f7f9; 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            padding-top: 90px; /* Espacio para el header fijo */
+            padding-top: 100px; 
         }
         
-        /* HEADER RESPONSIVO */
+        /* HEADER FIJO Y AJUSTADO */
         .header-caman {
             position: fixed;
             top: 0;
@@ -25,68 +25,63 @@
             width: 100%;
             background-color: var(--azul-fac);
             color: white;
-            padding: 8px 15px;
+            padding: 10px 20px;
             z-index: 1050;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-wrap: nowrap; /* Evita que se rompa en dos filas */
         }
 
         .brand-section {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-shrink: 1;
-            min-width: 0; /* Permite que el texto se trunque si es muy pequeño */
+            gap: 12px;
         }
 
-        .header-caman img { 
-            height: 45px; 
-            width: auto;
-        }
+        .header-caman img { height: 55px; width: auto; }
 
         .header-title { 
-            font-weight: 700; 
-            font-size: 1.1rem; 
+            font-weight: 800; 
+            font-size: 1.3rem; 
             margin: 0; 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            letter-spacing: 0.5px;
         }
 
+        /* SECCIÓN DE USUARIO: NOMBRE ARRIBA, BOTÓN ABAJO */
         .user-section {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
         }
 
         #userName {
-            font-size: 0.85rem;
-            max-width: 120px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-size: 0.9rem;
+            font-weight: 600;
             white-space: nowrap;
         }
 
-        /* AJUSTES PARA CELULARES */
-        @media (max-width: 576px) {
-            .header-title { font-size: 0.9rem; }
-            #userName { display: none; } /* Ocultar nombre en pantallas muy pequeñas para dar espacio */
-            body { padding-top: 80px; }
-            .container { padding-left: 10px; padding-right: 10px; }
-            .table { font-size: 0.85rem; }
+        .btn-logout {
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
-        /* ESTADOS DE TABLA */
-        .vence-3-meses { background-color: #fff3cd !important; border-left: 5px solid #ffc107; }
-        .vencido { background-color: #f8d7da !important; border-left: 5px solid #dc3545; }
+        /* AJUSTES MÓVILES */
+        @media (max-width: 576px) {
+            .header-title { font-size: 0.9rem; }
+            .header-caman img { height: 40px; }
+            #userName { font-size: 0.75rem; }
+            body { padding-top: 90px; }
+        }
+
+        .vence-3-meses { background-color: #fff3cd !important; border-left: 6px solid #ffc107; }
+        .vencido { background-color: #f8d7da !important; border-left: 6px solid #dc3545; }
         
-        .card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .hidden { display: none; }
-        .login-box { max-width: 380px; margin: 40px auto; }
     </style>
 </head>
 <body>
@@ -94,50 +89,51 @@
 <header class="header-caman">
     <div class="brand-section">
         <img src="https://www.fac.mil.co/sites/default/files/gallery/unidadesaereas/caman-logo.png" alt="CAMAN">
-        <h1 class="header-title">CONTROL ENTRENAMIENTO</h1>
+        <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
     </div>
     
     <div id="userInfo" class="user-section hidden">
-        <span id="userName" class="badge bg-light text-dark">Cargando...</span>
-        <button onclick="signOut()" class="btn btn-danger btn-sm py-1 px-2">Salir</button>
+        <span id="userName">Cargando...</span>
+        <button onclick="signOut()" class="btn btn-danger btn-logout">Salir</button>
     </div>
 </header>
 
 <div class="container mb-5">
-    <div id="authSection" class="card login-box p-4 mt-5">
-        <h5 class="text-center mb-4 fw-bold">Ingreso de Personal</h5>
-        <input type="email" id="email" class="form-control mb-3" placeholder="Correo electrónico">
+    <div id="authSection" class="card mx-auto p-4 mt-5" style="max-width: 400px;">
+        <h5 class="text-center mb-4 fw-bold text-primary">Ingreso al Sistema</h5>
+        <input type="email" id="email" class="form-control mb-3" placeholder="Correo institucional">
         <input type="password" id="password" class="form-control mb-3" placeholder="Contraseña">
-        <button onclick="signIn()" id="loginBtn" class="btn btn-primary w-100 fw-bold">ENTRAR</button>
+        <button onclick="signIn()" id="loginBtn" class="btn btn-primary w-100 fw-bold">INICIAR SESIÓN</button>
     </div>
 
     <div id="mainSection" class="hidden">
-        <div class="card p-3 mb-3 mt-2">
+        <div class="card p-3 mb-3 border-0 shadow-sm">
+            <label class="form-label fw-bold small text-muted">CONSULTA POR CÉDULA</label>
             <div class="input-group">
-                <input type="text" id="searchCedula" class="form-control" placeholder="Número de Cédula">
-                <button onclick="fetchData()" class="btn btn-dark">Consultar</button>
+                <input type="text" id="searchCedula" class="form-control" placeholder="Ej: 1111">
+                <button onclick="fetchData()" class="btn btn-dark px-4">Consultar</button>
             </div>
         </div>
 
-        <div id="adminForm" class="card p-3 mb-3 border-primary hidden">
-            <h6 class="text-primary fw-bold mb-3">Nuevo Registro</h6>
+        <div id="adminForm" class="card p-4 mb-4 border-primary hidden shadow-sm">
+            <h6 class="text-primary fw-bold mb-3">Registrar Nuevo Curso</h6>
             <div class="row g-2">
                 <div class="col-6 col-md-2"><input type="text" id="inCedula" class="form-control" placeholder="Cédula"></div>
                 <div class="col-6 col-md-4"><input type="text" id="inCurso" class="form-control" placeholder="Curso"></div>
-                <div class="col-6 col-md-2"><input type="date" id="inFecha" class="form-control" title="Realización"></div>
-                <div class="col-6 col-md-2"><input type="date" id="inVence" class="form-control" title="Vencimiento"></div>
-                <div class="col-12 col-md-2"><button onclick="upsertData()" class="btn btn-success w-100">Guardar</button></div>
+                <div class="col-6 col-md-2"><input type="date" id="inFecha" class="form-control"></div>
+                <div class="col-6 col-md-2"><input type="date" id="inVence" class="form-control"></div>
+                <div class="col-12 col-md-2"><button onclick="upsertData()" class="btn btn-success w-100 fw-bold">GUARDAR</button></div>
             </div>
         </div>
 
-        <div class="table-responsive card p-0">
-            <table class="table table-hover mb-0">
+        <div class="table-responsive card p-0 border-0 shadow-sm">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-dark">
                     <tr>
-                        <th>Cédula</th>
+                        <th class="ps-3">Cédula</th>
                         <th>Curso</th>
-                        <th>Vence</th>
-                        <th id="thAcciones" class="hidden text-center">X</th>
+                        <th>Vencimiento</th>
+                        <th id="thAcciones" class="hidden text-center">Eliminar</th>
                     </tr>
                 </thead>
                 <tbody id="dataTable"></tbody>
@@ -171,7 +167,6 @@
     }
 
     async function checkUserRole() {
-        // TABLA ACTUALIZADA: entrenamientos_usuarios
         const { data, error } = await _supabase
             .from('entrenamientos_usuarios')
             .select('es_admin, nombre')
@@ -180,11 +175,11 @@
 
         if (data) {
             isAdmin = data.es_admin;
-            document.getElementById('userName').innerText = data.nombre;
+            const tipoUsuario = isAdmin ? "Administrador" : "Usuario";
+            document.getElementById('userName').innerText = `${data.nombre} (${tipoUsuario})`;
             renderUI();
-        } else if (error) {
-            console.error("Error 400/500:", error.message);
-            alert("Error al cargar perfil. Revise permisos RLS.");
+        } else {
+            console.error("Error al cargar perfil o usuario no existe en tabla.");
         }
     }
 
@@ -219,9 +214,9 @@
             if (alertStatus) tr.className = alertStatus;
 
             tr.innerHTML = `
-                <td>${row.cedula}</td>
-                <td class="small fw-bold">${row.curso}</td>
-                <td class="small">${row.fecha_vencimiento}</td>
+                <td class="ps-3">${row.cedula}</td>
+                <td class="fw-bold">${row.curso}</td>
+                <td>${row.fecha_vencimiento}</td>
                 ${isAdmin ? `<td class="text-center"><button class="btn btn-outline-danger btn-sm py-0" onclick="deleteRecord('${row.id}')">&times;</button></td>` : ''}
             `;
             tbody.appendChild(tr);
@@ -236,11 +231,11 @@
             fecha_vencimiento: document.getElementById('inVence').value
         };
         const { error } = await _supabase.from('entrenamientos').insert([payload]);
-        if (error) alert(error.message); else { fetchData(); alert("Registrado"); }
+        if (error) alert(error.message); else { fetchData(); alert("Registro exitoso."); }
     }
 
     async function deleteRecord(id) {
-        if (confirm("¿Eliminar?")) {
+        if (confirm("¿Está seguro de eliminar este registro?")) {
             await _supabase.from('entrenamientos').delete().eq('id', id);
             fetchData();
         }
