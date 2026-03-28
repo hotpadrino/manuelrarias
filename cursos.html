@@ -9,9 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ══════════════════════════════════════════════════
-           VARIABLES Y TEMAS
-        ══════════════════════════════════════════════════ */
         :root, [data-theme="light"] {
             --t-bg: #f4f7f9; --t-card: #ffffff; --t-text: #2d3748; --t-text-muted: #718096;
             --t-border: #e2e8f0; --t-input-bg: #f8fafc; --t-accent: #2d7dd2; --t-h1: #003366;
@@ -30,11 +27,7 @@
         .header-caman { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, var(--t-h1) 0%, var(--t-h2) 100%); border-bottom: 2px solid var(--t-hborder); padding: 10px 20px; z-index: 1050; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .header-caman img { height:44px; }
         .header-title { font-family:'Orbitron', sans-serif; font-weight:700; font-size:1rem; margin:0; letter-spacing:2px; color:var(--t-header-text); }
-        
-        /* Corrección de color de usuario en header */
-        #userName { color: #ffffff !important; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-
-        .btn-theme { background: transparent; border: 1px solid var(--t-accent); color: var(--t-accent); border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #userName { color: #ffffff !important; font-family: 'Share Tech Mono', monospace; font-size: 0.85rem; }
 
         /* MENU CARDS */
         .menu-card { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 8px; transition: all .3s; cursor: pointer; height: 100%; }
@@ -46,23 +39,22 @@
         .btn-primary-custom { background: var(--t-accent); border: none; color: #fff; font-family:'Orbitron', sans-serif; border-radius: 3px; transition: 0.2s; }
         .form-label-custom { font-family:'Share Tech Mono', monospace; font-size:0.65rem; color: var(--t-text-muted); text-transform: uppercase; margin-bottom: 2px; display: block; }
 
-        /* FICHA HORIZONTAL COMPACTA */
-        .profile-card { background: var(--t-input-bg); border-left: 4px solid var(--t-accent); padding: 12px 20px; }
-        .profile-data-box { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 4px; padding: 4px 10px; flex: 1; min-width: 100px; }
-        .profile-data-label { font-family: 'Share Tech Mono', monospace; font-size: 0.55rem; color: var(--t-text-muted); text-transform: uppercase; }
-        .profile-data-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.05rem; }
+        /* FICHA HORIZONTAL */
+        .profile-card { background: var(--t-input-bg); border-left: 5px solid var(--t-accent); padding: 15px 25px; }
+        .profile-data-box { background: var(--t-card); border: 1px solid var(--t-border); border-radius: 4px; padding: 5px 12px; flex: 1; }
+        .profile-data-label { font-family: 'Share Tech Mono', monospace; font-size: 0.6rem; color: var(--t-text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .profile-data-value { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--t-text); }
+
+        /* CONTADORES */
+        .result-counter { font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--t-accent); background: rgba(45, 125, 210, 0.1); padding: 2px 10px; border-radius: 20px; border: 1px solid var(--t-accent); }
 
         /* TABLAS */
         .table-custom { width:100%; border-collapse: separate; border-spacing: 0; }
         .table-custom thead th { color: var(--t-text-muted); font-family:'Share Tech Mono', monospace; font-size:.7rem; text-transform:uppercase; border-bottom: 2px solid var(--t-border); padding:10px 15px; }
-        .table-custom tbody td { padding:10px 15px; border-bottom:1px solid var(--t-border); color: var(--t-text); font-size: 0.9rem; }
+        .table-custom tbody td { padding:10px 15px; border-bottom:1px solid var(--t-border); color: var(--t-text); font-size: 0.95rem; }
 
         .hidden { display:none!important; }
-
-        /* FOOTER DINÁMICO */
         .footer-aero { background: #04080e; border-top: 1px solid #1f2d3d; padding: 20px 0; margin-top: auto; color: #8fa3b8; font-family: 'Share Tech Mono'; }
-        .footer-link { color: #8fa3b8; text-decoration: none; transition: 0.2s; font-size: 0.8rem; }
-        .footer-link:hover { color: var(--t-accent); }
     </style>
 </head>
 <body>
@@ -73,20 +65,20 @@
         <h1 class="header-title">CONTROL DE ENTRENAMIENTO</h1>
     </div>
     <div class="d-flex align-items-center gap-3">
-        <button class="btn-theme" onclick="toggleTheme()"><i class="bi bi-sun-fill" id="themeIcon"></i></button>
+        <button class="btn btn-sm btn-outline-info rounded-circle" onclick="toggleTheme()"><i class="bi bi-sun-fill" id="themeIcon"></i></button>
         <div id="userInfo" class="hidden text-end">
             <span id="userName" class="d-block fw-bold mb-1"></span>
-            <button onclick="signOut()" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.6rem;">CERRAR SESIÓN</button>
+            <button onclick="signOut()" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.6rem;">SALIR</button>
         </div>
     </div>
 </header>
 
 <main class="main-content container mt-4">
     <div id="authSection" class="card-custom mx-auto p-5 mt-5" style="max-width:400px;">
-        <div class="text-center mb-4"><i class="bi bi-shield-lock-fill text-accent fs-1"></i><h5 class="mt-2 fw-bold">INGRESO AL SISTEMA</h5></div>
+        <div class="text-center mb-4"><i class="bi bi-shield-lock-fill text-accent fs-1"></i><h5 class="mt-2 fw-bold">ACCESO SEGURO</h5></div>
         <input type="email" id="email" class="form-control mb-3 form-control-custom" placeholder="Email institucional">
         <input type="password" id="password" class="form-control mb-4 form-control-custom" placeholder="Contraseña">
-        <button onclick="signIn()" id="loginBtn" class="btn btn-primary-custom w-100 py-2">INICIAR SESIÓN</button>
+        <button onclick="signIn()" id="loginBtn" class="btn btn-primary-custom w-100 py-2">ENTRAR AL SISTEMA</button>
     </div>
 
     <div id="menuSection" class="hidden mt-5">
@@ -95,14 +87,14 @@
                 <div class="menu-card p-5 text-center" onclick="navigate('personas')">
                     <i class="bi bi-people-fill fs-1 text-success mb-3"></i>
                     <h4 class="fw-bold">BÚSQUEDA INTELIGENTE</h4>
-                    <p class="text-muted small">Localice personal por nombre, grado o dependencia.</p>
+                    <p class="text-muted small">Localizar personal y editar datos maestros.</p>
                 </div>
             </div>
             <div class="col-md-5">
                 <div class="menu-card p-5 text-center" onclick="navigate('cursos')">
                     <i class="bi bi-award-fill fs-1 text-primary mb-3"></i>
-                    <h4 class="fw-bold">HISTORIAL POR CÉDULA</h4>
-                    <p class="text-muted small">Consulte y gestione cursos específicos de un tripulante.</p>
+                    <h4 class="fw-bold">GESTIÓN DE CURSOS</h4>
+                    <p class="text-muted small">Consultar historial y vencimientos por tripulante.</p>
                 </div>
             </div>
         </div>
@@ -112,16 +104,19 @@
         <button class="btn btn-sm btn-outline-secondary mb-3" onclick="navigate('menu')"><i class="bi bi-arrow-left"></i> VOLVER AL MENÚ</button>
         <div class="card-custom p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold m-0"><i class="bi bi-search me-2"></i>LISTADO GLOBAL DE TRIPULANTES</h6>
-                <button id="btnNuevoAdmin" class="btn btn-sm btn-success hidden" onclick="startNewPerson()"><i class="bi bi-person-plus-fill me-1"></i> REGISTRAR NUEVO</button>
+                <div class="d-flex align-items-center gap-3">
+                    <h6 class="fw-bold m-0 text-uppercase">Listado de Personal</h6>
+                    <span id="countPersonas" class="result-counter hidden">0 registros</span>
+                </div>
+                <button id="btnNuevoAdmin" class="btn btn-sm btn-success hidden" onclick="startNewPerson()"><i class="bi bi-person-plus-fill me-1"></i> NUEVO TRIPULANTE</button>
             </div>
             <div class="input-group mb-4">
-                <input type="text" id="advancedSearchInput" class="form-control form-control-custom" placeholder="Buscar por cualquier criterio...">
+                <input type="text" id="advancedSearchInput" class="form-control form-control-custom" placeholder="Buscar por nombre, grado, dependencia, curso...">
                 <button onclick="fetchAdvancedSearch()" class="btn btn-primary-custom px-4">BUSCAR</button>
             </div>
             <div class="table-responsive card-custom">
                 <table class="table-custom">
-                    <thead><tr><th>CÉDULA</th><th>GRADO</th><th>NOMBRE COMPLETO</th><th>DEPENDENCIA</th><th>ACCIONES</th></tr></thead>
+                    <thead><tr><th>CÉDULA</th><th>GRADO</th><th>NOMBRE COMPLETO</th><th>DEPENDENCIA</th><th class="text-center">GESTIÓN</th></tr></thead>
                     <tbody id="advancedDataTable"></tbody>
                 </table>
             </div>
@@ -132,43 +127,53 @@
         <button class="btn btn-sm btn-outline-secondary mb-3" onclick="navigate('menu')"><i class="bi bi-arrow-left"></i> VOLVER AL MENÚ</button>
         <div class="card-custom p-4 mb-4">
             <div class="input-group">
-                <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-card-text"></i></span>
-                <input type="text" id="searchCedula" class="form-control form-control-custom border-start-0" placeholder="Ingrese número de cédula para ver historial...">
-                <button onclick="fetchData()" class="btn btn-primary-custom px-4">CONSULTAR</button>
+                <span class="input-group-text bg-transparent border-end-0"><i class="bi bi-person-badge"></i></span>
+                <input type="text" id="searchCedula" class="form-control form-control-custom border-start-0" placeholder="Ingrese número de cédula...">
+                <button onclick="fetchData()" class="btn btn-primary-custom px-4">CARGAR HISTORIAL</button>
             </div>
         </div>
 
         <div id="profileCard" class="profile-card mb-4 hidden card-custom">
-            <div class="d-flex flex-wrap gap-3 align-items-center">
-                <div class="pe-4 border-end">
-                    <small class="profile-subtitle d-block fw-bold" id="lblCedula"></small>
-                    <span class="profile-title fs-4" id="lblNombre"></span>
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-3 border-end">
+                    <small class="profile-data-label d-block mb-1">Tripulante Seleccionado</small>
+                    <div class="profile-title" style="font-size: 1.4rem; line-height: 1.2;">
+                        <span id="lblGrado"></span> <span id="lblNombre"></span>
+                    </div>
+                    <small class="text-accent fw-bold" id="lblCedula"></small>
                 </div>
-                <div class="d-flex flex-grow-1 gap-2 flex-wrap">
-                    <div class="profile-data-box"><div class="profile-data-label">Grado</div><div class="profile-data-value" id="lblGrado"></div></div>
-                    <div class="profile-data-box"><div class="profile-data-label">Dependencia</div><div class="profile-data-value" id="lblDep"></div></div>
-                    <div class="profile-data-box"><div class="profile-data-label">Cargo</div><div class="profile-data-value" id="lblCargo"></div></div>
-                    <div class="profile-data-box"><div class="profile-data-label">Nivel Inglés</div><div class="profile-data-value" id="lblIngles"></div></div>
-                    <div class="profile-data-box"><div class="profile-data-label">Pericia</div><div class="profile-data-value" id="lblPericia"></div></div>
+                <div class="col-lg-9">
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="profile-data-box"><div class="profile-data-label">Dependencia</div><div class="profile-data-value" id="lblDep"></div></div>
+                        <div class="profile-data-box"><div class="profile-data-label">Taller</div><div class="profile-data-value" id="lblTallerFicha"></div></div>
+                        <div class="profile-data-box"><div class="profile-data-label">Cargo/Inspector</div><div class="profile-data-value" id="lblCargo"></div></div>
+                        <div class="profile-data-box" style="max-width: 80px;"><div class="profile-data-label">Inglés</div><div class="profile-data-value text-center" id="lblIngles"></div></div>
+                        <div class="profile-data-box" style="max-width: 100px;"><div class="profile-data-label">Pericia</div><div class="profile-data-value text-center" id="lblPericia"></div></div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="cursosContainer" class="hidden table-responsive card-custom">
-            <table class="table-custom">
-                <thead><tr><th>CURSO / CAPACITACIÓN</th><th>REALIZACIÓN</th><th>VENCIMIENTO</th><th>ESTADO</th><th id="thAcciones"></th></tr></thead>
-                <tbody id="dataTable"></tbody>
-            </table>
+        <div id="cursosContainer" class="hidden">
+            <div class="d-flex align-items-center gap-3 mb-2 ps-1">
+                <small class="text-uppercase fw-bold text-muted" style="font-size: 0.7rem;">Cursos registrados</small>
+                <span id="countCursos" class="result-counter">0</span>
+            </div>
+            <div class="table-responsive card-custom">
+                <table class="table-custom">
+                    <thead><tr><th>CURSO</th><th>REALIZACIÓN</th><th>VENCIMIENTO</th><th>ESTADO</th><th id="thAcciones"></th></tr></thead>
+                    <tbody id="dataTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div id="adminForm" class="card-custom p-4 border-primary hidden shadow-lg mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <span id="adminFormTitle" class="fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>GESTIÓN ADMINISTRATIVA</span>
-            <button class="btn btn-close" onclick="cancelEdit()"></button>
+            <span id="adminFormTitle" class="fw-bold text-primary text-uppercase small">Panel de Edición</span>
+            <button class="btn-close" onclick="cancelEdit()"></button>
         </div>
         <input type="hidden" id="inId">
-        
         <div class="row g-2 mb-3">
             <div class="col-md-2"><label class="form-label-custom">Cédula</label><input type="text" id="inCedula" class="form-control form-control-custom"></div>
             <div class="col-md-1"><label class="form-label-custom">Grado</label><input type="text" id="inGrado" class="form-control form-control-custom"></div>
@@ -176,37 +181,24 @@
             <div class="col-md-2"><label class="form-label-custom">Dependencia</label><input type="text" id="inDep" class="form-control form-control-custom"></div>
             <div class="col-md-2"><label class="form-label-custom">Taller</label><input type="text" id="inTaller" class="form-control form-control-custom"></div>
             <div class="col-md-1"><label class="form-label-custom">Inglés</label><input type="text" id="inIngles" class="form-control form-control-custom"></div>
-            <div class="col-md-1"><label class="form-label-custom">Cargo</label><input type="text" id="inCargo" class="form-control form-control-custom"></div>
+            <div class="col-md-1"><label class="form-label-custom">Pericia</label><input type="text" id="inPericia" class="form-control form-control-custom"></div>
         </div>
-
         <div id="rowCurso" class="row g-2 align-items-end border-top pt-3">
-            <div class="col-md-6"><label class="form-label-custom">Nombre de la Capacitación</label><input type="text" id="inCurso" class="form-control form-control-custom"></div>
-            <div class="col-md-2"><label class="form-label-custom">Fecha Realización</label><input type="date" id="inF1" class="form-control form-control-custom"></div>
-            <div class="col-md-2"><label class="form-label-custom">Fecha Vencimiento</label><input type="date" id="inF2" class="form-control form-control-custom"></div>
-            <div class="col-md-2"><button onclick="saveData()" class="btn btn-primary-custom w-100 py-2 fw-bold">ACTUALIZAR CURSO</button></div>
+            <div class="col-md-6"><label class="form-label-custom">Nombre del Curso</label><input type="text" id="inCurso" class="form-control form-control-custom"></div>
+            <div class="col-md-2"><label class="form-label-custom">F. Realización</label><input type="date" id="inF1" class="form-control form-control-custom"></div>
+            <div class="col-md-2"><label class="form-label-custom">F. Vencimiento</label><input type="date" id="inF2" class="form-control form-control-custom"></div>
+            <div class="col-md-2"><button onclick="saveData()" class="btn btn-primary-custom w-100 py-2 fw-bold">ACTUALIZAR</button></div>
         </div>
-        
-        <div id="rowSoloPersona" class="hidden text-end pt-3">
-            <button onclick="saveOnlyPerson()" class="btn btn-success px-5 py-2 fw-bold">GUARDAR DATOS TRIPULANTE</button>
-        </div>
+        <div id="rowSoloPersona" class="hidden text-end pt-3"><button onclick="saveOnlyPerson()" class="btn btn-success px-5 py-2 fw-bold">GUARDAR DATOS MAESTROS</button></div>
     </div>
 </main>
 
 <footer class="footer-aero mt-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start">
-                <span class="fw-bold">© 2026 FUERZA AÉREA COLOMBIANA</span><br>
-                <small>Comando Aéreo de Mantenimiento - CAMAN</small>
-            </div>
-            <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
-                <a href="https://wa.me/573128816469" target="_blank" class="footer-link me-4">
-                    <i class="bi bi-whatsapp me-2 text-success"></i>WHATSAPP SOPORTE
-                </a>
-                <a href="mailto:alucard8@gmail.com" class="footer-link">
-                    <i class="bi bi-envelope-at-fill me-2 text-primary"></i>EMAIL TÉCNICO
-                </a>
-            </div>
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+        <div><span class="fw-bold">SISTEMA DE CONTROL DE ENTRENAMIENTO CAMAN</span><br><small>© 2026 FUERZA AÉREA COLOMBIANA</small></div>
+        <div class="d-flex gap-4">
+            <a href="https://wa.me/573128816469" target="_blank" class="text-decoration-none text-muted"><i class="bi bi-whatsapp me-2 text-success"></i>SOPORTE</a>
+            <a href="mailto:alucard8@gmail.com" class="text-decoration-none text-muted"><i class="bi bi-envelope-at me-2 text-primary"></i>EMAIL</a>
         </div>
     </div>
 </footer>
@@ -216,115 +208,94 @@
     const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let sessionUser = null;
-    let isAdmin = false;
-    let editingId = null;
+    let sessionUser = null; let isAdmin = false; let editingId = null;
 
-    /* NAVEGACIÓN Y PUSHSTATE */
     function navigate(view, push = true) {
         document.querySelectorAll('main > div').forEach(el => el.classList.add('hidden'));
-        const target = {
-            'menu': 'menuSection',
-            'personas': 'sectionPersonas',
-            'cursos': 'sectionCursos'
-        }[view];
-        
-        if(target) document.getElementById(target).classList.remove('hidden');
-        if(push) history.pushState({view: view}, "", `?v=${view}`);
+        if(view === 'menu') document.getElementById('menuSection').classList.remove('hidden');
+        if(view === 'personas') document.getElementById('sectionPersonas').classList.remove('hidden');
+        if(view === 'cursos') document.getElementById('sectionCursos').classList.remove('hidden');
+        if(push) history.pushState({view}, "", `?v=${view}`);
     }
-
     window.onpopstate = (e) => { if(e.state) navigate(e.state.view, false); };
 
-    /* AUTENTICACIÓN */
     async function signIn() {
-        const btn = document.getElementById('loginBtn');
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando...';
         const { data, error } = await _supabase.auth.signInWithPassword({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
+            email: document.getElementById('email').value, password: document.getElementById('password').value
         });
-        if(error) { alert("Credenciales incorrectas"); btn.innerText = "INICIAR SESIÓN"; return; }
-        sessionUser = data.user;
-        checkRole();
+        if(error) return alert("Error de acceso");
+        sessionUser = data.user; checkRole();
     }
 
     async function checkRole() {
         const { data } = await _supabase.from('entrenamiento_usuarios').select('*').eq('email', sessionUser.email).single();
         if(data) {
             isAdmin = data.es_admin;
-            document.getElementById('userName').innerText = data.nombre.toUpperCase() + (isAdmin ? " (ADMINISTRADOR)" : " (CONSULTA)");
+            document.getElementById('userName').innerText = data.nombre.toUpperCase() + (isAdmin ? " (ADMINISTRADOR)" : " (USUARIO)");
             if(isAdmin) document.getElementById('btnNuevoAdmin').classList.remove('hidden');
-            navigate('menu');
-            document.getElementById('userInfo').classList.remove('hidden');
+            navigate('menu'); document.getElementById('userInfo').classList.remove('hidden');
         }
     }
 
     function signOut() { _supabase.auth.signOut(); location.reload(); }
 
-    /* BÚSQUEDA PERSONAS */
     async function fetchAdvancedSearch() {
         const term = document.getElementById('advancedSearchInput').value.trim();
         const tbody = document.getElementById('advancedDataTable');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
-
-        let query = _supabase.from('entrenamiento_alumno').select('*');
-        if(term) query = query.or(`nombre.ilike.%${term}%,cedula.ilike.%${term}%,dependencia.ilike.%${term}%,grado.ilike.%${term}%`);
+        const countSpan = document.getElementById('countPersonas');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Buscando en la base de datos...</td></tr>';
         
-        const { data } = await query.order('nombre', {ascending: true});
+        let query = _supabase.from('entrenamiento_alumno').select('*', { count: 'exact' });
+        if(term) query = query.or(`nombre.ilike.%${term}%,cedula.ilike.%${term}%,dependencia.ilike.%${term}%,grado.ilike.%${term}%`);
+        const { data, count } = await query.order('nombre', {ascending: true});
+        
+        countSpan.innerText = `${count || 0} tripulantes encontrados`;
+        countSpan.classList.remove('hidden');
         tbody.innerHTML = '';
         data.forEach(al => {
             const tr = document.createElement('tr');
-            const btnEdit = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0 me-1" onclick="editPersonOnly('${al.cedula}')"><i class="bi bi-pencil"></i></button>` : '';
+            const edit = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0 me-1" onclick="editPersonOnly('${al.cedula}')"><i class="bi bi-pencil"></i></button>` : '';
             tr.innerHTML = `<td>${al.cedula}</td><td>${al.grado || ''}</td><td class="fw-bold">${al.nombre}</td><td>${al.dependencia || ''}</td>
-            <td class="text-center">${btnEdit}<button class="btn btn-sm btn-primary py-0 px-3" onclick="goToCedula('${al.cedula}')">VER CURSOS</button></td>`;
+            <td class="text-center">${edit}<button class="btn btn-sm btn-primary py-0 px-3" onclick="goToCedula('${al.cedula}')">VER CURSOS</button></td>`;
             tbody.appendChild(tr);
         });
     }
 
     function goToCedula(cedula) {
-        navigate('cursos');
-        document.getElementById('searchCedula').value = cedula;
-        fetchData();
+        navigate('cursos'); document.getElementById('searchCedula').value = cedula; fetchData();
     }
 
-    /* GESTIÓN CURSOS */
     async function fetchData() {
         const cedula = document.getElementById('searchCedula').value.trim();
-        if(!cedula) return;
-
         const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
         if(al) {
-            document.getElementById('lblCedula').innerText = "C.C. " + al.cedula;
+            document.getElementById('lblCedula').innerText = "IDENTIFICACIÓN: " + al.cedula;
             document.getElementById('lblNombre').innerText = al.nombre;
-            document.getElementById('lblGrado').innerText = al.grado || 'N/D';
-            document.getElementById('lblDep').innerText = al.dependencia || 'N/D';
-            document.getElementById('lblCargo').innerText = al.cargo || 'N/D';
-            document.getElementById('lblIngles').innerText = al.nivel_ingles || 'N/D';
-            document.getElementById('lblPericia').innerText = al.nivel_pericia || 'N/D';
+            document.getElementById('lblGrado').innerText = al.grado || '---';
+            document.getElementById('lblDep').innerText = al.dependencia || '---';
+            document.getElementById('lblTallerFicha').innerText = al.taller || '---';
+            document.getElementById('lblCargo').innerText = al.cargo || '---';
+            document.getElementById('lblIngles').innerText = al.nivel_ingles || '---';
+            document.getElementById('lblPericia').innerText = al.nivel_pericia || '---';
             document.getElementById('profileCard').classList.remove('hidden');
         }
-
-        const { data: cursos } = await _supabase.from('entrenamiento').select('*').eq('cedula', cedula).order('fecha_vencimiento', {ascending: true});
-        const tbody = document.getElementById('dataTable');
+        const { data: cursos, count } = await _supabase.from('entrenamiento').select('*', { count: 'exact' }).eq('cedula', cedula).order('fecha_vencimiento', {ascending: true});
+        const tbody = document.getElementById('dataTable'); 
+        const countCursos = document.getElementById('countCursos');
         tbody.innerHTML = '';
+        countCursos.innerText = count || 0;
         document.getElementById('cursosContainer').classList.remove('hidden');
-
         cursos.forEach(c => {
             const tr = document.createElement('tr');
-            const hoy = new Date();
-            const vence = new Date(c.fecha_vencimiento);
-            const status = vence < hoy ? '<span class="badge bg-danger">VENCIDO</span>' : '<span class="badge bg-success">VIGENTE</span>';
-            const acciones = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
-            tr.innerHTML = `<td class="fw-bold text-primary">${c.curso}</td><td>${c.fecha_realizacion || ''}</td><td>${c.fecha_vencimiento}</td><td class="text-center">${status}</td><td class="text-center">${acciones}</td>`;
+            const status = new Date(c.fecha_vencimiento) < new Date() ? '<span class="badge bg-danger">VENCIDO</span>' : '<span class="badge bg-success">VIGENTE</span>';
+            const acc = isAdmin ? `<button class="btn btn-sm btn-outline-primary py-0" onclick='startEditCurso(${JSON.stringify(c)})'><i class="bi bi-pencil"></i></button>` : '';
+            tr.innerHTML = `<td class="fw-bold text-primary">${c.curso}</td><td>${c.fecha_realizacion || ''}</td><td>${c.fecha_vencimiento}</td><td class="text-center">${status}</td><td class="text-center">${acc}</td>`;
             tbody.appendChild(tr);
         });
     }
 
-    /* FUNCIONES ADMINISTRATIVAS */
     function startNewPerson() {
-        cancelEdit();
-        document.getElementById('adminFormTitle').innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>NUEVO REGISTRO DE PERSONAL';
-        document.getElementById('rowCurso').classList.add('hidden');
+        cancelEdit(); document.getElementById('rowCurso').classList.add('hidden');
         document.getElementById('rowSoloPersona').classList.remove('hidden');
         document.getElementById('adminForm').classList.remove('hidden');
         document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
@@ -333,16 +304,11 @@
     async function editPersonOnly(cedula) {
         const { data: al } = await _supabase.from('entrenamiento_alumno').select('*').eq('cedula', cedula).single();
         if(al) {
-            document.getElementById('inCedula').value = al.cedula;
-            document.getElementById('inGrado').value = al.grado || '';
-            document.getElementById('inNombre').value = al.nombre;
-            document.getElementById('inDep').value = al.dependencia || '';
-            document.getElementById('inTaller').value = al.taller || '';
-            document.getElementById('inCargo').value = al.cargo || '';
-            document.getElementById('inIngles').value = al.nivel_ingles || '';
-            document.getElementById('adminFormTitle').innerHTML = '<i class="bi bi-person-lines-fill me-2"></i>EDITAR DATOS PERSONALES';
-            document.getElementById('rowCurso').classList.add('hidden');
-            document.getElementById('rowSoloPersona').classList.remove('hidden');
+            document.getElementById('inCedula').value = al.cedula; document.getElementById('inGrado').value = al.grado || '';
+            document.getElementById('inNombre').value = al.nombre; document.getElementById('inDep').value = al.dependencia || '';
+            document.getElementById('inTaller').value = al.taller || ''; document.getElementById('inCargo').value = al.cargo || '';
+            document.getElementById('inIngles').value = al.nivel_ingles || ''; document.getElementById('inPericia').value = al.nivel_pericia || '';
+            document.getElementById('rowCurso').classList.add('hidden'); document.getElementById('rowSoloPersona').classList.remove('hidden');
             document.getElementById('adminForm').classList.remove('hidden');
             document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
         }
@@ -350,49 +316,31 @@
 
     async function saveOnlyPerson() {
         const p = {
-            cedula: document.getElementById('inCedula').value,
-            grado: document.getElementById('inGrado').value,
-            nombre: document.getElementById('inNombre').value,
-            dependencia: document.getElementById('inDep').value,
-            taller: document.getElementById('inTaller').value,
-            cargo: document.getElementById('inCargo').value,
-            nivel_ingles: document.getElementById('inIngles').value
+            cedula: document.getElementById('inCedula').value, grado: document.getElementById('inGrado').value,
+            nombre: document.getElementById('inNombre').value, dependencia: document.getElementById('inDep').value,
+            taller: document.getElementById('inTaller').value, cargo: document.getElementById('inCargo').value,
+            nivel_ingles: document.getElementById('inIngles').value, nivel_pericia: document.getElementById('inPericia').value
         };
-        const { error } = await _supabase.from('entrenamiento_alumno').upsert([p]);
-        if(!error) { alert("Tripulante guardado con éxito"); cancelEdit(); fetchAdvancedSearch(); }
+        await _supabase.from('entrenamiento_alumno').upsert([p]); cancelEdit(); fetchAdvancedSearch();
     }
 
     function startEditCurso(c) {
-        editingId = c.id;
-        document.getElementById('inId').value = c.id;
-        document.getElementById('inCedula').value = c.cedula;
-        document.getElementById('inCurso').value = c.curso;
-        document.getElementById('inF1').value = c.fecha_realizacion;
-        document.getElementById('inF2').value = c.fecha_vencimiento;
-        document.getElementById('rowCurso').classList.remove('hidden');
-        document.getElementById('rowSoloPersona').classList.add('hidden');
+        editingId = c.id; document.getElementById('inId').value = c.id;
+        document.getElementById('inCedula').value = c.cedula; document.getElementById('inCurso').value = c.curso;
+        document.getElementById('inF1').value = c.fecha_realizacion; document.getElementById('inF2').value = c.fecha_vencimiento;
+        document.getElementById('rowCurso').classList.remove('hidden'); document.getElementById('rowSoloPersona').classList.add('hidden');
         document.getElementById('adminForm').classList.remove('hidden');
         document.getElementById('adminForm').scrollIntoView({behavior:'smooth'});
     }
 
     async function saveData() {
-        const c = {
-            cedula: document.getElementById('inCedula').value,
-            curso: document.getElementById('inCurso').value,
-            fecha_realizacion: document.getElementById('inF1').value,
-            fecha_vencimiento: document.getElementById('inF2').value
-        };
+        const c = { cedula: document.getElementById('inCedula').value, curso: document.getElementById('inCurso').value, fecha_realizacion: document.getElementById('inF1').value, fecha_vencimiento: document.getElementById('inF2').value };
         if(editingId) await _supabase.from('entrenamiento').update(c).eq('id', editingId);
         else await _supabase.from('entrenamiento').insert([c]);
-        cancelEdit();
-        fetchData();
+        cancelEdit(); fetchData();
     }
 
-    function cancelEdit() {
-        editingId = null;
-        document.getElementById('adminForm').classList.add('hidden');
-        document.querySelectorAll('#adminForm input').forEach(i => i.value = "");
-    }
+    function cancelEdit() { editingId = null; document.getElementById('adminForm').classList.add('hidden'); }
 
     function toggleTheme() {
         const curr = document.documentElement.getAttribute('data-theme');
