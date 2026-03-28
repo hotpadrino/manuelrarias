@@ -137,12 +137,18 @@
     }
 
     async function checkUserRole() {
-        const { data } = await _supabase
-            .from('entrenamientos_usuarios')
+        const { data, error } = await _supabase
+            .from('entrenamientos_usuarios') // <--- Verifica este nombre
             .select('es_admin, nombre')
             .eq('email', sessionUser.email)
             .single();
-
+    
+        if (error) {
+            console.error("Error al obtener rol:", error.message);
+            document.getElementById('userName').innerText = "Error de perfil";
+            return;
+        }
+    
         if (data) {
             isAdmin = data.es_admin;
             document.getElementById('userName').innerText = `${data.nombre} [${isAdmin ? 'ADMIN' : 'USUARIO'}]`;
