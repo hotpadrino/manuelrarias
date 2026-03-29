@@ -597,10 +597,49 @@
         </div>
     </div>
 
+    <footer>
+        <div class="container" style="text-align: center; padding: 20px; color: var(--text-secondary); border-top: 1px solid var(--border); margin-top: 40px;">
+            <p>&copy; 2026 Simulador Financiero Personal - @inversiones_aripar</p>
+            <p style="font-size: 0.8rem;">Los datos se guardan localmente en tu navegador.</p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+                <a href="https://wa.me/573128816469" target="_blank" style="text-decoration: none; color: var(--success); display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <span> WhatsApp</span>
+                </a>
+                
+                <a href="mailto:alucard8@gmail.com" style="text-decoration: none; color: var(--accent); display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                    <span> Correo</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
     <script>
         let currentTheme = 'light';
         let charts = {};
 
+        // Funciones de Persistencia
+        function saveAllData() {
+            const inputs = document.querySelectorAll('input, select');
+            const data = {};
+            inputs.forEach(input => {
+                if (input.id) data[input.id] = input.value;
+            });
+            // Guardar también los pagos extraordinarios es más complejo, 
+            // pero por ahora aseguramos los valores principales.
+            localStorage.setItem('simulador_persist', JSON.stringify(data));
+        }
+        
+        function loadAllData() {
+            const saved = localStorage.getItem('simulador_persist');
+            if (saved) {
+                const data = JSON.parse(saved);
+                for (const id in data) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = data[id];
+                }
+            }
+        }
+        
         // Gestión de temas
         function toggleTheme() {
             currentTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -730,6 +769,7 @@
 
         // Sección 1: Simulador de Crédito
         function calculateLoan() {
+            saveAllData();
             const principal = parseFloat(document.getElementById('loanAmount').value);
             const terms = parseInt(document.getElementById('loanTerms').value);
             const monthlyRate = parseFloat(document.getElementById('interestRate').value) / 100;
@@ -957,6 +997,7 @@
         }
 
         function calculateLoanWithExtra() {
+            saveAllData();
             const principal = parseFloat(document.getElementById('loanAmount2').value);
             const terms = parseInt(document.getElementById('loanTerms2').value);
             const monthlyRate = parseFloat(document.getElementById('interestRate2').value) / 100;
@@ -1163,6 +1204,7 @@
 
         // Sección 3: Inversión Recurrente
         function calculateInvestment() {
+            saveAllData();
             // Capturamos el nuevo aporte inicial
             let initialInvestment = parseFloat(document.getElementById('initialInvestment').value) || 0;
             let monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
@@ -1344,20 +1386,23 @@
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
+            loadAllData(); // <--- 1. Cargar datos guardados primero
+            
+            // 2. Si no hay datos (primera vez), poner fecha de hoy
             const hoy = new Date().toISOString().split('T')[0];
-            document.getElementById('startDate').value = hoy;
-            document.getElementById('startDate2').value = hoy;
-            document.getElementById('investmentStartDate').value = hoy;
+            if (!document.getElementById('startDate').value) document.getElementById('startDate').value = hoy;
+            if (!document.getElementById('startDate2').value) document.getElementById('startDate2').value = hoy;
+            if (!document.getElementById('investmentStartDate').value) document.getElementById('investmentStartDate').value = hoy;
+        
+            // 3. Ejecutar las conversiones visuales con los datos cargados
             updateYearsConversion();
             updateYearsConversion2();
-			updateYearsConversion3();
+            updateYearsConversion3();
             updatePeriodLabel();
-
-            // Actualizar la EA para los campos iniciales
             updateEAConversion('interestRate', 'loanEAConversion');
             updateEAConversion('interestRate2', 'extraEAConversion');
             updateEAConversion('investmentRate', 'investmentEAConversion');
-			updateEAConversion('incrementRate', 'incrementEAConversion');
+            updateEAConversion('incrementRate', 'incrementEAConversion');
             
             // Cargar los abonos extraordinarios por defecto
             const defaultPayments = [
