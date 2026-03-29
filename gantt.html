@@ -63,14 +63,17 @@
                     <input type="text" id="edit-owner" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
                 </div>
                 
-                <div class="flex gap-2">
+                <div class="flex gap-2 items-end">
                     <div class="flex-1">
                         <b class="text-slate-500 dark:text-slate-400 block mb-1">Inicio:</b>
-                        <input type="date" id="edit-start" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                        <input type="date" id="edit-start" onchange="updateDuration()" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
                     </div>
                     <div class="flex-1">
                         <b class="text-slate-500 dark:text-slate-400 block mb-1">Fin:</b>
-                        <input type="date" id="edit-end" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                        <input type="date" id="edit-end" onchange="updateDuration()" class="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-white focus:outline-none focus:border-rose-400 transition">
+                    </div>
+                    <div class="pb-2 text-center w-16 flex-shrink-0">
+                        <span id="edit-duration" class="text-[10px] font-black text-rose-500 dark:text-rose-400">-- días</span>
                     </div>
                 </div>
                 
@@ -464,7 +467,25 @@
                 lRow.style.paddingLeft = (t.level === 1 ? 12 : t.level === 2 ? 24 : 38) + "px";
                 const hasChildren = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
                 const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-1.5 text-rose-500 dark:text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-1.5 text-slate-300 dark:text-slate-600 w-3"></i>';
-                lRow.innerHTML = `<span class="truncate cursor-pointer flex items-center" onclick="focusOnTask('${t.id}')">${arrow} <span class="truncate dark:text-slate-300"><b class="text-rose-500/80 dark:text-rose-400 mr-1 font-black">${t.id}</b> ${t.name}</span></span>`;
+                
+                // NUEVO: Ícono de error y botón de edición permanente
+                const errorIcon = !t.validDates ? `<i class="fas fa-exclamation-triangle text-amber-500 text-[10px]" title="Fechas inválidas"></i>` : '';
+                
+                lRow.innerHTML = `
+                    <div class="flex items-center justify-between w-full pr-2">
+                        <span class="truncate cursor-pointer flex items-center flex-grow" onclick="focusOnTask('${t.id}')" title="Ubicar en calendario">
+                            ${arrow} 
+                            <span class="truncate dark:text-slate-300"><b class="text-rose-500/80 dark:text-rose-400 mr-1 font-black">${t.id}</b> ${t.name}</span>
+                        </span>
+                        <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+                            ${errorIcon}
+                            <button onclick="openModalById('${t.id}')" class="text-slate-300 hover:text-purple-500 dark:text-slate-500 dark:hover:text-purple-400 transition" title="Editar Tarea">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
                 listObj.appendChild(lRow);
 
                 const bRow = document.createElement('div');
@@ -558,7 +579,6 @@
             document.getElementById('bulk-modal').classList.remove('flex');
         }
 
-        // NUEVO: Función para alternar entre formato Markdown y Numeración WBS en vivo
         function toggleBulkFormat() {
             const textArea = document.getElementById('bulk-text');
             const lines = textArea.value.split('\n');
@@ -568,7 +588,6 @@
             let counters = [0, 0, 0];
             
             if (isMarkdown) {
-                // Convertir de # a 1.1
                 lines.forEach(line => {
                     const trimmed = line.trim();
                     if (!trimmed) { newLines.push(""); return; }
@@ -592,7 +611,6 @@
                         id = `${counters[0]}`;
                         name = trimmed.substring(1).trim();
                     } else {
-                        // Tarea sin #
                         counters[0]++; counters[1]=0; counters[2]=0;
                         id = `${counters[0]}`;
                         name = trimmed;
@@ -600,7 +618,6 @@
                     newLines.push(`${id}. ${name}`);
                 });
             } else {
-                // Convertir de 1.1 a #
                 const regex = /^([0-9]+(?:\.[0-9]+)*)[\s\.\-\_]*(.*)$/;
                 lines.forEach(line => {
                     const trimmed = line.trim();
@@ -630,7 +647,6 @@
             const todayStr = getTodayFormatted();
             
             if (isMarkdown) {
-                // MODO REEMPLAZO TOTAL (Markdown)
                 let counters = [0, 0, 0];
                 lines.forEach(line => {
                     let level = 1;
@@ -653,7 +669,6 @@
                         counters[0]++; counters[1]=0; counters[2]=0;
                         finalId = `${counters[0]}`;
                     } else {
-                        // Tareas sin # las asume nivel 1 secuencial
                         counters[0]++; counters[1]=0; counters[2]=0;
                         finalId = `${counters[0]}`; level = 1; name = line;
                     }
@@ -665,7 +680,6 @@
                     });
                 });
             } else {
-                // MODO ACTUALIZACIÓN / INSERCIÓN (Mantiene datos existentes)
                 const regex = /^([0-9]+(?:\.[0-9]+)*)[\s\.\-\_]*(.*)$/;
                 lines.forEach(line => {
                     const match = line.match(regex);
@@ -688,7 +702,6 @@
                     }
                 });
                 
-                // Ordenar matemáticamente para que la inserción no rompa la estructura visual
                 newTasks.sort((a, b) => {
                     const aParts = a.id.split('.').map(Number);
                     const bParts = b.id.split('.').map(Number);
@@ -709,6 +722,25 @@
         }
 
         /* --- MÓDULO EDICIÓN INDIVIDUAL --- */
+        function updateDuration() {
+            const sVal = document.getElementById('edit-start').value;
+            const eVal = document.getElementById('edit-end').value;
+            if (sVal && eVal) {
+                const sDate = new Date(sVal + 'T00:00:00');
+                const eDate = new Date(eVal + 'T00:00:00');
+                const dur = diffDays(eDate, sDate) + 1;
+                document.getElementById('edit-duration').innerText = dur > 0 ? `${dur} días` : 'Error';
+            } else {
+                document.getElementById('edit-duration').innerText = '-- días';
+            }
+        }
+        
+        // NUEVA FUNCIÓN PARA ABRIR EL MODAL DESDE LA BARRA LATERAL
+        function openModalById(id) {
+            const t = tasks.find(x => x.id === id);
+            if (t) openModal(t);
+        }
+
         function openModal(t) {
             currentEditId = t.id;
             document.getElementById('m-id').innerText = t.id;
@@ -717,6 +749,8 @@
             document.getElementById('edit-start').value = toInputDate(t.start);
             document.getElementById('edit-end').value = toInputDate(t.end);
             document.getElementById('edit-obs').value = t.obs || "";
+            
+            updateDuration(); 
             
             document.getElementById('detail-modal').classList.remove('hidden');
             document.getElementById('detail-modal').classList.add('flex');
@@ -752,14 +786,14 @@
 
         function handleFile(input) {
             const file = input.files[0];
-            if (!file) return; // Evita error si el usuario cancela la ventana de archivos
+            if (!file) return; 
             
             const reader = new FileReader();
             reader.onload = (e) => smartDecode(e.target.result);
             reader.readAsArrayBuffer(file);
             
             document.getElementById('drop-menu').classList.add('hidden');
-            input.value = ''; // Limpia el botón para permitir reimportar el mismo archivo
+            input.value = ''; 
         }
 
         function exportCSV() {
