@@ -280,6 +280,8 @@ input[type=date].modal-input{color-scheme:dark}
           <div class="dropdown-item" onclick="openBulkModal()"><i class="fas fa-edit" style="color:var(--purple)"></i> Edición rápida</div>
           <label class="dropdown-item"><i class="fas fa-file-import" style="color:#4f8ef7"></i> Importar CSV<input type="file" id="csvIn" style="display:none" accept=".csv" onchange="handleFile(this)"></label>
           <div class="dropdown-item" onclick="exportCSV()"><i class="fas fa-file-export" style="color:#3ecf8e"></i> Exportar CSV</div>
+          <div class="dropdown-item" onclick="clearLocalStorage()"><i class="fas fa-trash text-red-500" style="color:var(--accent-2)"></i> Borrar Memoria Local</div>
+</button>
         </div>
       </div>
       <button class="theme-btn" onclick="toggleTheme()" title="Cambiar tema">
@@ -355,13 +357,38 @@ var defaultCSV="ID;Tarea;Responsable;Inicio;Fin;Observaciones\n"+
 "4;Cierre y Certificación;Autoridad;11/07/2026;31/07/2026;Certificación aprobada.";
 
 /* ══ BOOT ══ */
-function loadInitialData(){
-  fetch('gantt.csv')
-    .then(function(r){if(!r.ok)throw 0;return r.arrayBuffer();})
-    .then(function(b){smartDecode(b);})
-    .catch(function(){tasks=parseCSV(defaultCSV);render();});
-  setTimeout(scrollToToday,400);
+async function loadInitialData() {
+    // 1. Intentar cargar desde la memoria local primero
+    const savedData = localStorage.getItem('gantt_pro_data');
+    if (savedData) {
+        try {
+            tasks = JSON.parse(savedData);
+            render();
+            setTimeout(scrollToToday, 500);
+            return; // Si cargó bien, detiene la función aquí
+        } catch (e) {
+            console.error("Error leyendo la memoria local:", e);
+        }
+    }
+
+    // 2. Si no hay memoria local, cargar el archivo por defecto
+    try {
+        const response = await fetch('gantt.csv');
+        if (!response.ok) throw new Error();
+        const buffer = await response.arrayBuffer();
+        smartDecode(buffer);
+    } catch (e) {
+        const defaultCSV = `ID;Tarea;Responsable;Inicio;Fin;Observaciones
+1;Levantamiento de Requisitos;Dir. Proy;01/03/2026;20/03/2026;Fase inicial.
+1.1;Revisión de Normativa;Ing. Diseño;01/03/2026;07/03/2026;Análisis técnico.
+1.2;Hito: Requisitos Definidos;Cliente;20/03/2026;20/03/2026;Firma de acta.
+2;Bases de Certificación;Ing. Cert;21/03/2026;15/04/2026;Normativas de seguridad.`;
+        parseCSV(defaultCSV);
+        render();
+    }
+    setTimeout(scrollToToday, 500);
 }
+
 function smartDecode(buf){
   var u8=new Uint8Array(buf),utf=true;
   try{new TextDecoder('utf-8',{fatal:true}).decode(u8);}catch(e){utf=false;}
@@ -589,6 +616,19 @@ function hlText(text,q,isCur){
   if(!q)return esc(text);
   var i=text.toLowerCase().indexOf(q.toLowerCase());if(i<0)return esc(text);
   return esc(text.slice(0,i))+'<mark class="hl'+(isCur?' cur':'')+'">'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
+}
+
+// Guarda los datos actuales en el navegador
+function saveToLocalStorage() {
+    localStorage.setItem('gantt_pro_data', JSON.stringify(tasks));
+}
+
+// Borra la memoria en caso de querer reiniciar el proyecto
+function clearLocalStorage() {
+    if(confirm("¿Estás seguro de borrar el guardado local? Esto restaurará el proyecto por defecto.")) {
+        localStorage.removeItem('gantt_pro_data');
+        location.reload(); // Recarga la página para volver al estado inicial
+    }
 }
 
 function render(){
@@ -823,6 +863,7 @@ function saveModal(){
   if(ed<sd){errEl.innerText='La fecha de fin no puede ser anterior al inicio.';errEl.style.display='block';return;}
   function san(s){return s.replace(/;/g,',').replace(/\r?\n/g,'\\n');}
   t.name=san(name);t.owner=san(owner);t.start=start;t.end=end;t.obs=san(obs);t.validDates=true;
+  saveToLocalStorage();
   closeModal();render();showToast('Tarea actualizada');
 }
 function closeModal(){
@@ -905,6 +946,7 @@ function saveBulkModal(){
   });
 
   if(newTasks.length>0){tasks=newTasks;render();}
+  saveToLocalStorage();
   closeBulkModal();showToast('Estructura actualizada');
 }
 
@@ -913,6 +955,7 @@ function handleFile(input){
   if(!input.files[0])return;
   var r=new FileReader();
   r.onload=function(e){smartDecode(e.target.result);showToast('CSV importado');};
+  saveToLocalStorage();
   r.readAsArrayBuffer(input.files[0]);
   input.value=''; // allow re-importing same file
   toggleDropdown(false);
