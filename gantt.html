@@ -92,12 +92,17 @@
             <div class="flex justify-between items-start mb-4 flex-shrink-0">
                 <div>
                     <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase truncate">Editor Rápido de Estructura</h3>
-                    <p class="text-[9px] text-slate-500 dark:text-slate-400 mt-1">Edita nombres o inserta IDs (ej. "1.2 Nueva tarea").<br>Si usas <b># Nivel 1</b>, <b>## Nivel 2</b> o <b>### Nivel 3</b>, se reemplazará todo el proyecto con una nueva estructura.</p>
+                    <p class="text-[9px] text-slate-500 dark:text-slate-400 mt-1">Edita nombres o inserta IDs. Puedes intercambiar la vista entre modo "#" y modo numérico para previsualizar.</p>
                 </div>
-                <button onclick="closeBulkModal()" class="text-slate-400 hover:text-rose-500 transition"><i class="fas fa-times"></i></button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleBulkFormat()" class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Intercambiar entre formato 1.1 y formato #">
+                        <i class="fas fa-exchange-alt text-purple-500"></i> WBS / #
+                    </button>
+                    <button onclick="closeBulkModal()" class="text-slate-400 hover:text-rose-500 p-1 transition"><i class="fas fa-times"></i></button>
+                </div>
             </div>
             
-            <div class="flex-grow overflow-hidden flex flex-col">
+            <div class="flex-grow overflow-hidden flex flex-col relative">
                 <textarea id="bulk-text" class="w-full flex-grow p-4 text-[11px] font-mono leading-relaxed rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-400 transition resize-none whitespace-pre-wrap"></textarea>
             </div>
 
@@ -553,6 +558,69 @@
             document.getElementById('bulk-modal').classList.remove('flex');
         }
 
+        // NUEVO: Función para alternar entre formato Markdown y Numeración WBS en vivo
+        function toggleBulkFormat() {
+            const textArea = document.getElementById('bulk-text');
+            const lines = textArea.value.split('\n');
+            const isMarkdown = lines.some(l => l.trim().startsWith('#'));
+            
+            let newLines = [];
+            let counters = [0, 0, 0];
+            
+            if (isMarkdown) {
+                // Convertir de # a 1.1
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) { newLines.push(""); return; }
+                    
+                    let name = trimmed;
+                    let id = "";
+                    
+                    if (trimmed.startsWith('###')) {
+                        if(counters[0]===0) counters[0]=1;
+                        if(counters[1]===0) counters[1]=1;
+                        counters[2]++;
+                        id = `${counters[0]}.${counters[1]}.${counters[2]}`;
+                        name = trimmed.substring(3).trim();
+                    } else if (trimmed.startsWith('##')) {
+                        if(counters[0]===0) counters[0]=1;
+                        counters[1]++; counters[2]=0;
+                        id = `${counters[0]}.${counters[1]}`;
+                        name = trimmed.substring(2).trim();
+                    } else if (trimmed.startsWith('#')) {
+                        counters[0]++; counters[1]=0; counters[2]=0;
+                        id = `${counters[0]}`;
+                        name = trimmed.substring(1).trim();
+                    } else {
+                        // Tarea sin #
+                        counters[0]++; counters[1]=0; counters[2]=0;
+                        id = `${counters[0]}`;
+                        name = trimmed;
+                    }
+                    newLines.push(`${id}. ${name}`);
+                });
+            } else {
+                // Convertir de 1.1 a #
+                const regex = /^([0-9]+(?:\.[0-9]+)*)[\s\.\-\_]*(.*)$/;
+                lines.forEach(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) { newLines.push(""); return; }
+                    
+                    const match = trimmed.match(regex);
+                    if (match) {
+                        const id = match[1];
+                        const name = match[2];
+                        const level = id.split('.').length;
+                        const prefix = '#'.repeat(Math.min(level, 3)); 
+                        newLines.push(`${prefix} ${name}`);
+                    } else {
+                        newLines.push(`# ${trimmed}`); 
+                    }
+                });
+            }
+            textArea.value = newLines.join('\n');
+        }
+
         function saveBulkModal() {
             const text = document.getElementById('bulk-text').value;
             const lines = text.split('\n').map(l => l.trim()).filter(l => l !== "");
@@ -684,10 +752,14 @@
 
         function handleFile(input) {
             const file = input.files[0];
+            if (!file) return; // Evita error si el usuario cancela la ventana de archivos
+            
             const reader = new FileReader();
             reader.onload = (e) => smartDecode(e.target.result);
             reader.readAsArrayBuffer(file);
+            
             document.getElementById('drop-menu').classList.add('hidden');
+            input.value = ''; // Limpia el botón para permitir reimportar el mismo archivo
         }
 
         function exportCSV() {
