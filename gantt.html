@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gantt Enterprise Pro - Edición FAC</title>
+    <title>Gantt Enterprise Pro</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -95,10 +95,10 @@
             <div class="flex justify-between items-start mb-4 flex-shrink-0">
                 <div>
                     <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase truncate">Editor Rápido de Estructura</h3>
-                    <p class="text-[9px] text-slate-500 dark:text-slate-400 mt-1">Edita nombres o inserta IDs. Puedes intercambiar la vista entre modo "#" y modo numérico para previsualizar.</p>
+                    <p class="text-[9px] text-slate-500 dark:text-slate-400 mt-1">Inserta texto normal para auto-numerar, o usa el formato WBS (1.1) o Markdown (##) para organizar niveles.</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleBulkFormat()" class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Intercambiar entre formato 1.1 y formato #">
+                    <button onclick="toggleBulkFormat()" class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Intercambiar entre formato numérico y formato #">
                         <i class="fas fa-exchange-alt text-purple-500"></i> WBS / #
                     </button>
                     <button onclick="closeBulkModal()" class="text-slate-400 hover:text-rose-500 p-1 transition"><i class="fas fa-times"></i></button>
@@ -106,7 +106,7 @@
             </div>
             
             <div class="flex-grow overflow-hidden flex flex-col relative">
-                <textarea id="bulk-text" class="w-full flex-grow p-4 text-[11px] font-mono leading-relaxed rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-400 transition resize-none whitespace-pre-wrap"></textarea>
+                <textarea id="bulk-text" class="w-full flex-grow p-4 text-[11px] font-mono leading-relaxed rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-400 transition resize-none whitespace-pre-wrap" placeholder="Escribe aquí tus tareas..."></textarea>
             </div>
 
             <div class="flex gap-2 mt-4 flex-shrink-0">
@@ -149,16 +149,21 @@
                             </div>
                         </div>
 
-                        <button onclick="openBulkModal()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-left border-b border-slate-50 dark:border-slate-700">
+                        <button onclick="openBulkModal()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-left border-b border-slate-50 dark:border-slate-700 transition">
                             <i class="fas fa-edit text-purple-500"></i> EDICIÓN RÁPIDA
                         </button>
 
-                        <label class="flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700">
+                        <label class="flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-50 dark:border-slate-700 transition">
                             <i class="fas fa-file-import text-blue-500"></i> IMPORTAR CSV
                             <input type="file" id="csvIn" class="hidden" accept=".csv" onchange="handleFile(this)">
                         </label>
-                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-left">
+                        
+                        <button onclick="exportCSV()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-left transition">
                             <i class="fas fa-file-export text-emerald-500"></i> EXPORTAR CSV
+                        </button>
+
+                        <button onclick="clearLocalStorage()" class="w-full flex items-center gap-3 px-4 py-3 text-[9px] font-bold text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-slate-700/50 text-left border-t border-slate-100 dark:border-slate-700 transition">
+                            <i class="fas fa-trash text-red-500"></i> BORRAR MEMORIA LOCAL
                         </button>
                     </div>
                 </div>
@@ -195,7 +200,7 @@
 
     <footer class="py-3 text-center text-slate-400 font-bold uppercase text-[9px] flex-shrink-0">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-1 max-w-4xl mx-auto px-6">
-            <p>© 2026 • Landing Gear Certification</p>
+            <p>© 2026 • Inversiones Aripar</p>
             <div class="flex gap-4">
                 <a href="https://wa.me/573128816469" class="hover:text-green-600 transition">WhatsApp</a>
                 <a href="mailto:alucard8@gmail.com" class="hover:text-blue-600 transition">Email</a>
@@ -214,7 +219,31 @@
 
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
+        // --- SISTEMA DE MEMORIA LOCAL (PWA) ---
+        function saveToLocalStorage() {
+            localStorage.setItem('gantt_pro_data', JSON.stringify(tasks));
+        }
+
+        function clearLocalStorage() {
+            if(confirm("¿Estás seguro de borrar el guardado local? Esto vaciará tus datos y restaurará el proyecto por defecto.")) {
+                localStorage.removeItem('gantt_pro_data');
+                location.reload(); 
+            }
+        }
+
         async function loadInitialData() {
+            const savedData = localStorage.getItem('gantt_pro_data');
+            if (savedData) {
+                try {
+                    tasks = JSON.parse(savedData);
+                    render();
+                    setTimeout(scrollToToday, 500);
+                    return; 
+                } catch (e) {
+                    console.error("Error leyendo la memoria local:", e);
+                }
+            }
+
             try {
                 const response = await fetch('gantt.csv');
                 if (!response.ok) throw new Error();
@@ -241,8 +270,10 @@
             const decoder = new TextDecoder(isUtf8 ? 'utf-8' : 'iso-8859-1');
             parseCSV(decoder.decode(uint8));
             render();
+            saveToLocalStorage(); 
         }
 
+        // --- MANEJO DE FECHAS ---
         function parseDate(str) {
             if (!str) return new Date(NaN);
             const parts = str.trim().split('/');
@@ -270,6 +301,11 @@
             return `${parseInt(d, 10)}/${parseInt(m, 10)}/${parseInt(y, 10)}`;
         }
 
+        function diffDays(d1, d2) {
+            return Math.ceil((d1 - d2) / (1000 * 60 * 60 * 24));
+        }
+
+        // --- IMPORTACIÓN Y PARSEO ---
         function parseCSV(text) {
             const lines = text.trim().split('\n');
             tasks = [];
@@ -340,10 +376,7 @@
             }
         }
 
-        function diffDays(d1, d2) {
-            return Math.ceil((d1 - d2) / (1000 * 60 * 60 * 24));
-        }
-
+        // --- RENDERIZADO DEL GANTT ---
         function setViewMode(mode) {
             viewMode = mode;
             columnWidth = mode === 'days' ? 40 : (mode === 'weeks' ? 80 : 160);
@@ -423,7 +456,15 @@
                     const m = document.createElement('div');
                     m.className = "flex-shrink-0 border-r border-slate-200 dark:border-slate-800 flex items-center justify-center text-[9px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900";
                     m.style.width = columnWidth + "px"; m.style.height = "64px";
-                    m.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+                    
+                    const monthNum = cur.getMonth();
+                    if (monthNum === 0 || monthNum === 5) { // 0 es Enero, 5 es Junio
+                        m.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+                    } else {
+                        m.innerText = cur.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+                        //m.innerText = cur.toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
+                    }
+                    
                     unitHeader.appendChild(m);
                 } else {
                     monthHeader.classList.remove('hidden');
@@ -468,8 +509,8 @@
                 const hasChildren = tasks.some(x => x.id.startsWith(t.id + '.') && x.level === t.level + 1);
                 const arrow = hasChildren ? `<i class="fas ${t.open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-1.5 text-rose-500 dark:text-rose-400 w-3 cursor-pointer" onclick="event.stopPropagation(); toggleNode('${t.id}')"></i>` : '<i class="fas fa-circle text-[3px] mr-1.5 text-slate-300 dark:text-slate-600 w-3"></i>';
                 
-                // NUEVO: Ícono de error y botón de edición permanente
-                const errorIcon = !t.validDates ? `<i class="fas fa-exclamation-triangle text-amber-500 text-[10px]" title="Fechas inválidas"></i>` : '';
+                // Ícono de error visual
+                const errorIcon = !t.validDates ? `<i class="fas fa-exclamation-triangle text-amber-500 text-[10px]" title="Fechas inválidas, corrige para visualizar"></i>` : '';
                 
                 lRow.innerHTML = `
                     <div class="flex items-center justify-between w-full pr-2">
@@ -562,7 +603,7 @@
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
-        /* --- MÓDULO EDICIÓN RÁPIDA (BULK EDITOR) --- */
+        // --- MÓDULO EDICIÓN RÁPIDA (BULK EDITOR) ---
         function openBulkModal() {
             document.getElementById('drop-menu').classList.add('hidden');
             let textOutput = "";
@@ -681,6 +722,8 @@
                 });
             } else {
                 const regex = /^([0-9]+(?:\.[0-9]+)*)[\s\.\-\_]*(.*)$/;
+                let autoCounter = 0; 
+                
                 lines.forEach(line => {
                     const match = line.match(regex);
                     if (match) {
@@ -699,6 +742,19 @@
                                 open: true, validDates: true
                             });
                         }
+                    } else {
+                        autoCounter++;
+                        let newId = autoCounter.toString();
+                        while(tasks.find(t => t.id === newId) || newTasks.find(t => t.id === newId)) {
+                             autoCounter++;
+                             newId = autoCounter.toString();
+                        }
+                        
+                        newTasks.push({
+                            id: newId, level: 1, name: line.replace(/;/g, ','), 
+                            owner: "Asignar", start: todayStr, end: todayStr, obs: "", 
+                            open: true, validDates: true
+                        });
                     }
                 });
                 
@@ -714,14 +770,13 @@
                 });
             }
             
-            if (newTasks.length > 0) {
-                tasks = newTasks;
-                render();
-            }
+            tasks = newTasks;
+            render();
             closeBulkModal();
+            saveToLocalStorage();
         }
 
-        /* --- MÓDULO EDICIÓN INDIVIDUAL --- */
+        // --- MÓDULO EDICIÓN INDIVIDUAL ---
         function updateDuration() {
             const sVal = document.getElementById('edit-start').value;
             const eVal = document.getElementById('edit-end').value;
@@ -735,7 +790,6 @@
             }
         }
         
-        // NUEVA FUNCIÓN PARA ABRIR EL MODAL DESDE LA BARRA LATERAL
         function openModalById(id) {
             const t = tasks.find(x => x.id === id);
             if (t) openModal(t);
@@ -776,6 +830,7 @@
 
             closeModal();
             render(); 
+            saveToLocalStorage(); 
         }
 
         function closeModal() {
