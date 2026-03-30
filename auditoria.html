@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Auditoría Pro - Inversiones Aripar</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📋</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48dGV4dCB5PSIuOWVtIiBmb250LXNpemU9IjkwIj7wn9OTPC90ZXh0Pjwvc3ZnPg==">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
@@ -27,14 +27,20 @@
         .header-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
         input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text); width: 100%; box-sizing: border-box; }
 
-        .nav-sections { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
+        .nav-sections { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 10px; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
         .nav-btn { padding: 8px 18px; border: 1px solid var(--primary); border-radius: 20px; cursor: pointer; white-space: nowrap; background: transparent; color: var(--primary); font-weight: bold; transition: 0.2s; }
         .nav-btn.active { background: var(--primary); color: white; }
 
+        .section-info { font-size: 0.9em; font-weight: bold; color: var(--secondary); margin-bottom: 20px; padding-left: 5px; }
+
         .search-container { position: sticky; top: 0; z-index: 100; background: var(--bg-card); padding: 10px 0; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
         #results-counter { font-weight: bold; color: var(--accent); font-size: 0.9em; margin-top: 5px; display: block; }
+        .error-msg { color: #e74c3c !important; background: #fdf2f2; padding: 5px; border-radius: 4px; }
 
-        .question-card { border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 18px; background: rgba(0,0,0,0.02); page-break-inside: avoid; }
+        .question-card { border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 18px; background: rgba(0,0,0,0.02); page-break-inside: avoid; display: flex; gap: 15px; }
+        .q-number { font-weight: bold; color: var(--primary); font-size: 1.1em; min-width: 30px; }
+        .q-content { flex: 1; }
+        
         .combo-res { font-weight: bold; border: 2px solid var(--primary); margin-top: 10px; }
 
         .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px; }
@@ -54,12 +60,20 @@
         .modal-body { flex: 1; background: #fff; margin: 15px; border-radius: 10px; position: relative; }
         #signature-pad { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 
+        /* --- ESTILOS DE IMPRESIÓN --- */
         @media print {
-            .btn, .search-container, .nav-sections, #fileInput, label, #chart-container, .theme-btn, footer { display: none !important; }
-            .question-card { border: none; border-bottom: 1px solid #eee; }
-            .hidden { display: block !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .btn, .search-container, .nav-sections, .section-info, #fileInput, label, #chart-container, .theme-btn, footer { 
+                display: none !important; 
+            }
+            .question-card { border: none; border-bottom: 1px solid #eee; padding: 10px 0; }
+            textarea { border: none; resize: none; overflow: hidden; background: transparent; }
+            select { border: none; appearance: none; -webkit-appearance: none; font-weight: bold; }
             .sig-modal { display: none; }
+            h3.print-section-title { display: block !important; margin-top: 30px; border-bottom: 2px solid #000; }
         }
+        .print-section-title { display: none; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -69,8 +83,8 @@
     <div class="top-bar">
         <h2 style="margin:0;">📋 Auditoría Aripar Pro</h2>
         <div class="theme-btn">
-            <button onclick="toggleTheme()" class="btn" style="border:1px solid var(--border)">🌓 </button>
-            <button onclick="clearAll()" class="btn btn-danger" style="font-size: 11px;">🗑️ </button>
+            <button onclick="toggleTheme()" class="btn" style="border:1px solid var(--border)">🌓 Tema</button>
+            <button onclick="clearAll()" class="btn btn-danger" style="font-size: 11px;">🗑️ Borrar</button>
         </div>
     </div>
 
@@ -80,19 +94,20 @@
         <input type="date" id="fecha" oninput="save()">
         <select id="auditSelector" onchange="renderChecklist(true)"></select>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="handleFileUpload(this)">
-        <label for="fileInput" class="btn" style="border:1px solid #ccc; text-align:center; cursor:pointer; font-size:12px;">📂 Cargar auditoria.txt</label>
+        <label for="fileInput" class="btn" style="border:1px solid #ccc; text-align:center; cursor:pointer; font-size:12px;">📂 Cargar auditoria.txt Local</label>
     </div>
 
     <div class="search-container">
-        <input type="text" id="search" placeholder="🔍 Buscar en toda la auditoría..." oninput="filter()">
-        <span id="results-counter">Buscando auditoria.txt...</span>
+        <input type="text" id="search" placeholder="🔍 Buscar pregunta o nota..." oninput="filter()">
+        <span id="results-counter">Cargando base de datos...</span>
     </div>
 
     <div id="sectionNav" class="nav-sections"></div>
+    <div id="sectionCounter" class="section-info"></div>
     <div id="checklist"></div>
 
     <div id="chart-container" style="margin-top: 40px; height: 300px;"><canvas id="chart"></canvas></div>
-    <div style="background: #eee; border-radius: 11px; margin: 20px 0;"><div id="mainProgress" class="progress-bar" style="width:0%">0%</div></div>
+    <div style="background: #eee; border-radius: 11px; margin: 20px 0;"><div id="mainProgress" class="progress-bar" style="width:0%">0% Global</div></div>
 
     <div class="signature-section">
         <div class="sig-block">
@@ -111,7 +126,7 @@
 
     <div style="margin-top: 40px; display: flex; gap: 10px;">
         <button class="btn btn-save" style="flex:1; background:#27ae60; color:white;" onclick="save()">💾 Guardar</button>
-        <button class="btn btn-pdf" style="flex:2; background:#c0392b; color:white;" onclick="printReport()">📄 PDF / Imprimir</button>
+        <button class="btn btn-pdf" style="flex:2; background:#c0392b; color:white;" onclick="printFullReport()">📄 Imprimir Reporte Completo (Todo)</button>
     </div>
 </div>
 
@@ -141,28 +156,24 @@
             const response = await fetch('auditoria.txt');
             if (response.ok) { processTxt(await response.text()); }
             else { document.getElementById('results-counter').innerText = "auditoria.txt no detectado."; }
-        } catch (e) { document.getElementById('results-counter').innerText = "Error cargando auditoria.txt"; }
+        } catch (e) { console.log("Error fetch red."); }
 
         load();
         updateSelectors();
         renderChecklist();
     };
 
-    function toggleTheme() {
-        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('theme', t);
-        if(chart) calculate();
-    }
-
     function processTxt(text) {
         if (!text) return;
-        const lines = text.split('\n');
+        const lines = text.split(/\r?\n/);
         let curA = "", curS = "";
+        let lineCount = 0;
         auditData = {};
+        
         lines.forEach(l => {
             const line = l.trim();
             if (!line) return;
+            lineCount++;
             if (line.startsWith('##')) {
                 curS = line.replace('##', '').trim();
                 if (curA) auditData[curA].secciones[curS] = [];
@@ -173,35 +184,27 @@
                 auditData[curA].secciones[curS].push(line);
             }
         });
-        updateSelectors();
-        renderChecklist();
-    }
-
-    // CORRECCIÓN: Validación de archivo para evitar error de Blob
-    function handleFileUpload(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function() { processTxt(this.result); };
-            reader.readAsText(input.files[0]);
+        
+        if (Object.keys(auditData).length === 0) {
+            document.getElementById('results-counter').innerHTML = `<span class="error-msg">Error de formato: No se encontraron títulos (# o ##).</span>`;
+            return;
         }
-    }
-
-    function updateSelectors() {
-        const sel = document.getElementById('auditSelector');
-        const keys = Object.keys(auditData);
-        sel.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+        updateSelectors();
+        renderChecklist(true);
     }
 
     function renderChecklist(reset = false) {
         const audit = document.getElementById('auditSelector').value;
         const container = document.getElementById('checklist');
         const nav = document.getElementById('sectionNav');
-        container.innerHTML = ""; nav.innerHTML = "";
+        const secCounter = document.getElementById('sectionCounter');
         
+        container.innerHTML = ""; nav.innerHTML = "";
         if (!auditData[audit]) return;
+        
         if (reset) currentSectionIndex = 0;
-
         const secciones = Object.keys(auditData[audit].secciones);
+        
         secciones.forEach((sec, idx) => {
             const btn = document.createElement('button');
             btn.className = `nav-btn ${idx === currentSectionIndex ? 'active' : ''}`;
@@ -212,11 +215,22 @@
 
         const activeSec = secciones[currentSectionIndex];
         if (activeSec) {
-            auditData[audit].secciones[activeSec].forEach((q, i) => {
-                const id = `q_${audit}_${activeSec}_${i}`.replace(/\s+/g, '_');
-                const card = document.createElement('div');
-                card.className = "question-card";
-                card.innerHTML = `
+            secCounter.innerText = `Esta sección tiene ${auditData[audit].secciones[activeSec].length} preguntas.`;
+            renderQuestions(audit, activeSec, container);
+        }
+        updateCounter();
+        loadStoredResponses();
+        calculate();
+    }
+
+    function renderQuestions(audit, section, container) {
+        auditData[audit].secciones[section].forEach((q, i) => {
+            const id = `q_${audit}_${section}_${i}`.replace(/\s+/g, '_');
+            const card = document.createElement('div');
+            card.className = "question-card";
+            card.innerHTML = `
+                <div class="q-number">${i + 1}.</div>
+                <div class="q-content">
                     <div class="question-text"><strong>${q}</strong></div>
                     <select id="res_${id}" class="combo-res" onchange="save(); calculate();">
                         <option value="">-- Resultado --</option>
@@ -225,23 +239,81 @@
                         <option value="NCMayor">NC Mayor</option>
                         <option value="NA">No Aplica</option>
                     </select>
-                    <textarea id="obs_${id}" placeholder="Evidencias..." oninput="save()"></textarea>
-                `;
-                container.appendChild(card);
+                    <textarea id="obs_${id}" placeholder="Notas..." oninput="save()"></textarea>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // --- FUNCIÓN CLAVE PARA IMPRIMIR TODO ---
+    function printFullReport() {
+        const audit = document.getElementById('auditSelector').value;
+        const container = document.getElementById('checklist');
+        const originalContent = container.innerHTML; // Guardar vista actual
+        
+        // Unificar todo el contenido para impresión
+        let fullHtml = "";
+        Object.keys(auditData[audit].secciones).forEach(sec => {
+            fullHtml += `<h3 class="print-section-title">${sec}</h3>`;
+            auditData[audit].secciones[sec].forEach((q, i) => {
+                const id = `q_${audit}_${sec}_${i}`.replace(/\s+/g, '_');
+                const savedRes = JSON.parse(localStorage.getItem('aripar_res')) || {};
+                const resVal = savedRes[`res_${id}`] || "";
+                const obsVal = savedRes[`obs_${id}`] || "";
+
+                fullHtml += `
+                    <div class="question-card">
+                        <div class="q-number">${i + 1}.</div>
+                        <div class="q-content">
+                            <div class="question-text"><strong>${q}</strong></div>
+                            <div style="margin-top:5px; font-weight:bold; color:var(--primary)">Resultado: ${resVal}</div>
+                            <div style="font-style:italic; margin-top:5px;">Notas: ${obsVal || 'Sin observaciones.'}</div>
+                        </div>
+                    </div>`;
             });
+        });
+
+        container.innerHTML = fullHtml; // Reemplazar temporalmente
+        
+        const emp = document.getElementById('empresa').value || 'Auditoria';
+        const now = new Date();
+        const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+        document.title = `${ts}-${emp}`;
+
+        window.print();
+        
+        // Restaurar vista por secciones tras imprimir
+        renderChecklist();
+    }
+
+    // El resto de funciones (save, load, chart, etc.) se mantienen igual
+    function toggleTheme() {
+        const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('theme', t);
+        if(chart) calculate();
+    }
+
+    function handleFileUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { processTxt(e.target.result); };
+            reader.readAsText(input.files[0]);
         }
-        updateCounter();
-        loadStoredResponses();
-        calculate();
+    }
+
+    function updateSelectors() {
+        const sel = document.getElementById('auditSelector');
+        sel.innerHTML = Object.keys(auditData).map(k => `<option value="${k}">${k}</option>`).join('');
     }
 
     function updateCounter() {
         const audit = document.getElementById('auditSelector').value;
         if (!auditData[audit]) return;
-        const numSec = Object.keys(auditData[audit].secciones).length;
         let totalQ = 0;
         Object.values(auditData[audit].secciones).forEach(s => totalQ += s.length);
-        document.getElementById('results-counter').innerText = `Auditoría: ${numSec} secciones | Total: ${totalQ} preguntas`;
+        document.getElementById('results-counter').innerText = `Auditoría: ${Object.keys(auditData[audit].secciones).length} secciones | Total: ${totalQ} preguntas`;
     }
 
     function calculate() {
@@ -267,7 +339,7 @@
         const p = total === 0 ? 0 : Math.round((ok / total) * 100);
         const pb = document.getElementById('mainProgress');
         pb.style.width = p + "%";
-        pb.innerText = p + "% Global";
+        pb.innerText = p + "% Global Cumplido";
         renderChart(stats);
     }
 
@@ -360,16 +432,8 @@
         });
     }
 
-    function printReport() {
-        const emp = document.getElementById('empresa').value || 'Auditoria';
-        const now = new Date();
-        const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-        document.title = `${ts}-${emp}`;
-        window.print();
-    }
-
     function clearAll() {
-        if (confirm("¿Borrar definitivamente todo?")) { localStorage.clear(); location.reload(); }
+        if (confirm("¿Borrar definitivamente todo el progreso?")) { localStorage.clear(); location.reload(); }
     }
 </script>
 </body>
