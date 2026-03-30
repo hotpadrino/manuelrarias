@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoría Pro - Inversiones Aripar</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #f8f9fa; --bg-card: #ffffff; --text: #212529;
+            --primary: #0056b3; --secondary: #6c757d; --border: #dee2e6;
+        }
+        [data-theme="dark"] {
+            --bg-body: #121212; --bg-card: #1e1e1e; --text: #f8f9fa;
+            --primary: #375a7f; --secondary: #adb5bd; --border: #444;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
+        .container { max-width: 1000px; margin: auto; background: var(--bg-card); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        /* Header & Meta */
+        .header-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        input, select, textarea { padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); color: var(--text); width: 100%; box-sizing: border-box; }
+        
+        /* Cards de Preguntas */
+        .question-card { border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 15px; background: rgba(0,0,0,0.02); }
+        .finding-selector { margin-top: 10px; display: none; background: #fff3cd; padding: 10px; border-radius: 6px; color: #856404; }
+        .finding-active { display: block; }
+        
+        /* Firmas */
+        .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+        .sig-wrapper { border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; background: white; }
+        canvas { border: 1px dashed #ccc; width: 100%; height: 150px; background: #fff; cursor: crosshair; }
+        
+        /* Gráfica y Barra */
+        .progress-container { height: 20px; background: #e9ecef; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        .progress-bar { height: 100%; width: 0%; background: #28a745; transition: 0.5s; text-align: center; color: white; font-size: 12px; line-height: 20px; }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-pdf { background: #dc3545; color: white; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-clear { background: #6c757d; color: white; font-size: 10px; margin-top: 5px; }
+        
+        footer { margin-top: 50px; border-top: 1px solid var(--border); padding-top: 20px; text-align: center; font-size: 14px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>📋 Auditoría e Inspección</h2>
+        <button onclick="toggleTheme()" class="btn btn-clear">Cambiar Tema</button>
+    </div>
+
+    <div class="header-grid">
+        <input type="text" id="empresa" placeholder="Empresa">
+        <input type="text" id="departamento" placeholder="Departamento">
+        <input type="date" id="fecha">
+        <select id="auditSelector" onchange="renderChecklist()"></select>
+        <input type="file" id="fileInput" accept=".txt" style="font-size: 11px;">
+    </div>
+
+    <input type="text" id="search" placeholder="🔍 Filtrar preguntas..." oninput="filter()" style="margin-bottom: 20px;">
+
+    <div id="checklist"></div>
+
+    <div style="margin-top: 30px;">
+        <h3>Estado de Cumplimiento</h3>
+        <div class="progress-container"><div id="mainProgress" class="progress-bar">0%</div></div>
+        <div style="height: 250px;"><canvas id="chart"></canvas></div>
+    </div>
+
+    <div class="signature-section">
+        <div class="sig-wrapper">
+            <label style="color: black;">Firma del Auditor</label>
+            <canvas id="pad-auditor"></canvas>
+            <button class="btn btn-clear" onclick="sigAuditor.clear()">Limpiar</button>
+        </div>
+        <div class="sig-wrapper">
+            <label style="color: black;">Firma del Auditado</label>
+            <canvas id="pad-auditado"></canvas>
+            <button class="btn btn-clear" onclick="sigAuditado.clear()">Limpiar</button>
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; gap: 10px;">
+        <button class="btn btn-save" onclick="save()">Guardar Datos</button>
+        <button class="btn btn-pdf" onclick="exportPDF()">Exportar PDF Profesional</button>
+    </div>
+</div>
+
+<footer>
+    <strong>Inversiones Aripar</strong> | 
+    <a href="https://wa.me/573000000000" style="color: #25d366; text-decoration:none;">WhatsApp</a> | 
+    <a href="mailto:contacto@aripar.com" style="text-decoration:none;">contacto@aripar.com</a>
+</footer>
+
+<script>
+    // Preguntas de ejemplo (Default)
+    const defaultData = {
+        "ISO 9001 (Ejemplo)": {
+            "Contexto": ["¿Se han identificado riesgos y oportunidades?", "¿Existe evidencia de seguimiento a partes interesadas?"],
+            "Liderazgo": ["¿La política de calidad está disponible?", "¿Se asignan responsabilidades claras?"]
+        },
+        "SENA (Ejemplo)": {
+            "Ambientes": ["¿Los equipos cuentan con mantenimiento preventivo?", "¿Se cumple el aforo permitido?"],
+            "Formación": ["¿Las guías están actualizadas?", "¿Existe registro de asistencia digital?"]
+        }
+    };
+
+    let auditData = defaultData;
+    let chart = null;
+    let sigAuditor, sigAuditado;
+
+    window.onload = () => {
+        initPads();
+        loadSaved();
+        updateSelectors();
+        renderChecklist();
+    };
+
+    function initPads() {
+        sigAuditor = new SignaturePad(document.getElementById('pad-auditor'));
+        sigAuditado = new SignaturePad(document.getElementById('pad-auditado'));
+    }
+
+    function toggleTheme() {
+        const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    }
+
+    // Procesar archivo TXT
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const lines = this.result.split('\n');
+            let curA = "", curS = "";
+            auditData = {};
+            lines.forEach(l => {
+                if(l.startsWith('##')) {
+                    curS = l.replace('##','').trim();
+                    auditData[curA][curS] = [];
+                } else if(l.startsWith('#')) {
+                    curA = l.replace('#','').trim();
+                    auditData[curA] = {};
+                } else if(l.trim()) {
+                    auditData[curA][curS].push(l.trim());
+                }
+            });
+            updateSelectors();
+            renderChecklist();
+        };
+        reader.readAsText(e.target.files[0]);
+    });
+
+    function updateSelectors() {
+        const sel = document.getElementById('auditSelector');
+        sel.innerHTML = Object.keys(auditData).map(k => `<option value="${k}">${k}</option>`).join('');
+    }
+
+    function renderChecklist() {
+        const audit = document.getElementById('auditSelector').value;
+        const container = document.getElementById('checklist');
+        container.innerHTML = "";
+        if(!auditData[audit]) return;
+
+        Object.keys(auditData[audit]).forEach(sec => {
+            let html = `<h3>${sec}</h3>`;
+            auditData[audit][sec].forEach((q, i) => {
+                const id = `q_${audit}_${sec}_${i}`.replace(/\s/g,'_');
+                html += `
+                    <div class="question-card" data-section="${sec}">
+                        <div style="font-weight:bold; margin-bottom:10px;">${q}</div>
+                        <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+                            <label><input type="radio" name="${id}" value="C" onchange="updateUI('${id}')"> Cumple</label>
+                            <label><input type="radio" name="${id}" value="NC" onchange="updateUI('${id}')"> No Cumple</label>
+                            <label><input type="radio" name="${id}" value="NA" onchange="updateUI('${id}')"> N/A</label>
+                            <select id="hallazgo_${id}" class="finding-selector" style="width:180px;">
+                                <option value="Menor">No Conformidad Menor</option>
+                                <option value="Mayor">No Conformidad Mayor</option>
+                                <option value="Observación">Observación</option>
+                            </select>
+                        </div>
+                        <textarea id="obs_${id}" placeholder="Evidencias y anotaciones..." style="margin-top:10px;"></textarea>
+                    </div>`;
+            });
+            container.innerHTML += html;
+        });
+        updateUI();
+    }
+
+    function updateUI(id) {
+        if(id) {
+            const val = document.querySelector(`input[name="${id}"]:checked`).value;
+            const selector = document.getElementById(`hallazgo_${id}`);
+            selector.classList.toggle('finding-active', val === 'NC');
+        }
+        calculate();
+    }
+
+    function calculate() {
+        const cards = document.querySelectorAll('.question-card');
+        let total = 0, ok = 0;
+        const sectionScores = {};
+
+        cards.forEach(card => {
+            const sec = card.getAttribute('data-section');
+            const radio = card.querySelector('input[type="radio"]:checked');
+            if(!sectionScores[sec]) sectionScores[sec] = {t:0, c:0};
+            
+            if(radio && radio.value !== 'NA') {
+                sectionScores[sec].t++;
+                total++;
+                if(radio.value === 'C') {
+                    sectionScores[sec].c++;
+                    ok++;
+                }
+            }
+        });
+
+        const global = total === 0 ? 0 : Math.round((ok/total)*100);
+        document.getElementById('mainProgress').style.width = global + "%";
+        document.getElementById('mainProgress').innerText = global + "% Cumplimiento";
+
+        renderChart(sectionScores);
+    }
+
+    function renderChart(scores) {
+        const labels = Object.keys(scores);
+        const data = labels.map(l => scores[l].t === 0 ? 0 : Math.round((scores[l].c/scores[l].t)*100));
+        
+        if(chart) chart.destroy();
+        chart = new Chart(document.getElementById('chart'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: '% por Sección', data: data, backgroundColor: '#007bff' }]
+            },
+            options: { maintainAspectRatio: false, scales: { y: { max: 100, beginAtZero: true } } }
+        });
+    }
+
+    function filter() {
+        const t = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('.question-card').forEach(c => {
+            c.classList.toggle('hidden', !c.innerText.toLowerCase().includes(t));
+        });
+    }
+
+    function save() {
+        const data = {
+            meta: { 
+                e: document.getElementById('empresa').value, 
+                d: document.getElementById('departamento').value,
+                f: document.getElementById('fecha').value,
+                a: document.getElementById('auditSelector').value
+            },
+            res: {}
+        };
+        document.querySelectorAll('input[type="radio"]:checked').forEach(r => data.res[r.name] = r.value);
+        document.querySelectorAll('textarea').forEach(t => data.res[t.id] = t.value);
+        localStorage.setItem('audit_data_v2', JSON.stringify(data));
+        alert("¡Datos guardados localmente!");
+    }
+
+    function loadSaved() {
+        const saved = JSON.parse(localStorage.getItem('audit_data_v2'));
+        if(!saved) return;
+        document.getElementById('empresa').value = saved.meta.e || '';
+        document.getElementById('departamento').value = saved.meta.d || '';
+        document.getElementById('fecha').value = saved.meta.f || '';
+        if(saved.meta.a) document.getElementById('auditSelector').value = saved.meta.a;
+    }
+
+    async function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(18); doc.text("REPORTE DE AUDITORÍA - INVERSIONES ARIPAR", 105, 20, {align:'center'});
+        doc.setFontSize(10); doc.text(`Empresa: ${document.getElementById('empresa').value}`, 20, 35);
+        doc.text(`Cumplimiento: ${document.getElementById('mainProgress').innerText}`, 150, 35);
+
+        const canvas = document.getElementById('chart');
+        const img = canvas.toDataURL('image/png');
+        doc.addImage(img, 'PNG', 15, 50, 180, 80);
+
+        doc.text("FIRMAS DE VALIDACIÓN:", 20, 150);
+        if(!sigAuditor.isEmpty()) doc.addImage(sigAuditor.toDataURL(), 'PNG', 20, 160, 50, 25);
+        if(!sigAuditado.isEmpty()) doc.addImage(sigAuditado.toDataURL(), 'PNG', 130, 160, 50, 25);
+        
+        doc.text("________________________", 20, 190); doc.text("Firma Auditor", 30, 195);
+        doc.text("________________________", 130, 190); doc.text("Firma Auditado", 140, 195);
+
+        doc.save("Reporte_Auditoria.pdf");
+    }
+</script>
+</body>
+</html>
