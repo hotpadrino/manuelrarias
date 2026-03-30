@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pixel Quest</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Press Start 2P', monospace;
+            overflow: hidden;
+        }
+
+        /* Starfield background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 10% 15%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 25% 40%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 50% 10%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 75% 55%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 90% 25%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 35% 80%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 60% 70%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 90%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 15% 65%, #fff 0%, transparent 100%),
+                radial-gradient(1px 1px at 45% 35%, #fff 0%, transparent 100%);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        #ui-top {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            margin-bottom: 12px;
+            z-index: 10;
+        }
+
+        .ui-pill {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.12);
+            border-radius: 4px;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ui-label {
+            font-size: 7px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .ui-value {
+            font-size: 11px;
+            color: #ffe066;
+            text-shadow: 0 0 8px #ffe06688;
+        }
+
+        #canvas-wrapper {
+            position: relative;
+            border: 3px solid #ffe066;
+            box-shadow:
+                0 0 0 1px #0a0a0f,
+                0 0 30px #ffe06622,
+                0 0 60px #ffe06611,
+                inset 0 0 30px rgba(0,0,0,0.4);
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* Estilos del Editor Modal */
+        #modalEditor {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #editorContenedor {
+            background: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            text-align: center;
+        }
+
+        /* La magia para que el texto parezca un mapa cuadriculado */
+        #textoMapa {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            line-height: 24px;
+            letter-spacing: 8px; /* Separa las letras para hacerlas cuadradas */
+            background: #1a1a2e;
+            color: #fff;
+            border: 2px solid #4fd1c5;
+            padding: 10px;
+            resize: none;
+            overflow: hidden;
+            white-space: pre;
+        }
+
+        #leyenda {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #bdc3c7;
+            text-align: left;
+            background: #1e272e;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        /* Transition overlay */
+        #overlay {
+            position: absolute;
+            inset: 0;
+            background: #0a0a0f;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 5;
+        }
+        #overlay.fade-in { opacity: 1; }
+
+        /* Screen flash */
+        #flash {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 4;
+            transition: opacity 0.1s ease;
+        }
+        #flash.active { opacity: 0.35; }
+
+        #controls-hint {
+            margin-top: 12px;
+            font-size: 7px;
+            color: #555;
+            letter-spacing: 1px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        /* Touch controls */
+        #touch-controls {
+            display: none;
+            gap: 16px;
+            margin-top: 14px;
+        }
+        @media (pointer: coarse) {
+            #touch-controls { display: flex; }
+            #controls-hint { display: none; }
+        }
+        .touch-btn {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 16px;
+            width: 52px;
+            height: 52px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.1s;
+        }
+        .touch-btn:active { background: rgba(255,224,102,0.2); border-color: #ffe066; }
+
+        /* Win screen */
+        #win-screen {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(10,10,15,0.92);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            gap: 20px;
+        }
+        #win-screen.show { display: flex; }
+        #win-screen h1 { font-size: 18px; color: #ffe066; text-shadow: 0 0 20px #ffe066; animation: pulse 1s infinite; }
+        #win-screen p { font-size: 8px; color: #aaa; }
+        #restart-btn {
+            margin-top: 10px;
+            background: #ffe066;
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: transform 0.1s;
+        }
+        #restart-btn:hover { transform: scale(1.05); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-top">
+    <div class="ui-pill">
+        <span class="ui-label">Pantalla</span>
+        <span class="ui-value" id="nivelTexto">1 / 3</span>
+    </div>
+    <div class="ui-pill">
+        <span class="ui-label">Vidas</span>
+        <span class="ui-value" id="vidasTexto">♥ ♥ ♥</span>
+    </div>
+    <div class="ui-pill">
+        <span class="ui-label">Monedas</span>
+        <span class="ui-value" id="monedasTexto">0</span>
+    </div>
+</div>
+
+<div id="canvas-wrapper">
+    <canvas id="juegoCanvas" width="512" height="384"></canvas>
+    <div id="overlay"></div>
+    <div id="flash"></div>
+    <div id="win-screen">
+        <h1>¡GANASTE!</h1>
+        <p>Completaste todas las pantallas</p>
+        <button id="restart-btn">JUGAR DE NUEVO</button>
+    </div>
+</div>
+
+<div id="pantallaGameOver" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 200; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+    <h1 style="color: #e74c3c; font-size: 40px; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;">¡FIN DEL JUEGO!</h1>
+    <p style="color: white; margin-bottom: 30px;">Te has quedado sin vidas.</p>
+    <button id="btnReintentar" class="btn" style="background-color: #c0392b; padding: 15px 30px; font-size: 20px;">🔄 Volver a intentar</button>
+</div>
+    
+<button id="btnAbrirEditor" class="btn" style="margin-top: 10px; background-color: #8e44ad;">✏️ Editor de Mapas</button>
+
+    <div id="modalEditor">
+        <div id="editorContenedor">
+            <h3>Editor de Niveles</h3>
+            
+            <div style="margin-bottom: 10px;">
+                <label>Pantalla:</label>
+                <select id="selectPantalla"></select>
+                
+                <label style="margin-left: 10px;">Tema:</label>
+                <select id="selectTema">
+                    <option value="0">Tierra / Pasto</option>
+                    <option value="1">Cueva / Piedra</option>
+                    <option value="2">Nieve / Hielo</option>
+                </select>
+            </div>
+
+            <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
+            
+            <div id="leyenda">
+                <b>0</b> = Aire | <b>1</b> = Bloque sólido<br>
+                <b>S</b> = Pinchos | <b>&gt;</b> = Portal siguiente<br>
+                <b>!</b> = Meta final (Solo última pantalla)
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button id="btnGuardarMapa" class="btn" style="background-color: #27ae60; padding: 10px;">💾 Guardar</button>
+                <button id="btnCerrarEditor" class="btn" style="background-color: #c0392b; padding: 10px;">❌ Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+<p id="controls-hint">← → mover &nbsp;|&nbsp; ↑ saltar &nbsp;|&nbsp; ↑↑ doble salto</p>
+
+<div id="touch-controls">
+    <button class="touch-btn" id="btn-left">◀</button>
+    <button class="touch-btn" id="btn-jump">▲</button>
+    <button class="touch-btn" id="btn-right">▶</button>
+</div>
+
+<script>
+const canvas = document.getElementById('juegoCanvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const flash = document.getElementById('flash');
+const winScreen = document.getElementById('win-screen');
+const nivelTexto = document.getElementById('nivelTexto');
+const vidasTexto = document.getElementById('vidasTexto');
+const monedasTexto = document.getElementById('monedasTexto');
+
+const T = 32; // Tile size
+const COLS = 16;
+const ROWS = 12;
+
+// ─── PALETAS DE COLORES POR PANTALLA ─────────────────────────────────────────
+let temas = [
+    {
+        cielo: ['#1a1a2e', '#16213e', '#0f3460'],       // Noche / castillo
+        bloqueFondo: '#2d3561',
+        bloqueFrente: '#4a5568',
+        bloqueTop: '#68d391',
+        jugador: '#fc8181',
+        acento: '#ffe066',
+        moneda: '#ffd700',
+        nombre: 'INICIO'
+    },
+    {
+        cielo: ['#0d1b2a', '#1b2838', '#2d4a22'],       // Bosque oscuro
+        bloqueFondo: '#1a3a2a',
+        bloqueFrente: '#2d5a3d',
+        bloqueTop: '#68d391',
+        jugador: '#90cdf4',
+        acento: '#68d391',
+        moneda: '#ffd700',
+        nombre: 'BOSQUE'
+    },
+    {
+        cielo: ['#1a0a0a', '#2d1010', '#0f0a1e'],       // Cueva de lava
+        bloqueFondo: '#3d1515',
+        bloqueFrente: '#6b2626',
+        bloqueTop: '#fc8181',
+        jugador: '#fbd38d',
+        acento: '#fc8181',
+        moneda: '#ffd700',
+        nombre: 'CUEVA'
+    }
+];
+
+// ─── MAPAS DE PANTALLAS ───────────────────────────────────────────────────────
+// 0 = aire, 1 = bloque, C = moneda, S = spike (peligro)
+let mapas = [
+    [
+        "1111111111111111",
+        "1000000000000001",
+        "1000C0000000C001",
+        "10000000000000S1",
+        "1000110000000111",
+        "1000000000000001",
+        "1001110000001101",
+        "1000000C00000001",
+        "100000010110000>",
+        "1000001101000001",
+        "1111111101111111",
+        "1111111101111111"
+    ],
+    [
+        "1111111111111111",
+        "10C0000000000001",
+        "100000000000000>",
+        "1000011110000001",
+        "1000000000000001",
+        "1S100000000011C1",
+        "111000C000000001",
+        "1000000111000001",
+        "1000000000000001",
+        "11100000011100S1",
+        "1111000001111111",
+        "1111110111111111"
+    ],
+    [
+        "1111111111111111",
+        "1000000000000001",
+        "100C000000000C01",
+        "1000000000000001",
+        "1011000010011001",
+        "1000000000000001",
+        "1000110000000001",
+        "1000000C0000000!",
+        "1C00000010000001",
+        "11000000000011S1",
+        "11111SSSSSS11111",
+        "1111111111111111"
+    ]
+];
+
+// ─── ESTADO DEL JUEGO ─────────────────────────────────────────────────────────
+let pantallaActual = 0;
+let bloques = [];
+let monedas = [];
+let trampas = [];
+let salida = null;
+let meta = null; // Para la última pantalla
+let totalMonedas = 0;
+let vidas = 3;
+let transitando = false;
+let particulas = [];
+let estrellasFondo = [];
+
+// ─── JUGADOR ──────────────────────────────────────────────────────────────────
+const jugador = {
+    x: 50, y: 200,
+    ancho: 20, alto: 26,
+    vx: 0, vy: 0,
+    velocidad: 3.8,
+    gravedad: 0.55,
+    enSuelo: false,
+    saltosDisponibles: 2,
+    cara: 1, // 1 = derecha, -1 = izquierda
+    animFrame: 0,
+    animTimer: 0,
+    invencible: 0, // frames de invencibilidad
+    muerto: false
+};
+
+const teclas = { izquierda: false, derecha: false, arriba: false, arriba_prev: false };
+
+// ─── PARTÍCULAS ───────────────────────────────────────────────────────────────
+function spawnParticulas(x, y, color, n = 8) {
+    for (let i = 0; i < n; i++) {
+        const ang = (Math.PI * 2 * i) / n + Math.random() * 0.5;
+        const vel = 1.5 + Math.random() * 3;
+        particulas.push({
+            x, y,
+            vx: Math.cos(ang) * vel,
+            vy: Math.sin(ang) * vel - 1,
+            vida: 35 + Math.random() * 20,
+            maxVida: 55,
+            color,
+            tam: 3 + Math.random() * 3
+        });
+    }
+}
+
+// ─── ESTRELLAS DE FONDO ───────────────────────────────────────────────────────
+function generarEstrellas() {
+    estrellasFondo = [];
+    for (let i = 0; i < 40; i++) {
+        estrellasFondo.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5 + 0.5,
+            brillo: Math.random(),
+            vel: Math.random() * 0.3 + 0.05
+        });
+    }
+}
+generarEstrellas();
+
+// ─── CARGAR PANTALLA ──────────────────────────────────────────────────────────
+function cargarPantalla(idx) {
+    bloques = [];
+    monedas = [];
+    trampas = [];
+    salida = null;
+    meta = null;
+
+    const mapa = mapas[idx];
+    for (let fila = 0; fila < mapa.length; fila++) {
+        for (let col = 0; col < mapa[fila].length; col++) {
+            const ch = mapa[fila][col];
+            const x = col * T;
+            const y = fila * T;
+            if (ch === '1') {
+                bloques.push({ x, y, w: T, h: T });
+            } else if (ch === 'C') {
+                monedas.push({ x: x + 8, y: y + 8, w: 16, h: 16, recogida: false, anim: Math.random() * Math.PI * 2 });
+            } else if (ch === '>') {
+                salida = { x, y, w: T, h: T * 2 }; // portal
+            } else if (ch === '!') {
+                meta = { x, y, w: T, h: T * 2 };   // meta final
+            } else if (ch === 'S') {
+                trampas.push({ x, y, w: T, h: T }); // espinas
+            }
+        }
+    }
+
+    nivelTexto.innerText = `${idx + 1} / ${mapas.length}`;
+}
+
+// ─── COLISIONES AABB ──────────────────────────────────────────────────────────
+function col(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x &&
+           a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+// ─── RESPAWN ──────────────────────────────────────────────────────────────────
+function respawn() {
+    jugador.x = 50;
+    jugador.y = 100;
+    jugador.vx = 0;
+    jugador.vy = 0;
+    jugador.enSuelo = false;
+    jugador.saltosDisponibles = 2;
+    jugador.invencible = 120;
+    jugador.muerto = false;
+    actualizarUI();
+
+    // Flash rojo
+    flash.classList.add('active');
+    setTimeout(() => flash.classList.remove('active'), 150);
+}
+
+const pantallaGameOver = document.getElementById('pantallaGameOver');
+
+function procesarMuerte() {
+    // Evitar que reste más de 1 vida si toca varios pinchos a la vez
+    if (jugador.muerto) return; 
+    
+    jugador.muerto = true;
+    vidas--; // Restamos una vida
+    
+    // Si tienes una función para actualizar los textos de la pantalla, llámala aquí
+    if (typeof actualizarUI === 'function') actualizarUI(); 
+
+    if (vidas > 0) {
+        // Si aún le quedan vidas, revive después de un ratito
+        setTimeout(respawn, 600);
+    } else {
+        // Si las vidas son 0 o menos, mostramos la pantalla de Game Over
+        setTimeout(() => {
+            pantallaGameOver.style.display = 'flex';
+        }, 600);
+    }
+}
+
+// ─── TRANSICIÓN DE PANTALLA ───────────────────────────────────────────────────
+function transicionar(siguiente, xInicio) {
+    if (transitando) return;
+    transitando = true;
+    overlay.classList.add('fade-in');
+    setTimeout(() => {
+        pantallaActual = siguiente;
+        cargarPantalla(pantallaActual);
+        jugador.x = xInicio;
+        jugador.y = 80;
+        jugador.vx = 0;
+        jugador.vy = 0;
+        jugador.saltosDisponibles = 2;
+        overlay.classList.remove('fade-in');
+        transitando = false;
+    }, 300);
+}
+
+// ─── UI ───────────────────────────────────────────────────────────────────────
+function actualizarUI() {
+    const corazones = '♥ '.repeat(vidas) + '♡ '.repeat(Math.max(0, 3 - vidas));
+    vidasTexto.innerText = corazones.trim();
+    monedasTexto.innerText = totalMonedas;
+}
+actualizarUI();
+
+// ─── ACTUALIZAR ───────────────────────────────────────────────────────────────
+function actualizar() {
+    if (transitando || jugador.muerto) return;
+
+    // Animación
+    jugador.animTimer++;
+    if (jugador.animTimer > 8) { jugador.animTimer = 0; jugador.animFrame ^= 1; }
+
+    // Invencibilidad
+    if (jugador.invencible > 0) jugador.invencible--;
+
+    // Movimiento horizontal
+    if (teclas.izquierda) { jugador.vx = -jugador.velocidad; jugador.cara = -1; }
+    else if (teclas.derecha) { jugador.vx = jugador.velocidad; jugador.cara = 1; }
+    else jugador.vx *= 0.75;
+
+    jugador.x += jugador.vx;
+
+    // Colisiones horizontales
+    const hitboxH = { x: jugador.x, y: jugador.y + 2, w: jugador.ancho, h: jugador.alto - 4 };
+    for (let b of bloques) {
+        if (col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, b)) {
+            if (jugador.vx > 0) jugador.x = b.x - jugador.ancho;
+            if (jugador.vx < 0) jugador.x = b.x + b.w;
+            jugador.vx = 0;
+        }
+    }
+
+    // Gravedad
+    jugador.vy += jugador.gravedad;
+    if (jugador.vy > 14) jugador.vy = 14;
+    jugador.y += jugador.vy;
+    jugador.enSuelo = false;
+
+    // Colisiones verticales
+    for (let b of bloques) {
+        if (col({ x: jugador.x + 2, y: jugador.y, w: jugador.ancho - 4, h: jugador.alto }, b)) {
+            if (jugador.vy > 0) {
+                jugador.y = b.y - jugador.alto;
+                jugador.vy = 0;
+                jugador.enSuelo = true;
+                jugador.saltosDisponibles = 2;
+            } else if (jugador.vy < 0) {
+                jugador.y = b.y + b.h;
+                jugador.vy = 1;
+            }
+        }
+    }
+
+    // Límites horizontales
+    if (jugador.x < 0) jugador.x = 0;
+
+    // Monedas
+    for (let m of monedas) {
+        if (!m.recogida && col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, { x: m.x, y: m.y, w: m.w, h: m.h })) {
+            m.recogida = true;
+            totalMonedas++;
+            actualizarUI();
+            spawnParticulas(m.x + 8, m.y + 8, '#ffd700', 10);
+        }
+        m.anim += 0.07;
+    }
+
+    // Salida (portal) — siguiente pantalla
+    if (salida && col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, salida)) {
+        if (pantallaActual < mapas.length - 1) {
+            transicionar(pantallaActual + 1, 50);
+        }
+    }
+
+    // Meta final
+    if (meta && col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, meta)) {
+        winScreen.classList.add('show');
+    }
+
+// Caída al vacío
+    if (jugador.y > canvas.height + 50) {
+        spawnParticulas(jugador.x + jugador.ancho / 2, jugador.y, temas[pantallaActual].jugador, 16);
+        procesarMuerte();
+    }
+
+    // --- BLOQUE CORREGIDO PARA LOS PINCHOS ---
+    for (let t of trampas) {
+        let hitboxTrampa = { x: t.x + 4, y: t.y + 16, w: t.w - 8, h: t.h - 16 };
+        if (col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, hitboxTrampa)) {
+            spawnParticulas(jugador.x + jugador.ancho / 2, jugador.y, '#e53e3e', 16);
+            procesarMuerte(); // <- Ahora sí está DENTRO del impacto
+        }
+    }
+
+    // ------------------------------------------
+
+    // Partículas
+    particulas = particulas.filter(p => p.vida > 0);
+    for (let p of particulas) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.vida--;
+    }
+
+    // Estrellas
+    for (let s of estrellasFondo) {
+        s.brillo += s.vel * 0.05;
+    }
+}
+
+// ─── SALTO ────────────────────────────────────────────────────────────────────
+function intentarSalto() {
+    if (jugador.saltosDisponibles > 0 && !jugador.muerto) {
+        jugador.vy = -10;
+        jugador.saltosDisponibles--;
+        jugador.enSuelo = false;
+        spawnParticulas(
+            jugador.x + jugador.ancho / 2,
+            jugador.y + jugador.alto,
+            '#ffffff', 5
+        );
+    }
+}
+
+// ─── DIBUJAR ──────────────────────────────────────────────────────────────────
+function dibujar() {
+    const tema = temas[pantallaActual];
+
+    // Fondo degradado
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, tema.cielo[0]);
+    grad.addColorStop(0.5, tema.cielo[1]);
+    grad.addColorStop(1, tema.cielo[2]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Estrellas animadas
+    for (let s of estrellasFondo) {
+        const alpha = 0.3 + 0.4 * Math.abs(Math.sin(s.brillo));
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Bloques
+    for (let b of bloques) {
+        // Sombra del bloque
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(b.x + 3, b.y + 3, b.w, b.h);
+        // Cuerpo
+        ctx.fillStyle = tema.bloqueFrente;
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        // Borde superior (césped / tope)
+        ctx.fillStyle = tema.bloqueTop;
+        ctx.fillRect(b.x, b.y, b.w, 4);
+        // Detalle de textura (líneas)
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.fillRect(b.x, b.y + T / 2, b.w, 1);
+        ctx.fillRect(b.x + T / 2, b.y + 4, 1, b.h - 4);
+        // Highlight borde izquierdo
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.fillRect(b.x, b.y, 2, b.h);
+    }
+
+    // --- AGREGA ESTE BLOQUE PARA DIBUJAR LOS PINCHOS ---
+    ctx.fillStyle = '#e53e3e'; // Color rojo peligro para los pinchos
+    for (let t of trampas) {
+        ctx.beginPath();
+        // Dibujamos unos triángulos simples que parezcan pinchos
+        ctx.moveTo(t.x, t.y + t.h);
+        ctx.lineTo(t.x + t.w * 0.25, t.y + t.h * 0.4);
+        ctx.lineTo(t.x + t.w * 0.5, t.y + t.h);
+        ctx.lineTo(t.x + t.w * 0.75, t.y + t.h * 0.4);
+        ctx.lineTo(t.x + t.w, t.y + t.h);
+        ctx.fill();
+        
+        // Un pequeño borde gris en la base
+        ctx.fillStyle = temas[pantallaActual].bloqueFondo;
+        ctx.fillRect(t.x, t.y + t.h - 4, t.w, 4);
+        ctx.fillStyle = '#e53e3e'; // regresar al rojo
+    }
+    // ---------------------------------------------------
+    
+    // Portal / salida
+    if (salida) {
+        const t = Date.now() / 600;
+        const r = 18 + Math.sin(t) * 4;
+        const cx = salida.x + T / 2;
+        const cy = salida.y + T;
+        // Aura externa
+        const aura = ctx.createRadialGradient(cx, cy, 0, cx, cy, r + 12);
+        aura.addColorStop(0, tema.acento + 'aa');
+        aura.addColorStop(1, 'transparent');
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + 12, 0, Math.PI * 2);
+        ctx.fill();
+        // Portal principal
+        ctx.fillStyle = tema.acento;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+        // Interior oscuro
+        ctx.fillStyle = '#0a0a0f';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+        ctx.fill();
+        // Texto
+        ctx.fillStyle = tema.acento;
+        ctx.font = '7px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText('SALIDA', cx, salida.y + T * 2 + 14);
+    }
+
+    // Meta final
+    if (meta) {
+        const t = Date.now() / 400;
+        const colores = ['#ff6b6b', '#ffd700', '#68d391', '#90cdf4'];
+        const ci = Math.floor(t) % colores.length;
+        const cx = meta.x + T / 2;
+        const cy = meta.y + T;
+        // Estrella parpadeante
+        ctx.fillStyle = colores[ci];
+        ctx.font = '24px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★', cx, cy);
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '7px "Press Start 2P"';
+        ctx.fillText('META', cx, meta.y + T * 2 + 14);
+    }
+
+    // Monedas
+    const t = Date.now() / 300;
+    for (let m of monedas) {
+        if (m.recogida) continue;
+        const bounce = Math.sin(m.anim + t) * 3;
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(m.x + 8, m.y + 14 + bounce + 4, 6, 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Moneda
+        const coinGrad = ctx.createRadialGradient(m.x + 6, m.y + 6 + bounce, 1, m.x + 8, m.y + 8 + bounce, 9);
+        coinGrad.addColorStop(0, '#fff7aa');
+        coinGrad.addColorStop(1, '#f6ad55');
+        ctx.fillStyle = coinGrad;
+        ctx.beginPath();
+        ctx.arc(m.x + 8, m.y + 8 + bounce, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#d69e2e';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Símbolo $
+        ctx.fillStyle = '#744210';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('$', m.x + 8, m.y + 12 + bounce);
+    }
+    ctx.textAlign = 'left';
+
+    // Jugador
+    if (!jugador.muerto && (jugador.invencible === 0 || Math.floor(jugador.invencible / 6) % 2 === 0)) {
+        const jx = Math.round(jugador.x);
+        const jy = Math.round(jugador.y);
+        const jw = jugador.ancho;
+        const jh = jugador.alto;
+        const c = tema.jugador;
+
+        ctx.save();
+        // Flip horizontal si mira a la izquierda
+        if (jugador.cara === -1) {
+            ctx.translate(jx + jw / 2, jy + jh / 2);
+            ctx.scale(-1, 1);
+            ctx.translate(-(jx + jw / 2), -(jy + jh / 2));
+        }
+
+        // Sombra
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(jx + 3, jy + 3, jw, jh);
+
+        // Cuerpo
+        ctx.fillStyle = c;
+        ctx.fillRect(jx, jy + 8, jw, jh - 8);
+
+        // Cabeza
+        ctx.fillStyle = c;
+        ctx.fillRect(jx + 2, jy, jw - 4, 12);
+
+        // Ojos
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(jx + jw - 8, jy + 3, 4, 4);
+
+        // Boca / sonrisa
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(jx + jw - 9, jy + 8, 6, 2);
+
+        // Piernas animadas
+        const legOff = jugador.enSuelo ? (jugador.animFrame ? 3 : -1) : 0;
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(jx + 2, jy + jh - 7, 6, 7 + legOff);
+        ctx.fillRect(jx + jw - 8, jy + jh - 7, 6, 7 - legOff);
+
+        // Brillo cabeza
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillRect(jx + 4, jy + 1, 4, 3);
+
+        ctx.restore();
+    }
+
+    // Partículas
+    for (let p of particulas) {
+        const alpha = p.vida / p.maxVida;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - p.tam / 2, p.y - p.tam / 2, p.tam, p.tam);
+    }
+    ctx.globalAlpha = 1;
+
+    // Nombre de zona (aparece brevemente — usamos tiempo de pantalla)
+    if (tiempoPantalla < 90) {
+        const alpha = tiempoPantalla < 60 ? 1 : 1 - (tiempoPantalla - 60) / 30;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = tema.acento;
+        ctx.font = '10px "Press Start 2P"';
+        ctx.textAlign = 'center';
+        ctx.fillText(`— ${tema.nombre} —`, canvas.width / 2, canvas.height / 2 - 20);
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'left';
+    }
+}
+
+let tiempoPantalla = 0;
+const _cargar = cargarPantalla;
+cargarPantalla = function(idx) {
+    _cargar(idx);
+    tiempoPantalla = 0;
+};
+
+// ─── LÓGICA DEL EDITOR DE MAPAS Y PERSISTENCIA ────────────────────────────────
+
+const modalEditor = document.getElementById('modalEditor');
+const textoMapa = document.getElementById('textoMapa');
+const selectPantalla = document.getElementById('selectPantalla');
+const selectTema = document.getElementById('selectTema');
+
+// 1. Cargar mapas guardados al iniciar
+function cargarMapasGuardados() {
+    const mapasEnMemoria = localStorage.getItem('misMapasPixelQuest');
+    const temasEnMemoria = localStorage.getItem('misTemasPixelQuest'); // <-- NUEVO: Busca temas
+    
+    if (mapasEnMemoria) {
+        mapas = JSON.parse(mapasEnMemoria);
+    }
+    if (temasEnMemoria) {
+        temas = JSON.parse(temasEnMemoria); // <-- NUEVO: Carga los colores guardados
+    }
+    
+    // Guardamos una copia de los primeros 3 temas originales como "plantillas"
+    // para no perder los colores base cuando edites mucho.
+    if (!window.temasBase) {
+        window.temasBase = JSON.parse(JSON.stringify(temas.slice(0, 3))); 
+    }
+}
+
+cargarMapasGuardados(); // Ejecutar al inicio
+
+// 2. Abrir el editor
+document.getElementById('btnAbrirEditor').addEventListener('click', () => {
+    actualizarListaPantallas();
+    cargarMapaEnTextarea(pantallaActual); // Carga la pantalla donde estás jugando
+    modalEditor.style.display = 'flex';
+});
+
+// 3. Cerrar el editor
+document.getElementById('btnCerrarEditor').addEventListener('click', () => {
+    modalEditor.style.display = 'none';
+});
+
+// 4. Actualizar la lista desplegable de pantallas
+function actualizarListaPantallas() {
+    selectPantalla.innerHTML = '';
+    for (let i = 0; i < mapas.length; i++) {
+        selectPantalla.innerHTML += `<option value="${i}">Pantalla ${i + 1}</option>`;
+    }
+    selectPantalla.innerHTML += `<option value="${mapas.length}">+ NUEVA PANTALLA</option>`;
+    selectPantalla.value = pantallaActual;
+}
+
+// 5. Cargar el texto del mapa seleccionado en el área de texto
+function cargarMapaEnTextarea(indice) {
+    if (indice < mapas.length) {
+        // Unir el array con saltos de línea para mostrarlo en el texto
+        textoMapa.value = mapas[indice].join('\n');
+        // Asumimos que el tema coincide con el índice de la pantalla (o usa un default)
+        selectTema.value = Math.min(indice, 2); // Limita al máximo de temas que tengas
+    } else {
+        // Plantilla vacía para una nueva pantalla (12 filas de 16 ceros)
+        let vacio = "";
+        for(let i=0; i<11; i++) vacio += "0000000000000000\n";
+        vacio += "1111111111111111"; // Piso base
+        textoMapa.value = vacio;
+    }
+}
+
+// Cambiar el texto si el usuario elige otra pantalla en el desplegable
+selectPantalla.addEventListener('change', (e) => {
+    cargarMapaEnTextarea(parseInt(e.target.value));
+});
+
+// 6. Guardar los cambios
+document.getElementById('btnGuardarMapa').addEventListener('click', () => {
+    let nuevoMapaArray = textoMapa.value.trim().split('\n');
+    const indiceSeleccionado = parseInt(selectPantalla.value);
+    
+    // 1. LEER EL TEMA SELECCIONADO EN EL DESPLEGABLE
+    const indiceTema = parseInt(selectTema.value); 
+
+    if (nuevoMapaArray.length !== 12 || nuevoMapaArray[0].length !== 16) {
+        alert("Atención: El mapa debería tener exactamente 12 filas y 16 columnas.");
+    }
+
+    // 2. GUARDAR EL MAPA
+    if (indiceSeleccionado === mapas.length) {
+        mapas.push(nuevoMapaArray);
+    } else {
+        mapas[indiceSeleccionado] = nuevoMapaArray;
+    }
+
+    // 3. GUARDAR EL TEMA (Copiando de nuestras plantillas base)
+    temas[indiceSeleccionado] = window.temasBase[indiceTema];
+
+    // 4. PERSISTENCIA: Guardar AMBOS en el navegador
+    localStorage.setItem('misMapasPixelQuest', JSON.stringify(mapas));
+    localStorage.setItem('misTemasPixelQuest', JSON.stringify(temas)); // <-- NUEVO
+
+    pantallaActual = indiceSeleccionado >= mapas.length ? mapas.length - 1 : indiceSeleccionado;
+    cargarPantalla(pantallaActual);
+    jugador.x = 50; 
+    jugador.y = 50;
+    
+    modalEditor.style.display = 'none';
+    alert("¡Mapa y Tema guardados con éxito!");
+});
+
+// ─── BUCLE PRINCIPAL ──────────────────────────────────────────────────────────
+function bucle() {
+    actualizar();
+    dibujar();
+    tiempoPantalla++;
+    requestAnimationFrame(bucle);
+}
+
+// ─── CONTROLES TECLADO ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a') teclas.izquierda = true;
+    if (e.key === 'ArrowRight' || e.key === 'd') teclas.derecha = true;
+    if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') && !teclas.arriba) {
+        teclas.arriba = true;
+        intentarSalto();
+    }
+    if (e.key === 'ArrowUp' || e.key === ' ') e.preventDefault();
+});
+document.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'a') teclas.izquierda = false;
+    if (e.key === 'ArrowRight' || e.key === 'd') teclas.derecha = false;
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') teclas.arriba = false;
+});
+
+// ─── CONTROLES TÁCTILES ───────────────────────────────────────────────────────
+const btnL = document.getElementById('btn-left');
+const btnR = document.getElementById('btn-right');
+const btnJ = document.getElementById('btn-jump');
+btnL.addEventListener('touchstart', e => { e.preventDefault(); teclas.izquierda = true; });
+btnL.addEventListener('touchend', e => { e.preventDefault(); teclas.izquierda = false; });
+btnR.addEventListener('touchstart', e => { e.preventDefault(); teclas.derecha = true; });
+btnR.addEventListener('touchend', e => { e.preventDefault(); teclas.derecha = false; });
+btnJ.addEventListener('touchstart', e => { e.preventDefault(); intentarSalto(); });
+
+// ─── REINICIAR ────────────────────────────────────────────────────────────────
+document.getElementById('restart-btn').addEventListener('click', () => {
+    winScreen.classList.remove('show');
+    pantallaActual = 0;
+    totalMonedas = 0;
+    vidas = 3;
+    actualizarUI();
+    jugador.x = 50; jugador.y = 100;
+    jugador.vx = 0; jugador.vy = 0;
+    jugador.invencible = 0;
+    jugador.muerto = false;
+    jugador.saltosDisponibles = 2;
+    cargarPantalla(0);
+});
+
+document.getElementById('btnReintentar').addEventListener('click', () => {
+    // 1. Ocultamos la pantalla roja
+    pantallaGameOver.style.display = 'none';
+    
+    // 2. Restauramos los valores iniciales
+    vidas = 3; 
+    pantallaActual = 0; // Lo devolvemos al primer nivel
+    // totalMonedas = 0; // (Descomenta esto si también quieres quitarle las monedas al perder)
+    
+    if (typeof actualizarUI === 'function') actualizarUI();
+    
+    // 3. Recargamos el nivel y revivimos al jugador
+    cargarPantalla(pantallaActual);
+    respawn(); // Esto lo pone en x=50, y=50 y le quita el estado de "muerto"
+});
+
+// ─── INICIO ───────────────────────────────────────────────────────────────────
+cargarPantalla(0);
+bucle();
+</script>
+</body>
+</html>
