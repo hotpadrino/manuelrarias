@@ -3,346 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Auditoría Digital - Aripar</title>
+    <title>Auditoría Pro - Inversiones Aripar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <style>
         :root {
             --bg-body: #f4f7f6; --bg-card: #ffffff; --text: #2c3e50;
             --primary: #0056b3; --secondary: #6c757d; --border: #dee2e6;
-            --modal-bg: rgba(0,0,0,0.9);
+            --accent: #e67e22; --modal-bg: rgba(0,0,0,0.9);
         }
         [data-theme="dark"] {
             --bg-body: #1a1a1a; --bg-card: #2d2d2d; --text: #ecf0f1;
             --primary: #3498db; --border: #444;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); color: var(--text); margin: 0; padding: 20px; transition: 0.3s; }
-        .container { max-width: 1000px; margin: auto; background: var(--bg-card); padding: 25px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; transition: 0.3s; }
+        .container { max-width: 1100px; margin: auto; background: var(--bg-card); padding: 25px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); }
         
-        /* UI Elements */
-        .header-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        /* Controles de Cabecera */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
         input, select, textarea { padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text); width: 100%; box-sizing: border-box; }
+
+        /* Navegación por Secciones */
+        .nav-sections { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); scrollbar-width: thin; }
+        .nav-btn { padding: 8px 18px; border: 1px solid var(--primary); border-radius: 20px; cursor: pointer; white-space: nowrap; background: transparent; color: var(--primary); font-weight: bold; transition: 0.2s; }
+        .nav-btn.active { background: var(--primary); color: white; }
+
         .search-container { position: sticky; top: 0; z-index: 100; background: var(--bg-card); padding: 10px 0; border-bottom: 2px solid var(--primary); margin-bottom: 20px; }
-        
-        .question-card { border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 15px; page-break-inside: avoid; }
+        #results-counter { font-weight: bold; color: var(--accent); font-size: 0.9em; margin-top: 5px; display: block; }
+
+        .question-card { border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 18px; background: rgba(0,0,0,0.02); page-break-inside: avoid; }
         .combo-res { font-weight: bold; border: 2px solid var(--primary); margin-top: 10px; }
-        
-        /* Sección de Firmas */
+
+        /* Firmas */
         .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px; }
-        .sig-block { text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .sig-display { width: 200px; height: 80px; border-bottom: 1px solid #000; margin-bottom: 10px; display: flex; align-items: flex-end; justify-content: center; }
-        .sig-display img { max-height: 100%; max-width: 100%; }
-        .sig-data { font-size: 14px; line-height: 1.4; }
-        .sig-role { font-weight: bold; text-transform: uppercase; color: var(--primary); margin-bottom: 5px; border: none; text-align: center; background: transparent; }
+        .sig-block { text-align: center; }
+        .sig-display { width: 100%; height: 100px; border-bottom: 2px solid #000; margin-bottom: 10px; display: flex; align-items: flex-end; justify-content: center; background: #fff; }
+        .sig-display img { max-height: 100%; }
 
-        /* Modal */
+        /* Modal Firma */
         .sig-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 10001; flex-direction: column; }
-        .modal-body { flex: 1; background: #fff; margin: 20px; border-radius: 10px; position: relative; }
-        #signature-pad { position: absolute; left: 0; top: 0; width: 100%; height: 100%; cursor: crosshair; }
+        .modal-body { flex: 1; background: #fff; margin: 15px; border-radius: 10px; position: relative; }
+        #signature-pad { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 
-        /* Botones */
-        .btn { padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        /* Footer */
+        footer { position: fixed; bottom: 0; left: 0; width: 100%; background: #222; color: white; text-align: center; padding: 15px 0; font-size: 14px; z-index: 1000; }
+        footer a { color: #00d084; text-decoration: none; margin: 0 10px; font-weight: bold; }
+
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-main { background: var(--primary); color: white; }
-        .btn-save { background: #27ae60; color: white; }
-        .btn-pdf { background: #c0392b; color: white; }
-        .btn-danger { background: #e74c3c; color: white; font-size: 11px; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .progress-bar { height: 22px; background: #27ae60; text-align: center; color: white; font-size: 13px; border-radius: 11px; transition: 0.5s; line-height: 22px; }
         
-        .progress-bar { height: 20px; background: #27ae60; text-align: center; color: white; font-size: 12px; border-radius: 10px; transition: 0.5s; }
-        .hidden { display: none !important; }
-
-        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
         @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; }
-            .btn, .search-container, #fileInput, label[for="fileInput"], .sig-modal, .btn-danger, #auditSelector, #chart-container, .theme-btn { 
-                display: none !important; 
-            }
-            .question-card { border: none; border-bottom: 1px solid #eee; padding: 10px 0; }
-            textarea { border: none; resize: none; overflow: hidden; padding: 0; }
-            select { border: none; appearance: none; -webkit-appearance: none; font-weight: bold; padding: 0; }
-            .sig-role { color: black; border: none; }
-            .sig-block { page-break-inside: avoid; }
-            .progress-bar { border: 1px solid #27ae60; color: black; }
+            .btn, .search-container, .nav-sections, #fileInput, label, #chart-container, .theme-btn, footer { display: none !important; }
+            .question-card { border: none; border-bottom: 1px solid #eee; }
+            .hidden { display: block !important; }
+            .sig-modal { display: none; }
         }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin:0;">📋 Auditoría Aripar</h2>
+    <div class="top-bar">
+        <h2 style="margin:0;">📋 Auditoría Aripar Pro</h2>
         <div class="theme-btn">
-            <button onclick="toggleTheme()" class="btn" style="border:1px solid #ccc">🌓</button>
-            <button onclick="clearAll()" class="btn btn-danger">🗑️ Limpiar</button>
+            <button onclick="toggleTheme()" class="btn" style="border:1px solid var(--border)">🌓 Tema</button>
+            <button onclick="clearAll()" class="btn btn-danger" style="font-size: 11px;">🗑️ Borrar</button>
         </div>
     </div>
 
     <div class="header-grid">
-        <input type="text" id="empresa" placeholder="Empresa Auditada" oninput="save()">
-        <input type="text" id="departamento" placeholder="Área / Proceso" oninput="save()">
-        <input type="date" id="fecha" oninput="save()">
-        <select id="auditSelector" onchange="renderChecklist()"></select>
-        <input type="file" id="fileInput" accept=".txt" style="display:none;">
-        <label for="fileInput" class="btn" style="border:1px solid #ccc; text-align:center; cursor:pointer; font-size:12px;">Cargar Normas .txt</label>
+        <input type="text" id="empresa" placeholder="Empresa Auditada">
+        <input type="text" id="departamento" placeholder="Área / Proceso">
+        <input type="date" id="fecha">
+        <select id="auditSelector" onchange="renderChecklist(true)"></select>
+        <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="handleFileUpload(this)">
+        <label for="fileInput" class="btn" style="border:1px solid #ccc; text-align:center; cursor:pointer; font-size:12px;">📂 Carga Local</label>
     </div>
 
     <div class="search-container">
-        <input type="text" id="search" placeholder="🔍 Buscar..." oninput="filter()">
-        <small id="results-counter"></small>
+        <input type="text" id="search" placeholder="🔍 Buscar en toda la auditoría..." oninput="filter()">
+        <span id="results-counter">Cargando...</span>
     </div>
 
+    <div id="sectionNav" class="nav-sections"></div>
     <div id="checklist"></div>
 
-    <div id="chart-container" style="margin-top: 30px; height: 250px;">
-        <canvas id="chart"></canvas>
-    </div>
-
-    <div style="margin: 20px 0;">
-        <div style="background: #eee; border-radius: 10px;"><div id="mainProgress" class="progress-bar" style="width:0%">0%</div></div>
-    </div>
+    <div id="chart-container" style="margin-top: 40px; height: 300px;"><canvas id="chart"></canvas></div>
+    <div style="background: #eee; border-radius: 11px; margin: 20px 0;"><div id="mainProgress" class="progress-bar" style="width:0%">0%</div></div>
 
     <div class="signature-section">
         <div class="sig-block">
-            <div class="sig-display" id="display-sig1">
-                <span style="color:#ccc; font-size:12px;" class="btn">Click en "Firmar" abajo</span>
-            </div>
-            <div class="sig-data">
-                <input type="text" id="role-1" class="sig-role" value="Auditor" oninput="save()">
-                <input type="text" id="name-1" placeholder="Nombre completo" style="border:none; text-align:center; font-weight:bold;" oninput="save()">
-                <input type="text" id="pos-1" placeholder="Cargo / Grado" style="border:none; text-align:center; font-size:12px;" oninput="save()">
-            </div>
-            <button class="btn btn-main btn-sm" style="margin-top:10px; font-size:11px;" onclick="openSig('sig1')">🖊️ Firmar</button>
+            <div class="sig-display" id="display-sig1"></div>
+            <input type="text" id="role-1" value="Auditor" style="text-align:center; border:none; font-weight:bold;">
+            <input type="text" id="name-1" placeholder="Nombre" style="text-align:center; border:none;">
+            <button class="btn btn-main" style="margin-top:10px; font-size:11px;" onclick="openSig('sig1')">Firmar</button>
         </div>
-
         <div class="sig-block">
-            <div class="sig-display" id="display-sig2">
-                <span style="color:#ccc; font-size:12px;" class="btn">Click en "Firmar" abajo</span>
-            </div>
-            <div class="sig-data">
-                <input type="text" id="role-2" class="sig-role" value="Auditado" oninput="save()">
-                <input type="text" id="name-2" placeholder="Nombre completo" style="border:none; text-align:center; font-weight:bold;" oninput="save()">
-                <input type="text" id="pos-2" placeholder="Cargo / Grado" style="border:none; text-align:center; font-size:12px;" oninput="save()">
-            </div>
-            <button class="btn btn-main btn-sm" style="margin-top:10px; font-size:11px;" onclick="openSig('sig2')">🖊️ Firmar</button>
+            <div class="sig-display" id="display-sig2"></div>
+            <input type="text" id="role-2" value="Auditado" style="text-align:center; border:none; font-weight:bold;">
+            <input type="text" id="name-2" placeholder="Nombre" style="text-align:center; border:none;">
+            <button class="btn btn-main" style="margin-top:10px; font-size:11px;" onclick="openSig('sig2')">Firmar</button>
         </div>
     </div>
 
-    <div style="margin-top: 40px; display: flex; gap: 10px;" class="btn-group">
-        <button class="btn btn-save" style="flex:1" onclick="save()">💾 Guardar Progreso</button>
-        <button class="btn btn-pdf" style="flex:2" onclick="printReport()">📄 Abrir Vista de Impresión (PDF)</button>
+    <div style="margin-top: 40px; display: flex; gap: 10px;">
+        <button class="btn btn-save" style="flex:1; background:#27ae60; color:white;" onclick="save()">💾 Guardar</button>
+        <button class="btn btn-pdf" style="flex:2; background:#c0392b; color:white;" onclick="printReport()">📄 PDF / Imprimir</button>
     </div>
 </div>
+
+<footer>
+    Inversiones Aripar | 
+    <a href="https://wa.me/573128816469" target="_blank">📲 WhatsApp</a> | 
+    <a href="mailto:alucard8@gmail.com">✉️ Correo</a>
+</footer>
 
 <div id="sig-modal" class="sig-modal">
     <div class="modal-body"><canvas id="signature-pad"></canvas></div>
     <div style="display: flex; gap: 10px; padding: 20px; justify-content: center;">
-        <button class="btn" style="background:#666; color:white;" onclick="closeSig()">Cancelar</button>
-        <button class="btn btn-main" onclick="acceptSig()">Aceptar Firma</button>
+        <button class="btn" onclick="closeSig()">Cancelar</button>
+        <button class="btn btn-main" onclick="acceptSig()">Aceptar</button>
     </div>
 </div>
 
 <script>
-    const defaultData = { "ISO 9001": { "General": ["¿Pregunta de ejemplo?"] } };
-    let auditData = defaultData, chart = null, signaturePad, currentTarget = null, sigs = { sig1: null, sig2: null };
+    let auditData = {}, chart = null, signaturePad, currentSigTarget = null, sigs = { sig1: null, sig2: null };
+    let currentSectionIndex = 0;
 
-    window.onload = () => {
+    window.onload = async () => {
         const canvas = document.getElementById('signature-pad');
         signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        
+        // Carga automática si existe el archivo en el servidor
+        try {
+            const response = await fetch('normas.txt');
+            if (response.ok) { processTxt(await response.text()); }
+        } catch (e) { console.log("Carga automática omitida."); }
+
         load();
-        updateSels();
-        render();
+        updateSelectors();
+        renderChecklist();
     };
 
     function toggleTheme() {
         const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
         localStorage.setItem('theme', t);
+        if(chart) calculate(); // Refrescar colores gráfica
     }
 
-    function clearAll() {
-        if(confirm("¿Borrar todo?")) { localStorage.removeItem('aripar_audit_v7'); location.reload(); }
+    function processTxt(text) {
+        const lines = text.split('\n');
+        let curA = "", curS = "";
+        auditData = {};
+        lines.forEach(l => {
+            const line = l.trim();
+            if (!line) return;
+            if (line.startsWith('##')) {
+                curS = line.replace('##', '').trim();
+                if (curA) auditData[curA].secciones[curS] = [];
+            } else if (line.startsWith('#')) {
+                curA = line.replace('#', '').trim();
+                auditData[curA] = { secciones: {} };
+            } else if (curA && curS) {
+                auditData[curA].secciones[curS].push(line);
+            }
+        });
+        updateSelectors();
     }
 
-    function openSig(id) {
-        currentTarget = id;
-        document.getElementById('sig-modal').style.display = 'flex';
-        setTimeout(() => {
-            const canvas = document.getElementById('signature-pad');
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio;
-            canvas.height = canvas.offsetHeight * ratio;
-            canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad.clear();
-        }, 100);
-    }
-
-    function closeSig() { document.getElementById('sig-modal').style.display = 'none'; }
-
-    function acceptSig() {
-        const img = signaturePad.toDataURL();
-        sigs[currentTarget] = img;
-        document.getElementById(`display-${currentTarget}`).innerHTML = `<img src="${img}">`;
-        closeSig();
-        save();
-    }
-
-    document.getElementById('fileInput').addEventListener('change', function(e) {
+    function handleFileUpload(input) {
         const reader = new FileReader();
-        reader.onload = function() {
-            const lines = this.result.split('\n');
-            let curA = "", curS = "";
-            auditData = {};
-            lines.forEach(l => {
-                const line = l.trim();
-                if(line.startsWith('##')) {
-                    curS = line.replace('##','').trim();
-                    if(curA) auditData[curA][curS] = [];
-                } else if(line.startsWith('#')) {
-                    curA = line.replace('#','').trim();
-                    auditData[curA] = {};
-                } else if(line && curA && curS) {
-                    auditData[curA][curS].push(line);
-                }
-            });
-            updateSels();
-            render();
-        };
-        reader.readAsText(e.target.files[0]);
-    });
+        reader.onload = function() { processTxt(this.result); renderChecklist(true); };
+        reader.readAsText(input.files[0]);
+    }
 
-    function updateSels() {
+    function updateSelectors() {
         const sel = document.getElementById('auditSelector');
         sel.innerHTML = Object.keys(auditData).map(k => `<option value="${k}">${k}</option>`).join('');
     }
 
-    function render() {
+    function renderChecklist(reset = false) {
         const audit = document.getElementById('auditSelector').value;
         const container = document.getElementById('checklist');
-        container.innerHTML = "";
-        if(!auditData[audit]) return;
+        const nav = document.getElementById('sectionNav');
+        container.innerHTML = ""; nav.innerHTML = "";
+        
+        if (!auditData[audit]) return;
+        if (reset) currentSectionIndex = 0;
 
-        Object.keys(auditData[audit]).forEach(sec => {
-            let html = `<h3 style="color:var(--primary); margin-top:25px; border-bottom:1px solid var(--border);">${sec}</h3>`;
-            auditData[audit][sec].forEach((q, i) => {
-                const id = `q_${audit}_${sec}_${i}`.replace(/\s+/g,'_');
-                html += `
-                    <div class="question-card" data-section="${sec}">
-                        <div class="question-text" style="font-weight:bold;">${q}</div>
-                        <select id="res_${id}" class="combo-res" onchange="updateUI('${id}')">
-                            <option value="">-- Resultado --</option>
-                            <option value="C">Conforme</option>
-                            <option value="NCMenor">NC Menor</option>
-                            <option value="NCMayor">NC Mayor</option>
-                            <option value="NA">No Aplica</option>
-                        </select>
-                        <textarea id="obs_${id}" placeholder="Evidencias y notas..." style="margin-top:10px;" oninput="save()"></textarea>
-                    </div>`;
-            });
-            container.innerHTML += html;
+        const secciones = Object.keys(auditData[audit].secciones);
+        secciones.forEach((sec, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `nav-btn ${idx === currentSectionIndex ? 'active' : ''}`;
+            btn.innerText = sec;
+            btn.onclick = () => { currentSectionIndex = idx; renderChecklist(); save(); };
+            nav.appendChild(btn);
         });
-        loadResponses();
+
+        const activeSec = secciones[currentSectionIndex];
+        auditData[audit].secciones[activeSec].forEach((q, i) => {
+            const id = `q_${audit}_${activeSec}_${i}`.replace(/\s+/g, '_');
+            const card = document.createElement('div');
+            card.className = "question-card";
+            card.innerHTML = `
+                <div class="question-text"><strong>${q}</strong></div>
+                <select id="res_${id}" class="combo-res" onchange="save(); calculate();">
+                    <option value="">-- Resultado --</option>
+                    <option value="C">Conforme</option>
+                    <option value="NCMenor">NC Menor</option>
+                    <option value="NCMayor">NC Mayor</option>
+                    <option value="NA">No Aplica</option>
+                </select>
+                <textarea id="obs_${id}" placeholder="Evidencias..." oninput="save()"></textarea>
+            `;
+            container.appendChild(card);
+        });
+
+        updateCounter();
+        loadStoredResponses();
         calculate();
     }
 
-    function updateUI(id) { calculate(); save(); }
-
-    function filter() {
-        const term = document.getElementById('search').value.toLowerCase();
-        const cards = document.querySelectorAll('.question-card');
-        let visible = 0;
-        cards.forEach(c => {
-            const q = c.querySelector('.question-text').innerText.toLowerCase();
-            const n = c.querySelector('textarea').value.toLowerCase();
-            const match = q.includes(term) || n.includes(term);
-            c.classList.toggle('hidden', !match);
-            if(match) visible++;
-        });
-        document.getElementById('results-counter').innerText = `Mostrando ${visible} de ${cards.length}`;
+    function updateCounter() {
+        const audit = document.getElementById('auditSelector').value;
+        if (!auditData[audit]) return;
+        const numSec = Object.keys(auditData[audit].secciones).length;
+        let totalQ = 0;
+        Object.values(auditData[audit].secciones).forEach(s => totalQ += s.length);
+        document.getElementById('results-counter').innerText = `Auditoría: ${numSec} secciones | Total: ${totalQ} preguntas`;
     }
 
     function calculate() {
-        const cards = document.querySelectorAll('.question-card');
+        const audit = document.getElementById('auditSelector').value;
+        if (!auditData[audit]) return;
         let total = 0, ok = 0;
         const stats = {};
-        cards.forEach(c => {
-            const sec = c.getAttribute('data-section');
-            const res = c.querySelector('.combo-res').value;
-            if(!stats[sec]) stats[sec] = {t:0, c:0};
-            if(res && res !== 'NA') {
-                stats[sec].t++; total++;
-                if(res === 'C') { stats[sec].c++; ok++; }
-            }
+        const saved = JSON.parse(localStorage.getItem('aripar_res')) || {};
+        
+        Object.keys(auditData[audit].secciones).forEach(sec => {
+            let sTotal = 0, sOk = 0;
+            auditData[audit].secciones[sec].forEach((q, i) => {
+                const id = `res_q_${audit}_${sec}_${i}`.replace(/\s+/g, '_');
+                const val = saved[id];
+                if (val && val !== 'NA') {
+                    sTotal++; total++;
+                    if (val === 'C') { sOk++; ok++; }
+                }
+            });
+            stats[sec] = sTotal === 0 ? 0 : Math.round((sOk / sTotal) * 100);
         });
-        const p = total === 0 ? 0 : Math.round((ok/total)*100);
+
+        const p = total === 0 ? 0 : Math.round((ok / total) * 100);
         document.getElementById('mainProgress').style.width = p + "%";
-        document.getElementById('mainProgress').innerText = p + "% Cumplimiento";
+        document.getElementById('mainProgress').innerText = p + "% Global";
         renderChart(stats);
     }
 
     function renderChart(stats) {
-        const labels = Object.keys(stats);
-        const data = labels.map(l => stats[l].t === 0 ? 0 : Math.round((stats[l].c/stats[l].t)*100));
-        if(chart) chart.destroy();
+        if (chart) chart.destroy();
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const textColor = isDark ? '#fff' : '#2c3e50';
         chart = new Chart(document.getElementById('chart'), {
             type: 'bar',
-            data: { labels, datasets: [{ label: '%', data, backgroundColor: '#0056b3' }] },
-            options: { maintainAspectRatio: false }
+            data: {
+                labels: Object.keys(stats),
+                datasets: [{ label: '% Cumplimiento', data: Object.values(stats), backgroundColor: '#3498db' }]
+            },
+            options: { 
+                maintainAspectRatio: false, 
+                plugins: { legend: { labels: { color: textColor } } },
+                scales: { 
+                    y: { max: 100, beginAtZero: true, ticks: { color: textColor } },
+                    x: { ticks: { color: textColor } }
+                }
+            }
         });
     }
 
     function save() {
         const data = {
-            meta: { 
-                e: document.getElementById('empresa').value, 
-                d: document.getElementById('departamento').value,
-                f: document.getElementById('fecha').value,
-                sel: document.getElementById('auditSelector').value,
-                r1: document.getElementById('role-1').value, n1: document.getElementById('name-1').value, p1: document.getElementById('pos-1').value,
-                r2: document.getElementById('role-2').value, n2: document.getElementById('name-2').value, p2: document.getElementById('pos-2').value
+            empresa: document.getElementById('empresa').value,
+            depto: document.getElementById('departamento').value,
+            fecha: document.getElementById('fecha').value,
+            audit: document.getElementById('auditSelector').value,
+            secIdx: currentSectionIndex,
+            roles: {
+                r1: document.getElementById('role-1').value, n1: document.getElementById('name-1').value,
+                r2: document.getElementById('role-2').value, n2: document.getElementById('name-2').value
             },
-            res: {}, sigs: sigs
+            sigs: sigs
         };
-        document.querySelectorAll('.combo-res').forEach(s => data.res[s.id] = s.value);
-        document.querySelectorAll('textarea').forEach(t => data.res[t.id] = t.value);
-        localStorage.setItem('aripar_audit_v7', JSON.stringify(data));
+        localStorage.setItem('aripar_meta', JSON.stringify(data));
+        const res = JSON.parse(localStorage.getItem('aripar_res')) || {};
+        document.querySelectorAll('.combo-res, textarea').forEach(el => { if (el.id) res[el.id] = el.value; });
+        localStorage.setItem('aripar_res', JSON.stringify(res));
     }
 
     function load() {
-        const s = JSON.parse(localStorage.getItem('aripar_audit_v7'));
-        if(!s) return;
-        document.getElementById('empresa').value = s.meta.e || '';
-        document.getElementById('departamento').value = s.meta.d || '';
-        document.getElementById('fecha').value = s.meta.f || '';
-        document.getElementById('role-1').value = s.meta.r1 || 'Auditor';
-        document.getElementById('name-1').value = s.meta.n1 || '';
-        document.getElementById('pos-1').value = s.meta.p1 || '';
-        document.getElementById('role-2').value = s.meta.r2 || 'Auditado';
-        document.getElementById('name-2').value = s.meta.n2 || '';
-        document.getElementById('pos-2').value = s.meta.p2 || '';
-        if(s.sigs) {
-            sigs = s.sigs;
-            if(sigs.sig1) document.getElementById('display-sig1').innerHTML = `<img src="${sigs.sig1}">`;
-            if(sigs.sig2) document.getElementById('display-sig2').innerHTML = `<img src="${sigs.sig2}">`;
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        const meta = JSON.parse(localStorage.getItem('aripar_meta'));
+        if (!meta) return;
+        document.getElementById('empresa').value = meta.empresa || '';
+        document.getElementById('departamento').value = meta.depto || '';
+        document.getElementById('fecha').value = meta.fecha || '';
+        document.getElementById('auditSelector').value = meta.audit || '';
+        currentSectionIndex = meta.secIdx || 0;
+        document.getElementById('name-1').value = meta.roles.n1 || '';
+        document.getElementById('name-2').value = meta.roles.n2 || '';
+        if (meta.sigs) {
+            sigs = meta.sigs;
+            if (sigs.sig1) document.getElementById('display-sig1').innerHTML = `<img src="${sigs.sig1}">`;
+            if (sigs.sig2) document.getElementById('display-sig2').innerHTML = `<img src="${sigs.sig2}">`;
         }
-        window.tempRes = s.res;
     }
 
-    function loadResponses() {
-        if(!window.tempRes) return;
-        Object.keys(window.tempRes).forEach(key => {
-            const el = document.getElementById(key);
-            if(el) el.value = window.tempRes[key];
+    function loadStoredResponses() {
+        const res = JSON.parse(localStorage.getItem('aripar_res'));
+        if (!res) return;
+        document.querySelectorAll('.combo-res, textarea').forEach(el => { if (res[el.id]) el.value = res[el.id]; });
+    }
+
+    function openSig(target) {
+        currentSigTarget = target;
+        document.getElementById('sig-modal').style.display = 'flex';
+        setTimeout(() => {
+            const canvas = document.getElementById('signature-pad');
+            canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+            signaturePad.clear();
+        }, 100);
+    }
+    function closeSig() { document.getElementById('sig-modal').style.display = 'none'; }
+    function acceptSig() {
+        sigs[currentSigTarget] = signaturePad.toDataURL();
+        document.getElementById(`display-${currentSigTarget}`).innerHTML = `<img src="${sigs[currentSigTarget]}">`;
+        closeSig(); save();
+    }
+
+    function filter() {
+        const term = document.getElementById('search').value.toLowerCase();
+        document.querySelectorAll('.question-card').forEach(c => {
+            const match = c.innerText.toLowerCase().includes(term) || c.querySelector('textarea').value.toLowerCase().includes(term);
+            c.classList.toggle('hidden', !match);
         });
     }
 
     function printReport() {
-        const empresa = document.getElementById('empresa').value || 'Auditoria';
+        const emp = document.getElementById('empresa').value || 'Auditoria';
         const now = new Date();
         const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
-        document.title = `${ts}-${empresa}`;
+        document.title = `${ts}-${emp}`;
         window.print();
+    }
+
+    function clearAll() {
+        if (confirm("¿Borrar definitivamente todo?")) { localStorage.clear(); location.reload(); }
     }
 </script>
 </body>
-    </html>
-    
+</html>
