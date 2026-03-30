@@ -140,7 +140,7 @@
         
         // Carga automática si existe el archivo en el servidor
         try {
-            const response = await fetch('normas.txt');
+            const response = await fetch('auditoria.txt');
             if (response.ok) { processTxt(await response.text()); }
         } catch (e) { console.log("Carga automática omitida."); }
 
