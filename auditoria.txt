@@ -1,0 +1,771 @@
+#ISO 9001:2015 SISTEMAS DE GESTIÓN DE CALIDAD
+##SECCIÓN 4 - CONTEXTO DE LA ORGANIZACIÓN:
+Determinar cuestiones internas y externas relevantes
+Identificar partes interesadas pertinentes
+Determinar requisitos de las partes interesadas
+Determinar alcance del sistema de gestión de calidad
+Establecer y mantener sistema de gestión de calidad
+Identificar procesos necesarios y su secuencia
+Determinar criterios y métodos de operación de procesos
+Asegurar disponibilidad de recursos para procesos
+Asignar responsabilidades y autoridades para procesos
+Abordar riesgos y oportunidades de los procesos
+Implementar cambios planificados en procesos
+Mejorar continuamente los procesos
+
+##SECCIÓN 5 - LIDERAZGO:
+Compromiso de la alta dirección con el SGC
+Establecer política de calidad
+Comunicar política de calidad
+Enfoque al cliente por la alta dirección
+Asegurar que requisitos del cliente se determinan
+Integrar requisitos del SGC en procesos de negocio
+Definir roles, responsabilidades y autoridades
+Comunicar roles y responsabilidades
+
+##SECCIÓN 6 - PLANIFICACIÓN:
+Identificar riesgos y oportunidades
+Planificar acciones para abordar riesgos y oportunidades
+Integrar acciones en procesos del SGC
+Evaluar eficacia de las acciones tomadas
+Establecer objetivos de calidad
+Objetivos medibles
+Objetivos coherentes con política de calidad
+Objetivos monitoreados y actualizados
+Planificar cómo lograr objetivos de calidad
+Planificar cambios en el SGC de manera sistemática
+
+##SECCIÓN 7 - APOYO:
+Determinar y proporcionar recursos necesarios
+Determinar y proporcionar personas necesarias
+Determinar y proporcionar infraestructura necesaria
+Proporcionar ambiente adecuado para operación de procesos
+Determinar y proporcionar recursos de seguimiento y medición
+Asegurar validez de resultados de medición
+Mantener equipos de medición calibrados
+Determinar competencia necesaria del personal
+Asegurar que el personal es competente
+Capacitación o formación del personal
+Evaluar eficacia de acciones de capacitación
+Conservar información documentada como evidencia de competencia
+Tomar conciencia del personal sobre política de calidad
+Tomar conciencia sobre objetivos de calidad pertinentes
+Tomar conciencia sobre contribución a eficacia del SGC
+Determinar comunicaciones internas y externas
+Crear y actualizar información documentada
+Controlar información documentada
+Asegurar disponibilidad de información documentada
+Proteger información documentada
+Distribución, acceso y uso de información documentada
+Control de cambios en información documentada
+Conservación y disposición de información documentada
+
+##SECCIÓN 8 - OPERACIÓN:
+Planificar y controlar procesos operacionales
+Determinar requisitos para productos y servicios
+Establecer criterios para procesos y aceptación de productos
+Determinar recursos necesarios para productos y servicios
+Implementar control de procesos
+Conservar información documentada de planificación operacional
+Comunicación con el cliente
+Determinar y revisar requisitos del cliente
+Asegurar capacidad de cumplir requisitos antes de compromiso
+Confirmar requisitos del cliente antes de aceptación
+Atender consultas, contratos y pedidos del cliente
+Obtener retroalimentación del cliente
+Establecer requisitos para contingencias
+Revisar diseño y desarrollo cuando sea aplicable
+Planificar etapas de diseño y desarrollo
+Determinar actividades de verificación y validación de diseño
+Determinar responsabilidades en diseño y desarrollo
+Gestionar interfaces entre personas involucradas en diseño
+Asegurar participación activa del cliente en diseño
+Control de elementos de entrada del diseño
+Control de elementos de salida del diseño
+Realizar revisiones del diseño y desarrollo
+Realizar verificación del diseño
+Realizar validación del diseño
+Controlar cambios del diseño y desarrollo
+Control de procesos, productos y servicios suministrados externamente
+Determinar controles a aplicar a proveedores externos
+Asegurar conformidad de procesos externos
+Evaluar, seleccionar y reevaluar proveedores externos
+Conservar información documentada de evaluación de proveedores
+Comunicar requisitos a proveedores externos
+Verificar productos y servicios provistos externamente
+Controlar producción y prestación del servicio
+Disponibilidad de información documentada de características
+Disponibilidad de instrucciones de trabajo
+Control de equipos de seguimiento y medición
+Implementar actividades de seguimiento y medición
+Actividades de liberación, entrega y posteriores a la entrega
+Identificación y trazabilidad cuando sea necesario
+Preservar salidas durante producción y prestación del servicio
+Controlar actividades posteriores a la entrega
+Controlar cambios no previstos en producción
+Revisión y control de cambios
+Liberación de productos y servicios
+Control de salidas no conformes
+Identificar y controlar salidas no conformes
+Tomar acciones sobre salidas no conformes
+Verificar conformidad cuando se corrige salida no conforme
+Conservar información documentada de no conformidades
+
+##SECCIÓN 9 - EVALUACIÓN DEL DESEMPEÑO:
+Determinar qué necesita seguimiento y medición
+Determinar métodos de seguimiento, medición, análisis y evaluación
+Determinar cuándo efectuar seguimiento y medición
+Analizar y evaluar resultados de seguimiento y medición
+Conservar información documentada de resultados
+Medir satisfacción del cliente
+Realizar seguimiento de percepciones del cliente
+Realizar auditorías internas a intervalos planificados
+Planificar programa de auditorías internas
+Definir criterios y alcance de auditorías
+Seleccionar auditores competentes e imparciales
+Asegurar objetividad e imparcialidad de auditorías
+Informar resultados de auditorías a dirección
+Realizar correcciones y acciones correctivas sin demora
+Conservar información documentada de auditorías
+Revisión del SGC por la alta dirección a intervalos planificados
+Planificar y realizar revisiones por la dirección
+Considerar estado de acciones de revisiones previas
+Considerar cambios en cuestiones externas e internas
+Considerar información sobre desempeño del SGC
+Considerar satisfacción del cliente y retroalimentación
+Considerar grado de cumplimiento de objetivos de calidad
+Considerar desempeño de procesos y conformidad de productos
+Considerar no conformidades y acciones correctivas
+Considerar resultados de seguimiento y medición
+Considerar resultados de auditorías
+Considerar desempeño de proveedores externos
+Considerar adecuación de recursos
+Considerar eficacia de acciones para riesgos y oportunidades
+Considerar oportunidades de mejora
+Salidas de revisión incluyen decisiones sobre mejoras
+Salidas incluyen necesidades de cambio en el SGC
+Salidas incluyen necesidades de recursos
+Conservar información documentada de revisiones
+
+##SECCIÓN 10 - MEJORA:
+Determinar y seleccionar oportunidades de mejora
+Implementar acciones necesarias para cumplir requisitos del cliente
+Mejorar productos y servicios
+Corregir, prevenir o reducir efectos no deseados
+Mejorar desempeño y eficacia del SGC
+Reaccionar ante no conformidad
+Tomar acciones para controlar y corregir no conformidad
+Hacer frente a consecuencias de no conformidad
+Evaluar necesidad de acciones para eliminar causas de no conformidad
+Implementar acciones correctivas necesarias
+Revisar eficacia de acciones correctivas
+Actualizar riesgos y oportunidades si es necesario
+Realizar cambios al SGC si es necesario
+Acciones correctivas apropiadas a efectos de no conformidades
+Conservar información documentada de no conformidades
+Conservar información documentada de acciones tomadas
+Conservar información documentada de resultados de acciones correctivas
+Mejorar continuamente conveniencia, adecuación y eficacia del SGC
+
+
+# AS9100 Rev D 2016  SISTEMAS DE GESTION DE CALIDAD AERONÁUTICA
+
+## 4. Gestión del Sistema de Calidad
+4.1 Requerimientos Generales
+a) Compruebe si la documentación de los procesos está incluida en el QMS
+b) Compruebe si hay información sobre la relación y secuencia de los procesos de QMS.
+c) La operación y el control de los procesos es efectiva. ¿Cómo saben si es efectiva?
+d) Se han proporcionado los recursos y la información necesaria para apoyar los procesos?
+e) ¿Hay información sobre la efectividad de los procesos?
+f) ¿Cómo son hechas las mejoras a los procesos? ¿Qué procesos externos realiza la organización? ¿Cómo es controlado el proceso?
+4.2 Requisitos de la documentación
+¿Hay una lista u otros medios para identificar la documentación requerida por su QMS?
+¿La documentación del sistema de calidad incluye la documentación requerida por el estándar? a. Politica y objetivos de la calidad b. Manual de la calidad c. Procedimientos
+Compruebe si hay documentos para la planeación y el control de procesos: por ejemplo las instrucciones de trabajo, planes de calidad y los registros
+Cualquier documentación requerida por autoridades reguladoras
+¿Están los procedimientos relevantes disponibles para los empleados?
+¿Conocen los empleados sus procedimientos relevantes?
+4.2.2 Manual de Calidad
+Revisar si el manual de calidad está disponible
+a)¿Cuál es el alcance de su QMS?
+b)¿Qué procesos han sido excluidos? ¿Estos son apropiados?
+c)¿El manual hace referencia a los procedimientos del sistema de calidad?
+d) ¿Existe una descripción o una ilustración de la interrelación de los procesos ?
+4.2.3 Control de Documentos
+¿Se tiene un procedimiento formal para el control de los documentos?
+a) ¿Son documentos aprobados?
+b) ¿Están actualizados los documentos y re-aprobado?
+c)¿Cómo se identifican los cambios?
+d) ¿Están los documentos disponibles de acuerdo a las necesidades de uso? ¿Como se mantiene la última versión en las localizaciones correctas?
+e) ¿Los usuarios pueden identificar y leer fácilmente los documentos?
+f) ¿Si se utilizan documentos externos tales como libros de consulta, manuales de los usuarios, entre otros, cómo se controlan?
+g) ¿Cómo se manejan los documentos viejos? ¿Se retiran de uso? ¿Se etiquetan? ¿Se mantiene una copia como referencia? ¿Hay posibilidades que los documentos viejos se puedan utilizar accidentalmente?
+4.2.4 Control de Registros de Calidad
+¿Hay un procedimiento documentado para el control de los registros? ¿Dónde se guardan los registros? ¿Están identificados en alguna parte para que los usuarios puedan encontrarlos fácilmente? ¿Los usuarios pueden identificar los registros? ¿Son legibles?
+¿Cómo se identifican el tiempo, los requisitos y la disposición de almacenaje?
+¿El procedimiento de los registros incluye un proceso para controlar los registros creados o conservados por los proveedores?
+¿Hay un proceso de configuración administrativa en el lugar?
+
+## 5 Responsabilidad de la Dirección
+5.1 Compromiso de la Dirección
+¿Conocen quién es el Director?
+a)¿Los empleados están al tanto de la importancia de cumplir con requisitos de cliente? ¿Qué rol desempeña el director en la comunicación de esto a los empleados?
+b) ¿Qué rol desempeño el Director en el establecimiento de la política de la calidad? ¿Qué evidencia hay de su rol?
+c) ¿Cómo se establecieron los objetivos de calidad? ¿Qué evidencia hay de involucramiento de la Dirección?
+d) ¿Existe evidencia de la implicación de la Dirección en la revisión de la gerencia?
+e) ¿Qué proceso se utiliza para que la Dirección identifique y proporcione los recursos necesarios para el QMS?
+5.2 Enfoque del Cliente
+¿Se tiene un proceso para identificar los requerimientos del cliente? ¿Cómo está involucrada la Dirección?
+¿Cómo la Dirección mide el funcionamiento de la conformidad del producto y la entrega a tiempo?
+¿Qué acciones se toma si los requisitos no se cumplen?
+5.3 Politica de Calidad
+La política de calidad cumple con los requisitos del estándar en lo que respecta a: a) Proposito b) Compromiso con la Calidad c) Objetivos de Calidad d) Comunicación e) Revisión
+5.4 Planeación
+5.4.1 Objetivos de Calidad
+Revisión de Objetivos de Calidad
+a)¿Los objetivos están enfocados para encontrar los requerimientos del producto?
+b) ¿En qué niveles se han establecido los objetivos de calidad? ¿Departamento? ¿Proceso?
+c) ¿Cómo se miden los objetivos? ¿Cómo contribuyeron a definir la política de la calidad?
+5.4.2 Planeación del Sistema de Gestión de Calidad
+a)¿Qué proceso de planeación de la calidad se está llevando a cabo?
+b) ¿Cómo el proceso de planeación trata los objetivos de calidad para los nuevos procesos o los productos?
+c)¿Cómo se evalúan y se aprueban los cambios? ¿Se considera cómo estos afectarán al QMS?
+5.5.1 Responsabilidad y Autoridad
+Revisión de documentos sobre la responsabilidad y autoridad. ¿La gente está consciente de su responsabilidad y autoridad?
+5.5.2 Representante de la Dirección
+¿Quién es el representante de la Dirección? ¿Es parte de la organización?
+Las responsabilidades incluyen: a) Asegurarse que los procesos requeridos se establecen, se implementen y se mantienen b) Información a la Dirección sobre el desempeño del QMS c) Asegurarse que los requerimientos del cliente sean promovidos
+¿Tiene la libertad organizacional y el libre acceso a la Dirección para resolver cuestiones de calidad?
+5.5.3 Comunicación Interna
+¿Se tiene establecido un procesos de comunicación dentro de su organización?
+¿Las comunicaciones incluyen la efectividad del QMS?
+5.6 Revisión de la Dirección
+5.6.1 General
+Compruebe los registros de la revisión de la Dirección. Esto es: a. Que se lleven a cabo en los intervalos planeados b. ¿Una revisión del sistema gerencial para la suficiencia, adecuación y efectividad? c. Un aseguramiento de las oportunidades para la mejora d. ¿Una revisión de la política y objetivos de calidad?
+¿Se mantienen registros?
+Esta dirigido el proceso de revisión de la dirección a todas las entradas requeridas con respecto a: a) Auditorías b) Retroalimentación del Cliente c) Funcionamiento de proceso d) Acciones correctivas y preventivas e) Seguimiento de acciones f) Cambios g) Mejoras
+Los resultados incluyen: a. ¿Mejora de la efectividad del QMS? b. ¿Mejora del producto? c. Recursos requeridos?
+
+## 6. Recursos Gerenciales
+6.1 Disposición de Recursos
+a)¿Hay evidencia para demostrar que los recursos para desarrollar, mantener y mejorar el QMS se están proporcionando?
+b) ¿Los recursos son suficientes para cumplir los requerimientos del cliente?
+6.2.- Recursos Humanos
+6.2.1 Generales
+Evalúe la capacidad del personal. Esta cumple los requisitos del estándar para: a. Capacidad b. Entrenamiento c. Efectividad del entrenamiento d. Conocimiento de sus responsabilidades de la calidad y efecto de sus actividades en la calidad e. Expedientes
+6.2.2 Capacidad, Conocimiento y Entrenamiento
+a) ¿Cómo es la capacidad del personal que se requiere?
+b)¿Se ha proporcionado el entrenamiento requerido?
+c)¿El entrenamiento ha sido eficaz?
+d)¿Las personas están conscientes de la relevancia e importancia de sus actividades y cómo ellos contribuyen al logro de los objetivos de calidad?
+e) Revisión de Registros
+6.3 Infraestructura
+¿Cual es la infraestructura?
+¿El producto o el servicio cumple con los requisitos, cuando es producido o entregado, usando esta infraestructura?
+¿La organización ha mantenido las instalaciones necesarias para alcanzar la conformidad de los requisitos del producto incluyendo? a) ¿Edificios, espacio de trabajo e instalaciones? b) Equipo de proceso, soporte técnico y software c) ¿Servicios de apoyo tales como transporte o comunicación?
+6.4 Ambiente de Trabajo
+¿Qué ambiente de trabajo es necesario para cumplir con los requerimientos del producto o servicio?
+¿Se ha proporcionado este ambiente del trabajo?
+
+## 7 Realizacón del Producto
+7.1 Planeación de la realización del producto
+¿Cómo se inicia la planeación?
+a) ¿Están documentados los objetivos de calidad y los requisitos del producto?
+b)¿Cómo la planeación determina las necesidades de la documentación para los procesos? ¿Recursos para los procesos?
+c)¿La planeación trata requisitos de la validación? ¿Dónde se documenta la supervisión, inspección y la prueba y los criterios para el producto?
+d)¿La planeación identifica qué registros se requieren para el proceso?
+e) ¿Hay un proceso para la gestión de configuración administrativa?
+f)¿Los recursos para soportar la operación y el mantenimiento del producto se tratan durante la planeación?
+¿Cuál es el resultado de su proceso de planeación?
+7.1.1 Gestión del proyecto
+¿Se ha establecido un proceso para planeación y manejo del producto realizándose de una manera estructurada y controlada?
+a) Es la planeación manejada de una manera controlada estructurada, asegurándose que los requisitos están cumplidos: a. En el riesgo aceptable b. Dentro de recursos c. Dentro del programa contraído
+7.1.2 Gestión de riesgos
+¿Hay un proceso de la gestión de riesgos en el lugar? Trata: a) Responsabilidades b) Criterios del riesgo c) Identificación, evaluación y comunicación de riesgos hasta la realización del producto d) Identificación, implementación y gestión de las acciones para atenuar riesgos e) Aceptación del riesgo restante
+7.1.3 Gestión de la Configuración
+¿Está un proceso de la gestión de configuración en el lugar? Trata: Planeación, Identificación de configuración, Control de Cambios, Contabilidad del estado de la configuración y Auditoria de la Configuración.
+7.1.4 Control de transferencia de trabajo
+¿Hay un proceso para planear y controlar las transferencias temporales o permanentes de trabajo?
+¿Hay un proceso para verificar la conformidad del trabajo?
+7.2 Procesos relacionados con el cliente
+7.2.1 Determinación de Requisitos Relacionados con el producto
+a) ¿Cómo se determinan los requerimientos del cliente?
+b)¿Cómo se determina si hay requerimientos aplicados adicionales a los especificados por el cliente?
+c) ¿Cómo se identifican los requisitos estatutarios y reguladores aplicables?
+d) ¿Existen requisitos adicionales que la organización identifica?
+7.2.2 Revisión de Requerimientos Relacionados con el Producto
+a)¿Los requerimientos del producto están definidos?
+b) ¿Existe un proceso para asegurarse de que las diferencias en contratos o en órdenes son resueltas?
+c)¿El proceso de revisión se asegura de que la compañía pueda cumplir los requerimientos definidos?
+d)¿Son revisados los requisitos para determinar los requerimientos especiales del producto?
+e) ¿Se evalúan los riesgos?
+¿Cuáles son los registros y resultados de la revisión?
+¿Cómo son los requerimientos confirmados por el cliente? ¿Se proporciona un documento escrito de los requerimientos?
+¿Cómo son cambiadas las órdenes que se manejan? ¿Se actualizan los documentos? ¿Se informa al personal?
+7.2.3 Comunicación del Cliente
+a) ¿Qué proceso se utiliza para las investigaciones, los contratos o los pedidos del cliente, incluyendo correcciones?
+b) ¿Qué mecanismo se utiliza para recabar las retroalimentaciones de los clientes, incluyendo quejas?
+7.3 Diseño y Desarrollo
+7.3.1 Planeación del Diseño y Desarrollo
+¿Cómo su organización planea y controla el diseño y el desarrollo del producto?
+¿La planeación trata las etapas fuera de línea en el estándar? a) Etapas del diseño y del desarrollo b) Revisión, verificación y validación c) Responsabilidades y autoridades
+¿El esfuerzo del diseño se divide en actividades distintas? Lo siguiente es definido para cada actividad: a. Tareas b. Recursos c. Responsabilidades d. Contenido del diseño e. Entradas f. Salidas g. Planeación de Contratos
+¿Las tareas se basan en seguridad y objetivos funcionales?
+¿Las tareas se basan en los requisitos del cliente, estatutarios y reguladores?
+¿La planeación considera capacidad de producir, de examinar, de probar y de mantener el producto?
+¿El plan identifica las interfaces de los diversos grupos que estén implicados en el proyecto? ¿Cómo se asegura una efectiva comunicación?
+7.3.2 Entradas del Diseño y Desarrollo
+¿Se identifican y se documentan las entradas del diseño?
+Las entradas incluyen los artículos requeridos por el estándar: a. Requisitos funcionales y de funcionamiento b. Requisitos estatutarios y regulatorios c. Información de diseños similares d. Otros requisitos aplicables al diseño.
+¿Hay un registro de las entradas que son repasadas?
+¿Cómo se determina si las entradas son completas y apropiadas?
+7.3.3 Salidas de Diseño y Desarrollo
+¿Donde están las salidas documentadas? ¿Como pueden ser comparadas con las entradas?
+¿Qué evidencia hay sobre las salidas aprobadas antes de lanzamiento?
+¿Las salidas cumplen los requisitos del estándar? a. ¿Se comparan con las entradas para cerciorarse de que cumplen los requerimientos de la entrada? b. ¿Las salidas proporcionan la información requerida para cerciorarse de que los requerimientos estén claros para la compra, producción y el servicio? c. ¿Cómo se documentan e identifican los criterios de aceptación del producto? d. ¿Todas las características de seguridad que se usan en el producto se especifican? e. ¿Se identifican las características relevantes cuando son apropiadas?
+7.3.4 Revisión de Diseño y Desarrollo
+¿Cómo los gestores de proyecto identifican las etapas del diseño donde se requiere la revisión de diseño?
+¿Qué se cubre en la revisión de diseño? ¿Esto cumple los requisitos estándar? a) ¿La revisión incluye cerciorarse de que los resultados del proceso de diseño cumplen los requisitos de diseño? b) ¿Se identifican los problemas? ¿Se propusieron resoluciones? c) ¿Se incluye la autorización de proceder?
+¿Quién se incluye en la revisión?
+¿Cómo se determina si es representativa para las funciones referidas?
+¿Que registros son mantenidos?
+7.3.5 Verificación del Diseño y Desarrollo
+¿Cómo se planea la verificación? ¿Qué incluye la verificación?
+Está hecha de acuerdo con el estándar en lo que respecta a: a. Arreglos planeados b. Registros.
+¿Hay un método de revisar la documentación (por ejemplo, pruebas, cálculos, informes) para demostrar que la definición de producto cumple los requisitos?
+¿Cómo son planeadas, controladas, revisadas y documentadas las pruebas? Está de acuerdo con el estándar en lo que respecta a: a. Identificando el producto y recursos, prueba objetivos, condiciones, parámetros y criterios b. Métodos de prueba c. Configuración estándar d. Plan de prueba y métodos de prueba e. Criterios de aceptación.
+7.3.6 Validación del Diseño y Desarrollo
+¿Cómo se planea la validación? ¿Qué se incluye en la validación?
+¿Hay un método de revisión de la documentación (por ejemplo, pruebas, cálculos, informes) para demostrar que la definición del producto cumple los requisitos?
+¿Cómo son planeadas, controladas, revisadas y documentadas las pruebas? Está de acuerdo con el estándar en lo que respecta a: a) Identificando el producto y recursos, prueba de objetivos, condiciones, parámetros y criterios b) Métodos de prueba c) Configuración estándar d) Plan de prueba y métodos de prueba e) Criterios de aceptación.
+7.3.7 Control de los Cambios del Diseño y Desarrollo
+¿Cómo son registrados e implementados los cambios en el diseño?
+¿Los cambios son verificados, validados y aprobados antes de su implementación?
+¿Se evalúan los cambios para efecto de piezas adicionales y productos entregados?
+¿Qué provisiones se hacen para aprobar las regulaciones del cliente?
+¿Los resultados de la revisión de cambios y de acciones necesarias se registran?
+¿Los cambios son controlados de acuerdo con el proceso de la gestión de configuración?
+7.4 Compras
+7.4.1 Proceso de Compras
+¿Existe un proceso para asegurarse de que el producto comprado se ajusta a los requerimientos?
+¿Se compran productos a proveedores sugeridos o definidos por el cliente?
+¿Hay un método de controlar a los proveedores?
+¿Cómo seleccionan a los proveedores? El proceso de selección cumple con los requisitos estándar con respecto a: a. Un registro de proveedores aprobados b. Revisión del funcionamiento del proveedor y basados en el nivel de control sobre los resultados de la revisión c. Medidas tomadas cuando los requerimientos no se cumplen d. Fuentes del proceso especial e. Defina la responsabilidad para las decisiones de status de aprobado, status de cambios y condiciones de uso controlado f. Determina y evalúa el riesgo al seleccionar a proveedores.
+¿Se registra la evaluación y acciones necesarias?
+7.4.2 Información de Compras
+¿Qué incluye la información de la compra?
+Esta cumple con los requisitos estándar con respecto a: a. Requisitos para la aprobación b. Calificación del personal c. Requerimientos del QMS d. Datos técnicos: estado de la identificación y elaboración de especificaciones, dibujos, requisitos de proceso y otros datos e. Requisitos de diseño, prueba, inspección, verificación, el uso técnicas estadísticas para la aceptación y otras instrucciones de aceptación f. Prueba de especímenes g. Requisitos para la notificación del producto no conforme y aprobado para la disposición h. Notificación de cambios en producto o la definición de proceso, cambios de proveedores, cambio de la localización de la fabricación y cualquier aprobación necesaria i. Acceso a los registros.
+¿Cómo confirma el personal de compras que los requisitos de la compra son los adecuados antes de enviar la orden al proveedor?
+7.4.3 Verificación del Producto Comprado
+¿Se utiliza la inspección para verificar que el producto comprado cumple los requisitos?
+¿Qué otros métodos se utilizan además de la inspección visual?
+¿Si el producto comprado es enviado con pendientes de terminación de toda la verificación requerida, cómo se identifica y registra para permitir recordar y reemplazar si se encuentra con requisitos rechazados?
+¿La verificación se delega al proveedor? ¿Si están los requisitos para la delegación definida? ¿Existe un registro de los proveedores que se les delega?
+7.5 Producción y Prestación de Servicio
+7.5.1 Control de Producción y Prestación de Servicios
+Son los procesos realizados bajo condiciones controladas requeridas por el estándar en lo que respecta a: a. Información sobre características del producto b. Disponibilidad de las instrucciones de trabajo c. Uso del equipo adecuado d. Disponibilidad y uso de equipo de monitoreo e. Implementación de monitoreo y mediciones f. Actividades durante la liberación, envío y después del envío del producto g. Responsabilidad sobre todos los productos durante la producción h. Evidencia de que todas las operaciones han culminado según lo planeado i. Detección, prevención y retiro de objetos extraños j. Monitoreo y control de suministros (agua, luz, gas) k. Criterios para la ejecución del trabajo.
+¿La planeación considera ejecutar y mantener procesos para manejar artículos críticos?
+¿Existe un proceso para la verificación de los procesos de producción? a. El proceso incluye la verificación de un artículo de la primera corrida, para verificar documentación, procesos y herramientas b. ¿Se repite este proceso cuando los cambios ocurren para invalidar resultados originales?
+Son los cambios de proceso aprobados correctamente incluyendo: a. Documentación de control de cambios y procedimientos para la implementación de cambios b. Determinación de resultados de cambios.
+¿El equipo de producción se valida antes de uso? ¿Se mantiene y se examina según procedimientos? ¿Se establecen requisitos de almacenaje?
+¿Si el trabajo se transfiere temporalmente fuera de sus instalaciones, se define el proceso para el control y la validación? a. Recolección de datos en servicio b. Medidas tomadas cuando se identifican los problemas c. Control y actualización de la documentación d. Aprobación y control de la reparación e. Control del sitio de trabajo.
+7.5.2 Validación de Procesos para Producción y Prestación de Servicio
+¿La organización tiene procesos para la producción y servicio donde los resultados no se puede verificar por monitoreo o medición? ¿Usted valida estos procesos?
+¿Cómo se realiza la validación? Liberación de 1° pieza. Trata los requisitos del estándar, incluyendo: a. Criterios b. Calificación del equipo y del personal c. Registros d. Uso de métodos y de procedimientos específicos e. Revalidación.
+7.5.3 Identificación y Rastreabilidad
+¿Cómo se identifica el producto?
+¿Es mantenida la identificación de la configuración?
+¿Cómo es medido y monitoreado el status de identificación?
+¿Se controlan los sellos, las firmas electrónicas u otros medios de aceptación usados?
+¿La organización controla y registra con una identificación única del producto, donde se requiera rastreabilidad?
+El sistema de rastreabilidad cumple con el contrato o requisitos reguladores, incluyendo cuando está especificado: a. Identificación, mantenida por la vida del producto b. Rastreo de lotes (materia prima, fabricación y destino final) c. Rastreabilidad de componentes de ensamble d. Secuencia del producto en los registros de producción.
+7.5.4 Propiedad del Cliente
+¿Cómo la organización mantiene los bienes del cliente mientras está bajo su control?
+¿Cómo identifica y salvaguarda los bienes del cliente? ¿Cómo determina si es conveniente para el uso?
+¿La organización reporta al cliente y mantiene registros en caso de cualquier pérdida y/o daño de cualquier bien del mismo, así como en el caso de que dicho producto no sea adecuado para su uso?
+7.5.5 Preservación del Producto
+¿Como asegura la organización que la calidad del producto es mantenida durante el manejo, empaque, almacenamiento y entrega?
+Los proceso prevén los requisitos de especificaciones o de regulaciones incluyendo: a. Limpieza b. Objetos extraños c. Manejo especial d. Marcado y etiquetado e. Tiempo en almacenaje y rotación de inventarios f. Materiales peligrosos.
+7.6 Control del Monitoreo y de Aparatos de Medición
+¿Se mantiene un registro según el estándar?
+¿La organización ha establecido un mecanismo para asegurarse que el monitoreo y la medición se realizan a cabo de una manera constante con los requisitos?
+¿Es el equipo manejado y mantenido según los requisitos estándar incluyendo: a. Programa de la calibración y estándares detectables de medición b. Ajustables c. Estado de Calibración d. Salvaguardados e. Protegidos durante el manejo, mantenimiento y almacenamiento f. Memoria para la calibración?
+¿Son las condiciones ambientales adecuadas para las pruebas y el equipo?
+¿Se toman las medidas apropiadas en el equipo y producto afectado?
+¿Los registros son mantenidos?
+En el caso de software ¿Cómo se confirma su habilidad para llevar a cabo las tareas de medición y monitoreo necesarias, previa interacción con los instrumentos?
+
+## 8. Medición, Análisis y Mejora
+8.1 General
+a) ¿Cómo se demuestra la conformidad de producto? (¿Hay un proceso de medición y de monitoreo en el lugar?)
+b) ¿Cómo se asegura la conformidad del QMS? (¿Hay un proceso de medición y monitoreo en el lugar?)
+c) ¿La medición y monitoreo permiten mejorar continuamente la efectividad del QMS?
+¿El proceso incluye la identificación de métodos, incluyendo las técnicas estadísticas para la medición y monitoreo?
+8.2 Monitoreo y Medición
+8.2.1 Satisfacción del Cliente
+¿Qué métodos utiliza su organización para la recaudación y monitoreo de la información sobre la opinión del cliente con respecto a la conformidad de sus requisitos? Incluye la información monitoreada sobre: a. Producto conforme b. Entrega a tiempo de embarque c. Quejas del cliente y requerimientos de acciones correctivas.
+8.2.2 Auditorias Internas
+¿Se cuenta con un sistema de auditoria interna?
+¿Son realizadas a tiempo? ¿Son eficaces? (¿Identifican buenas mejoras y eliminan inconformidades?)
+¿Cómo se prepara el programa de auditorias? Estas consideran las condiciones indicadas en el estándar, incluyendo: a. Estado e importancia del área b. Resultados de auditorias anteriores.
+¿Qué se incluye en el plan de auditoria?
+¿Cómo se aseguran de que la selección de los auditores es la adecuada para asegurar imparcialidad, objetividad y buenos resultados de la auditoria?
+¿Se cuenta con un procedimiento documentado para definir las responsabilidades y los requerimientos del auditor, incluyendo la creación de registros y reportes de resultados?
+¿De que manera se asegura la organización de que el encargado del área auditada toma acciones inmediatas para corregir y/o eliminar las inconformidades, así como sus causas?
+¿Se lleva un registro y se da seguimiento de las acciones correctivas implementadas para asegurar su efectividad?
+8.2.3 Monitoreo y Medición del Proceso
+¿Cómo son monitoreados los procesos de QMS? ¿Dónde se identifican las medidas apropiadas? ¿Qué medidas se toma si hay una inconformidad de proceso? Incluye: a. ¿Acción para corregir el proceso inconforme? b. ¿Evaluar si la inconformidad en el proceso resulto en productos con inconformidades? c. ¿Determinar si la inconformidad tiene efecto en otros procesos? d. ¿Identificar y controlar el producto inconforme?
+8.2.4 Monitoreo y Medición del Producto
+¿Es el producto medido y monitoreado para verificar que los requisitos del producto son resueltos?
+¿Dónde se identifican los planes de medición? ¿Son documentados los requisitos para la aceptación? a. Criterios de aceptación b. Secuencia de proceso donde se realizan la medición y monitoreo c. Registro de resultados d. Instrumentos requeridos para mediciones específicas.
+¿Se monitorean las características relevantes y otros artículos críticos?
+¿Son válidos los planes de muestreo estadístico? ¿Imposibilitan la aceptación de lotes con las muestras inconformes?
+¿Se utiliza recordatorio positivo cuando el producto se utiliza antes de la inspección o de la verificación?
+¿Los registros indican a la persona que autoriza la entrega del producto?
+¿Los registros proporcionan la evidencia de la conformidad del producto?
+¿Existe evidencia para asegurarse que la entrega del producto no procede hasta que se han cumplido los requerimientos establecidos, a no ser que el cliente o alguna autoridad superior responsable lo autorice?
+¿Hay un proceso para asegurarse de que todos los documentos requeridos acompañan el producto?
+8.3 Control de Producto no Conforme
+¿Cómo se asegura que el producto inconforme se identifica y se controla para prevenir el uso involuntario?
+¿Existe un procedimiento que identifique las responsabilidades para tomar acciones? ¿Incluye la responsabilidad de la disposición?
+¿El procedimiento identifica las maneras que el producto inconforme puede ser manejado? Estos métodos concuerdan con los requisitos estándar para: a. Acción para eliminar inconformidades b. Concesión c. Imposibilitar el uso previsto original d. Acciones adecuadas a los efectos de la inconformidad e. Reportar oportunamente los embarques de producto inconforme f. Acción para contener efecto sobre otros procesos.
+¿Hay un proceso para el "úsese como está"? ¿Se conforma con los requisitos estándar?
+¿Hay un método para controlar el desecho?
+¿Se mantienen los registros?
+¿El producto no conforme corregido es sometido a verificación que permitan demostrar su cumplimiento con los requerimientos?
+¿Se mantienen registros de las inconformidades, así como las acciones tomadas?
+8.4 Análisis de Datos
+¿Cómo los datos para medición y monitoreo se utilizan para demostrar conveniencia y efectividad del QMS? ¿Cómo se utilizan estos datos para mejorar continuamente el QMS?
+¿El análisis proporciona la información en los artículos requeridos por el estándar?
+8.5 Mejora
+8.5.1 Mejora Continua
+¿Cómo la organización mejora continuamente la eficacia del QMS?
+¿La organización monitorea la implementación de las actividades de la mejora y evalúa la eficiencia de las mismas en base a resultados?
+8.5.2 Acciones Correctivas
+¿Cómo se identifican y se corrigen las inconformidades?
+¿Las acciones correctivas son apropiadas a los efectos de las inconformidades encontradas?
+a. El procedimiento de acciones correctivas incluye los artículos requeridos por el estándar: b. Revisión de inconformidades c. Determinación de causa d. Identificar las acciones para prevenir recurrencias e. Implementar las acciones f. Registros g. Revisión de las acciones tomadas h. Seguimiento a las acciones correctivas de los requerimientos del proveedor cuando sea requerido i. Tomar medidas cuando las acciones correctivas no sean alcanzadas a tiempo o de manera efectiva j. Determinar si existe mas producto inconforme basado en las causas.
+8.5.3 Acciones Preventivas
+¿La organización ha establecido un procedimiento para eliminar las causas de inconformidades potenciales?
+¿El procedimiento incluye los artículos requeridos por el estándar? a. Identificar las inconformidades potenciales b. Revisión de inconformidades c. Determinación de causa d. Identificar las acciones para prevenir recurrencias e. Implementar las acciones f. Registros g. Revisión de las acciones tomadas h. Seguimiento a las acciones correctivas de los requerimientos del proveedor cuando sea requerido i. Tomar medidas cuando las acciones correctivas no sean alcanzadas a tiempo o de manera efectiva j. Determinar si existe mas producto inconforme basado en las causas.
+
+##SECCIÓN 9 - EVALUACIÓN DEL DESEMPEÑO:
+Determinar qué necesita seguimiento y medición
+Determinar métodos de seguimiento, medición, análisis y evaluación
+Determinar cuándo efectuar seguimiento y medición
+Analizar y evaluar resultados de seguimiento y medición
+Conservar información documentada de resultados
+Medir satisfacción del cliente
+Realizar seguimiento de percepciones del cliente
+Realizar auditorías internas a intervalos planificados
+Planificar programa de auditorías internas
+Definir criterios y alcance de auditorías
+Seleccionar auditores competentes e imparciales
+Asegurar objetividad e imparcialidad de auditorías
+Informar resultados de auditorías a dirección
+Realizar correcciones y acciones correctivas sin demora
+Conservar información documentada de auditorías
+Revisión del SGC por la alta dirección a intervalos planificados
+Planificar y realizar revisiones por la dirección
+Considerar estado de acciones de revisiones previas
+Considerar cambios en cuestiones externas e internas
+Considerar información sobre desempeño del SGC
+Considerar satisfacción del cliente y retroalimentación
+Considerar grado de cumplimiento de objetivos de calidad
+Considerar desempeño de procesos y conformidad de productos
+Considerar no conformidades y acciones correctivas
+Considerar resultados de seguimiento y medición
+Considerar resultados de auditorías
+Considerar desempeño de proveedores externos
+Considerar adecuación de recursos
+Considerar eficacia de acciones para riesgos y oportunidades
+Considerar oportunidades de mejora
+Salidas de revisión incluyen decisiones sobre mejoras
+Salidas incluyen necesidades de cambio en el SGC
+Salidas incluyen necesidades de recursos
+Conservar información documentada de revisiones
+
+##SECCIÓN 10 - MEJORA:
+Determinar y seleccionar oportunidades de mejora
+Implementar acciones necesarias para cumplir requisitos del cliente
+Mejorar productos y servicios
+Corregir, prevenir o reducir efectos no deseados
+Mejorar desempeño y eficacia del SGC
+Reaccionar ante no conformidad
+Tomar acciones para controlar y corregir no conformidad
+Hacer frente a consecuencias de no conformidad
+Evaluar necesidad de acciones para eliminar causas de no conformidad
+Implementar acciones correctivas necesarias
+Revisar eficacia de acciones correctivas
+Actualizar riesgos y oportunidades si es necesario
+Realizar cambios al SGC si es necesario
+Acciones correctivas apropiadas a efectos de no conformidades
+Conservar información documentada de no conformidades
+Conservar información documentada de acciones tomadas
+Conservar información documentada de resultados de acciones correctivas
+Mejorar continuamente conveniencia, adecuación y eficacia del SGC
+
+
+#RAC 141 CENTROS DE INSTRUCCION ENM 4 ABRIL 2024
+
+##REQUISITOS DE CERTIFICACIÓN (141.105):
+Descripción del personal del CIAC según organigrama propuesto
+Documentos de calificaciones mínimas del personal de dirección según 141.210
+Documento de compromiso de notificar cambios de personal a UAEAC
+Propuesta de especificaciones de instrucción (ESINS) según 141.125.a.2
+Descripción de equipo de vuelo (propio o arrendado) para CIAC Tipo 3
+Descripción de instalaciones de instrucción y equipamiento
+Calificaciones del personal a utilizar
+Programa de instrucción y currículo de cada curso
+Perfil del estudiante
+Material de estudio
+Procedimientos de evaluación a estudiantes
+Descripción del control de registros
+Documentos de instrucción
+Documentos de calificación
+Evaluación de instructores
+Sistema de garantía de calidad propuesto
+Sistema de gestión de seguridad operacional SMS (CIAC Tipo 3)
+Declaración de cumplimiento con referencia cruzada RAC141
+Manual de instrucción y procedimientos (MIP) según 141.250
+Seguro estudiantes y terceros 
+Concepto de la Dirección de Servicios a la Navegación zonas entto
+Concepto del administrador de los aeropuertos bases de operación
+
+##REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.110):
+Programa aprobado por UAEAC, currículo
+Objetivos generales del curso, carga horaria
+Descripción aeronaves y equipo de instrucción
+Ayudas audiovisuales y material de enseñanza, bibliografía
+Relación de instructores calificados
+Currículo instrucción inicial y periódica de cada instructor
+Medio de seguimiento del rendimiento del estudiante
+La duración puede extenterse 10% por seguridad operacional
+Aula máximo 25 alumnos según 141.200.a.3
+
+##REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.115):
+Requisitos previos de ingreso
+Objetivos de instrucción detallados
+Descripción de facilidades
+Personal calificado con experiencia en instrucción
+Procedimientos de evaluación de logro de objetivos
+Programa de exámenes teóricos y prácticos
+Requisitos mínimos de calificación
+Instrucción teórica con número mínimo de horas
+Instrucción de vuelo con número mínimo de horas (cuando aplique)
+Experiencia de vuelo solo con número mínimo de horas (cuando aplique)
+Horas máximas de instrucción establecidas
+Currículum del curso detallado
+
+##DIRECCION Y ORGANIZACION (141.135):
+Estructura de dirección, supervisión de todos los niveles
+Responsabilidades individuales MIP
+Gerente asegure instrucción financiada y requisitos
+Gerente delega funciones pero no responsabilidades
+Planificación, realización y supervisión instrucción, SGC
+Responderán ante el gerente responsable
+Cumplir requisitos técnicos del MIP
+Acreditar experiencia previa de un estudiante RAC61,63,65
+Notificar UAEAC cambios de gerente, supervisón, instrucción, instalac
+Suspensión por no tener personal o aeronaves en 60 días
+
+##REQUISITOS DE INSTALACIONES (141.200):
+Instalaciones disponibles en todo momento
+Protección contra condiciones meteorológicas
+Ambientes adecuados para actividades de instrucción
+Aulas para clases teóricas
+Espacios para sesiones informativas
+Áreas para exámenes teóricos
+Condiciones ambientales adecuadas
+Iluminación adecuada
+Ventilación adecuada
+Tamaño apropiado para número de estudiantes
+Cada estudiante silla con brazo, instructor también
+Instalaciones sin distracciones ni molestias
+Oficinas para instructores y examinadores
+Instalaciones para almacenar hojas de exámenes y registros de instrucción
+Archivo según 141.130
+Biblioteca ventilada e iluminada, virtual o física, soporte técnico
+Area de control aeronav continuada (tipo 3)
+Area de factores humanos y control actitud psicofísica
+Señalización aulas, demás áreas
+Enfermería y cafetería
+Reqs seguridad industrial, salud ocupacional y sanitaria
+Reqs CIAC tipo 3
+Oficina de operaciones, control ops de vuelo
+Oficina tramitar planes de vuelo con
+mapas y cartas actualizadas
+información AIS actualizada
+información meteorológica actualizada
+Comunicaciones enlace ATC y ops
+Cartografía actualizada rutas crucero
+Impreso zonas de vuelo prohibidas, peligrosas, restringidas
+Material seguridad de vuelo UAEAC
+Publicación AIP
+RAC 91 reglas generales de vuelo y operacion
+Area sesiones briefing debriefing en cada aeródromo
+Despachadores elaboración planes de vuelo
+Tripulantes de cabina con aeronave, maqueda energizada, emergencia y supervivencia A20
+
+##REQUISITOS DE EQUIPAMIENTO (141.205):
+Equipo de instrucción en vuelo, entrenador para vuelo instrumentos ATD
+Material didáctico actualizado
+Ayudas de instrucción necesarias
+Libros y publicaciones aeronáuticas
+Manuales técnicos actualizados
+Dispositivos de entrenamiento cuando corresponda
+Equipos de simulación cuando corresponda
+Maquetas especializadas cuando corresponda
+Equipos en condiciones operativas
+
+##REQUISITOS DE PERSONAL (141.210):
+Personal suficiente para alcance de instrucción
+Gerente responsable designado
+Responsable de instrucción designado
+Asistente del responsable de instrucción (cuando aplique)
+Responsable de instrucción teórica (cuando aplique)
+Instructores de vuelo calificados y habilitados
+Instructores en tierra calificados
+Examinadores designados autorizados por UAEAC
+Profesional responsable área Factores Humanos
+Gestor de aeronavegabilidad
+Personal con certificados médicos vigentes cuando aplique
+Personal con experiencia requerida según función
+
+##CALIFICACIONES GERENTE RESPONSABLE (141.135):
+Conocimiento de procedimientos administrativos del CIAC
+Conocimiento de RAC 141
+Autoridad corporativa suficiente
+Responsabilidad de financiamiento
+Capacidad para asegurar estándares UAEAC
+
+##CALIFICACIONES RESPONSABLE DE INSTRUCCIÓN (141.215):
+Licencia de piloto comercial o superior (para CIAC Tipo 3)
+Habilitación de instructor de vuelo
+Certificado médico de segunda clase vigente mínimo
+Experiencia de vuelo total mínima según tipo de instrucción
+Experiencia como instructor mínima
+Conocimiento profundo del RAC 141
+Experiencia en gestión de instrucción
+
+##CALIFICACIONES RESPONSABLE INSTRUCCIÓN TEÓRICA (141.225):
+Título profesional en área relacionada o experiencia equivalente
+Conocimiento de métodos de enseñanza
+Experiencia en instrucción teórica aeronáutica
+Conocimiento del RAC 141
+
+##CALIFICACIONES INSTRUCTOR DE VUELO (141.230):
+Licencia de piloto comercial o superior
+Habilitación de instructor de vuelo vigente
+Certificado médico clase correspondiente vigente
+Experiencia mínima de vuelo establecida
+Competencia en tipo de aeronave a instruir
+Conocimiento de procedimientos del CIAC
+
+##CALIFICACIONES INSTRUCTOR EN TIERRA (141.235):
+Título profesional relacionado o experiencia equivalente
+Conocimiento profundo de materias a enseñar
+Experiencia en instrucción
+Capacitación en métodos pedagógicos
+
+##CALIFICACIONES EXAMINADOR DESIGNADO (141.240):
+Designación vigente por UAEAC
+Licencia apropiada con habilitaciones requeridas
+Certificado médico vigente
+Experiencia mínima establecida
+Conocimiento de procedimientos de examen
+Capacitación en evaluación
+
+##CALIFICACIONES RESPONSABLE FACTORES HUMANOS (141.242):
+Profesional con título universitario en área relacionada
+Conocimiento de factores humanos en aviación
+Experiencia en evaluación psicofísica
+Conocimiento de normativa aplicable
+
+##CALIFICACIONES GESTOR AERONAVEGABILIDAD (141.244):
+Licencia de técnico de mantenimiento o ingeniero aeronáutico
+Experiencia en mantenimiento de aeronaves
+Conocimiento de RAC 43 y RAC 91
+Conocimiento de gestión de aeronavegabilidad
+
+##REQUISITOS DE AERÓDROMOS (141.245):
+Aeródromo certificado o registrado para instrucción de vuelo
+Condiciones apropiadas para instrucción
+Espacios de estacionamiento disponibles
+Instalaciones de combustible
+Autorización de uso del aeródromo
+
+##MANUAL DE INSTRUCCIÓN Y PROCEDIMIENTOS (141.250):
+Manual MIP actualizado
+Contenido según Apéndice 11 del RAC 141
+Procedimientos de operación detallados
+Procedimientos de instrucción
+Procedimientos administrativos
+Procedimientos de seguridad
+Control de enmiendas del manual
+Distribución controlada del manual
+
+##SISTEMA DE GARANTÍA DE CALIDAD (141.255):
+Sistema documentado de garantía de calidad
+Procedimientos de auditoría interna
+Programa de auditorías planificado
+Registros de auditorías
+Acciones correctivas documentadas
+Seguimiento de implementación de acciones correctivas
+Revisión periódica del sistema
+
+##SISTEMA DE GESTIÓN DE SEGURIDAD OPERACIONAL SMS (141.275):
+Manual de gestión SMS
+Política de seguridad operacional
+Identificación de peligros
+Evaluación y mitigación de riesgos
+Indicadores de rendimiento en seguridad
+Metas de rendimiento en seguridad
+Sistema de reporte de eventos de seguridad
+Capacitación en SMS para personal
+Revisión periódica del SMS
+
+##REQUISITOS DE EXÁMENES (141.265):
+Exámenes teóricos aprobados por UAEAC
+Exámenes prácticos supervisados
+Calificación mínima establecida para aprobar
+Registros de exámenes conservados mínimo 3 años
+Custodia segura de cuestionarios
+Supervisión por inspector UAEAC o examinador designado
+
+##REQUISITOS ADMINISTRATIVOS (141.300-320):
+Exhibición del certificado en lugar visible
+Condiciones de elegibilidad de estudiantes documentadas
+Proceso de admisión establecido
+Sistema de matrícula implementado
+Registros de estudiantes actualizados
+Registros de instructores actualizados
+Registros de aeronaves (cuando aplique)
+Certificados de instrucción emitidos a graduados
+Constancias de estudios emitidas
+Conservación de registros mínimo 2 años
+
+##REQUISITOS DE AERONAVES (141.400):
+Aeronaves con certificado de aeronavegabilidad vigente
+Aeronaves apropiadas para tipo de instrucción
+Instrumentos y equipos operativos
+Manuales de aeronave disponibles
+Programa de mantenimiento aprobado
+Póliza de seguro vigente
+
+##REQUISITOS DISPOSITIVOS DE SIMULACIÓN (141.405):
+Dispositivos aprobados por UAEAC cuando se requieran
+Certificación o calificación del dispositivo
+Programa de mantenimiento del dispositivo
+Operatividad verificada
+Representación fiel de aeronave
+Registros de uso y mantenimiento
+
+##REQUISITOS DE OPERACIÓN:
+Notificación de cambios a UAEAC dentro de 30 días
+Cumplimiento continuo de requisitos de certificación
+Operación conforme a especificaciones de instrucción aprobadas
+Horas máximas de instrucción: 8 horas diarias
+Reconocimiento de instrucción previa documentado
+Autoridad de UAEAC para inspeccionar en cualquier momento
+Prevención de consumo de sustancias psicoactivas
