@@ -2,80 +2,140 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Evaluación Técnica AAAES - Contra-UAV</title>
     <style>
-        /* RESET PARA EVITAR DESBORDES */
-        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --bg-body: #e9ecef;
+            --bg-container: #ffffff;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --primary: #003366;
+            --border: #dee2e6;
+            --input-bg: #ffffff;
+            --input-border: #ccc;
+            --section-bg: #f8f9fa;
+        }
 
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #e9ecef; margin: 0; padding: 20px; color: #333; }
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-sub: #b0b0b0;
+            --primary: #4dabf7;
+            --border: #333333;
+            --input-bg: #2d2d2d;
+            --input-border: #444;
+            --section-bg: #252525;
+        }
+
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; transition: background 0.3s, color 0.3s; }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-body); margin: 0; padding: 10px; color: var(--text-main); }
         
-        /* Ancho de seguridad para PDF (720px es ideal para A4/Carta) */
         .container { 
             width: 100%; 
             max-width: 720px; 
             margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
+            background: var(--bg-container); 
+            padding: 20px; 
             border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         .logo-container { text-align: center; margin-bottom: 10px; }
         .logo-container img { max-width: 180px; height: auto; }
 
-        .header { text-align: center; border-bottom: 3px solid #003366; margin-bottom: 20px; padding-bottom: 5px; }
-        h1 { color: #003366; font-size: 16px; text-transform: uppercase; margin: 5px 0; }
-        p.sub-header { margin: 0; font-weight: bold; color: #666; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        .header { text-align: center; border-bottom: 3px solid var(--primary); margin-bottom: 20px; padding-bottom: 5px; }
+        h1 { color: var(--primary); font-size: 16px; text-transform: uppercase; margin: 5px 0; }
+        p.sub-header { margin: 0; font-weight: bold; color: var(--text-sub); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
 
         .meta-data { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 10px; 
-            background: #f8f9fa; 
+            background: var(--section-bg); 
             padding: 12px; 
-            border: 1px solid #ddd;
+            border: 1px solid var(--border);
             margin-bottom: 20px;
             font-size: 12px;
         }
 
-        .section { margin-bottom: 18px; border: 1px solid #003366; border-radius: 4px; overflow: hidden; page-break-inside: avoid; }
-        .section-title { background: #003366 !important; color: white !important; padding: 6px 12px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        .section { margin-bottom: 18px; border: 1px solid var(--primary); border-radius: 4px; overflow: hidden; page-break-inside: avoid; }
+        .section-title { background: var(--primary) !important; color: white !important; padding: 8px 12px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         
-        .item { display: flex; align-items: flex-start; padding: 8px 12px; border-bottom: 1px solid #eee; }
+        .item { display: flex; align-items: flex-start; padding: 10px 12px; border-bottom: 1px solid var(--border); }
         .item:last-child { border-bottom: none; }
         
-        input[type="checkbox"] { margin-right: 12px; margin-top: 3px; transform: scale(1.1); cursor: pointer; }
-        label { font-size: 12px; line-height: 1.4; color: #222; cursor: pointer; }
-        .label-title { font-weight: bold; display: block; color: #003366; margin-bottom: 1px; }
+        input[type="checkbox"] { margin-right: 12px; margin-top: 3px; transform: scale(1.2); cursor: pointer; min-width: 20px; }
+        label { font-size: 13px; line-height: 1.4; color: var(--text-main); cursor: pointer; }
+        .label-title { font-weight: bold; display: block; color: var(--primary); margin-bottom: 1px; }
         
         input[type="text"], input[type="date"], textarea { 
             width: 100%; 
-            padding: 6px; 
-            border: 1px solid #ccc; 
-            border-radius: 3px; 
-            font-size: 12px;
+            padding: 8px; 
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--input-border); 
+            border-radius: 4px; 
+            font-size: 14px;
             font-family: inherit;
         }
-        textarea { height: 70px; resize: none; }
+        textarea { height: 80px; resize: none; }
 
-        .footer-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; text-align: center; }
-        .sig-line { border-top: 1px solid #000; padding-top: 5px; font-weight: bold; font-size: 10px; text-transform: uppercase; }
+        .footer-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; text-align: center; }
+        .sig-line { border-top: 1px solid var(--text-main); padding-top: 5px; font-weight: bold; font-size: 10px; text-transform: uppercase; }
 
-        .btn-container { text-align: center; margin-top: 25px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; margin: 0 5px; }
+        /* --- FOOTER INVERSIONES ARIPAR --- */
+        .aripar-footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+        .aripar-footer strong { color: var(--primary); display: block; margin-bottom: 5px; font-size: 13px; }
+        .aripar-info { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 5px; }
+        .aripar-info span { display: flex; align-items: center; gap: 5px; }
+
+        .btn-container { text-align: center; margin-top: 25px; padding-bottom: 20px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; margin: 5px; width: 100%; max-width: 200px; }
         .btn-print { background: #003366; color: white; }
         .btn-clear { background: #f8f9fa; color: #333; border: 1px solid #ccc; }
+        
+        .theme-toggle { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 24px; z-index: 1000; }
+
+        @media (max-width: 600px) {
+            .meta-data { grid-template-columns: 1fr; }
+            .footer-sigs { grid-template-columns: 1fr; gap: 50px; }
+            .container { padding: 15px; }
+            .aripar-info { flex-direction: column; gap: 5px; }
+        }
 
         @media print {
             @page { margin: 1cm; size: letter; }
+            .theme-toggle, .no-print { display: none !important; }
+            :root {
+                --bg-body: #ffffff;
+                --bg-container: #ffffff;
+                --text-main: #000000;
+                --primary: #003366;
+                --border: #dee2e6;
+                --input-bg: #ffffff;
+                --section-bg: #f8f9fa;
+            }
             body { background: white; padding: 0; margin: 0; }
             .container { width: 100% !important; max-width: 100% !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
-            .no-print { display: none !important; }
-            .section { border: 1px solid #003366 !important; }
+            .meta-data, .footer-sigs { grid-template-columns: 1fr 1fr; }
+            .aripar-footer { border-top: 1px solid #000; color: #000; }
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
+
+<button class="theme-toggle no-print" onclick="toggleTheme()" id="themeBtn">🌙</button>
 
 <div class="container">
     <div class="logo-container">
@@ -88,95 +148,50 @@
     </div>
 
     <div class="meta-data">
-        <div><strong>Fecha de Inspección:</strong> <input type="date" id="f_fecha"></div>
+        <div><strong>Fecha:</strong> <input type="date" id="f_fecha"></div>
         <div><strong>Dependencia:</strong> <input type="text" id="f_dep" placeholder="Torre de Control / Unidad"></div>
-        <div><strong>Sistema Evaluado:</strong> <input type="text" id="f_sis" placeholder="Modelo / S/N"></div>
-        <div><strong>Frecuencias Operativas:</strong> <input type="text" id="f_freq" placeholder="Bandas MHz/GHz"></div>
+        <div><strong>Sistema:</strong> <input type="text" id="f_sis" placeholder="Modelo / S/N"></div>
+        <div><strong>Frecuencias:</strong> <input type="text" id="f_freq" placeholder="Bandas MHz/GHz"></div>
     </div>
 
     <div class="section">
         <div class="section-title">1. Coordinación y Comunicaciones (COM)</div>
-        <div class="item">
-            <input type="checkbox" id="c1">
-            <label for="c1"><span class="label-title">Canal Primario:</span> Frecuencia dedicada o línea directa con TWR.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c2">
-            <label for="c2"><span class="label-title">Protocolo de Aborto:</span> Palabra clave definida para detener emisión.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c3">
-            <label for="c3"><span class="label-title">Fraseología:</span> Uso de términos estandarizados de inicio/fin de prueba.</label>
-        </div>
+        <div class="item"><input type="checkbox" id="c1"><label for="c1"><span class="label-title">Canal Primario:</span> Frecuencia dedicada o línea directa con TWR.</label></div>
+        <div class="item"><input type="checkbox" id="c2"><label for="c2"><span class="label-title">Protocolo de Abortaje:</span> Palabra clave definida para detener emisión.</label></div>
+        <div class="item"><input type="checkbox" id="c3"><label for="c3"><span class="label-title">Fraseología:</span> Uso de términos estandarizados de inicio/fin de prueba.</label></div>
     </div>
 
     <div class="section">
         <div class="section-title">2. Vigilancia y Visualización (SUR)</div>
-        <div class="item">
-            <input type="checkbox" id="c4">
-            <label for="c4"><span class="label-title">Integridad Radar/ADS-B:</span> Sin ecos falsos o pérdida de blancos reales.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c5">
-            <label for="c5"><span class="label-title">Conciencia Situacional:</span> Alimentación de datos del sistema hacia la torre.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c6">
-            <label for="c6"><span class="label-title">Identificación:</span> Diferenciación entre dron de prueba y aeronaves legales.</label>
-        </div>
+        <div class="item"><input type="checkbox" id="c4"><label for="c4"><span class="label-title">Integridad Radar/ADS-B:</span> Sin ecos falsos o pérdida de blancos reales.</label></div>
+        <div class="item"><input type="checkbox" id="c5"><label for="c5"><span class="label-title">Conciencia Situacional:</span> Alimentación de datos del sistema hacia la torre.</label></div>
+        <div class="item"><input type="checkbox" id="c6"><label for="c6"><span class="label-title">Identificación:</span> Diferenciación entre dron de prueba y aeronaves legales.</label></div>
     </div>
 
     <div class="section">
         <div class="section-title">3. Espectro y Navegación (NAV)</div>
-        <div class="item">
-            <input type="checkbox" id="c7">
-            <label for="c7"><span class="label-title">Radioayudas:</span> Sin degradación en VOR, ILS o GPS reportada.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c8">
-            <label for="c8"><span class="label-title">Ruido COM:</span> Sin estática en frecuencias de control VHF/UHF.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c9">
-            <label for="c9"><span class="label-title">Lóbulo:</span> Jamming contenido en límites autorizados.</label>
-        </div>
+        <div class="item"><input type="checkbox" id="c7"><label for="c7"><span class="label-title">Radioayudas:</span> Sin degradación en VOR, ILS o GPS reportada.</label></div>
+        <div class="item"><input type="checkbox" id="c8"><label for="c8"><span class="label-title">Ruido COM:</span> Sin estática en frecuencias de control VHF/UHF.</label></div>
+        <div class="item"><input type="checkbox" id="c9"><label for="c9"><span class="label-title">Lóbulo:</span> Jamming contenido en límites autorizados.</label></div>
     </div>
 
     <div class="section">
         <div class="section-title">4. Gestión del Tránsito Aéreo (ATM)</div>
-        <div class="item">
-            <input type="checkbox" id="c10">
-            <label for="c10"><span class="label-title">Segregación:</span> Cumplimiento de NOTAM activo.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c11">
-            <label for="c11"><span class="label-title">Impacto Civil:</span> Procedimientos de desvío de tráficos activos.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c12">
-            <label for="c12"><span class="label-title">Contingencia:</span> Plan ante pérdida de enlace (Lost Link).</label>
-        </div>
+        <div class="item"><input type="checkbox" id="c10"><label for="c10"><span class="label-title">Segregación:</span> Cumplimiento de NOTAM activo.</label></div>
+        <div class="item"><input type="checkbox" id="c11"><label for="c11"><span class="label-title">Impacto Civil:</span> Procedimientos de desvío de tráficos activos.</label></div>
+        <div class="item"><input type="checkbox" id="c12"><label for="c12"><span class="label-title">Contingencia:</span> Plan ante pérdida de enlace (Lost Link).</label></div>
     </div>
 
     <div class="section">
         <div class="section-title">5. Evaluación Visual (TWR Window)</div>
-        <div class="item">
-            <input type="checkbox" id="c13">
-            <label for="c13"><span class="label-title">Monitoreo:</span> Contacto visual permanente; sin desviación a áreas críticas.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c14">
-            <label for="c14"><span class="label-title">Efectividad:</span> Observación de neutralización física (caída, aterrizaje o RTH) exitosa.</label>
-        </div>
-        <div class="item">
-            <input type="checkbox" id="c15">
-            <label for="c15"><span class="label-title">Seguridad en Superficie:</span> No se detectan riesgos para personal o equipos en tierra tras la neutralización.</label>
-        </div>
+        <div class="item"><input type="checkbox" id="c13"><label for="c13"><span class="label-title">Monitoreo:</span> Contacto visual permanente; dron no se desvía a áreas críticas.</label></div>
+        <div class="item"><input type="checkbox" id="c14"><label for="c14"><span class="label-title">Efectividad:</span> Observación de neutralización física exitosa.</label></div>
+        <div class="item"><input type="checkbox" id="c15"><label for="c15"><span class="label-title">Seguridad en Superficie:</span> Sin riesgos para personal o equipos tras la neutralización.</label></div>
     </div>
 
     <div class="section">
         <div class="section-title">Observaciones Técnicas</div>
-        <div style="padding:10px;"><textarea id="obs" placeholder="Registre anomalías o comentarios..."></textarea></div>
+        <div style="padding:10px;"><textarea id="obs" placeholder="Registre anomalías detectadas..."></textarea></div>
     </div>
 
     <div class="footer-sigs">
@@ -184,14 +199,31 @@
         <div class="sig-line">Responsable Técnico</div>
     </div>
 
+    <footer class="aripar-footer">
+        <strong>INVERSIONES ARIPAR @ 2026</strong>
+        <div class="aripar-info">
+            <span>📱 WhatsApp: +57 312 8816469</span>
+            <span>✉️ Correo: manuel.arias@fac.mil.co</span>
+        </div>
+    </footer>
+
     <div class="btn-container no-print">
-        <button class="btn btn-clear" onclick="if(confirm('¿Borrar todos los datos?')){localStorage.clear(); location.reload();}">Limpiar Formulario</button>
-        <button class="btn btn-print" onclick="window.print()">Generar PDF / Imprimir</button>
+        <button class="btn btn-print" onclick="window.print()">Generar Reporte PDF</button>
+        <button class="btn btn-clear" onclick="limpiar()">Limpiar Formulario</button>
     </div>
 </div>
 
 <script>
-    const KEY = 'aaaes_uav_final';
+    const KEY = 'aaaes_aripar_uav';
+
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        btn.innerText = isDark ? '🌙' : '☀️';
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    }
 
     const save = () => {
         const d = { checks: {}, texts: {} };
@@ -199,6 +231,8 @@
         document.querySelectorAll('input[type="text"], input[type="date"], textarea').forEach(t => d.texts[t.id] = t.value);
         localStorage.setItem(KEY, JSON.stringify(d));
     };
+
+    const limpiar = () => { if(confirm('¿Borrar datos?')){ localStorage.removeItem(KEY); location.reload(); } };
 
     window.onload = () => {
         const s = localStorage.getItem(KEY);
@@ -209,6 +243,7 @@
         } else {
             document.getElementById('f_fecha').value = new Date().toISOString().split('T')[0];
         }
+        if(localStorage.getItem('theme') === 'dark') toggleTheme();
     };
 
     document.addEventListener('input', save);
