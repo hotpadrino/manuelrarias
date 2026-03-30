@@ -2,21 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pixel Quest</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            touch-action: none;
+        }
+
         body {
             background: #0a0a0f;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            justify-content: flex-start;
+            min-height: 100dvh;
             font-family: 'Press Start 2P', monospace;
-            overflow: hidden;
         }
 
         /* Starfield background */
@@ -37,107 +43,148 @@
                 radial-gradient(1px 1px at 45% 35%, #fff 0%, transparent 100%);
             opacity: 0.5;
             pointer-events: none;
+            z-index: 0;
         }
 
+        /* ── UI TOP ── */
         #ui-top {
             display: flex;
             align-items: center;
-            gap: 32px;
-            margin-bottom: 12px;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 6px 8px 4px;
             z-index: 10;
+            flex-wrap: nowrap;
         }
 
         .ui-pill {
             background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.12);
+            border: 1.5px solid rgba(255,255,255,0.12);
             border-radius: 4px;
-            padding: 8px 16px;
+            padding: 5px 10px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+            justify-content: center;
         }
 
         .ui-label {
-            font-size: 7px;
+            font-size: 5px;
             color: #888;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            white-space: nowrap;
         }
 
         .ui-value {
-            font-size: 11px;
+            font-size: 9px;
             color: #ffe066;
             text-shadow: 0 0 8px #ffe06688;
+            white-space: nowrap;
         }
 
+        /* ── CANVAS WRAPPER ── */
         #canvas-wrapper {
             position: relative;
-            border: 3px solid #ffe066;
+            border: 2px solid #ffe066;
             box-shadow:
                 0 0 0 1px #0a0a0f,
-                0 0 30px #ffe06622,
-                0 0 60px #ffe06611,
-                inset 0 0 30px rgba(0,0,0,0.4);
+                0 0 20px #ffe06622,
+                inset 0 0 20px rgba(0,0,0,0.4);
+            flex-shrink: 0;
         }
 
         canvas {
-            background-color: #87CEEB; /* Este color se sobrescribe con tu Tema */
-            box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
+            display: block;
             image-rendering: pixelated;
-            
-            /* --- MAGIA PARA PANTALLAS --- */
-            width: 100vw;         /* Toma todo el ancho de la ventana */
-            max-width: 800px;     /* Límite en PC para que no se vea exageradamente gigante */
-            height: auto;
-            max-height: 65vh;     /* Nunca ocupará más del 65% del alto, dejando espacio para botones */
-            object-fit: contain;  /* Mantiene el juego en su proporción original sin aplastarlo */
+            image-rendering: crisp-edges;
         }
 
-        /* Estilos del Editor Modal */
+        /* ── EDITOR MODAL ── */
         #modalEditor {
-            display: none; /* Oculto por defecto */
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 100;
             justify-content: center;
             align-items: center;
+            padding: 12px;
         }
 
         #editorContenedor {
             background: #2c3e50;
-            padding: 20px;
+            padding: 14px;
             border-radius: 10px;
-            border: 2px solid #fff;
+            border: 2px solid #ffe066;
             text-align: center;
+            width: 100%;
+            max-width: 480px;
+            max-height: 95dvh;
+            overflow-y: auto;
         }
 
-        /* La magia para que el texto parezca un mapa cuadriculado */
-        #textoMapa {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 24px;
-            line-height: 24px;
-            letter-spacing: 8px; /* Separa las letras para hacerlas cuadradas */
+        #editorContenedor h3 {
+            color: #ffe066;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        #editorContenedor label {
+            font-size: 8px;
+            color: #aaa;
+        }
+
+        #editorContenedor select {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
             background: #1a1a2e;
             color: #fff;
+            border: 1px solid #4fd1c5;
+            padding: 4px 6px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+
+        #textoMapa {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: clamp(12px, 3.5vw, 20px);
+            line-height: 1.2;
+            letter-spacing: 4px;
+            background: #1a1a2e;
+            color: #7ef7d4;
             border: 2px solid #4fd1c5;
-            padding: 10px;
+            padding: 8px;
             resize: none;
-            overflow: hidden;
+            overflow: auto;
             white-space: pre;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
         }
 
         #leyenda {
             margin-top: 10px;
-            font-size: 12px;
+            font-size: 9px;
             color: #bdc3c7;
             text-align: left;
             background: #1e272e;
             padding: 10px;
             border-radius: 5px;
+            line-height: 1.8;
         }
-        
-        /* Transition overlay */
+
+        .editor-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+
+        /* ── OVERLAY / FLASH ── */
         #overlay {
             position: absolute;
             inset: 0;
@@ -149,7 +196,6 @@
         }
         #overlay.fade-in { opacity: 1; }
 
-        /* Screen flash */
         #flash {
             position: absolute;
             inset: 0;
@@ -161,46 +207,84 @@
         }
         #flash.active { opacity: 0.35; }
 
+        /* ── CONTROLS HINT (desktop) ── */
         #controls-hint {
-            margin-top: 12px;
-            font-size: 7px;
-            color: #555;
+            margin-top: 8px;
+            font-size: 6px;
+            color: #444;
             letter-spacing: 1px;
             text-align: center;
             line-height: 1.8;
         }
 
-        /* Touch controls */
+        /* ── TOUCH CONTROLS ── */
         #touch-controls {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            width: 95vw;          /* Se expande casi hasta los bordes del celular */
-            max-width: 600px;
-            justify-content: space-between;
-            touch-action: manipulation;
+            display: none;
+            width: 100%;
+            padding: 8px 12px 4px;
+            position: relative;
+            flex-shrink: 0;
         }
-        @media (pointer: coarse) {
+
+        /* Show on touch devices OR narrow screens */
+        @media (pointer: coarse), (max-width: 600px) {
             #touch-controls { display: flex; }
             #controls-hint { display: none; }
+            #btnAbrirEditor { margin-top: 6px; }
         }
-        .touch-btn {
-            font-size: clamp(16px, 5vw, 22px); /* El texto se hace pequeño o grande según la pantalla */
-            padding: 15px 5px;
-            border-radius: 10px;
-            border: 2px solid #fff;
-            background-color: #34495e;
-            color: white;
-            text-align: center;
-            user-select: none;
-            -webkit-user-select: none;
-            cursor: pointer;
-            flex: 1;              /* Los botones se reparten el espacio equitativamente */
-            margin: 0 5px;
-        }
-        .touch-btn:active { background: rgba(255,224,102,0.2); border-color: #ffe066; }
 
-        /* Win screen */
+        /* D-pad layout: left/right on left side, jump on right */
+        #dpad-left {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #dpad-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+
+        .touch-btn {
+            background: rgba(255,255,255,0.10);
+            border: 2.5px solid rgba(255,255,255,0.25);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 22px;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.08s, border-color 0.08s, transform 0.08s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+        }
+
+        .touch-btn:active,
+        .touch-btn.pressed {
+            background: rgba(255,224,102,0.25);
+            border-color: #ffe066;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+        }
+
+        /* Jump button is bigger and distinct */
+        #btn-jump {
+            width: 80px;
+            height: 80px;
+            font-size: 26px;
+            background: rgba(255,224,102,0.12);
+            border-color: #ffe06688;
+            border-radius: 50%;
+        }
+
+        /* ── WIN SCREEN ── */
         #win-screen {
             display: none;
             position: absolute;
@@ -210,28 +294,87 @@
             align-items: center;
             justify-content: center;
             z-index: 10;
-            gap: 20px;
+            gap: 16px;
         }
         #win-screen.show { display: flex; }
-        #win-screen h1 { font-size: 18px; color: #ffe066; text-shadow: 0 0 20px #ffe066; animation: pulse 1s infinite; }
-        #win-screen p { font-size: 8px; color: #aaa; }
+        #win-screen h1 { font-size: clamp(12px,4vw,18px); color: #ffe066; text-shadow: 0 0 20px #ffe066; animation: pulse 1s infinite; text-align: center; padding: 0 10px; }
+        #win-screen p { font-size: clamp(6px,2vw,8px); color: #aaa; }
+
+        /* ── SHARED BUTTON STYLE ── */
+        .btn, #restart-btn, #btnAbrirEditor, #btnGuardarMapa, #btnCerrarEditor, #btnReintentar {
+            font-family: 'Press Start 2P', monospace;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active, #restart-btn:active, #btnAbrirEditor:active,
+        #btnGuardarMapa:active, #btnCerrarEditor:active, #btnReintentar:active {
+            transform: scale(0.95);
+            filter: brightness(1.2);
+        }
+
         #restart-btn {
-            margin-top: 10px;
             background: #ffe066;
             color: #0a0a0f;
-            border: none;
-            padding: 12px 24px;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 9px;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: transform 0.1s;
+            padding: 12px 22px;
+            font-size: 8px;
         }
-        #restart-btn:hover { transform: scale(1.05); }
+
+        #btnAbrirEditor {
+            background: #8e44ad;
+            color: #fff;
+            padding: 10px 18px;
+            font-size: 8px;
+            margin-top: 8px;
+            z-index: 10;
+        }
+
+        #btnGuardarMapa {
+            background: #27ae60;
+            color: #fff;
+            padding: 10px 16px;
+            font-size: 8px;
+        }
+
+        #btnCerrarEditor {
+            background: #c0392b;
+            color: #fff;
+            padding: 10px 16px;
+            font-size: 8px;
+        }
+
+        /* ── GAME OVER ── */
+        #pantallaGameOver h1 {
+            font-size: clamp(20px, 6vw, 40px);
+            color: #e74c3c;
+            text-shadow: 2px 2px 0 #000;
+            margin-bottom: 16px;
+        }
+        #pantallaGameOver p {
+            font-size: clamp(7px, 2vw, 12px);
+            color: white;
+            margin-bottom: 24px;
+            font-family: 'Press Start 2P', monospace;
+        }
+        #btnReintentar {
+            background: #c0392b;
+            color: #fff;
+            padding: 14px 28px;
+            font-size: clamp(9px, 2.5vw, 14px);
+        }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+
+        /* ── RESPONSIVE CANVAS SCALING ── */
+        @media (max-width: 600px) {
+            .ui-label { font-size: 4px; }
+            .ui-value { font-size: 8px; }
+            .ui-pill { padding: 4px 8px; }
         }
     </style>
 </head>
@@ -263,52 +406,51 @@
     </div>
 </div>
 
-<div id="pantallaGameOver" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 200; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
-    <h1 style="color: #e74c3c; font-size: 40px; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;">¡FIN DEL JUEGO!</h1>
-    <p style="color: white; margin-bottom: 30px;">Te has quedado sin vidas.</p>
-    <button id="btnReintentar" class="btn" style="background-color: #c0392b; padding: 15px 30px; font-size: 20px;">🔄 Volver a intentar</button>
+<div id="pantallaGameOver" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:200;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;">
+    <h1>¡FIN DEL JUEGO!</h1>
+    <p>Te has quedado sin vidas.</p>
+    <button id="btnReintentar">🔄 Reintentar</button>
 </div>
-    
-<button id="btnAbrirEditor" class="btn" style="margin-top: 10px; background-color: #8e44ad;">✏️ Editor de Mapas</button>
 
-    <div id="modalEditor">
-        <div id="editorContenedor">
-            <h3>Editor de Niveles</h3>
-            
-            <div style="margin-bottom: 10px;">
-                <label>Pantalla:</label>
-                <select id="selectPantalla"></select>
-                
-                <label style="margin-left: 10px;">Tema:</label>
+<div id="modalEditor">
+    <div id="editorContenedor">
+        <h3>✏️ Editor de Niveles</h3>
+        <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:4px;">
+            <div><label>Pantalla:</label><select id="selectPantalla"></select></div>
+            <div><label>Tema:</label>
                 <select id="selectTema">
-                    <option value="0">Tierra / Pasto</option>
-                    <option value="1">Cueva / Piedra</option>
-                    <option value="2">Nieve / Hielo</option>
+                    <option value="0">🌙 Noche</option>
+                    <option value="1">🌲 Bosque</option>
+                    <option value="2">🔥 Cueva</option>
                 </select>
             </div>
-
-            <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
-            
-            <div id="leyenda">
-                <b>0</b> = Aire | <b>1</b> = Bloque sólido<br>
-                <b>S</b> = Pinchos | <b>&gt;</b> = Portal siguiente<br>
-                <b>!</b> = Meta final (Solo última pantalla)
-            </div>
-
-            <div style="margin-top: 15px;">
-                <button id="btnGuardarMapa" class="btn" style="background-color: #27ae60; padding: 10px;">💾 Guardar</button>
-                <button id="btnCerrarEditor" class="btn" style="background-color: #c0392b; padding: 10px;">❌ Cerrar</button>
-            </div>
+        </div>
+        <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
+        <div id="leyenda">
+            <b style="color:#ffe066">0</b> = Aire &nbsp;|&nbsp; <b style="color:#ffe066">1</b> = Bloque<br>
+            <b style="color:#fc8181">S</b> = Pinchos &nbsp;|&nbsp; <b style="color:#68d391">C</b> = Moneda<br>
+            <b style="color:#90cdf4">&gt;</b> = Portal &nbsp;|&nbsp; <b style="color:#fbd38d">!</b> = Meta final
+        </div>
+        <div class="editor-btn-row">
+            <button id="btnGuardarMapa">💾 Guardar</button>
+            <button id="btnCerrarEditor">✕ Cerrar</button>
         </div>
     </div>
+</div>
 
-<p id="controls-hint">← → mover &nbsp;|&nbsp; ↑ saltar &nbsp;|&nbsp; ↑↑ doble salto</p>
+<p id="controls-hint">← → mover &nbsp;|&nbsp; ↑ / espacio saltar &nbsp;|&nbsp; ↑↑ doble salto</p>
 
 <div id="touch-controls">
-    <button class="touch-btn" id="btn-left">◀</button>
-    <button class="touch-btn" id="btn-jump">▲</button>
-    <button class="touch-btn" id="btn-right">▶</button>
+    <div id="dpad-left">
+        <button class="touch-btn" id="btn-left">◀</button>
+        <button class="touch-btn" id="btn-right">▶</button>
+    </div>
+    <div id="dpad-right">
+        <button class="touch-btn" id="btn-jump">▲</button>
+    </div>
 </div>
+
+<button id="btnAbrirEditor">✏️ Editor</button>
 
 <script>
 const canvas = document.getElementById('juegoCanvas');
@@ -1022,6 +1164,50 @@ function bucle() {
     tiempoPantalla++;
     requestAnimationFrame(bucle);
 }
+
+// ─── CANVAS SCALING PARA MÓVIL ───────────────────────────────────────────────
+function escalarCanvas() {
+    const CANVAS_W = 512;
+    const CANVAS_H = 384;
+
+    // Altura disponible: pantalla menos UI top, controles táctiles, editor btn, padding
+    const uiTop = document.getElementById('ui-top');
+    const touchControls = document.getElementById('touch-controls');
+    const editorBtn = document.getElementById('btnAbrirEditor');
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 600;
+
+    const uiH = uiTop.offsetHeight || 40;
+    const ctrlH = isTouchDevice ? 90 : 0;
+    const btnH = isTouchDevice ? 50 : 0;
+    const padding = 16;
+
+    const availW = window.innerWidth - padding;
+    const availH = window.innerHeight - uiH - ctrlH - btnH - padding;
+
+    const scaleW = availW / CANVAS_W;
+    const scaleH = availH / CANVAS_H;
+    const scale = Math.min(scaleW, scaleH, 1); // Never upscale past 1x on desktop
+
+    const newW = Math.floor(CANVAS_W * scale);
+    const newH = Math.floor(CANVAS_H * scale);
+
+    canvas.style.width = newW + 'px';
+    canvas.style.height = newH + 'px';
+}
+
+window.addEventListener('resize', escalarCanvas);
+// Run after fonts load
+document.fonts.ready.then(escalarCanvas);
+setTimeout(escalarCanvas, 100);
+
+// ─── BOTONES TÁCTILES: feedback visual con mousedown/mouseup también ──────────
+[document.getElementById('btn-left'),
+ document.getElementById('btn-right'),
+ document.getElementById('btn-jump')].forEach(btn => {
+    btn.addEventListener('mousedown', () => btn.classList.add('pressed'));
+    btn.addEventListener('mouseup', () => btn.classList.remove('pressed'));
+    btn.addEventListener('mouseleave', () => btn.classList.remove('pressed'));
+});
 
 // ─── CONTROLES TECLADO ────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
