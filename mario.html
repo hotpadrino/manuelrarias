@@ -81,9 +81,16 @@
         }
 
         canvas {
-            display: block;
+            background-color: #87CEEB; /* Este color se sobrescribe con tu Tema */
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
+            
+            /* --- MAGIA PARA PANTALLAS --- */
+            width: 100vw;         /* Toma todo el ancho de la ventana */
+            max-width: 800px;     /* Límite en PC para que no se vea exageradamente gigante */
+            height: auto;
+            max-height: 65vh;     /* Nunca ocupará más del 65% del alto, dejando espacio para botones */
+            object-fit: contain;  /* Mantiene el juego en su proporción original sin aplastarlo */
         }
 
         /* Estilos del Editor Modal */
@@ -165,27 +172,31 @@
 
         /* Touch controls */
         #touch-controls {
-            display: none;
-            gap: 16px;
-            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            width: 95vw;          /* Se expande casi hasta los bordes del celular */
+            max-width: 600px;
+            justify-content: space-between;
+            touch-action: manipulation;
         }
         @media (pointer: coarse) {
             #touch-controls { display: flex; }
             #controls-hint { display: none; }
         }
         .touch-btn {
-            background: rgba(255,255,255,0.08);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 6px;
-            color: #fff;
-            font-family: 'Press Start 2P', monospace;
-            font-size: 16px;
-            width: 52px;
-            height: 52px;
-            cursor: pointer;
+            font-size: clamp(16px, 5vw, 22px); /* El texto se hace pequeño o grande según la pantalla */
+            padding: 15px 5px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            background-color: #34495e;
+            color: white;
+            text-align: center;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: background 0.1s;
+            -webkit-user-select: none;
+            cursor: pointer;
+            flex: 1;              /* Los botones se reparten el espacio equitativamente */
+            margin: 0 5px;
         }
         .touch-btn:active { background: rgba(255,224,102,0.2); border-color: #ffe066; }
 
