@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simón de Colores</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        #ui-container {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        #status {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00ffcc;
+            height: 30px; /* Evita que el texto salte al cambiar */
+        }
+        #stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 1.1rem;
+            color: #aaa;
+            font-weight: bold;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 85vw;
+            max-width: 320px;
+        }
+        .pad {
+            aspect-ratio: 1;
+            border-radius: 20%;
+            opacity: 0.3;
+            transition: opacity 0.15s, transform 0.1s;
+            border: 4px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.7);
+            user-select: none;
+            cursor: pointer;
+        }
+        .pad.active {
+            opacity: 1;
+            transform: scale(0.92);
+            color: #ffffff;
+        }
+        
+        #p0 { background-color: #ff3b30; } 
+        #p0.active { box-shadow: 0 0 30px #ff3b30; }
+        
+        #p1 { background-color: #4cd964; } 
+        #p1.active { box-shadow: 0 0 30px #4cd964; }
+        
+        #p2 { background-color: #007aff; } 
+        #p2.active { box-shadow: 0 0 30px #007aff; }
+        
+        #p3 { background-color: #ffcc00; } 
+        #p3.active { box-shadow: 0 0 30px #ffcc00; }
+        
+        #p4 { background-color: #af52de; } 
+        #p4.active { box-shadow: 0 0 30px #af52de; }
+        
+        #p5 { background-color: #ff9500; } 
+        #p5.active { box-shadow: 0 0 30px #ff9500; }
+
+        #btn-main {
+            margin-top: 35px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            border: none;
+            background: #fff;
+            color: #000;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        
+        #btn-main:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-container">
+        <div id="status">Presiona Iniciar</div>
+        <div id="stats">
+            <span id="level-text">Nivel: 0</span>
+            <span id="score-text">Puntos: 0</span>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="pad" id="p0" onclick="handleTap(0)">1</div>
+        <div class="pad" id="p1" onclick="handleTap(1)">2</div>
+        <div class="pad" id="p2" onclick="handleTap(2)">3</div>
+        <div class="pad" id="p3" onclick="handleTap(3)">4</div>
+        <div class="pad" id="p4" onclick="handleTap(4)">5</div>
+        <div class="pad" id="p5" onclick="handleTap(5)">6</div>
+    </div>
+
+    <button id="btn-main" onclick="startGame()">INICIAR JUEGO</button>
+
+    <script>
+        let gameSequence = [];
+        let playerSequence = [];
+        let level = 0;
+        let score = 0;
+        let isWaitingForPlayer = false;
+        let audioCtx = null;
+
+        const statusLabel = document.getElementById('status');
+        const levelLabel = document.getElementById('level-text');
+        const scoreLabel = document.getElementById('score-text');
+        const btnMain = document.getElementById('btn-main');
+        
+        const freqs = [261.6, 329.6, 392.0, 440.0, 523.2, 587.3];
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playTone(freq, duration = 0.3) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function flashPad(id) {
+            const el = document.getElementById('p' + id);
+            el.classList.add('active');
+            playTone(freqs[id]);
+            setTimeout(() => el.classList.remove('active'), 250);
+        }
+
+        function startGame() {
+            initAudio();
+            level = 0;
+            score = 0;
+            gameSequence = [];
+            scoreLabel.innerText = "Puntos: 0";
+            scoreLabel.style.color = "#aaa";
+            btnMain.style.display = 'none';
+            nextLevel();
+        }
+
+        function nextLevel() {
+            level++;
+            playerSequence = [];
+            isWaitingForPlayer = false;
+            levelLabel.innerText = "Nivel: " + level;
+            statusLabel.innerText = "Observa...";
+            statusLabel.style.color = "#ffcc00"; // Amarillo mientras muestra
+            
+            gameSequence.push(Math.floor(Math.random() * 6));
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                flashPad(gameSequence[i]);
+                i++;
+                if (i >= gameSequence.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        isWaitingForPlayer = true;
+                        statusLabel.innerText = "¡Tu turno!";
+                        statusLabel.style.color = "#00ffcc"; // Cyan para el turno del jugador
+                    }, 300);
+                }
+            }, Math.max(300, 600 - (level * 20))); 
+        }
+
+        function handleTap(id) {
+            if (!isWaitingForPlayer) return;
+
+            flashPad(id);
+            playerSequence.push(id);
+            
+            const currentStep = playerSequence.length - 1;
+
+            if (playerSequence[currentStep] !== gameSequence[currentStep]) {
+                gameOver();
+                return;
+            }
+
+            // --- AQUÍ SUMAMOS LOS PUNTOS ---
+            score += 10;
+            scoreLabel.innerText = "Puntos: " + score;
+
+            if (playerSequence.length === gameSequence.length) {
+                isWaitingForPlayer = false;
+                statusLabel.innerText = "¡Bien!";
+                statusLabel.style.color = "#4cd964"; // Verde de éxito
+                setTimeout(nextLevel, 800);
+            }
+        }
+
+        function gameOver() {
+            isWaitingForPlayer = false;
+            playTone(100, 0.6); 
+            statusLabel.innerText = "¡JUEGO TERMINADO!";
+            statusLabel.style.color = "#ff3b30";
+            
+            levelLabel.innerText = "Nivel: " + (level - 1);
+            scoreLabel.innerText = "Puntos Finales: " + score;
+            scoreLabel.style.color = "#fff"; // Resaltar puntos al perder
+            
+            btnMain.style.display = 'block';
+            btnMain.innerText = "REINTENTAR";
+            
+            document.body.style.background = "#400";
+            setTimeout(() => document.body.style.background = "#1a1a1a", 200);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (btnMain.style.display !== 'none' && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault(); 
+                startGame();
+                return;
+            }
+
+            if (!isWaitingForPlayer) return;
+
+            const keyMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5 };
+            const padId = keyMap[event.key];
+            
+            if (padId !== undefined) {
+                handleTap(padId);
+            }
+        });
+    </script>
+</body>
+</html>
