@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Cuánto daño haces? — Simulador de Impacto Colombia</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #080c10;
+            --surface: #0f1419;
+            --surface2: #161d26;
+            --border: #1e2d3d;
+            --accent: #ff2d2d;
+            --accent2: #ff7a00;
+            --accent3: #ffdd00;
+            --safe: #00e676;
+            --text: #e8edf2;
+            --muted: #5a6a7a;
+            --display: 'Bebas Neue', sans-serif;
+            --body: 'DM Sans', sans-serif;
+            --mono: 'Space Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── ROAD TEXTURE BG ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(
+                    180deg,
+                    transparent,
+                    transparent 40px,
+                    rgba(255,255,255,0.012) 40px,
+                    rgba(255,255,255,0.012) 41px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 4rem 0 2rem;
+            text-align: center;
+            position: relative;
+        }
+        .hero-eyebrow {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.25em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-family: var(--display);
+            font-size: clamp(3.5rem, 10vw, 7.5rem);
+            line-height: 0.92;
+            letter-spacing: 0.02em;
+            color: #fff;
+        }
+        .hero h1 span {
+            color: var(--accent);
+            display: block;
+        }
+        .hero-sub {
+            margin-top: 1.2rem;
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        /* DIVIDER */
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 2.5rem 0;
+            opacity: 0.5;
+        }
+
+        /* ── SECTION LABEL ── */
+        .sec-label {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .sec-title {
+            font-family: var(--display);
+            font-size: clamp(2rem, 5vw, 3rem);
+            letter-spacing: 0.04em;
+            color: #fff;
+            line-height: 1;
+        }
+
+        /* ── SPEED SECTION ── */
+        .speed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+            margin-top: 2rem;
+        }
+        @media(max-width: 720px) { .speed-grid { grid-template-columns: 1fr; } }
+
+        /* SPEED DIAL */
+        .speed-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.2rem;
+            padding: 2rem;
+        }
+
+        .speed-number {
+            font-family: var(--display);
+            font-size: 8rem;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+        }
+        .speed-unit {
+            font-family: var(--mono);
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-left: 0.4rem;
+        }
+        .ms-label {
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.3rem;
+        }
+        .ms-label strong { color: var(--text); }
+
+        /* SLIDER */
+        .slider-track {
+            margin-top: 1.8rem;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255,45,45,0.6);
+            transition: box-shadow 0.2s;
+        }
+        input[type=range]:hover::-webkit-slider-thumb {
+            box-shadow: 0 0 30px rgba(255,45,45,0.9);
+        }
+        .slider-marks {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.6rem;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+
+        /* RESULT CARDS */
+        .result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .result-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 0.8rem;
+            padding: 1.2rem;
+        }
+        .result-card .label {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+        .result-card .value {
+            font-family: var(--display);
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+        .result-card .unit { font-size: 1rem; color: var(--muted); margin-left: 0.2rem; }
+
+        /* ALERT BOX */
+        .alert-box {
+            margin-top: 1.5rem;
+            border-radius: 0.8rem;
+            padding: 1.2rem 1.4rem;
+            border-left: 4px solid var(--accent);
+            background: rgba(255,45,45,0.08);
+            transition: background 0.4s, border-color 0.4s;
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+        }
+        .alert-box p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        /* BUILDING VIZ */
+        .building-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.2rem;
+            overflow: hidden;
+        }
+        .building-container {
+            position: relative;
+            height: 560px;
+            background: linear-gradient(to bottom, #060a18 0%, #0d1a2e 60%, #1a2d1a 100%);
+            overflow: hidden;
+        }
+
+        /* City skyline silhouette */
+        .building-container::before {
+            content: '';
+            position: absolute;
+            bottom: 15px;
+            left: 0; right: 0;
+            height: 80px;
+            background: 
+                radial-gradient(ellipse 20px 80px at 5% 100%, #1a2d1a 99%, transparent 100%),
+                radial-gradient(ellipse 30px 60px at 15% 100%, #0f1f0f 99%, transparent 100%),
+                radial-gradient(ellipse 20px 40px at 88% 100%, #1a2d1a 99%, transparent 100%),
+                radial-gradient(ellipse 25px 55px at 96% 100%, #0f1f0f 99%, transparent 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Stars */
+        .building-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1px 1px at 30% 8%, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 55% 12%, rgba(255,255,255,0.6), transparent),
+                radial-gradient(1px 1px at 75% 5%, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 90% 20%, rgba(255,255,255,0.5), transparent),
+                radial-gradient(1.5px 1.5px at 20% 30%, rgba(255,255,255,0.3), transparent),
+                radial-gradient(1px 1px at 65% 25%, rgba(255,255,255,0.4), transparent),
+                radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,0.25), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .visual-building {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            background: linear-gradient(180deg, #233040 0%, #1a2530 100%);
+            transition: height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-top: 3px solid rgba(255,220,80,0.5);
+            z-index: 20;
+        }
+        .win-row {
+            display: flex;
+            justify-content: space-around;
+            padding: 1px 4px;
+        }
+        .win {
+            width: 8px;
+            height: 5px;
+            background: #fef08a;
+            border-radius: 1px;
+            opacity: 0.7;
+        }
+
+        .landmark {
+            position: absolute;
+            left: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 15;
+            width: calc(100% - 16px);
+        }
+        .landmark-line {
+            flex-grow: 1;
+            border-top: 1px dashed rgba(255,255,255,0.15);
+        }
+        .landmark-label {
+            font-family: var(--mono);
+            font-size: 0.58rem;
+            color: rgba(255,255,255,0.6);
+            background: rgba(0,0,0,0.5);
+            padding: 2px 6px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .ground-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: #1a3a1a;
+            z-index: 30;
+        }
+
+        /* Drop indicator */
+        #dropIndicator {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            background: rgba(255,45,45,0.15);
+            border: 1px dashed rgba(255,45,45,0.4);
+            bottom: 15px;
+            z-index: 18;
+            transition: height 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        #dropIndicator .drop-label {
+            font-family: var(--mono);
+            font-size: 0.55rem;
+            color: var(--accent);
+            padding: 3px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .building-caption {
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ── CHART SECTION ── */
+        .chart-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1.2rem;
+            padding: 2rem;
+            margin-top: 2.5rem;
+        }
+
+        /* ── DISTRACTIONS SECTION ── */
+        .dist-section {
+            margin-top: 4rem;
+        }
+
+        .dist-intro {
+            font-size: 1rem;
+            color: var(--muted);
+            max-width: 600px;
+            line-height: 1.65;
+            margin-top: 0.7rem;
+        }
+
+        .dist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        .dist-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.6rem;
+            cursor: pointer;
+            transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .dist-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+        .dist-card:hover::before,
+        .dist-card.active::before { transform: scaleX(1); }
+        .dist-card:hover, .dist-card.active {
+            border-color: rgba(255,45,45,0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255,45,45,0.12);
+        }
+
+        .dist-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+        .dist-card h3 {
+            font-family: var(--display);
+            font-size: 1.5rem;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.4rem;
+        }
+        .dist-card .dist-tag {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: rgba(255,45,45,0.12);
+            color: var(--accent);
+            border: 1px solid rgba(255,45,45,0.25);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 0.8rem;
+        }
+        .dist-card p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+        .dist-stat {
+            margin-top: 1rem;
+            background: var(--surface2);
+            border-radius: 0.6rem;
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border: 1px solid var(--border);
+        }
+        .dist-stat .big {
+            font-family: var(--display);
+            font-size: 2.2rem;
+            line-height: 1;
+            color: var(--accent3);
+        }
+        .dist-stat .desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        /* ── BLIND SPOT SIMULATOR ── */
+        .blind-section {
+            margin-top: 4rem;
+        }
+        .road-sim {
+            position: relative;
+            background: #0f1a0f;
+            border: 1px solid var(--border);
+            border-radius: 1.2rem;
+            height: 220px;
+            overflow: hidden;
+            margin-top: 2rem;
+            cursor: pointer;
+        }
+        /* Road lines */
+        .road-sim::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0; right: 0;
+            height: 100%;
+            background: 
+                linear-gradient(90deg, #1a2a1a 0%, #222 100%);
+        }
+        .road-dashes {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 0;
+            right: 0;
+            height: 4px;
+            overflow: hidden;
+        }
+        .road-dashes::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                rgba(255,255,255,0.3) 0px,
+                rgba(255,255,255,0.3) 40px,
+                transparent 40px,
+                transparent 80px
+            );
+            animation: dashMove 1s linear infinite;
+        }
+        @keyframes dashMove {
+            from { transform: translateX(0); }
+            to { transform: translateX(-80px); }
+        }
+        
+        .road-car {
+            position: absolute;
+            left: 80px;
+            top: 50%;
+            transform: translateY(-60%);
+            font-size: 3rem;
+            transition: left 0.1s linear;
+            filter: drop-shadow(0 4px 12px rgba(255,255,255,0.3));
+        }
+        .pedestrian {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-40%);
+            font-size: 2.2rem;
+            transition: all 0.3s;
+        }
+        
+        .blind-overlay {
+            position: absolute;
+            top: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: width 0.3s;
+            z-index: 5;
+        }
+        .blind-overlay span {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .blind-controls {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        @media(max-width: 600px) { .blind-controls { grid-template-columns: 1fr; } }
+
+        .blind-stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.8rem;
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .blind-stat .val {
+            font-family: var(--display);
+            font-size: 2.4rem;
+            display: block;
+            line-height: 1;
+        }
+        .blind-stat .lbl {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted);
+            margin-top: 0.3rem;
+            display: block;
+        }
+
+        /* ── FORMULA FOOTER ── */
+        .formula-bar {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .formula-bar span { color: var(--text); }
+
+        /* ── CTA BANNER ── */
+        .cta-banner {
+            margin-top: 4rem;
+            background: linear-gradient(135deg, rgba(255,45,45,0.12), rgba(255,122,0,0.08));
+            border: 1px solid rgba(255,45,45,0.3);
+            border-radius: 1.2rem;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        .cta-banner h2 {
+            font-family: var(--display);
+            font-size: clamp(2rem, 6vw, 4rem);
+            letter-spacing: 0.05em;
+            color: #fff;
+        }
+        .cta-banner p {
+            margin-top: 0.8rem;
+            color: var(--muted);
+            font-size: 0.95rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-pill {
+            margin-top: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent);
+            color: #fff;
+            font-family: var(--display);
+            font-size: 1.3rem;
+            letter-spacing: 0.08em;
+            padding: 0.7rem 2.5rem;
+            border-radius: 50px;
+            cursor: default;
+            box-shadow: 0 0 40px rgba(255,45,45,0.35);
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <!-- ══ HERO ══ -->
+    <header class="hero">
+        <p class="hero-eyebrow">⚠ Simulador de seguridad vial · Colombia</p>
+        <h1>A esa velocidad<span>caes desde dónde</span></h1>
+        <p class="hero-sub">Un choque no se siente como un número. Se siente como caer desde un edificio. Descúbrelo.</p>
+    </header>
+
+    <!-- ══ MÓDULO 1: VELOCIDAD ══ -->
+    <div class="divider"></div>
+    <p class="sec-label">Módulo 01</p>
+    <h2 class="sec-title">¿Desde qué altura caes?</h2>
+
+    <div class="speed-grid">
+
+        <!-- LEFT: Controls -->
+        <div class="speed-panel">
+            <div style="display:flex; align-items:baseline; gap:0.3rem;">
+                <span id="speedValue" class="speed-number" style="color:var(--safe)">50</span>
+                <span class="speed-unit">km/h</span>
+            </div>
+            <div class="ms-label">Equivale a <strong id="msValue">13.9</strong> m/s en el momento del impacto</div>
+
+            <div class="slider-track">
+                <input type="range" id="speed" min="0" max="230" step="1" value="50">
+                <div class="slider-marks">
+                    <span>0</span><span>60</span><span>80</span><span>120</span><span>230 km/h</span>
+                </div>
+            </div>
+
+            <div class="result-cards">
+                <div class="result-card">
+                    <div class="label">Altura equivalente</div>
+                    <div class="value" style="color:var(--accent3)"><span id="metersResult">9.8</span><span class="unit">m</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="label">Pisos de caída</div>
+                    <div class="value" style="color:var(--accent2)"><span id="floorsResult">3.6</span><span class="unit">pisos</span></div>
+                </div>
+            </div>
+
+            <div class="alert-box" id="alertBox">
+                <p id="factText">Ajusta la velocidad para ver el impacto equivalente.</p>
+            </div>
+
+            <div class="formula-bar">
+                Fórmula: <span>h = v² / (2g)</span> &nbsp;·&nbsp; 1 piso = <span>2.7 m</span> &nbsp;·&nbsp; g = <span>9.81 m/s²</span>
+            </div>
+        </div>
+
+        <!-- RIGHT: Building visual -->
+        <div class="building-panel">
+            <div class="building-container" id="buildingContainer">
+                <!-- Landmarks -->
+                <div class="landmark" data-height="5">
+                    <span style="font-size:0.9rem">🚦</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Semáforo 5m</span>
+                </div>
+                <div class="landmark" data-height="10">
+                    <span style="font-size:0.9rem">🏠</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Casa 3 pisos 10m</span>
+                </div>
+                <div class="landmark" data-height="26">
+                    <span style="font-size:0.9rem">✝️</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Cristo Rey 26m</span>
+                </div>
+                <div class="landmark" data-height="35">
+                    <span style="font-size:0.9rem">⚽</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">El Campín 35m</span>
+                </div>
+                <div class="landmark" data-height="50">
+                    <span style="font-size:0.9rem">🎡</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Rueda Salitre 50m</span>
+                </div>
+                <div class="landmark" data-height="60">
+                    <span style="font-size:0.9rem">🌴</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Palma de Cera 60m</span>
+                </div>
+                <div class="landmark" data-height="89">
+                    <span style="font-size:0.9rem">✈️</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Torre El Dorado 89m</span>
+                </div>
+                <div class="landmark" data-height="139">
+                    <span style="font-size:0.9rem">🌊</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Tequendama 139m</span>
+                </div>
+                <div class="landmark" data-height="161">
+                    <span style="font-size:0.9rem">🏢</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Torre Avianca 161m</span>
+                </div>
+                <div class="landmark" data-height="196">
+                    <span style="font-size:0.9rem">🌆</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">Colpatria 196m</span>
+                </div>
+                <div class="landmark" data-height="216">
+                    <span style="font-size:0.9rem">🏗️</span>
+                    <div class="landmark-line"></div>
+                    <span class="landmark-label">BD Bacatá 216m</span>
+                </div>
+
+                <div id="dropIndicator"><span class="drop-label" id="dropLabel">CAÍDA</span></div>
+                <div id="visualBuilding" class="visual-building"></div>
+                <div class="ground-bar"></div>
+            </div>
+            <div class="building-caption">
+                <span>Hitos Colombia · escala proporcional</span>
+                <span id="buildingRef">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-panel">
+        <p class="sec-label" style="margin-bottom:0.4rem">Curva velocidad → altura de caída</p>
+        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:1.5rem">Cada incremento de velocidad eleva <em>exponencialmente</em> la energía de impacto. El punto rojo eres tú.</p>
+        <div style="height: 260px">
+            <canvas id="impactChart"></canvas>
+        </div>
+    </div>
+
+    <!-- ══ MÓDULO 2: DISTRACCIONES ══ -->
+    <div class="dist-section">
+        <div class="divider"></div>
+        <p class="sec-label">Módulo 02</p>
+        <h2 class="sec-title">Distracciones al volante</h2>
+        <p class="dist-intro">
+            El 90% de los accidentes tiene origen humano. Y el mayor error humano no es la velocidad: es la <strong style="color:#fff">distracción</strong>. 
+            Mira cuántos metros recorres completamente "ciego".
+        </p>
+
+        <div class="dist-grid">
+
+            <div class="dist-card">
+                <span class="dist-icon">📱</span>
+                <span class="dist-tag">Causa #1 de accidentes</span>
+                <h3>Celular al volante</h3>
+                <p>Leer un mensaje de 5 segundos a 60 km/h es como cruzar <strong style="color:#fff">83 metros con los ojos cerrados</strong> — el largo de un edificio de 9 pisos.</p>
+                <div class="dist-stat">
+                    <div class="big">83m</div>
+                    <div class="desc">recorridos sin ver nada · a solo 60 km/h · en 5 segundos</div>
+                </div>
+            </div>
+
+            <div class="dist-card">
+                <span class="dist-icon">🎵</span>
+                <span class="dist-tag">Distracción cognitiva</span>
+                <h3>Cambiar la música</h3>
+                <p>Apartar la vista 2 segundos del GPS o la pantalla equivale a viajar <strong style="color:#fff">33 metros a ciegas</strong> a velocidad urbana típica.</p>
+                <div class="dist-stat">
+                    <div class="big">33m</div>
+                    <div class="desc">sin contacto visual con la vía · solo 2 seg · a 60 km/h</div>
+                </div>
+            </div>
+
+            <div class="dist-card">
+                <span class="dist-icon">🍔</span>
+                <span class="dist-tag">Distracción manual</span>
+                <h3>Comer o beber</h3>
+                <p>Comer al conducir aumenta un <strong style="color:#fff">80% el riesgo de colisión</strong>. Una mano suelta el volante 3-7 segundos en promedio por bocado.</p>
+                <div class="dist-stat">
+                    <div class="big">×3.6</div>
+                    <div class="desc">veces más probable un accidente grave con comida en la mano</div>
+                </div>
+            </div>
+
+            <div class="dist-card">
+                <span class="dist-icon">💬</span>
+                <span class="dist-tag">Distracción cognitiva</span>
+                <h3>Hablar por teléfono</h3>
+                <p>Incluso con manos libres, el cerebro procesa <strong style="color:#fff">37% menos información visual</strong> — pasan ciclistas, semáforos y peatones sin ser registrados.</p>
+                <div class="dist-stat">
+                    <div class="big">−37%</div>
+                    <div class="desc">de la información vial captada usando manos libres</div>
+                </div>
+            </div>
+
+            <div class="dist-card">
+                <span class="dist-icon">😴</span>
+                <span class="dist-tag">La más letal</span>
+                <h3>Microsueño</h3>
+                <p>Un microsueño de 4 segundos a 120 km/h equivale a recorrer <strong style="color:#fff">133 metros completamente inconsciente</strong> — más que la mitad de un estadio de fútbol.</p>
+                <div class="dist-stat">
+                    <div class="big">133m</div>
+                    <div class="desc">recorridos inconsciente · 4 seg a 120 km/h · sin posibilidad de reacción</div>
+                </div>
+            </div>
+
+            <div class="dist-card">
+                <span class="dist-icon">🧑‍🤝‍🧑</span>
+                <span class="dist-tag">Distracción social</span>
+                <h3>Conversación con pasajeros</h3>
+                <p>Con 1 pasajero el riesgo aumenta 60%. Con 2 adolescentes a bordo, el riesgo de accidente se <strong style="color:#fff">triplica</strong> en conductores jóvenes.</p>
+                <div class="dist-stat">
+                    <div class="big">×3</div>
+                    <div class="desc">mayor riesgo con 2 pasajeros jóvenes para conductores novatos</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══ MÓDULO 3: SIMULADOR DE METROS CIEGOS ══ -->
+    <div class="blind-section">
+        <div class="divider"></div>
+        <p class="sec-label">Módulo 03</p>
+        <h2 class="sec-title">Metros que recorres "a ciegas"</h2>
+        <p class="dist-intro" style="margin-bottom:1.5rem">
+            Ajusta la velocidad y el tiempo de distracción. La franja oscura es lo que no ves.
+        </p>
+
+        <!-- Controls -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+            <div class="speed-panel" style="padding:1.2rem">
+                <div class="sec-label">Velocidad del vehículo</div>
+                <div style="display:flex; align-items:baseline; gap:0.3rem;">
+                    <span id="blindSpeedVal" style="font-family:var(--display);font-size:3rem;color:var(--accent2)">60</span>
+                    <span style="font-family:var(--mono);font-size:0.9rem;color:var(--muted)">km/h</span>
+                </div>
+                <input type="range" id="blindSpeed" min="10" max="180" step="5" value="60" style="margin-top:0.5rem">
+            </div>
+            <div class="speed-panel" style="padding:1.2rem">
+                <div class="sec-label">Tiempo de distracción</div>
+                <div style="display:flex; align-items:baseline; gap:0.3rem;">
+                    <span id="blindTimeVal" style="font-family:var(--display);font-size:3rem;color:var(--accent3)">5</span>
+                    <span style="font-family:var(--mono);font-size:0.9rem;color:var(--muted)">segundos</span>
+                </div>
+                <input type="range" id="blindTime" min="1" max="15" step="0.5" value="5" style="margin-top:0.5rem">
+            </div>
+        </div>
+
+        <!-- Road visualization -->
+        <div class="road-sim" id="roadSim">
+            <div class="road-dashes"></div>
+            <div class="blind-overlay" id="blindOverlay" style="left:0; width:50%">
+                <span id="overlayLabel">ZONA CIEGA<br>— metros —</span>
+            </div>
+            <div id="roadCar" class="road-car">🚗</div>
+            <div id="pedestrian1" class="pedestrian" style="right: 15%; font-size:2rem">🧍</div>
+            <div id="pedestrian2" class="pedestrian" style="right: 30%; font-size:1.5rem">🚲</div>
+        </div>
+
+        <div class="blind-controls">
+            <div class="blind-stat">
+                <span class="val" id="blindMeters" style="color:var(--accent)">83</span>
+                <span class="lbl">metros "a ciegas"</span>
+            </div>
+            <div class="blind-stat">
+                <span class="val" id="blindFloors" style="color:var(--accent2)">30</span>
+                <span class="lbl">pisos de edificio</span>
+            </div>
+            <div class="blind-stat">
+                <span class="val" id="blindLevel" style="color:var(--accent3)">ALTO</span>
+                <span class="lbl">nivel de riesgo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CTA ══ -->
+    <div class="cta-banner">
+        <h2>LA DECISIÓN MÁS IMPORTANTE<br>ES ANTES DE ARRANCAR</h2>
+        <p>Cada metro recorrido distraído o por encima del límite es una ruleta rusa. No para ti solo — para todos.</p>
+        <div class="cta-pill">🛑 Maneja con responsabilidad</div>
+    </div>
+
+</div><!-- end page-wrap -->
+
+<script>
+// ══ CONSTANTS ══
+const GRAVITY = 9.81;
+const METERS_PER_FLOOR = 2.7;
+const MAX_VIZ_HEIGHT = 240;
+let chartInstance = null;
+
+// ══ DOM REFS ══
+const speedInput = document.getElementById('speed');
+const speedDisplay = document.getElementById('speedValue');
+const msDisplay = document.getElementById('msValue');
+const metersDisplay = document.getElementById('metersResult');
+const floorsDisplay = document.getElementById('floorsResult');
+const visualBuilding = document.getElementById('visualBuilding');
+const factText = document.getElementById('factText');
+const alertBox = document.getElementById('alertBox');
+const dropIndicator = document.getElementById('dropIndicator');
+const dropLabel = document.getElementById('dropLabel');
+const buildingRef = document.getElementById('buildingRef');
+
+// ══ COLOR RAMP ══
+function speedColor(kmh) {
+    if (kmh === 0)  return 'var(--safe)';
+    if (kmh < 40)   return '#00e676';
+    if (kmh < 60)   return '#ffdd00';
+    if (kmh < 80)   return '#ff9800';
+    if (kmh < 120)  return '#ff5722';
+    return 'var(--accent)';
+}
+
+function alertStyle(kmh) {
+    if (kmh === 0) return { bg: 'rgba(0,230,118,0.06)', border: 'var(--safe)' };
+    if (kmh < 40)  return { bg: 'rgba(0,230,118,0.06)', border: '#00e676' };
+    if (kmh < 60)  return { bg: 'rgba(255,221,0,0.07)', border: '#ffdd00' };
+    if (kmh < 80)  return { bg: 'rgba(255,152,0,0.08)', border: '#ff9800' };
+    if (kmh < 120) return { bg: 'rgba(255,87,34,0.1)', border: '#ff5722' };
+    return { bg: 'rgba(255,45,45,0.12)', border: 'var(--accent)' };
+}
+
+function getMessage(kmh, height, floors) {
+    if (kmh === 0) return 'Vehículo detenido. Sin energía cinética acumulada.';
+    if (height < 5)   return `A ${kmh} km/h caes ${height.toFixed(1)} m — menos que un semáforo. Pero el impacto sigue rompiendo huesos.`;
+    if (height < 10)  return `A ${kmh} km/h el choque equivale a lanzarte desde una ventana del 2.º piso (${height.toFixed(1)} m).`;
+    if (height < 26)  return `A ${kmh} km/h superas una casa de 3 pisos (${height.toFixed(1)} m). Supervivencia: improbable sin cinturón.`;
+    if (height < 35)  return `A ${kmh} km/h la fuerza de impacto iguala caer desde el Cristo Rey de Cali (${height.toFixed(1)} m).`;
+    if (height < 50)  return `A ${kmh} km/h ya superas el Estadio El Campín (${height.toFixed(1)} m). El cuerpo no sobrevive esa caída.`;
+    if (height < 60)  return `¡PELIGRO! A ${kmh} km/h el impacto es equivalente a caer desde la Rueda del Salitre (${height.toFixed(1)} m).`;
+    if (height < 89)  return `¡CRÍTICO! A ${kmh} km/h la caída supera la Palma de Cera (${height.toFixed(1)} m). Letal el 99% de los casos.`;
+    if (height < 139) return `¡CATASTRÓFICO! Superas la Torre de Control de El Dorado (${height.toFixed(1)} m). Impacto incompatible con la vida.`;
+    return `⚠ EXTREMO. A ${kmh} km/h igualas una caída de ${height.toFixed(1)} m — más del Salto del Tequendama. Nadie sobrevive esto.`;
+}
+
+function landmarkName(height) {
+    const lms = [
+        [5,'Semáforo'], [10,'Casa 3 pisos'], [26,'Cristo Rey'], [35,'El Campín'],
+        [50,'Rueda Salitre'], [60,'Palma de Cera'], [89,'Torre El Dorado'],
+        [139,'Tequendama'], [161,'Torre Avianca'], [196,'Colpatria'], [216,'BD Bacatá']
+    ];
+    for (const [h, name] of lms) {
+        if (height <= h) return `Bajo ${name}`;
+    }
+    return 'Sobre BD Bacatá';
+}
+
+// ══ MAIN UPDATE ══
+function updateCalculations() {
+    const kmh = parseFloat(speedInput.value);
+    const ms  = kmh / 3.6;
+    const h   = (ms * ms) / (2 * GRAVITY);
+    const f   = h / METERS_PER_FLOOR;
+
+    const col = speedColor(kmh);
+    speedDisplay.textContent = kmh;
+    speedDisplay.style.color = col;
+    msDisplay.textContent    = ms.toFixed(1);
+    metersDisplay.textContent = h.toFixed(1);
+    floorsDisplay.textContent = f.toFixed(1);
+
+    const sty = alertStyle(kmh);
+    alertBox.style.background   = sty.bg;
+    alertBox.style.borderLeftColor = sty.border;
+    factText.textContent = getMessage(kmh, h, f);
+    buildingRef.textContent = landmarkName(h);
+
+    updateBuilding(h, f);
+    updateChartHighlight(kmh, h);
+}
+
+function updateBuilding(height, floors) {
+    const containerH = 560;
+    const ppm = containerH / MAX_VIZ_HEIGHT;
+    let vizH = height * ppm;
+    if (height > 0 && vizH < 4) vizH = 4;
+
+    visualBuilding.style.height = `${Math.min(vizH, containerH - 15)}px`;
+    visualBuilding.innerHTML = '';
+
+    const rows = Math.min(Math.floor(floors), 120);
+    for (let i = 0; i < rows; i++) {
+        const row = document.createElement('div');
+        row.className = 'win-row';
+        row.innerHTML = '<div class="win"></div><div class="win"></div><div class="win"></div>';
+        visualBuilding.appendChild(row);
+    }
+
+    // drop indicator
+    dropIndicator.style.height = `${Math.min(vizH, containerH - 15)}px`;
+    dropLabel.textContent = `↓ ${height.toFixed(0)}m`;
+}
+
+function setupLandmarks() {
+    const containerH = 560;
+    const ppm = containerH / MAX_VIZ_HEIGHT;
+    document.querySelectorAll('.landmark').forEach(el => {
+        const h = parseFloat(el.dataset.height);
+        el.style.bottom = `${Math.min(h * ppm + 15, containerH - 10)}px`;
+    });
+}
+
+// ══ CHART ══
+function initChart() {
+    const ctx = document.getElementById('impactChart').getContext('2d');
+    const data = [];
+    for (let v = 0; v <= 230; v++) {
+        const ms = v / 3.6;
+        data.push({ x: v, y: (ms * ms) / (2 * GRAVITY) });
+    }
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                data,
+                borderColor: 'rgba(255,122,0,0.8)',
+                backgroundColor: 'rgba(255,122,0,0.06)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f1419',
+                    borderColor: '#1e2d3d',
+                    borderWidth: 1,
+                    titleFont: { family: 'Space Mono', size: 12 },
+                    bodyFont: { family: 'Space Mono', size: 11 },
+                    padding: 14,
+                    cornerRadius: 8,
+                    displayColors: false,
+                    callbacks: {
+                        title: i => `${i[0].parsed.x} km/h`,
+                        label: c => {
+                            const m = c.parsed.y;
+                            return [`Caída: ${m.toFixed(1)} m`, `Pisos: ${(m/METERS_PER_FLOOR).toFixed(1)}`];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear', min: 0, max: 230,
+                    title: { display: true, text: 'Velocidad (km/h)', color: '#5a6a7a', font: { family: 'Space Mono', size: 11 } },
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5a6a7a', font: { family: 'Space Mono', size: 10 } }
+                },
+                y: {
+                    min: 0, suggestedMax: 240,
+                    title: { display: true, text: 'Altura de caída (m)', color: '#5a6a7a', font: { family: 'Space Mono', size: 11 } },
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: { color: '#5a6a7a', font: { family: 'Space Mono', size: 10 } }
+                }
+            }
+        }
+    });
+}
+
+function updateChartHighlight(speed, height) {
+    if (!chartInstance) return;
+    const point = {
+        data: [{ x: speed, y: height }],
+        backgroundColor: '#ff2d2d',
+        borderColor: '#fff',
+        borderWidth: 3,
+        pointRadius: 10,
+        pointHoverRadius: 12,
+        showLine: false,
+    };
+    if (chartInstance.data.datasets.length > 1) {
+        chartInstance.data.datasets[1] = point;
+    } else {
+        chartInstance.data.datasets.push(point);
+    }
+    chartInstance.update('none');
+}
+
+// ══ BLIND SPOT SIMULATOR ══
+const blindSpeedInput = document.getElementById('blindSpeed');
+const blindTimeInput  = document.getElementById('blindTime');
+const blindSpeedVal   = document.getElementById('blindSpeedVal');
+const blindTimeVal    = document.getElementById('blindTimeVal');
+const blindMeters     = document.getElementById('blindMeters');
+const blindFloors     = document.getElementById('blindFloors');
+const blindLevel      = document.getElementById('blindLevel');
+const blindOverlay    = document.getElementById('blindOverlay');
+const overlayLabel    = document.getElementById('overlayLabel');
+const roadSim         = document.getElementById('roadSim');
+
+function updateBlind() {
+    const kmh = parseFloat(blindSpeedInput.value);
+    const sec = parseFloat(blindTimeInput.value);
+    const ms  = kmh / 3.6;
+    const meters = ms * sec;
+    const floors = meters / METERS_PER_FLOOR;
+
+    blindSpeedVal.textContent = kmh;
+    blindTimeVal.textContent  = sec;
+    blindMeters.textContent   = meters.toFixed(0);
+    blindFloors.textContent   = floors.toFixed(0);
+
+    let level, levelColor;
+    if (meters < 20) { level = 'BAJO'; levelColor = 'var(--safe)'; }
+    else if (meters < 50) { level = 'MEDIO'; levelColor = '#ffdd00'; }
+    else if (meters < 100) { level = 'ALTO'; levelColor = '#ff9800'; }
+    else { level = 'CRÍTICO'; levelColor = 'var(--accent)'; }
+
+    blindLevel.textContent = level;
+    blindLevel.style.color = levelColor;
+
+    // Scale overlay on road: max meters we show = 200m road width
+    const roadW = roadSim.offsetWidth || 800;
+    const maxMeters = 200;
+    const fraction = Math.min(meters / maxMeters, 0.88);
+    blindOverlay.style.width = `${fraction * 100}%`;
+    overlayLabel.innerHTML = `ZONA CIEGA<br><strong style="font-family:var(--display);font-size:1.5rem;color:var(--accent)">${meters.toFixed(0)}m</strong>`;
+}
+
+// ══ INIT ══
+window.onload = () => {
+    setupLandmarks();
+    initChart();
+    updateCalculations();
+    updateBlind();
+};
+
+speedInput.addEventListener('input', updateCalculations);
+blindSpeedInput.addEventListener('input', updateBlind);
+blindTimeInput.addEventListener('input', updateBlind);
+</script>
+</body>
+</html>
