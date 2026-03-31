@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inversiones Aripar | Gestión de Enlaces de Manuel Arias</title>
+    <meta name="google-site-verification" content="OUb1E3Ww_7fZDeydRQtNoAHKN6zjI_k4d1dlnQVrBus" />
+    <meta name="description" content="Portal oficial de Inversiones Aripar. Información sobre proyectos gestionados por Manuel Arias, Viviana Castillo, Juan Arias, Gloria Paredes, José Arias e Ivan Arias.">
+
+    <meta name="keywords" content="Inversiones Aripar, Manuel Arias, Viviana Castillo, Gloria Paredes, José Arias, Ivan Arias, Juan Arias, inversiones inmobiliarias, Bogotá, calculadora, simulador, bienes raíces">
+    <meta property="og:title" content="Inversiones Aripar - Equipo de Gestión">
+    <meta property="og:description" content="Conozca a los integrantes de Inversiones Aripar: Manuel Arias, Viviana Castillo, Gloria Paredes y José Arias.">
+    <meta property="og:type" content="website">
+    
+    <title>Inversiones Aripar | Gestión de Enlaces de La familia Arias Paredes Castillo</title>
     <style>
         :root { --primary: #003366; --secondary: #0055ff; --bg: #f4f7f9; --white: #ffffff; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); margin: 0; color: #333; display: flex; flex-direction: column; min-height: 100vh; margin-bottom: 60px; }
         .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; flex: 1; }
         header { text-align: center; margin-bottom: 40px; }
         h1 { color: var(--primary); text-transform: uppercase; margin-bottom: 5px; }
@@ -28,12 +36,40 @@
         .tag { font-size: 0.7em; font-weight: bold; color: var(--secondary); margin-bottom: 8px; text-transform: uppercase; }
 
         /* FOOTER */
-        footer { margin-top: 50px; padding: 20px 0; border-top: 1px solid #ddd; color: #94a3b8; font-weight: bold; text-transform: uppercase; font-size: 10px; }
+        footer {
+            position: fixed;   /* Lo fija en la pantalla */
+            left: 0;           /* Lo alinea al borde izquierdo */
+            bottom: 0;         /* Lo pega al borde inferior */
+            width: 100%;       /* Asegura que cubra todo el ancho */
+            background-color: #2c3e50; /* Color oscuro para que resalte */
+            color: white;      /* Texto blanco */
+            text-align: center;
+            padding: 5px 0;
+            z-index: 1000;     /* Asegura que esté por encima de otros elementos */
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Sombra sutil superior */
+            font-weight: bold; text-transform: uppercase; font-size: 10px;
+        }
         .footer-content { display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        .footer-links { display: flex; gap: 15px; }
-        .footer-links a { text-decoration: none; color: inherit; }
+        
+        /* Estilos base para los enlaces del .footer-links */
+        footer a {  
+            text-decoration: none;
+            color: #ecf0f1; /* Color gris claro inicial */
+            margin: 0 10px;
+            transition: color 0.3s ease; /* Hace que el cambio de color sea suave */
+            font-weight: bold;
+        }
+        
+        /* Efecto para WhatsApp (Verde) */
+        .link-whatsapp:hover {
+            color: #25D366 !important; /* El verde oficial de WhatsApp */
+        }
+        
+        /* Efecto para el Correo (Azul) */
+        .link-email:hover {
+            color: #3498db !important; /* Un azul vibrante */
+        }
     </style>
-    <meta name="google-site-verification" content="OUb1E3Ww_7fZDeydRQtNoAHKN6zjI_k4d1dlnQVrBus" />
 </head>
 <body>
 
@@ -50,6 +86,10 @@
         </div>
         <button class="spin-btn" onclick="spin()">GIRAR RULETA</button>
         <p id="result" style="margin-top: 15px; font-weight: bold; color: var(--secondary); min-height: 20px;"></p>
+    </section>
+    <section class="equipo">
+        <h2>Nuestro Equipo</h2>
+        <p>El éxito de <strong>Inversiones Aripar</strong> es liderado por Manuel Arias, Viviana Castillo, Juan Arias, Gloria Paredes, José Arias, e Iván Arias.</p>
     </section>
 
     <div class="grid">
@@ -118,10 +158,10 @@
 
 <footer>
     <div class="footer-content">
-        <p>© 2026 • Inversiones Aripar</p>
+        <a href="https://www.instagram.com/inversiones_aripar" class="link-email">© 2026 • Inversiones Aripar</a>
         <div class="footer-links">
-            <a href="https://wa.me/573128816469" target="_blank">WhatsApp</a>
-            <a href="mailto:alucard8@gmail.com">Email</a>
+            <a href="https://wa.me/573128816469" target="_blank" class="link-whatsapp">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com" class="link-email">Email</a>
         </div>
     </div>
 </footer>
