@@ -1162,6 +1162,7 @@ document.getElementById('btnGuardarMapa').addEventListener('click', () => {
 
 // ─── BUCLE PRINCIPAL ──────────────────────────────────────────────────────────
 function bucle() {
+    leerControlXbox();
     actualizar();
     dibujar();
     tiempoPantalla++;
@@ -1283,6 +1284,44 @@ document.getElementById('btnResetMapas').addEventListener('click', () => {
     }
 });
 
+// ─── SOPORTE PARA MANDO DE XBOX ───────────────────────────────────────────────
+let botonSaltoMando = false;
+
+function leerControlXbox() {
+    // Busca si hay controles conectados
+    const mandos = navigator.getGamepads ? navigator.getGamepads() : [];
+    const mando = mandos[0]; // Tomamos el control del Jugador 1
+    
+    if (!mando) return; // Si no hay control, ignoramos esto
+
+    // Eje X del Joystick izquierdo o flechas del D-Pad
+    const moviendoIzq = mando.axes[0] < -0.3 || mando.buttons[14].pressed;
+    const moviendoDer = mando.axes[0] > 0.3 || mando.buttons[15].pressed;
+
+    // Actualizamos las teclas de movimiento
+    if (moviendoIzq) {
+        teclas.izquierda = true;
+        teclas.derecha = false;
+    } else if (moviendoDer) {
+        teclas.derecha = true;
+        teclas.izquierda = false;
+    } else {
+        // Si soltamos el control, el personaje se detiene
+        teclas.izquierda = false;
+        teclas.derecha = false;
+    }
+
+    // Salto con el botón 'A' (Botón 0 en Xbox)
+    if (mando.buttons[0].pressed) {
+        if (!botonSaltoMando) { 
+            intentarSalto(); // Llama a la función de salto que ya tienes
+            botonSaltoMando = true;
+        }
+    } else {
+        botonSaltoMando = false; // Permite volver a saltar al soltar la 'A'
+    }
+}
+    
 // ─── INICIO ───────────────────────────────────────────────────────────────────
 cargarPantalla(0);
 bucle();
