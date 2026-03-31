@@ -1261,7 +1261,7 @@ document.getElementById('btnReintentar').addEventListener('click', () => {
     // 2. Restauramos los valores iniciales
     vidas = 3; 
     pantallaActual = 0; // Lo devolvemos al primer nivel
-    // totalMonedas = 0; // (Descomenta esto si también quieres quitarle las monedas al perder)
+    totalMonedas = 0; // (Descomenta esto si también quieres quitarle las monedas al perder)
     
     if (typeof actualizarUI === 'function') actualizarUI();
     
