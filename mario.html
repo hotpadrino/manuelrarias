@@ -301,7 +301,7 @@
         #win-screen p { font-size: clamp(6px,2vw,8px); color: #aaa; }
 
         /* ── SHARED BUTTON STYLE ── */
-        .btn, #restart-btn, #btnAbrirEditor, #btnGuardarMapa, #btnCerrarEditor, #btnReintentar {
+        .btn, #restart-btn, #btnAbrirEditor, #btnGuardarMapa, #btnCerrarEditor, #btnReintentar, #btnResetMapas {
             font-family: 'Press Start 2P', monospace;
             border: none;
             border-radius: 4px;
@@ -310,7 +310,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         .btn:active, #restart-btn:active, #btnAbrirEditor:active,
-        #btnGuardarMapa:active, #btnCerrarEditor:active, #btnReintentar:active {
+        #btnGuardarMapa:active, #btnCerrarEditor:active, #btnReintentar:active, #btnResetMapas:active {
             transform: scale(0.95);
             filter: brightness(1.2);
         }
@@ -427,13 +427,16 @@
         </div>
         <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
         <div id="leyenda">
-            <b style="color:#ffe066">0</b> = Aire &nbsp;|&nbsp; <b style="color:#ffe066">1</b> = Bloque<br>
-            <b style="color:#fc8181">S</b> = Pinchos &nbsp;|&nbsp; <b style="color:#68d391">C</b> = Moneda<br>
-            <b style="color:#90cdf4">&gt;</b> = Portal &nbsp;|&nbsp; <b style="color:#fbd38d">!</b> = Meta final
+            <b style="color:#ffe066">0</b> = Aire &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp; <b style="color:#ffe066">1</b> = Bloque<br>
+            <b style="color:#fc8181">S</b> = Pinchos &nbsp;|&nbsp;&nbsp; <b style="color:#68d391">C</b> = Moneda<br>
+            <b style="color:#90cdf4">&gt;</b> = Portal &nbsp;&nbsp;|&nbsp;&nbsp; <b style="color:#fbd38d">!</b> = Meta final
         </div>
         <div class="editor-btn-row">
             <button id="btnGuardarMapa">💾 Guardar</button>
             <button id="btnCerrarEditor">✕ Cerrar</button>
+        </div>
+        <div class="editor-btn-row" style="margin-top:8px;">
+            <button id="btnResetMapas" style="background:#555;color:#ffaaaa;font-family:'Press Start 2P',monospace;font-size:7px;border:1px solid #ffaaaa44;border-radius:4px;padding:8px 12px;cursor:pointer;letter-spacing:0.5px;">🗑 Borrar memoria y restaurar mapas</button>
         </div>
     </div>
 </div>
@@ -506,7 +509,7 @@ let mapas = [
     [
         "1111111111111111",
         "1000000000000001",
-        "1000C00000000C01",
+        "1000C0000000C001",
         "10000000000000S1",
         "1000110000000111",
         "1000000000000001",
@@ -1104,14 +1107,13 @@ function actualizarListaPantallas() {
 // 5. Cargar el texto del mapa seleccionado en el área de texto
 function cargarMapaEnTextarea(indice) {
     if (indice < mapas.length) {
-        // Unir el array con saltos de línea para mostrarlo en el texto
-        textoMapa.value = mapas[indice].join('\n');
-        // Asumimos que el tema coincide con el índice de la pantalla (o usa un default)
-        selectTema.value = Math.min(indice, 2); // Limita al máximo de temas que tengas
+        // Mostrar espacios en lugar de '0' para que sea más fácil de leer
+        textoMapa.value = mapas[indice].join('\n').replace(/0/g, ' ');
+        selectTema.value = Math.min(indice, 2);
     } else {
-        // Plantilla vacía para una nueva pantalla (12 filas de 16 ceros)
+        // Plantilla vacía para una nueva pantalla (12 filas de 16 espacios)
         let vacio = "";
-        for(let i=0; i<11; i++) vacio += "0000000000000000\n";
+        for(let i=0; i<11; i++) vacio += "                \n";
         vacio += "1111111111111111"; // Piso base
         textoMapa.value = vacio;
     }
@@ -1124,7 +1126,8 @@ selectPantalla.addEventListener('change', (e) => {
 
 // 6. Guardar los cambios
 document.getElementById('btnGuardarMapa').addEventListener('click', () => {
-    let nuevoMapaArray = textoMapa.value.trim().split('\n');
+    let nuevoMapaArray = textoMapa.value.replace(/ /g, '0').split('\n');
+    //nuevoMapaArray = textoMapa.value.trim().split('\n');
     const indiceSeleccionado = parseInt(selectPantalla.value);
     
     // 1. LEER EL TEMA SELECCIONADO EN EL DESPLEGABLE
@@ -1264,6 +1267,20 @@ document.getElementById('btnReintentar').addEventListener('click', () => {
     // 3. Recargamos el nivel y revivimos al jugador
     cargarPantalla(pantallaActual);
     respawn(); // Esto lo pone en x=50, y=50 y le quita el estado de "muerto"
+});
+
+// Lógica para borrar la memoria y restaurar
+document.getElementById('btnResetMapas').addEventListener('click', () => {
+    const seguro = confirm("¿Estás seguro de que quieres borrar todos tus mapas creados y volver a los niveles por defecto? Esto no se puede deshacer.");
+    
+    if (seguro) {
+        // Borramos los datos del almacenamiento del navegador
+        localStorage.removeItem('misMapasPixelQuest');
+        localStorage.removeItem('misTemasPixelQuest');
+        
+        // Recargamos la página web por completo para que cargue los arrays originales
+        window.location.reload(); 
+    }
 });
 
 // ─── INICIO ───────────────────────────────────────────────────────────────────
