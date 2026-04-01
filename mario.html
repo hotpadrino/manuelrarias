@@ -148,7 +148,15 @@
             border-radius: 3px;
             margin-left: 4px;
         }
+        
+        /* 1. El contenedor asume el margen superior */
+        #contenedorMapa {
+            position: relative;
+            width: 100%;
+            margin-top: 10px; 
+        }
 
+        /* 2. Tu texto intacto (solo le quitamos el margin-top y pusimos box-sizing) */
         #textoMapa {
             font-family: 'Courier New', Courier, monospace;
             font-size: clamp(12px, 3.5vw, 20px);
@@ -159,13 +167,41 @@
             border: 2px solid #4fd1c5;
             padding: 8px;
             resize: none;
-            overflow: auto;
+            overflow: hidden;
             white-space: pre;
             width: 100%;
-            margin-top: 10px;
             border-radius: 4px;
+            box-sizing: border-box; /* Evita que el 100% se desborde */
         }
 
+        /* Efecto cuando estás escribiendo dentro del editor */
+        #textoMapa:focus {
+            border-color: #2ecc71; /* Se pone verde cuando estás editando */
+            background: #0a0a14;
+        }
+        
+        /* 3. La guía visual responsiva */
+        #guiaVisual {
+            position: absolute;
+            /* Se ubica saltando el padding (8px) y el borde (2px) del textarea */
+            top: 10px;  
+            left: 10px; 
+            
+            /* Clonamos tu fuente responsiva para que el cuadro mida en proporción */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: clamp(12px, 3.5vw, 20px);
+            
+            /* LA MAGIA MATEMÁTICA:
+               Ancho: 16 caracteres (16ch) + 16 espaciados de 4px (64px)
+               Alto: 12 líneas multiplicadas por tu line-height de 1.2 (14.4em) */
+            width: calc(16ch + 64px);
+            height: calc(14.4em);
+            
+            border: 2px dashed #f39c12;
+            pointer-events: none; /* Para que puedas hacer clic a través de él */
+            z-index: 10;
+        }
+        
         #leyenda {
             margin-top: 10px;
             font-size: 9px;
@@ -425,7 +461,11 @@
                 </select>
             </div>
         </div>
-        <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
+        <div id="contenedorMapa">
+            <textarea id="textoMapa" rows="12" cols="16" spellcheck="false"></textarea>
+            <div id="guiaVisual"></div>
+        </div>
+        
         <div id="leyenda">
             <b style="color:#ffe066">0</b> = Aire &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp; <b style="color:#ffe066">1</b> = Bloque<br>
             <b style="color:#fc8181">S</b> = Pinchos &nbsp;|&nbsp;&nbsp; <b style="color:#68d391">C</b> = Moneda<br>
@@ -516,7 +556,7 @@ let mapas = [
         "1001110000001101",
         "1000000C00000001",
         "100000010110000>",
-        "1000001101000001",
+        "1000001101S00001",
         "1111111101111111",
         "1111111101111111"
     ],
@@ -562,6 +602,7 @@ let vidas = 3;
 let transitando = false;
 let particulas = [];
 let estrellasFondo = [];
+let juegoTerminado = false;
 
 // ─── JUGADOR ──────────────────────────────────────────────────────────────────
 const jugador = {
@@ -670,6 +711,7 @@ function respawn() {
 const pantallaGameOver = document.getElementById('pantallaGameOver');
 
 function procesarMuerte() {
+    if (juegoTerminado) return;
     // Evitar que reste más de 1 vida si toca varios pinchos a la vez
     if (jugador.muerto) return; 
     
@@ -788,6 +830,7 @@ function actualizar() {
 
     // Meta final
     if (meta && col({ x: jugador.x, y: jugador.y, w: jugador.ancho, h: jugador.alto }, meta)) {
+        juegoTerminado = true;
         winScreen.classList.add('show');
     }
 
@@ -1215,6 +1258,7 @@ setTimeout(escalarCanvas, 100);
 
 // ─── CONTROLES TECLADO ────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'TEXTAREA') return;  // Editor de mapas
     if (e.key === 'ArrowLeft' || e.key === 'a') teclas.izquierda = true;
     if (e.key === 'ArrowRight' || e.key === 'd') teclas.derecha = true;
     if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') && !teclas.arriba) {
@@ -1224,6 +1268,7 @@ document.addEventListener('keydown', e => {
     if (e.key === 'ArrowUp' || e.key === ' ') e.preventDefault();
 });
 document.addEventListener('keyup', e => {
+    if (e.target.tagName === 'TEXTAREA') return;  // Editor de mapas
     if (e.key === 'ArrowLeft' || e.key === 'a') teclas.izquierda = false;
     if (e.key === 'ArrowRight' || e.key === 'd') teclas.derecha = false;
     if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') teclas.arriba = false;
@@ -1252,6 +1297,7 @@ document.getElementById('restart-btn').addEventListener('click', () => {
     jugador.muerto = false;
     jugador.saltosDisponibles = 2;
     cargarPantalla(0);
+    juegoTerminado = false;
 });
 
 document.getElementById('btnReintentar').addEventListener('click', () => {
@@ -1261,7 +1307,8 @@ document.getElementById('btnReintentar').addEventListener('click', () => {
     // 2. Restauramos los valores iniciales
     vidas = 3; 
     pantallaActual = 0; // Lo devolvemos al primer nivel
-    totalMonedas = 0; // (Descomenta esto si también quieres quitarle las monedas al perder)
+    totalMonedas = 0;
+    juegoTerminado = false;
     
     if (typeof actualizarUI === 'function') actualizarUI();
     
