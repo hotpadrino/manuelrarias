@@ -545,7 +545,7 @@ textarea { resize: vertical; min-height: 60px; }
     </div>
     <div>
       <label class="field-label">Tipo de auditoría</label>
-      <select id="auditSelector" onchange="renderChecklist(true)">
+      <select id="auditSelector" onchange="renderChecklist(true); updateAuditStatus();">
         <option value="">— Selecciona una auditoría —</option>
       </select>
     </div>
@@ -692,7 +692,7 @@ textarea { resize: vertical; min-height: 60px; }
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.122 1.533 5.857L.057 23.882a.5.5 0 0 0 .612.612l6.025-1.476A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.184-1.433l-.372-.22-3.853.944.964-3.752-.241-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
         WhatsApp
       </a>
-      <a href="mailto:alucard8@gmail.com">
+      <a href="/cdn-cgi/l/email-protection#16777a63757764722e56717b777f7a3875797b">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
         Correo
       </a>
@@ -740,13 +740,23 @@ window.onload = async () => {
   updateSelectors();
   renderChecklist();
 
-  // Swipe táctil para cambiar sección
-  let touchStartX = 0;
+  // Swipe táctil para cambiar sección (solo en área de preguntas, no en tabs)
+  let touchStartX = 0, touchStartY = 0;
   const area = document.getElementById('checklist-area');
-  area.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-  area.addEventListener('touchend',   e => {
-    const diff = touchStartX - e.changedTouches[0].screenX;
-    if (Math.abs(diff) > 60) goSection(diff > 0 ? 1 : -1);
+  area.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  area.addEventListener('touchend', e => {
+    // Ignorar si el toque empezó en la barra de tabs o botones de navegación
+    const target = e.target;
+    if (target.closest('.section-tabs') || target.closest('.section-nav-mobile') || target.closest('.section-nav-arrow')) return;
+    const dx = touchStartX - e.changedTouches[0].screenX;
+    const dy = touchStartY - e.changedTouches[0].screenY;
+    // Solo swipe si es más horizontal que vertical y supera 60px
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      goSection(dx > 0 ? 1 : -1);
+    }
   }, { passive: true });
 };
 
@@ -793,18 +803,25 @@ function processTxt(text, source) {
     else if (curA && curS)          { auditData[curA].secciones[curS].push(line); }
   });
   if (!Object.keys(auditData).length) { setLoadStatus('⚠ Formato incorrecto: no se encontraron líneas con # o ##.', false); return; }
-  let totalQ = 0;
-  Object.values(auditData).forEach(a => Object.values(a.secciones).forEach(s => totalQ += s.length));
   const src = source ? ` — ${source.length > 40 ? '…' + source.slice(-38) : source}` : '';
-  setLoadStatus(`✓ ${Object.keys(auditData).length} auditoría(s) · ${totalQ} preguntas${src}`, true);
+  setLoadStatus(`✓ Archivo cargado correctamente${src}`, true);
   updateSelectors();
   renderChecklist(true);
+  updateAuditStatus();
 }
 
 function setLoadStatus(msg, ok) {
   const el = document.getElementById('load-status');
   el.textContent = msg;
   el.style.color = ok === true ? 'var(--green)' : ok === false ? 'var(--red)' : 'var(--muted)';
+}
+
+function updateAuditStatus() {
+  const audit = document.getElementById('auditSelector').value;
+  if (!auditData[audit]) return;
+  const secs = Object.keys(auditData[audit].secciones);
+  const totalQ = secs.reduce((acc, s) => acc + auditData[audit].secciones[s].length, 0);
+  setLoadStatus(`✓ ${secs.length} secciones · ${totalQ} preguntas`, true);
 }
 
 /* ── SELECTOR ── */
@@ -866,7 +883,16 @@ function renderChecklist(reset = false) {
     const btn = document.createElement('button');
     btn.className = `tab-btn ${idx === currentSectionIndex ? 'active' : ''}`;
     btn.textContent = sec;
-    btn.onclick = () => { currentSectionIndex = idx; renderChecklist(); save(); };
+    // Usar touchend en lugar de onclick para mejor control en móvil
+    let btnTouchStartX = 0;
+    btn.addEventListener('touchstart', e => { btnTouchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    btn.addEventListener('touchend', e => {
+      // Solo activar si no fue un swipe horizontal
+      if (Math.abs(btnTouchStartX - e.changedTouches[0].screenX) < 10) {
+        currentSectionIndex = idx; renderChecklist(); save();
+      }
+    });
+    btn.addEventListener('click', () => { currentSectionIndex = idx; renderChecklist(); save(); });
     nav.appendChild(btn);
   });
 
@@ -990,11 +1016,28 @@ function updateTopbarStatus(pct, total) {
 /* ── BÚSQUEDA ── */
 function filter() {
   const term = document.getElementById('search').value.toLowerCase();
+  let visible = 0, total = 0;
   document.querySelectorAll('.question-card').forEach(c => {
     const text = c.querySelector('.q-text').textContent.toLowerCase();
     const obs  = c.querySelector('textarea');
-    c.classList.toggle('hidden', !text.includes(term) && !(obs && obs.value.toLowerCase().includes(term)));
+    const show = !term || text.includes(term) || (obs && obs.value.toLowerCase().includes(term));
+    c.classList.toggle('hidden', !show);
+    total++;
+    if (show) visible++;
   });
+  // Actualizar contador de sección
+  const counter = document.getElementById('sectionCounter');
+  if (!counter) return;
+  const spans = counter.querySelectorAll('span');
+  if (spans.length) {
+    const audit = document.getElementById('auditSelector').value;
+    const secciones = auditData[audit] ? Object.keys(auditData[audit].secciones) : [];
+    const activeSec = secciones[currentSectionIndex] || '';
+    const countLabel = term
+      ? `${visible} de ${total} preguntas`
+      : `${total} preguntas`;
+    spans[0].innerHTML = `<strong>${activeSec}</strong> · ${countLabel}`;
+  }
 }
 
 /* ── GUARDAR / CARGAR ── */
@@ -1156,7 +1199,10 @@ function printFullReport() {
   }
   window.addEventListener('afterprint', onAfterPrint);
 
-  window.print();
+  // Dar tiempo al navegador (especialmente móvil) para renderizar el DOM antes de imprimir
+  requestAnimationFrame(() => {
+    setTimeout(() => { window.print(); }, 300);
+  });
 }
 
 /* ─── TOAST ──────────────────────────────────────────────── */
