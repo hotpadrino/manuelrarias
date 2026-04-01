@@ -71,7 +71,7 @@
   --input-bg: #e6d3a8; --card-border: 1px solid #8b5a2b;
 }
 
-/* THEME: Negro & Rojo Puros (Botones huecos) */
+/* THEME: Negro & Rojo Puros */
 [data-theme="black-red"] {
   --bg: #000000; --bg2: #000000; --bg3: #000000; --border: #550000;
   --accent: #ff3333; --text: #ffaaaa; --text2: #cc6666;
@@ -80,7 +80,7 @@
   --input-bg: #000000; --card-border: 1px solid #550000;
 }
 
-/* THEME: Negro & Verde Puros (Botones huecos) */
+/* THEME: Negro & Verde Puros */
 [data-theme="black-green"] {
   --bg: #000000; --bg2: #000000; --bg3: #000000; --border: #004400;
   --accent: #00ff41; --text: #99ff99; --text2: #66cc66;
@@ -91,7 +91,7 @@
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
-/* Patrones de Camuflaje (solo se activan en los temas camo) */
+/* Patrones de Camuflaje */
 body { background-color: var(--bg); background-image: none; color: var(--text); font-family: var(--font-body); font-size: 15px; min-height: 100vh; display: flex; flex-direction: column; }
 [data-theme="camo-green"] body {
   background-image: radial-gradient(#3b421a 15%, transparent 16%), radial-gradient(#5b6628 15%, transparent 16%);
@@ -104,22 +104,21 @@ body { background-color: var(--bg); background-image: none; color: var(--text); 
 
 /* ══ HEADER ══ */
 header {
-  background: var(--bg2); border-bottom: 1px solid var(--accent); padding: 0 16px;
+  background: var(--bg2); border-bottom: 1px solid var(--accent); padding: 0 12px;
   display: flex; align-items: center; justify-content: space-between; height: 64px;
-  position: sticky; top: 0; z-index: 100;
+  position: sticky; top: 0; z-index: 100; gap: 8px;
 }
-.logo { font-family: var(--font-ui); font-weight: 900; font-size: 22px; color: var(--accent); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.logo svg { width:24px; height:24px; fill: var(--accent); }
-.logo span { color: var(--text2); font-weight:400; font-size:14px; letter-spacing:1px; }
+.logo { font-family: var(--font-ui); font-weight: 900; font-size: 18px; color: var(--accent); display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.logo svg { width:20px; height:20px; fill: var(--accent); }
+.logo span { color: var(--text2); font-weight:400; font-size:12px; letter-spacing:1px; }
 
 /* Barra de temas deslizable horizontalmente */
 .theme-bar { 
   display: flex; gap: 8px; overflow-x: auto; padding: 4px; align-items: center;
-  scrollbar-width: none; -ms-overflow-style: none;
+  scrollbar-width: none; -ms-overflow-style: none; max-width: 60vw;
 }
 .theme-bar::-webkit-scrollbar { display: none; }
-
-.theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid var(--border); flex-shrink: 0; }
+.theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid var(--border); flex-shrink: 0; }
 .theme-btn.active { border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 8px rgba(0,0,0,0.2); }
 .theme-btn[data-t="light"]       { background: #ffffff; border-color: #cbd5e1; }
 .theme-btn[data-t="blue"]        { background: #0284c7; border-color: #7dd3fc; }
@@ -130,41 +129,43 @@ header {
 .theme-btn[data-t="black-red"]   { background: #000000; border-color: #ff3333; }
 .theme-btn[data-t="black-green"] { background: #000000; border-color: #00ff41; }
 
-/* ══ MAIN MENU ══ */
-#home-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 20px 16px; max-width: 960px; margin: 0 auto; }
+/* ══ MAIN MENU (MOBILE FIRST) ══ */
+#home-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px 12px; max-width: 960px; margin: 0 auto; width: 100%; }
 .menu-btn {
   background: var(--btn-bg); border: var(--btn-border); border-radius: 8px;
-  padding: 20px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 16px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
   color: var(--btn-text); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .menu-btn:active { opacity: 0.7; transform: scale(0.98); }
-.menu-btn .icon { font-size: 28px; }
-.menu-btn .label { font-family: var(--font-ui); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+.menu-btn .icon { font-size: 26px; }
+.menu-btn .label { font-family: var(--font-ui); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
 [data-theme="black-red"] .menu-btn, [data-theme="black-green"] .menu-btn { box-shadow: none; }
 
 /* ══ PANELS ══ */
-main { padding: 16px; max-width: 960px; margin: 0 auto; }
+main { padding: 12px; max-width: 960px; margin: 0 auto; width: 100%; flex: 1; }
 .cat-panel { display: none; }
 .cat-panel.active { display: block; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-.panel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 15px; }
+.panel-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
 
 .btn-back {
   background: var(--btn-bg); border: var(--btn-border); color: var(--btn-text);
-  padding: 12px 20px; font-family: var(--font-ui); font-weight: 700; font-size: 16px;
-  letter-spacing: 1px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; width: 100%; justify-content: center;
+  padding: 12px 20px; font-family: var(--font-ui); font-weight: 700; font-size: 15px;
+  letter-spacing: 1px; border-radius: var(--radius); cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%; justify-content: center;
 }
 
 /* ══ CARDS & INPUTS ══ */
 .card { background: var(--bg2); border: var(--card-border); border-radius: var(--radius); overflow: hidden; }
-.card-head { background: var(--bg3); padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.card-head { background: var(--bg3); padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
 .card-title { font-family: var(--font-ui); font-weight: 700; font-size: 15px; text-transform: uppercase; color: var(--accent); }
-.card-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.card-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 
-.field-row { display: flex; gap: 8px; align-items: flex-end; }
-.field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
-label { font-size: 12px; font-family: var(--font-ui); letter-spacing: .5px; text-transform: uppercase; color: var(--text2); }
+/* Auto-wrap fields for small screens */
+.field-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; width: 100%; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 calc(50% - 8px); min-width: 120px; }
+
+label { font-size: 11px; font-family: var(--font-ui); letter-spacing: .5px; text-transform: uppercase; color: var(--text2); }
 input, select, textarea {
   background: var(--input-bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text);
   font-family: var(--font-mono); font-size: 16px; padding: 12px; width: 100%;
@@ -173,26 +174,58 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
 
 .calc-btn {
-  height: 46px; background: var(--btn-bg); color: var(--btn-text); border: var(--btn-border); border-radius: var(--radius);
-  font-family: var(--font-ui); font-size: 16px; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 4px;
+  height: 44px; background: var(--btn-bg); color: var(--btn-text); border: var(--btn-border); border-radius: var(--radius);
+  font-family: var(--font-ui); font-size: 15px; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; cursor: pointer; margin-top: 2px;
+  flex: 1 1 calc(50% - 8px); min-width: 120px;
 }
+.calc-btn.full-w { flex: 1 1 100%; }
 .calc-btn:active { opacity: 0.7; }
 
 .result-box { 
   background: transparent; border: 1px dashed var(--accent); border-radius: var(--radius); padding: 12px; 
   font-family: var(--font-mono); font-size: 20px; color: var(--success); min-height: 52px; 
-  display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 4px;
+  display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 4px; width: 100%;
 }
 
-/* ══ TABLA PESO Y BALANCE ══ */
-.wb-row { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; gap: 6px; align-items: center; margin-bottom: 8px; }
-.wb-row input { height: 40px; font-size: 14px; padding: 6px; }
-.wb-header { font-family: var(--font-ui); font-size: 12px; color: var(--text2); text-transform: uppercase; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; gap: 6px; }
-.btn-del { 
-  background: transparent; border: 1px solid var(--danger); color: var(--danger); 
-  height: 40px; width: 40px; border-radius: var(--radius); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+/* ══ TABLA PESO Y BALANCE (MOBILE FIRST) ══ */
+.wb-header { display: none; } /* Oculto en móviles */
+.wb-row { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 6px; 
+  margin-bottom: 12px;
+  background: var(--bg3);
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
+/* Estación/Ítem ocupa fila 1 completa menos el botón borrar */
+.wb-row > input:first-child { grid-column: 1 / span 2; }
+.wb-row .btn-del { 
+  grid-column: 3; 
+  background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+  height: 42px; width: 100%; border-radius: var(--radius); cursor: pointer; font-weight: bold; 
+}
+.wb-row input { height: 42px; font-size: 14px; padding: 6px 10px; }
 .wb-m { background: transparent !important; border-style: dashed !important; color: var(--accent) !important; }
+
+/* ══ RESPONSIVE DESKTOP/TABLET ══ */
+@media (min-width: 600px) {
+  header { padding: 0 16px; }
+  .logo { font-size: 22px; }
+  .logo svg { width: 24px; height: 24px; }
+  #home-menu { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .menu-btn { padding: 20px 10px; gap: 10px; }
+  .menu-btn .icon { font-size: 28px; }
+  .menu-btn .label { font-size: 16px; }
+  .panel-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  
+  /* Restaurar tabla W&B a diseño horizontal */
+  .wb-header { font-family: var(--font-ui); font-size: 12px; color: var(--text2); text-transform: uppercase; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; gap: 6px; }
+  .wb-row { grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr auto; background: transparent; padding: 0; border: none; margin-bottom: 8px; }
+  .wb-row > input:first-child { grid-column: auto; }
+  .wb-row .btn-del { grid-column: auto; width: 42px; }
+}
 
 /* ══ FOOTER ══ */
 .site-footer {
@@ -202,18 +235,19 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
   font-weight: 300;
   text-transform: uppercase;
   font-size: 10px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   flex-shrink: 0;
   border-top: 1px solid var(--border);
   margin-top: auto;
   background: transparent;
+  width: 100%;
 }
 .site-footer-inner {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 16px;
@@ -221,18 +255,9 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
 @media (min-width: 640px) {
   .site-footer-inner { flex-direction: row; }
 }
-.site-footer a {
-  color: inherit;
-  text-decoration: none;
-  transition: color 0.3s;
-}
-.site-footer a:hover {
-  color: var(--accent);
-}
-.footer-links {
-  display: flex;
-  gap: 24px;
-}
+.site-footer a { color: inherit; text-decoration: none; transition: color 0.3s; }
+.site-footer a:hover { color: var(--accent); }
+.footer-links { display: flex; gap: 24px; }
 </style>
 </head>
 <body data-theme="blue">
@@ -279,9 +304,9 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
           <span>Estación / Ítem</span><span>Peso (W)</span><span>Brazo (A)</span><span>Momento (M)</span><span></span>
         </div>
         <div id="wb-container"></div>
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-          <button class="calc-btn" style="flex:1; border-style: dashed;" onclick="addWbRow()">+ FILA</button>
-          <button class="calc-btn" style="flex:2;" onclick="calcCG()">CALCULAR CG</button>
+        <div class="field-row" style="margin-top: 6px;">
+          <button class="calc-btn" style="border-style: dashed;" onclick="addWbRow()">+ AGREGAR FILA</button>
+          <button class="calc-btn" onclick="calcCG()">CALCULAR CG</button>
         </div>
         <div class="result-box" style="margin-top: 15px; flex-direction: column; align-items: flex-start; gap: 5px; border-style: solid;">
           <div style="font-size: 14px; color: var(--text2);">Peso Total: <span id="wb-total-w" style="color:var(--text);">0</span></div>
@@ -301,7 +326,7 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
       <div class="card-head"><span class="card-title">Bloc de Notas del Técnico</span></div>
       <div class="card-body">
         <div style="font-size:12px; color:var(--text2); margin-bottom:10px; line-height:1.4; background:var(--bg3); padding:10px; border-radius:4px; border-left:4px solid var(--accent);">
-          <strong>⚠️ AVISO (NO OFICIAL):</strong> Guardado automático local. Uso exclusivo como ayuda memoria (tareas, observaciones, páginas del manual). <strong>No constituye un registro oficial ni reemplaza la documentación técnica aplicable.</strong>
+          <strong>⚠️ AVISO (NO OFICIAL):</strong> Guardado automático local. Uso exclusivo como ayuda memoria. <strong>No constituye un registro oficial ni reemplaza la documentación técnica.</strong>
         </div>
         <textarea id="tma_notes" placeholder="Escribe aquí tareas pendientes, reportes, números de parte..." oninput="saveNotes()"></textarea>
       </div>
@@ -320,8 +345,8 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
             <div class="field"><label>Libras</label><input type="number" id="f_lbs"></div>
         </div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcFuel('gal_to_lb')">Gal → Lb</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcFuel('lb_to_gal')">Lb → Gal</button>
+            <button class="calc-btn" onclick="calcFuel('gal_to_lb')">Gal → Lb</button>
+            <button class="calc-btn" onclick="calcFuel('lb_to_gal')">Lb → Gal</button>
         </div>
         <div class="result-box" id="res_fuel_us">—</div>
       </div>
@@ -333,8 +358,8 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
             <div class="field"><label>Libras</label><input type="number" id="f_lbs2"></div>
         </div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcFuel('kg_to_lb')">Kg → Lb</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcFuel('lb_to_kg')">Lb → Kg</button>
+            <button class="calc-btn" onclick="calcFuel('kg_to_lb')">Kg → Lb</button>
+            <button class="calc-btn" onclick="calcFuel('lb_to_kg')">Lb → Kg</button>
         </div>
         <div class="result-box" id="res_fuel_m">—</div>
       </div>
@@ -342,7 +367,7 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
     <div class="card"><div class="card-head"><span class="card-title">Litros → Kg (Jet A-1)</span></div>
       <div class="card-body">
         <div class="field"><label>Litros</label><input type="number" id="f_lts"></div>
-        <button class="calc-btn" onclick="calcFuel('lts_to_kg')">Convertir a Kg</button>
+        <button class="calc-btn full-w" onclick="calcFuel('lts_to_kg')">Convertir a Kg</button>
         <div class="result-box" id="res_fuel_lts">—</div>
       </div>
     </div>
@@ -360,7 +385,7 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
             <div class="field"><label>Llave (L)</label><input type="number" id="t_L"></div>
             <div class="field"><label>Extensión (E)</label><input type="number" id="t_E"></div>
         </div>
-        <button class="calc-btn" onclick="calcTorqueExt()">CALCULAR Ajuste (Tw)</button>
+        <button class="calc-btn full-w" onclick="calcTorqueExt()">CALCULAR Ajuste (Tw)</button>
         <div class="result-box" id="res_torque_ext">—</div>
       </div>
     </div>
@@ -376,7 +401,7 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
                 </select>
             </div>
         </div>
-        <button class="calc-btn" onclick="calcTorqueConv()">Convertir</button>
+        <button class="calc-btn full-w" onclick="calcTorqueConv()">Convertir</button>
         <div class="result-box" id="res_torque_conv" style="font-size:16px; flex-direction:column; gap:4px;">—</div>
       </div>
     </div>
@@ -391,12 +416,12 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
       <div class="card-body">
         <div class="field"><label>Valor a convertir</label><input type="number" id="p_val"></div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcPress('psi_bar')">PSI → Bar</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcPress('bar_psi')">Bar → PSI</button>
+            <button class="calc-btn" onclick="calcPress('psi_bar')">PSI → Bar</button>
+            <button class="calc-btn" onclick="calcPress('bar_psi')">Bar → PSI</button>
         </div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcPress('psi_kg')">PSI → kg/cm²</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcPress('kg_psi')">kg/cm² → PSI</button>
+            <button class="calc-btn" onclick="calcPress('psi_kg')">PSI → kg/cm²</button>
+            <button class="calc-btn" onclick="calcPress('kg_psi')">kg/cm² → PSI</button>
         </div>
         <div class="result-box" id="res_press">—</div>
       </div>
@@ -411,7 +436,7 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
     <div class="card"><div class="card-head"><span class="card-title">Decimal a Fracción (1/64)</span></div>
       <div class="card-body">
         <div class="field"><label>Pulgadas Decimal (Ej: 0.0468)</label><input type="number" id="m_dec" step="0.0001"></div>
-        <button class="calc-btn" onclick="calcFraction()">Convertir a Fracción</button>
+        <button class="calc-btn full-w" onclick="calcFraction()">Convertir a Fracción</button>
         <div class="result-box" id="res_frac">—</div>
       </div>
     </div>
@@ -419,8 +444,8 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
       <div class="card-body">
         <div class="field"><label>Valor</label><input type="number" id="m_val"></div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcMetrology('in_mm')">Pulg → mm</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcMetrology('mm_in')">mm → Pulg</button>
+            <button class="calc-btn" onclick="calcMetrology('in_mm')">Pulg → mm</button>
+            <button class="calc-btn" onclick="calcMetrology('mm_in')">mm → Pulg</button>
         </div>
         <div class="result-box" id="res_mm">—</div>
       </div>
@@ -435,14 +460,14 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
     <div class="card"><div class="card-head"><span class="card-title">Minutos → Hora Decimal</span></div>
       <div class="card-body">
         <div class="field"><label>Minutos trabajados (0-59)</label><input type="number" id="time_min" max="59"></div>
-        <button class="calc-btn" onclick="calcTime('min_dec')">A Decimal</button>
+        <button class="calc-btn full-w" onclick="calcTime('min_dec')">A Decimal</button>
         <div class="result-box" id="res_time_dec">—</div>
       </div>
     </div>
     <div class="card"><div class="card-head"><span class="card-title">Hora Decimal → HH:MM</span></div>
       <div class="card-body">
         <div class="field"><label>Horas en decimal (Ej: 1.75)</label><input type="number" id="time_dec" step="0.01"></div>
-        <button class="calc-btn" onclick="calcTime('dec_hm')">A Reloj</button>
+        <button class="calc-btn full-w" onclick="calcTime('dec_hm')">A Reloj</button>
         <div class="result-box" id="res_time_hm">—</div>
       </div>
     </div>
@@ -457,8 +482,8 @@ textarea { resize: vertical; min-height: 120px; font-family: var(--font-body); }
       <div class="card-body">
         <div class="field"><label>Grados</label><input type="number" id="temp_val"></div>
         <div class="field-row">
-            <button class="calc-btn" style="flex:1;" onclick="calcTemp('c_f')">°C → °F</button>
-            <button class="calc-btn" style="flex:1;" onclick="calcTemp('f_c')">°F → °C</button>
+            <button class="calc-btn" onclick="calcTemp('c_f')">°C → °F</button>
+            <button class="calc-btn" onclick="calcTemp('f_c')">°F → °C</button>
         </div>
         <div class="result-box" id="res_temp">—</div>
       </div>
@@ -497,7 +522,8 @@ function openPanel(id) {
 
 function goHome(pushState = true) {
   document.querySelectorAll(".cat-panel").forEach(p => p.classList.remove("active"));
-  document.getElementById("home-menu").style.display = "grid"; // IMPORTANTE: Se usa 'grid' para no romper el diseño
+  // Usamos grid vacío para celulares para que el CSS grid lo controle
+  document.getElementById("home-menu").style.display = "grid"; 
   if (pushState) history.pushState({ view: "home" }, "", "");
   window.scrollTo(0, 0);
 }
@@ -525,7 +551,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const notePad = document.getElementById('tma_notes');
   notePad.value = localStorage.getItem('aero_notes') || '';
   
-  // Iniciar tabla W&B con filas por defecto
   addWbRow('Peso Vacío');
   addWbRow('Pilotos');
 });
@@ -542,10 +567,10 @@ function addWbRow(defaultName = '') {
   div.className = 'wb-row';
   div.id = rowId;
   div.innerHTML = `
-    <input type="text" placeholder="Ítem..." value="${defaultName}">
-    <input type="number" class="wb-w" placeholder="W" oninput="updateRowMom('${rowId}')">
-    <input type="number" class="wb-a" placeholder="Arm" oninput="updateRowMom('${rowId}')">
-    <input type="text" class="wb-m" placeholder="Mom" readonly>
+    <input type="text" placeholder="Ítem/Estación..." value="${defaultName}">
+    <input type="number" class="wb-w" placeholder="Peso(W)" oninput="updateRowMom('${rowId}')">
+    <input type="number" class="wb-a" placeholder="Brazo(A)" oninput="updateRowMom('${rowId}')">
+    <input type="text" class="wb-m" placeholder="Momento" readonly>
     <button class="btn-del" onclick="document.getElementById('${rowId}').remove(); calcCG();">X</button>
   `;
   container.appendChild(div);
