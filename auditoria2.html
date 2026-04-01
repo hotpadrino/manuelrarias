@@ -686,7 +686,7 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- FOOTER -->
 <footer class="app-footer">
   <div class="footer-inner">
-    <span class="footer-brand">Inversiones Aripar @ 2026</span>
+    <span class="footer-brand">@2026 Inversiones Aripar</span>
     <div class="footer-links">
       <a class="wa" href="https://wa.me/573128816469" target="_blank">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.122 1.533 5.857L.057 23.882a.5.5 0 0 0 .612.612l6.025-1.476A11.942 11.942 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.667-.523-5.184-1.433l-.372-.22-3.853.944.964-3.752-.241-.386A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
@@ -1151,122 +1151,95 @@ function printFullReport() {
   const audit = document.getElementById('auditSelector').value;
   if (!auditData[audit]) { showToast('No hay auditoría cargada'); return; }
 
-  const empresa  = document.getElementById('empresa').value  || 'Sin especificar';
-  const depto    = document.getElementById('departamento').value;
-  const fecha    = document.getElementById('fecha').value;
-  const role1    = document.getElementById('role-1').value   || 'Auditor';
-  const name1    = document.getElementById('name-1').value   || '';
-  const role2    = document.getElementById('role-2').value   || 'Auditado';
-  const name2    = document.getElementById('name-2').value   || '';
+  // PASO 1 — Recopilar todos los datos en variables (sin tocar el DOM)
+  const empresa  = document.getElementById('empresa').value     || '---';
+  const depto    = document.getElementById('departamento').value || '---';
+  const fecha    = document.getElementById('fecha').value        || '---';
+  const role1    = document.getElementById('role-1').value       || 'Auditor';
+  const name1    = document.getElementById('name-1').value       || '';
+  const role2    = document.getElementById('role-2').value       || 'Auditado';
+  const name2    = document.getElementById('name-2').value       || '';
   const sig1     = sigs.sig1 || '';
   const sig2     = sigs.sig2 || '';
   const savedRes = JSON.parse(localStorage.getItem('audit_res')) || {};
-  const labels   = { C:'✓ Conforme', NCMenor:'△ NC Menor', NCMayor:'✕ NC Mayor', NA:'— No Aplica' };
+  const labels   = { C:'Conforme', NCMenor:'NC Menor', NCMayor:'NC Mayor', NA:'No Aplica' };
+  const colors   = { C:'#166534', NCMenor:'#92400e', NCMayor:'#991b1b', NA:'#6b7280' };
   const now      = new Date();
+  const ts       = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
 
-  // Construir secciones — cada una con título full-width + grid de preguntas
-  let body = '';
+  // PASO 2 — Construir el string completo de una sola vez (concatenación += sobre string, nunca sobre DOM)
+  let report = `<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${ts}-${empresa.replace(/\s+/g,'-')}</title>
+<style>
+  @page { size: A4; margin: 12mm 14mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11px; color: #111; background: #fff; padding: 0; }
+  .report-header { border-bottom: 3px solid #2d5be3; padding-bottom: 8px; margin-bottom: 10px; }
+  .report-header h1 { font-size: 16px; font-weight: 700; color: #2d5be3; margin-bottom: 2px; }
+  .report-header small { font-size: 10px; color: #666; }
+  .meta { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 16px; flex-wrap: wrap; gap: 4px; }
+  .sec { background: #1a1a1a; color: #fff; padding: 5px 10px; margin: 14px 0 5px;
+         font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; page-break-after: avoid; }
+  .questions { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 12px; }
+  .item { border-bottom: 1px solid #e5e5e5; padding: 5px 2px; page-break-inside: avoid; }
+  .item-q { font-size: 10.5px; font-weight: 600; line-height: 1.35; }
+  .item-r { font-size: 10px; font-weight: 700; margin-top: 2px; }
+  .item-o { font-size: 10px; color: #555; font-style: italic; margin-top: 1px; }
+  .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 30px; padding-top: 12px; border-top: 1px solid #ccc; text-align: center; }
+  .sig-img { max-height: 65px; display: block; margin: 0 auto 6px; }
+  .sig-line { border-top: 1px solid #000; padding-top: 6px; font-size: 10px; }
+  .sig-line strong { display: block; margin-bottom: 2px; }
+</style>
+</head><body>
+<div class="report-header">
+  <h1>Reporte de Auditoría — ${audit}</h1>
+  <small>Inversiones Aripar — Sistema de Gestión</small>
+</div>
+<div class="meta">
+  <div><strong>Empresa:</strong> ${empresa} &nbsp;|&nbsp; <strong>Área:</strong> ${depto}</div>
+  <div><strong>Fecha:</strong> ${fecha} &nbsp;|&nbsp; <strong>Impreso:</strong> ${now.toLocaleString('es-CO')}</div>
+</div>`;
+
   Object.keys(auditData[audit].secciones).forEach(sec => {
-    body += `<h3 class="sec-title">${sec}</h3><div class="questions">`;
+    report += `<div class="sec">${sec}</div><div class="questions">`;
     auditData[audit].secciones[sec].forEach((q, i) => {
       const id     = `q_${audit}_${sec}_${i}`.replace(/\s+/g,'_');
       const resVal = savedRes[`res_${id}`] || '';
       const obsVal = (savedRes[`obs_${id}`] || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const label  = labels[resVal] || '—';
-      const color  = { C:'#166534', NCMenor:'#92400e', NCMayor:'#991b1b', NA:'#6b7280' }[resVal] || '#374151';
-      body += `
-        <div class="q-row">
-          <div class="q-num">${i+1}</div>
-          <div class="q-content">
-            <div class="q-text">${q}</div>
-            <div class="q-result" style="color:${color}">${label}</div>
-            ${obsVal ? `<div class="q-obs">${obsVal}</div>` : ''}
-          </div>
-        </div>`;
+      const label  = labels[resVal] || 'No evaluado';
+      const color  = colors[resVal] || '#374151';
+      report += `<div class="item">
+        <div class="item-q">${i+1}. ${q}</div>
+        <div class="item-r" style="color:${color}">▸ ${label}</div>
+        ${obsVal ? `<div class="item-o">${obsVal}</div>` : ''}
+      </div>`;
     });
-    body += `</div>`; // cierre .questions
+    report += `</div>`;
   });
 
-  // Firmas
-  const sigHtml = `
-    <div class="sig-row">
-      <div class="sig-block">
-        ${sig1 ? `<img src="${sig1}" class="sig-img">` : '<div class="sig-line"></div>'}
-        <div class="sig-role">${role1}</div>
-        <div class="sig-name">${name1}</div>
-      </div>
-      <div class="sig-block">
-        ${sig2 ? `<img src="${sig2}" class="sig-img">` : '<div class="sig-line"></div>'}
-        <div class="sig-role">${role2}</div>
-        <div class="sig-name">${name2}</div>
-      </div>
-    </div>`;
+  report += `<div class="sigs">
+    <div>
+      ${sig1 ? `<img src="${sig1}" class="sig-img">` : '<div style="height:65px;"></div>'}
+      <div class="sig-line"><strong>${name1 || role1}</strong>${role1}</div>
+    </div>
+    <div>
+      ${sig2 ? `<img src="${sig2}" class="sig-img">` : '<div style="height:65px;"></div>'}
+      <div class="sig-line"><strong>${name2 || role2}</strong>${role2}</div>
+    </div>
+  </div>`;
 
-  const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  // Script partido para evitar que el parser HTML lo corte prematuramente
+  report += `<scr` + `ipt>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</scr` + `ipt>`;
+  report += `</body></html>`;
 
-  const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${ts}-Reporte-${empresa.replace(/\s+/g,'-')}</title>
-<style>
-  @page { size: A4; margin: 12mm 14mm; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 11px; color: #111; background: #fff; }
-  /* Header */
-  .report-header { border-bottom: 2px solid #111; padding-bottom: 8px; margin-bottom: 12px; }
-  .report-header h1 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-  .meta { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 10px; color: #555; }
-  /* Section title */
-  .sec-title {
-    grid-column: 1 / -1;
-    font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
-    background: #1a1a1a; color: #fff;
-    padding: 5px 10px;
-    margin: 16px 0 6px;
-    page-break-after: avoid;
-  }
-  .sec-title:first-of-type { margin-top: 4px; }
-  .questions { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; }
-  .q-row { display: flex; gap: 6px; border-bottom: 1px solid #e5e5e5; padding: 4px 2px; page-break-inside: avoid; }
-  .q-num { min-width: 18px; font-weight: 600; font-size: 10px; color: #888; padding-top: 1px; }
-  .q-content { flex: 1; }
-  .q-text { font-size: 10.5px; font-weight: 600; line-height: 1.35; }
-  .q-result { font-size: 10px; font-weight: 700; margin-top: 1px; }
-  .q-obs { font-size: 10px; color: #555; font-style: italic; margin-top: 1px; }
-  /* Signatures */
-  .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 24px; padding-top: 12px; border-top: 1px solid #ccc; }
-  .sig-block { text-align: center; }
-  .sig-img { max-height: 60px; max-width: 100%; display: block; margin: 0 auto 4px; }
-  .sig-line { height: 60px; border-bottom: 1px solid #333; margin-bottom: 4px; }
-  .sig-role { font-weight: 700; font-size: 10px; }
-  .sig-name { font-size: 10px; color: #555; }
-</style>
-</head>
-<body>
-<div class="report-header">
-  <h1>Reporte de Auditoría — ${audit}</h1>
-  <div class="meta">
-    <span><strong>Empresa:</strong> ${empresa}</span>
-    ${depto ? `<span><strong>Área:</strong> ${depto}</span>` : ''}
-    ${fecha  ? `<span><strong>Fecha:</strong> ${fecha}</span>`  : ''}
-    <span><strong>Impreso:</strong> ${now.toLocaleString('es-CO')}</span>
-  </div>
-</div>
-${body}
-${sigHtml}
-<script>window.onload = () => { setTimeout(() => { window.print(); window.onafterprint = () => window.close(); }, 500); };<\/script>
-</body>
-</html>`;
-
-  // PASO 4 — Abrir ventana limpia, inyectar el string UNA sola vez, dejar que el script interno espere y lance la impresión
+  // PASO 3 — Inyectar UNA sola vez en ventana nueva y cerrar el documento
   const win = window.open('', '_blank');
   if (!win) { showToast('Permite ventanas emergentes en el navegador'); return; }
-  win.document.open();
-  win.document.write(html);
+  win.document.write(report);
   win.document.close();
-  // No se toca más el DOM de la ventana — el setTimeout interno se encarga del resto
+  // PASO 4 — El setTimeout interno espera 500ms y lanza window.print() cuando el render terminó
 }
 
 /* ─── TOAST ──────────────────────────────────────────────── */
