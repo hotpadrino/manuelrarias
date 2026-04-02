@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoLab — Panel Criptográfico</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0b0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: rgba(99,179,237,0.15);
+    --border2: rgba(99,179,237,0.3);
+    --text: #e2e8f0;
+    --muted: #718096;
+    --accent: #63b3ed;
+    --accent2: #68d391;
+    --accent3: #f6ad55;
+    --danger: #fc8181;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --glow: 0 0 20px rgba(99,179,237,0.12);
+    --glow2: 0 0 20px rgba(104,211,145,0.12);
+    --tag-bg: rgba(99,179,237,0.1);
+  }
+  :root[data-theme="light"] {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #edf2f7;
+    --border: rgba(49,130,206,0.2);
+    --border2: rgba(49,130,206,0.4);
+    --text: #1a202c;
+    --muted: #718096;
+    --accent: #2b6cb0;
+    --accent2: #276749;
+    --accent3: #c05621;
+    --danger: #c53030;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --glow: 0 2px 12px rgba(49,130,206,0.08);
+    --glow2: 0 2px 12px rgba(39,103,73,0.08);
+    --tag-bg: rgba(49,130,206,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* Grid background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,179,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,179,237,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  [data-theme="light"] body::before {
+    background-image:
+      linear-gradient(rgba(49,130,206,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(49,130,206,0.05) 1px, transparent 1px);
+  }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--surface);
+    flex-shrink: 0;
+  }
+  .logo-text h1 {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .logo-text p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .theme-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .theme-btn:hover { border-color: var(--border2); background: var(--surface); }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--glow);
+    transition: box-shadow 0.3s, border-color 0.3s;
+  }
+  .card:hover { border-color: var(--border2); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .card.amber::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+
+  /* Card header */
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+  .card-header-left { flex: 1; }
+  .card-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .card-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .card-icon.blue { background: rgba(99,179,237,0.12); }
+  .card-icon.green { background: rgba(104,211,145,0.12); }
+  .card-icon.amber { background: rgba(246,173,85,0.12); }
+  [data-theme="light"] .card-icon.blue { background: rgba(43,108,176,0.1); }
+  [data-theme="light"] .card-icon.green { background: rgba(39,103,73,0.1); }
+  [data-theme="light"] .card-icon.amber { background: rgba(192,86,33,0.1); }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.3px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 520px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tag.green { color: var(--accent2); background: rgba(104,211,145,0.08); }
+  .tag.amber { color: var(--accent3); background: rgba(246,173,85,0.08); }
+  [data-theme="light"] .tag.green { background: rgba(39,103,73,0.06); }
+  [data-theme="light"] .tag.amber { background: rgba(192,86,33,0.06); }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 11px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="number"], textarea, select {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+    border-color: var(--border2);
+  }
+  textarea { resize: vertical; min-height: 72px; font-family: var(--sans); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23718096' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+
+  .row { display: grid; gap: 14px; }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-sust { grid-template-columns: 1fr 120px; }
+  .row-sust.full { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; }
+
+  /* Buttons */
+  .btn-row { display: grid; gap: 10px; margin-top: 14px; }
+  .btn-row-2 { grid-template-columns: 1fr 1fr; }
+  .btn-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  button:hover { background: var(--surface2); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+  button.primary:hover { opacity: 0.88; }
+  button.green-btn { background: rgba(104,211,145,0.1); border-color: var(--accent2); color: var(--accent2); }
+  button.green-btn:hover { background: rgba(104,211,145,0.18); }
+  button.amber-btn { background: rgba(246,173,85,0.1); border-color: var(--accent3); color: var(--accent3); }
+  button.amber-btn:hover { background: rgba(246,173,85,0.18); }
+  [data-theme="light"] button.green-btn { color: var(--accent2); border-color: var(--accent2); background: rgba(39,103,73,0.06); }
+  [data-theme="light"] button.amber-btn { color: var(--accent3); border-color: var(--accent3); background: rgba(192,86,33,0.06); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Result box */
+  .res-box {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 44px;
+    word-break: break-all;
+    line-height: 1.6;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .res-box.has-value { color: var(--accent2); border-color: rgba(104,211,145,0.25); }
+  [data-theme="light"] .res-box.has-value { color: var(--accent2); border-color: rgba(39,103,73,0.3); }
+
+  /* Key boxes */
+  .key-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .key-box { position: relative; }
+  .key-box label { display: flex; align-items: center; justify-content: space-between; }
+  .key-area {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    height: 80px;
+    resize: none;
+    outline: none;
+    word-break: break-all;
+    overflow: auto;
+  }
+  .key-dl {
+    position: absolute;
+    bottom: 8px; right: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    cursor: pointer;
+    color: var(--accent);
+    transition: all 0.15s;
+    display: none;
+  }
+  .key-dl:hover { background: var(--surface2); }
+  .key-dl.show { display: block; }
+
+  /* Game */
+  .game-score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .game-score {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .game-score span {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent3);
+  }
+  .game-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
+  .game-log {
+    margin-top: 14px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .game-entry {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+  .game-entry .guess { color: var(--text); font-weight: 700; }
+  .game-entry .fijas { color: var(--accent2); }
+  .game-entry .picas { color: var(--accent3); }
+  .game-entry .num { color: var(--muted); font-size: 10px; margin-right: 4px; }
+  .game-hint {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 6px 0 0;
+    font-family: var(--mono);
+    display: flex; gap: 16px;
+  }
+  .game-hint b { color: var(--accent2); }
+  .game-win-banner {
+    display: none;
+    padding: 12px 16px;
+    background: rgba(104,211,145,0.1);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+    margin-top: 12px;
+    animation: slideIn 0.3s ease;
+  }
+  [data-theme="light"] .game-win-banner { background: rgba(39,103,73,0.08); color: var(--accent2); }
+
+  /* Status indicator */
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  .status-dot.green { background: var(--accent2); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Typing effect */
+  .mono-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.6;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Responsive */
+  @media(max-width: 560px) {
+    .row-2 { grid-template-columns: 1fr; }
+    .key-grid { grid-template-columns: 1fr; }
+    .btn-row-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="header-left">
+      <div class="logo-icon">CL</div>
+      <div class="logo-text">
+        <h1>CryptoLab</h1>
+        <p><span class="status-dot"></span> Panel Criptográfico Interactivo</p>
+      </div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☾ Claro</button>
+  </header>
+
+  <!-- SUSTITUCIÓN -->
+  <div class="card blue">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-title-row">
+          <div class="card-icon blue">🔄</div>
+          <span class="card-title">Cifrado por Sustitución</span>
+          <span class="tag">CLÁSICO</span>
+        </div>
+        <p class="card-desc">Reemplaza cada carácter del mensaje por otro usando una regla fija. El <b>César</b> desplaza cada letra N posiciones en el alfabeto ASCII. Las <b>claves de diccionario</b> mapean cada carácter a su posición dentro de la palabra clave.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="row row-sust" id="wrapperSust">
+      <div class="field">
+        <label>Método de Cifrado</label>
+        <select id="selectorSustitucion"></select>
+      </div>
+      <div class="field" id="columnaN">
+        <label>Desplaz. N</label>
+        <input type="number" id="nCesar" value="3" min="1" max="25">
+      </div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <label>Mensaje de entrada</label>
+      <textarea id="inputSust" placeholder="Escribe tu mensaje aquí..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="primary" onclick="procesarSustitucion()">▶ Ejecutar cifrado</button>
+    </div>
+    <div class="res-box" id="resSust">— resultado aparecerá aquí —</div>
+  </div>
+
+  <!-- XOR -->
+  <div class="card green">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-title-row">
+          <div class="card-icon green">⊕</div>
+          <span class="card-title">XOR Simétrico + Base64</span>
+          <span class="tag green">SIMÉTRICO</span>
+        </div>
+        <p class="card-desc">Opera bit a bit entre el mensaje y la llave. La misma operación sirve para cifrar y descifrar: <span class="mono-tag">M ⊕ K = C</span> y <span class="mono-tag">C ⊕ K = M</span>. El resultado se codifica en Base64 para su transmisión segura como texto.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="row row-2">
+      <div class="field">
+        <label>Mensaje</label>
+        <input type="text" id="msgXor" placeholder="Texto a cifrar o Base64 a descifrar...">
+      </div>
+      <div class="field">
+        <label>Llave secreta</label>
+        <input type="text" id="keyXor" placeholder="Clave compartida...">
+      </div>
+    </div>
+    <div class="btn-row btn-row-2">
+      <button class="green-btn" onclick="logicXor(true)">↑ Cifrar → Base64</button>
+      <button onclick="logicXor(false)">↓ Descifrar desde Base64</button>
+    </div>
+    <div class="res-box" id="resXor">— resultado aparecerá aquí —</div>
+  </div>
+
+  <!-- RSA -->
+  <div class="card blue">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-title-row">
+          <div class="card-icon blue">🔐</div>
+          <span class="card-title">RSA — Criptografía Asimétrica</span>
+          <span class="tag">ASIMÉTRICO · 2048-bit</span>
+        </div>
+        <p class="card-desc">Usa un par de llaves matemáticamente relacionadas: la <b>pública</b> (para cifrar, compartible) y la <b>privada</b> (para descifrar, secreta). Basado en la dificultad de factorizar números primos grandes. Estándar RSA-OAEP con SHA-256.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="btn-row" style="margin-top:0; margin-bottom:14px">
+      <button class="primary" onclick="initRSA()" id="btnGenRsa">⚙ Generar par de llaves RSA-2048</button>
+    </div>
+    <div class="key-grid">
+      <div class="key-box">
+        <label>
+          <span>Llave Pública (SPKI)</span>
+          <span style="font-size:10px; color: var(--accent2); display:none" id="pubStatus">✓ lista</span>
+        </label>
+        <textarea class="key-area" id="pubArea" readonly placeholder="— genera las llaves primero —"></textarea>
+        <button class="key-dl" id="dlPub" onclick="downloadKey('pub')">↓ Descargar</button>
+      </div>
+      <div class="key-box">
+        <label>
+          <span>Llave Privada (PKCS#8)</span>
+          <span style="font-size:10px; color: var(--danger); display:none" id="privStatus">✓ lista</span>
+        </label>
+        <textarea class="key-area" id="privArea" readonly placeholder="— genera las llaves primero —"></textarea>
+        <button class="key-dl" id="dlPriv" onclick="downloadKey('priv')">↓ Descargar</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="field">
+      <label>Mensaje a cifrar / texto cifrado a descifrar</label>
+      <input type="text" id="msgRsa" placeholder="Texto plano o Base64 cifrado...">
+    </div>
+    <div class="btn-row btn-row-2" style="margin-top:12px">
+      <button class="primary" onclick="doRsa(true)" id="btnCifrarRsa" disabled>🔒 Cifrar con llave pública</button>
+      <button onclick="doRsa(false)" id="btnDescRsa" disabled>🔓 Descifrar con llave privada</button>
+    </div>
+    <div class="res-box" id="resRsa">— genera llaves y escribe un mensaje —</div>
+  </div>
+
+  <!-- JUEGO -->
+  <div class="card amber">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-title-row">
+          <div class="card-icon amber">🎯</div>
+          <span class="card-title">Picas y Fijas</span>
+          <span class="tag amber">LÓGICA · 3 DÍGITOS</span>
+        </div>
+        <p class="card-desc">Adivina el número secreto de 3 dígitos únicos. Una <b style="color:var(--accent2)">Fija</b> es un dígito correcto en la posición correcta. Una <b style="color:var(--accent3)">Pica</b> es un dígito correcto en posición incorrecta. Entrena tu razonamiento deductivo.</p>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="game-score-row">
+      <div class="game-score">INTENTOS: <span id="count">0</span></div>
+      <button class="amber-btn" style="padding: 6px 14px; font-size:11px" onclick="resetGame()">↺ Nuevo juego</button>
+    </div>
+    <div class="game-input-row">
+      <div class="field">
+        <label>Tu intento (3 dígitos únicos)</label>
+        <input type="text" id="gameIn" maxlength="3" placeholder="ej: 4 7 2" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')playGame()">
+      </div>
+      <button class="amber-btn" onclick="playGame()" style="margin-top:20px; padding: 10px 20px;">▶ Probar</button>
+    </div>
+    <div class="game-hint">
+      <span><b>F</b> = fija (posición correcta)</span>
+      <span><b>P</b> = pica (dígito existe, mal posición)</span>
+    </div>
+    <div class="game-log" id="game-log"></div>
+    <div class="game-win-banner" id="winBanner">🎉 ¡Correcto! Adivinaste en <span id="winCount">0</span> intentos. &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px">Nuevo juego</button></div>
+  </div>
+
+</div>
+
+<script>
+const CONFIG = {
+  palabras: ["murcielago","orquidea","eucalipto","centrifuga","neumatico","escualido"]
+};
+
+// Theme
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀ Oscuro' : '☾ Claro';
+}
+
+// ---- SUSTITUCIÓN ----
+const select = document.getElementById('selectorSustitucion');
+const colN = document.getElementById('columnaN');
+const wrap = document.getElementById('wrapperSust');
+let html = '<option value="cesar">Cifrado César</option>';
+CONFIG.palabras.forEach(p => html += `<option value="${p}">Clave: ${p.toUpperCase()}</option>`);
+select.innerHTML = html;
+select.addEventListener('change', () => {
+  const isCesar = select.value === 'cesar';
+  colN.style.display = isCesar ? '' : 'none';
+  wrap.classList.toggle('full', !isCesar);
+});
+
+function procesarSustitucion() {
+  const m = select.value;
+  const t = document.getElementById('inputSust').value.toLowerCase();
+  let r = "";
+  if (m === 'cesar') {
+    const n = parseInt(document.getElementById('nCesar').value) || 0;
+    r = t.split('').map(c => {
+      const code = c.charCodeAt(0);
+      if (code >= 97 && code <= 122) return String.fromCharCode(((code - 97 + n) % 26) + 97);
+      return c;
+    }).join('');
+  } else {
+    r = t.split('').map(c => {
+      const idx = m.indexOf(c);
+      return idx !== -1 ? idx.toString() : c;
+    }).join('');
+  }
+  const box = document.getElementById('resSust');
+  box.textContent = r || '— escribe un mensaje —';
+  box.className = 'res-box' + (r ? ' has-value' : '');
+}
+
+// ---- XOR ----
+function logicXor(en) {
+  const t = document.getElementById('msgXor').value;
+  const k = document.getElementById('keyXor').value;
+  const box = document.getElementById('resXor');
+  if (!k) { box.textContent = '— ingresa una llave —'; return; }
+  try {
+    let result = '';
+    if (en) {
+      let s = "";
+      for (let i = 0; i < t.length; i++) s += String.fromCharCode(t.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+      result = btoa(unescape(encodeURIComponent(s)));
+    } else {
+      let d = decodeURIComponent(escape(atob(t))), s = "";
+      for (let i = 0; i < d.length; i++) s += String.fromCharCode(d.charCodeAt(i) ^ k.charCodeAt(i % k.length));
+      result = s;
+    }
+    box.textContent = result;
+    box.className = 'res-box has-value';
+  } catch(e) {
+    box.textContent = '⚠ Error: ' + e.message;
+    box.className = 'res-box';
+  }
+}
+
+// ---- RSA ----
+let rPub = null, rPriv = null, pubB64 = '', privB64 = '';
+
+async function initRSA() {
+  const btn = document.getElementById('btnGenRsa');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+  try {
+    const p = await window.crypto.subtle.generateKey(
+      { name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1,0,1]), hash: "SHA-256" },
+      true, ["encrypt","decrypt"]
+    );
+    rPub = p.publicKey; rPriv = p.privateKey;
+    const pb = await window.crypto.subtle.exportKey("spki", rPub);
+    const pv = await window.crypto.subtle.exportKey("pkcs8", rPriv);
+    pubB64 = btoa(String.fromCharCode(...new Uint8Array(pb)));
+    privB64 = btoa(String.fromCharCode(...new Uint8Array(pv)));
+    const fmt = s => `-----BEGIN KEY-----\n${s.match(/.{1,64}/g).join('\n')}\n-----END KEY-----`;
+    document.getElementById('pubArea').value = fmt(pubB64);
+    document.getElementById('privArea').value = fmt(privB64);
+    document.getElementById('pubStatus').style.display = 'inline';
+    document.getElementById('privStatus').style.display = 'inline';
+    document.getElementById('dlPub').classList.add('show');
+    document.getElementById('dlPriv').classList.add('show');
+    document.getElementById('btnCifrarRsa').disabled = false;
+    document.getElementById('btnDescRsa').disabled = false;
+    btn.textContent = '✓ Llaves generadas — regenerar';
+  } catch(e) {
+    btn.textContent = '⚠ Error al generar';
+  }
+  btn.disabled = false;
+}
+
+async function doRsa(en) {
+  if (!rPub) return;
+  const box = document.getElementById('resRsa');
+  try {
+    if (en) {
+      const msg = document.getElementById('msgRsa').value;
+      const b = await window.crypto.subtle.encrypt(
+        { name: "RSA-OAEP" }, rPub, new TextEncoder().encode(msg)
+      );
+      const result = btoa(String.fromCharCode(...new Uint8Array(b)));
+      box.textContent = result;
+      box.className = 'res-box has-value';
+    } else {
+      const cipher = box.textContent;
+      const b = await window.crypto.subtle.decrypt(
+        { name: "RSA-OAEP" }, rPriv,
+        new Uint8Array(atob(cipher).split("").map(c => c.charCodeAt(0)))
+      );
+      box.textContent = new TextDecoder().decode(b);
+      box.className = 'res-box has-value';
+    }
+  } catch(e) {
+    box.textContent = '⚠ RSA Error: ' + e.message;
+    box.className = 'res-box';
+  }
+}
+
+function downloadKey(type) {
+  const content = type === 'pub'
+    ? `-----BEGIN PUBLIC KEY-----\n${pubB64.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`
+    : `-----BEGIN PRIVATE KEY-----\n${privB64.match(/.{1,64}/g).join('\n')}\n-----END PRIVATE KEY-----`;
+  const filename = type === 'pub' ? 'llave_publica.pem' : 'llave_privada.pem';
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+  a.download = filename;
+  a.click();
+}
+
+// ---- JUEGO ----
+let secret = "", attempts = 0, won = false;
+
+function resetGame() {
+  secret = ""; attempts = 0; won = false;
+  while (secret.length < 3) {
+    const d = Math.floor(Math.random() * 10).toString();
+    if (!secret.includes(d)) secret += d;
+  }
+  document.getElementById('count').textContent = "0";
+  document.getElementById('game-log').innerHTML = "";
+  document.getElementById('winBanner').style.display = 'none';
+  document.getElementById('gameIn').value = '';
+  document.getElementById('gameIn').disabled = false;
+}
+
+function playGame() {
+  if (won) return;
+  const v = document.getElementById('gameIn').value.trim();
+  if (v.length !== 3 || !/^\d{3}$/.test(v) || new Set(v).size !== 3) {
+    document.getElementById('gameIn').style.borderColor = 'var(--danger)';
+    setTimeout(() => document.getElementById('gameIn').style.borderColor = '', 600);
+    return;
+  }
+  attempts++;
+  document.getElementById('count').textContent = attempts;
+  let f = 0, p = 0;
+  for (let i = 0; i < 3; i++) {
+    if (v[i] === secret[i]) f++;
+    else if (secret.includes(v[i])) p++;
+  }
+  const log = document.getElementById('game-log');
+  const entry = document.createElement('div');
+  entry.className = 'game-entry';
+  entry.innerHTML = `<span class="num">#${attempts}</span><span class="guess">${v}</span><span class="fijas">${f}F</span><span class="picas">${p}P</span>`;
+  log.insertBefore(entry, log.firstChild);
+  document.getElementById('gameIn').value = '';
+  if (f === 3) {
+    won = true;
+    document.getElementById('winCount').textContent = attempts;
+    document.getElementById('winBanner').style.display = 'block';
+    document.getElementById('gameIn').disabled = true;
+  }
+}
+
+resetGame();
+</script>
+</body>
+</html>
