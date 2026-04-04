@@ -54,7 +54,6 @@
     transition: background 0.3s, color 0.3s;
   }
 
-  /* Grid background pattern */
   body::before {
     content: '';
     position: fixed;
@@ -85,6 +84,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: 48px;
     padding-bottom: 24px;
     border-bottom: 1px solid var(--border);
@@ -124,6 +125,7 @@
     cursor: pointer;
     transition: all 0.2s;
     display: flex; align-items: center; gap: 8px;
+    min-height: 44px;
   }
   .theme-btn:hover { border-color: var(--border2); background: var(--surface); }
 
@@ -159,8 +161,8 @@
     margin-bottom: 20px;
     gap: 16px;
   }
-  .card-header-left { flex: 1; }
-  .card-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .card-header-left { flex: 1; min-width: 0; }
+  .card-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
   .card-icon {
     width: 32px; height: 32px;
     border-radius: 8px;
@@ -230,6 +232,7 @@
     transition: border-color 0.2s;
     appearance: none;
     -webkit-appearance: none;
+    min-height: 44px;
   }
   input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
     border-color: var(--border2);
@@ -261,6 +264,7 @@
     cursor: pointer;
     transition: all 0.18s;
     display: flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px;
   }
   button:hover { background: var(--surface2); }
   button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
@@ -276,7 +280,7 @@
   /* Result box */
   .res-box {
     margin-top: 14px;
-    padding: 12px 14px;
+    padding: 10px 12px 10px 14px;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -287,9 +291,35 @@
     word-break: break-all;
     line-height: 1.6;
     transition: color 0.2s, border-color 0.2s;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
   }
   .res-box.has-value { color: var(--accent2); border-color: rgba(104,211,145,0.25); }
   [data-theme="light"] .res-box.has-value { color: var(--accent2); border-color: rgba(39,103,73,0.3); }
+  .res-text { flex: 1; min-width: 0; word-break: break-all; padding-top: 2px; }
+
+  /* Copy button */
+  .copy-btn {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    min-height: unset;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.5;
+    transition: opacity 0.18s, color 0.18s, background 0.18s;
+    margin-top: 1px;
+  }
+  .copy-btn:hover { opacity: 1; color: var(--accent); background: var(--border); }
+  .copy-btn.copied { opacity: 1; color: var(--accent2); }
+  .copy-btn svg { pointer-events: none; }
 
   /* Key boxes */
   .key-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
@@ -309,6 +339,7 @@
     outline: none;
     word-break: break-all;
     overflow: auto;
+    min-height: unset;
   }
   .key-dl {
     position: absolute;
@@ -323,12 +354,20 @@
     color: var(--accent);
     transition: all 0.15s;
     display: none;
+    min-height: unset;
   }
   .key-dl:hover { background: var(--surface2); }
   .key-dl.show { display: block; }
 
   /* Game */
-  .game-score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .game-score-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
   .game-score {
     font-family: var(--mono);
     font-size: 12px;
@@ -339,6 +378,20 @@
     font-size: 18px;
     font-weight: 700;
     color: var(--accent3);
+  }
+  .game-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .game-digits-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
   }
   .game-input-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
   .game-log {
@@ -370,6 +423,7 @@
     padding: 6px 0 0;
     font-family: var(--mono);
     display: flex; gap: 16px;
+    flex-wrap: wrap;
   }
   .game-hint b { color: var(--accent2); }
   .game-win-banner {
@@ -397,7 +451,6 @@
   .status-dot.green { background: var(--accent2); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* Typing effect */
   .mono-tag {
     font-family: var(--mono);
     font-size: 11px;
@@ -405,31 +458,53 @@
     opacity: 0.6;
   }
 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-  /* Responsive */
+  /* ── RESPONSIVE ── */
   @media(max-width: 560px) {
+    .wrap { padding: 20px 14px 60px; }
+    header { margin-bottom: 28px; padding-bottom: 18px; }
+    .logo-text h1 { font-size: 17px; }
+    .logo-text p { display: none; }
+    .card { padding: 18px 16px 16px; }
     .row-2 { grid-template-columns: 1fr; }
+    .row-sust { grid-template-columns: 1fr; }
+    #columnaN { display: none !important; }
     .key-grid { grid-template-columns: 1fr; }
+    .btn-row-2 { grid-template-columns: 1fr; }
     .btn-row-3 { grid-template-columns: 1fr; }
+    .game-score-row { flex-direction: column; align-items: flex-start; }
+    .game-controls { width: 100%; }
+    .game-digits-row { font-size: 10px; }
+    .game-input-row { grid-template-columns: 1fr; }
+    .game-input-row button { width: 100%; margin-top: 0 !important; }
+    .card-title { font-size: 13px; }
+    .card-desc { font-size: 12px; }
+    .divider { margin: 14px 0; }
   }
+  @media(max-width: 400px) {
+    .wrap { padding: 14px 10px 48px; }
+    .card { padding: 14px 12px 12px; }
+    .card-title-row { gap: 7px; }
+    .tag { font-size: 9px; padding: 2px 6px; }
+  }
+
   /* ── FOOTER ── */
-    footer {
-      width: 100%; padding: 30px 0; text-align: center; color: #445566; 
-      font-weight: 300; text-transform: uppercase; font-size: 10px; 
-      letter-spacing: 0.2em; flex-shrink: 0; border-top: 1px solid #111a24; 
-      margin-top: 40px;
-    }
-    .footer-content {
-      display: flex; flex-direction: column; align-items: center; 
-      gap: 15px; max-width: 550px; margin: auto; padding: 0 10px;
-    }
-    @media (min-width: 640px) { .footer-content { flex-direction: row; justify-content: space-between; } }
-    footer a { color: inherit; text-decoration: none; transition: color 0.3s; }
-    footer a:hover { color: var(--accent2); }
+  footer {
+    width: 100%; padding: 30px 0; text-align: center; color: #445566; 
+    font-weight: 300; text-transform: uppercase; font-size: 10px; 
+    letter-spacing: 0.2em; flex-shrink: 0; border-top: 1px solid #111a24; 
+    margin-top: 40px;
+  }
+  .footer-content {
+    display: flex; flex-direction: column; align-items: center; 
+    gap: 15px; max-width: 550px; margin: auto; padding: 0 10px;
+  }
+  @media (min-width: 640px) { .footer-content { flex-direction: row; justify-content: space-between; } }
+  footer a { color: inherit; text-decoration: none; transition: color 0.3s; }
+  footer a:hover { color: var(--accent2); }
 </style>
 </head>
 <body>
@@ -478,7 +553,12 @@
       <button class="primary" onclick="procesarSustitucion(true)">▶ Cifrar</button>
       <button onclick="procesarSustitucion(false)">◀ Descifrar</button>
     </div>
-    <div class="res-box" id="resSust">— resultado aparecerá aquí —</div>
+    <div class="res-box" id="resSust">
+      <span class="res-text">— resultado aparecerá aquí —</span>
+      <button class="copy-btn" onclick="copyResult('resSust')" aria-label="Copiar resultado" title="Copiar al portapapeles">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- XOR -->
@@ -508,7 +588,12 @@
       <button class="green-btn" onclick="logicXor(true)">↑ Cifrar → Base64</button>
       <button onclick="logicXor(false)">↓ Descifrar desde Base64</button>
     </div>
-    <div class="res-box" id="resXor">— resultado aparecerá aquí —</div>
+    <div class="res-box" id="resXor">
+      <span class="res-text">— resultado aparecerá aquí —</span>
+      <button class="copy-btn" onclick="copyResult('resXor')" aria-label="Copiar resultado" title="Copiar al portapapeles">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- RSA -->
@@ -554,7 +639,12 @@
       <button class="primary" onclick="doRsa(true)" id="btnCifrarRsa" disabled>🔒 Cifrar con llave pública</button>
       <button onclick="doRsa(false)" id="btnDescRsa" disabled>🔓 Descifrar con llave privada</button>
     </div>
-    <div class="res-box" id="resRsa">— genera llaves y escribe un mensaje —</div>
+    <div class="res-box" id="resRsa">
+      <span class="res-text">— genera llaves y escribe un mensaje —</span>
+      <button class="copy-btn" onclick="copyResult('resRsa')" aria-label="Copiar resultado" title="Copiar al portapapeles">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+    </div>
   </div>
 
   <!-- JUEGO -->
@@ -572,14 +662,14 @@
     <div class="divider"></div>
     <div class="game-score-row">
       <div class="game-score">INTENTOS: <span id="count">0</span></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--muted)">
+      <div class="game-controls">
+        <div class="game-digits-row">
           CIFRAS:
-          <button id="btn3" class="amber-btn" style="padding:4px 10px;font-size:11px;background:rgba(246,173,85,0.25)" onclick="setDigits(3)">3</button>
-          <button id="btn4" class="amber-btn" style="padding:4px 10px;font-size:11px" onclick="setDigits(4)">4</button>
+          <button id="btn3" class="amber-btn" style="padding:4px 10px;font-size:11px;min-height:36px;background:rgba(246,173,85,0.25)" onclick="setDigits(3)">3</button>
+          <button id="btn4" class="amber-btn" style="padding:4px 10px;font-size:11px;min-height:36px" onclick="setDigits(4)">4</button>
         </div>
-        <button class="amber-btn" style="padding:6px 14px;font-size:11px" onclick="muerteSubita()">⚡ Muerte súbita</button>
-        <button class="amber-btn" style="padding:6px 14px;font-size:11px" onclick="resetGame()">↺ Nuevo juego</button>
+        <button class="amber-btn" style="padding:6px 14px;font-size:11px;min-height:38px" onclick="muerteSubita()">⚡ Muerte súbita</button>
+        <button class="amber-btn" style="padding:6px 14px;font-size:11px;min-height:38px" onclick="resetGame()">↺ Nuevo juego</button>
       </div>
     </div>
     <div class="game-input-row">
@@ -594,7 +684,7 @@
       <span><b>P</b> = pica (dígito en mala posición)</span>
     </div>
     <div class="game-log" id="game-log"></div>
-    <div class="game-win-banner" id="winBanner">🎉 ¡Correcto! Adivinaste en <span id="winCount">0</span> intentos. &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px">Nuevo juego</button></div>
+    <div class="game-win-banner" id="winBanner">🎉 ¡Correcto! Adivinaste en <span id="winCount">0</span> intentos. &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px;min-height:unset">Nuevo juego</button></div>
   </div>
 
 </div>
@@ -622,6 +712,29 @@ function toggleTheme() {
   document.getElementById('themeBtn').textContent = isDark ? '☀ Oscuro' : '☾ Claro';
 }
 
+// ---- COPY TO CLIPBOARD ----
+function copyResult(id) {
+  const box = document.getElementById(id);
+  const text = box.querySelector('.res-text').textContent.trim();
+  const placeHolders = ['— resultado aparecerá aquí —','— escribe un mensaje —','— genera llaves y escribe un mensaje —','— ingresa una llave —'];
+  if (!text || placeHolders.some(p => text.startsWith(p.substring(0,8)))) return;
+  const btn = box.querySelector('.copy-btn');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 1800);
+  }).catch(() => {});
+}
+
+function setResBox(id, text, hasValue) {
+  const box = document.getElementById(id);
+  box.querySelector('.res-text').textContent = text;
+  box.className = 'res-box' + (hasValue ? ' has-value' : '');
+}
+
 // ---- SUSTITUCIÓN ----
 const select = document.getElementById('selectorSustitucion');
 const colN = document.getElementById('columnaN');
@@ -641,7 +754,7 @@ function procesarSustitucion(cifrar = true) {
   let r = "";
   if (m === 'cesar') {
     let n = parseInt(document.getElementById('nCesar').value) || 0;
-    n = ((n % 26) + 26) % 26; // normalize to 0-25
+    n = ((n % 26) + 26) % 26;
     const shift = cifrar ? n : (26 - n) % 26;
     r = t.split('').map(c => {
       const code = c.charCodeAt(0);
@@ -655,7 +768,6 @@ function procesarSustitucion(cifrar = true) {
         return idx !== -1 ? idx.toString() : c;
       }).join('');
     } else {
-      // Each digit maps back to the char at that index in the keyword; non-digits pass through
       r = t.split('').map(ch => {
         if (/\d/.test(ch)) {
           const idx = parseInt(ch);
@@ -665,17 +777,14 @@ function procesarSustitucion(cifrar = true) {
       }).join('');
     }
   }
-  const box = document.getElementById('resSust');
-  box.textContent = r || '— escribe un mensaje —';
-  box.className = 'res-box' + (r ? ' has-value' : '');
+  setResBox('resSust', r || '— escribe un mensaje —', !!r);
 }
 
 // ---- XOR ----
 function logicXor(en) {
   const t = document.getElementById('msgXor').value;
   const k = document.getElementById('keyXor').value;
-  const box = document.getElementById('resXor');
-  if (!k) { box.textContent = '— ingresa una llave —'; return; }
+  if (!k) { setResBox('resXor', '— ingresa una llave —', false); return; }
   try {
     let result = '';
     if (en) {
@@ -687,11 +796,9 @@ function logicXor(en) {
       for (let i = 0; i < d.length; i++) s += String.fromCharCode(d.charCodeAt(i) ^ k.charCodeAt(i % k.length));
       result = s;
     }
-    box.textContent = result;
-    box.className = 'res-box has-value';
+    setResBox('resXor', result, true);
   } catch(e) {
-    box.textContent = '⚠ Error: ' + e.message;
-    box.className = 'res-box';
+    setResBox('resXor', '⚠ Error: ' + e.message, false);
   }
 }
 
@@ -730,7 +837,6 @@ async function initRSA() {
 
 async function doRsa(en) {
   if (!rPub) return;
-  const box = document.getElementById('resRsa');
   try {
     if (en) {
       const msg = document.getElementById('msgRsa').value;
@@ -738,20 +844,17 @@ async function doRsa(en) {
         { name: "RSA-OAEP" }, rPub, new TextEncoder().encode(msg)
       );
       const result = btoa(String.fromCharCode(...new Uint8Array(b)));
-      box.textContent = result;
-      box.className = 'res-box has-value';
+      setResBox('resRsa', result, true);
     } else {
-      const cipher = box.textContent;
+      const cipher = document.getElementById('resRsa').querySelector('.res-text').textContent;
       const b = await window.crypto.subtle.decrypt(
         { name: "RSA-OAEP" }, rPriv,
         new Uint8Array(atob(cipher).split("").map(c => c.charCodeAt(0)))
       );
-      box.textContent = new TextDecoder().decode(b);
-      box.className = 'res-box has-value';
+      setResBox('resRsa', new TextDecoder().decode(b), true);
     }
   } catch(e) {
-    box.textContent = '⚠ RSA Error: ' + e.message;
-    box.className = 'res-box';
+    setResBox('resRsa', '⚠ RSA Error: ' + e.message, false);
   }
 }
 
@@ -801,20 +904,12 @@ function score(guess, answer) {
 function findMinimalClues(sec) {
   const d = sec.length;
   const digits = '0123456789'.split('');
-
-  // Generate a diverse fixed probe pool (fast, no exhaustive enumeration)
   const probePool = d === 3
     ? ['012','345','678','903','147','258','360','481','592','630','713','824']
     : ['0123','4567','8901','2345','6789','0246','1357','8024','3691','5702','1468','2579'];
-
   const usedProbes = new Set([sec]);
   const clues = [];
-
-  // We need a lightweight "survivors" check — just track a small candidate list
-  // Seed survivors from probePool candidates consistent with each clue added
-  // Start: assume all are possible, filter as we add clues
   let survivors = probePool.filter(c => c !== sec && c.length === d && new Set(c).size === d);
-
   for (const probe of probePool) {
     if (survivors.length === 0 && clues.length >= 4) break;
     if (usedProbes.has(probe)) continue;
@@ -823,12 +918,9 @@ function findMinimalClues(sec) {
     clues.push({ guess: probe, f, p });
     survivors = survivors.filter(c => { const s = score(probe, c); return s.f === f && s.p === p; });
   }
-
-  // Pad to target 4-6 with cheaply-generated random probes (no full enumeration)
   const target = 4 + Math.floor(Math.random() * 3);
   let safetyLimit = 200;
   while (clues.length < target && safetyLimit-- > 0) {
-    // Generate a random d-digit number with unique digits
     const pool = [...digits];
     for (let i = pool.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
     const probe = pool.slice(0, d).join('');
@@ -837,8 +929,6 @@ function findMinimalClues(sec) {
     const { f, p } = score(probe, sec);
     clues.push({ guess: probe, f, p });
   }
-
-  // Shuffle
   for (let i = clues.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [clues[i], clues[j]] = [clues[j], clues[i]];
@@ -879,14 +969,13 @@ function playGame() {
     return;
   }
   document.getElementById('gameIn').value = '';
-
   if (suddenMode) {
     suddenMode = false;
     document.getElementById('gameIn').placeholder = digits === 3 ? 'ej: 472' : 'ej: 4729';
     if (v === secret) {
       won = true;
       addLogEntry(`<span class="num">⚡</span><span class="guess">${v}</span><span class="fijas">${digits}F — ¡CORRECTO!</span>`);
-      document.getElementById('winBanner').innerHTML = '⚡ ¡Muerte súbita resuelta! &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px">Nuevo juego</button>';
+      document.getElementById('winBanner').innerHTML = '⚡ ¡Muerte súbita resuelta! &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px;min-height:unset">Nuevo juego</button>';
       document.getElementById('winBanner').style.display = 'block';
       document.getElementById('gameIn').disabled = true;
     } else {
@@ -894,14 +983,13 @@ function playGame() {
     }
     return;
   }
-
   attempts++;
   document.getElementById('count').textContent = attempts;
   const { f, p } = score(v, secret);
   addLogEntry(`<span class="num">#${attempts}</span><span class="guess">${v}</span><span class="fijas">${f}F</span><span class="picas">${p}P</span>`);
   if (f === digits) {
     won = true;
-    document.getElementById('winBanner').innerHTML = `🎉 ¡Correcto! Adivinaste en ${attempts} intentos. &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px">Nuevo juego</button>`;
+    document.getElementById('winBanner').innerHTML = `🎉 ¡Correcto! Adivinaste en ${attempts} intentos. &nbsp;<button onclick="resetGame()" style="display:inline;padding:4px 10px;font-size:10px;margin-left:8px;min-height:unset">Nuevo juego</button>`;
     document.getElementById('winBanner').style.display = 'block';
     document.getElementById('gameIn').disabled = true;
   }
