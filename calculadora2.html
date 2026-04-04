@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Financiero · @manuelrarias</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#f9f8f5;--surface-2:#fbfbf9;--surface-off:#f3f0ec;--surface-off2:#edeae5;
+  --divider:#dcd9d5;--border:#d4d1ca;
+  --text:#28251d;--text-muted:#7a7974;--text-faint:#bab9b4;--text-inv:#f9f8f4;
+  --primary:#01696f;--primary-h:#0c4e54;--primary-a:#0f3638;--primary-hl:#cedcd8;
+  --success:#437a22;--success-h:#2e5c10;--success-hl:#d4dfcc;
+  --warning:#964219;--warning-hl:#ddcfc6;
+  --error:#a12c7b;--error-hl:#e0ced7;
+  --gold:#d19900;--gold-hl:#e9e0c6;
+  --blue:#006494;--blue-hl:#c6d8e4;
+  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);
+  --shadow-md:0 4px 12px oklch(0.2 0.01 80/0.08);
+  --shadow-lg:0 12px 32px oklch(0.2 0.01 80/0.12);
+  --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-full:9999px;
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+  --font:'Satoshi',system-ui,sans-serif;
+  --chart-capital:#01696f;--chart-interes:#d19900;--chart-extra:#437a22;--chart-compare:#964219;
+}
+[data-theme="dark"]{
+  --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;--surface-off:#1d1c1a;--surface-off2:#22211f;
+  --divider:#262523;--border:#393836;
+  --text:#cdccca;--text-muted:#797876;--text-faint:#5a5957;--text-inv:#2b2a28;
+  --primary:#4f98a3;--primary-h:#227f8b;--primary-a:#1a626b;--primary-hl:#313b3b;
+  --success:#6daa45;--success-h:#4d8f25;--success-hl:#3a4435;
+  --warning:#bb653b;--warning-hl:#564942;
+  --error:#d163a7;--error-hl:#4c3d46;
+  --gold:#e8af34;--gold-hl:#4d4332;
+  --blue:#5591c7;--blue-hl:#3a4550;
+  --shadow-sm:0 1px 2px oklch(0 0 0/.2);
+  --shadow-md:0 4px 12px oklch(0 0 0/.3);
+  --shadow-lg:0 12px 32px oklch(0 0 0/.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;scroll-padding-top:5rem}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;font-size:clamp(0.9rem,.85rem + .25vw,1rem);min-height:100dvh;transition:background var(--transition),color var(--transition)}
+input,button,select,textarea{font:inherit;color:inherit}
+img{display:block;max-width:100%}
+button{cursor:pointer;background:none;border:none}
+
+/* === LAYOUT === */
+.container{max-width:1160px;margin-inline:auto;padding-inline:clamp(1rem,3vw,2rem)}
+
+/* === HEADER === */
+.header{padding:clamp(1.5rem,4vw,2.5rem) 0 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--divider)}
+.brand{display:flex;align-items:center;gap:.75rem}
+.brand-icon{width:40px;height:40px;background:var(--primary);border-radius:var(--r-lg);display:flex;align-items:center;justify-content:center;color:var(--text-inv);flex-shrink:0}
+.brand h1{font-size:clamp(1.1rem,1rem+.5vw,1.4rem);font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.brand p{font-size:.8rem;color:var(--text-muted);font-weight:400}
+.header-actions{display:flex;gap:.5rem;align-items:center}
+.btn-icon{width:40px;height:40px;border-radius:var(--r-full);background:var(--surface-off);border:1px solid var(--border);color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.btn-icon:hover{background:var(--surface-off2);color:var(--text)}
+
+/* === TABS === */
+.tabs-wrapper{position:sticky;top:0;z-index:100;background:var(--bg);padding:.75rem 0;border-bottom:1px solid var(--divider)}
+.tabs{display:flex;gap:.25rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:.5rem 1.1rem;border-radius:var(--r-full);font-size:.85rem;font-weight:600;color:var(--text-muted);background:none;border:1px solid transparent;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;gap:.4rem}
+.tab-btn:hover{background:var(--surface-off);color:var(--text)}
+.tab-btn.active{background:var(--primary);color:var(--text-inv);border-color:var(--primary)}
+.tab-btn .tab-icon{font-size:1rem}
+
+/* === PANELS === */
+.panel{display:none;padding:clamp(1.5rem,3vw,2.5rem) 0}
+.panel.active{display:block}
+.panel-title{font-size:clamp(1.1rem,1rem+.5vw,1.35rem);font-weight:700;margin-bottom:1.5rem;color:var(--text);display:flex;align-items:center;gap:.5rem}
+.panel-title .icon{background:var(--primary-hl);color:var(--primary);width:32px;height:32px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+
+/* === FORM === */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem 1.25rem;margin-bottom:1.5rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-label{font-size:.82rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:.3rem}
+.input-wrap{position:relative}
+.input-wrap .prefix{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.85rem;pointer-events:none}
+.input-wrap input{padding-left:1.75rem}
+.form-input{width:100%;padding:.6rem .75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);font-size:.9rem;color:var(--text);transition:border-color var(--transition),box-shadow var(--transition)}
+.form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklch,var(--primary) 15%,transparent)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center}
+.hint{font-size:.75rem;color:var(--primary);font-weight:500;min-height:.9rem}
+.hint-warn{color:var(--warning)}
+
+/* Rate row with type selector */
+.rate-row{display:flex;gap:.5rem;align-items:stretch}
+.rate-row .form-input{flex:1}
+.rate-type-select{width:110px;flex-shrink:0;padding:.6rem .5rem;background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-md);font-size:.8rem;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all var(--transition)}
+.rate-type-select:focus{outline:none;border-color:var(--primary)}
+
+/* === BUTTONS === */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.4rem;border-radius:var(--r-md);font-size:.88rem;font-weight:600;transition:all var(--transition);border:1px solid transparent}
+.btn-primary{background:var(--primary);color:var(--text-inv);border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-h);border-color:var(--primary-h);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-secondary{background:var(--surface-off);color:var(--text);border-color:var(--border)}
+.btn-secondary:hover{background:var(--surface-off2)}
+.btn-danger{background:var(--error-hl);color:var(--error);border-color:transparent;font-size:.8rem;padding:.4rem .75rem}
+.btn-danger:hover{background:var(--error);color:white}
+.btn-ghost{background:none;border:1px solid var(--primary);color:var(--primary)}
+.btn-ghost:hover{background:var(--primary-hl)}
+.btn-sm{padding:.4rem .85rem;font-size:.8rem}
+
+/* === RESULTS / KPI CARDS === */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin:1.5rem 0}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.1rem 1.2rem;box-shadow:var(--shadow-sm);transition:box-shadow var(--transition)}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-label{font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem}
+.kpi-value{font-size:clamp(1.1rem,1rem+.5vw,1.4rem);font-weight:700;letter-spacing:-.02em;color:var(--text);line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi-card.accent-primary{border-top:3px solid var(--primary)}
+.kpi-card.accent-gold{border-top:3px solid var(--gold)}
+.kpi-card.accent-success{border-top:3px solid var(--success)}
+.kpi-card.accent-warn{border-top:3px solid var(--warning)}
+.kpi-card.accent-error{border-top:3px solid var(--error)}
+.kpi-sub{font-size:.72rem;color:var(--text-muted);margin-top:.25rem}
+.kpi-badge{display:inline-block;padding:.1rem .4rem;border-radius:var(--r-full);font-size:.7rem;font-weight:700;margin-top:.35rem}
+.badge-success{background:var(--success-hl);color:var(--success)}
+.badge-warn{background:var(--warning-hl);color:var(--warning)}
+.badge-error{background:var(--error-hl);color:var(--error)}
+
+/* === CHART === */
+.chart-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.25rem;margin-bottom:1.5rem;box-shadow:var(--shadow-sm)}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem}
+.chart-title{font-size:.85rem;font-weight:600;color:var(--text-muted)}
+.chart-canvas-wrap{height:320px;position:relative}
+
+/* === TABLE === */
+.table-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-sm)}
+.table-toolbar{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid var(--divider);flex-wrap:wrap;gap:.5rem}
+.table-title{font-size:.82rem;font-weight:600;color:var(--text-muted)}
+.table-scroll{overflow-x:auto;max-height:420px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{position:sticky;top:0;background:var(--surface-off);padding:.65rem .85rem;text-align:right;font-weight:600;font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;border-bottom:1px solid var(--border)}
+thead th:first-child{text-align:left}
+tbody tr{border-bottom:1px solid var(--divider);transition:background var(--transition)}
+tbody tr:hover{background:var(--surface-off)}
+tbody td{padding:.6rem .85rem;text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+tbody td:first-child{text-align:left;color:var(--text-muted)}
+tbody tr:last-child{border-bottom:none}
+
+/* === EXTRA PAYMENTS === */
+.extra-section{background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.25rem;margin-bottom:1.5rem}
+.extra-section-title{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.extra-section-desc{font-size:.78rem;color:var(--text-muted);margin-bottom:1rem}
+.payment-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:.85rem;margin-bottom:.75rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
+.payment-item .form-group{min-width:130px;flex:1}
+.payment-label{font-size:.75rem;font-weight:600;color:var(--text-muted);margin-bottom:.25rem;display:block}
+.payment-item input,.payment-item select{width:100%;padding:.5rem .65rem;background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-md);font-size:.83rem;color:var(--text);transition:border-color var(--transition)}
+.payment-item input:focus,.payment-item select:focus{outline:none;border-color:var(--primary)}
+.payment-item .description-input{flex:2;min-width:160px}
+
+/* === COMPARATOR === */
+.comparator-result{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:1.25rem;margin-top:1rem;box-shadow:var(--shadow-sm)}
+.verdict{background:linear-gradient(135deg,var(--primary-hl),var(--success-hl));border-radius:var(--r-lg);padding:1.1rem 1.25rem;margin-bottom:1.25rem;border:1px solid var(--primary-hl)}
+.verdict-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--primary);margin-bottom:.35rem}
+.verdict-text{font-size:1rem;font-weight:700;color:var(--text);line-height:1.4}
+.verdict-sub{font-size:.8rem;color:var(--text-muted);margin-top:.3rem}
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:560px){.scenario-grid{grid-template-columns:1fr}}
+.scenario-card{background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem}
+.scenario-card.winner{border-color:var(--primary);background:color-mix(in oklch,var(--primary) 6%,var(--surface))}
+.scenario-name{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.5rem}
+.scenario-val{font-size:1.2rem;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.scenario-sub{font-size:.75rem;color:var(--text-muted);margin-top:.2rem}
+
+/* === TOOLTIP === */
+.tooltip-trigger{display:inline-flex;align-items:center;cursor:help}
+.tooltip-trigger .tip-icon{width:14px;height:14px;border-radius:50%;background:var(--surface-off2);border:1px solid var(--border);color:var(--text-faint);font-size:.65rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:.3rem;transition:all var(--transition)}
+.tooltip-trigger:hover .tip-icon{background:var(--primary-hl);color:var(--primary);border-color:var(--primary)}
+.tooltip-trigger{position:relative}
+.tooltip-box{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:.6rem .75rem;font-size:.75rem;color:var(--text);width:220px;z-index:200;box-shadow:var(--shadow-md);line-height:1.5;font-weight:400;pointer-events:none}
+.tooltip-trigger:hover .tooltip-box{display:block}
+
+/* === TOGGLE === */
+.toggle-row{display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+.toggle-label{font-size:.8rem;font-weight:600;color:var(--text-muted)}
+.toggle-group{display:flex;background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-full);overflow:hidden}
+.toggle-option{padding:.35rem .85rem;font-size:.78rem;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all var(--transition);border:none;background:none}
+.toggle-option.active{background:var(--primary);color:white}
+
+/* === SECTION DIVIDER === */
+.section-sep{border:none;border-top:1px solid var(--divider);margin:1.75rem 0}
+
+/* === INFO BOX === */
+.info-box{background:var(--primary-hl);border:1px solid color-mix(in oklch,var(--primary) 20%,transparent);border-radius:var(--r-lg);padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.8rem;color:var(--primary-h);line-height:1.5}
+.info-box strong{font-weight:700}
+
+/* === FOOTER === */
+footer{margin-top:3rem;padding:1.5rem 0;border-top:1px solid var(--divider);text-align:center;font-size:.78rem;color:var(--text-muted)}
+footer a{color:var(--primary);text-decoration:none;font-weight:600}
+
+/* === RESPONSIVE === */
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .payment-item{flex-direction:column}
+  .tabs{gap:.15rem}
+  .tab-btn{padding:.45rem .85rem;font-size:.78rem}
+}
+@media(max-width:380px){.kpi-grid{grid-template-columns:1fr}}
+
+/* === UTILS === */
+.hidden{display:none!important}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mt-3{margin-top:1.5rem}
+.flex{display:flex}.gap-1{gap:.5rem}.items-center{align-items:center}.flex-wrap{flex-wrap:wrap}
+.text-success{color:var(--success)}.text-warn{color:var(--warning)}.text-error{color:var(--error)}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Simulador Financiero</h1>
+        <p>Créditos · Inversiones · Comparador — @manuelrarias</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" data-theme-toggle aria-label="Cambiar tema" title="Cambiar modo oscuro/claro">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tabs-wrapper">
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" onclick="showPanel(0)" role="tab"><span class="tab-icon">🏦</span>Crédito</button>
+      <button class="tab-btn" onclick="showPanel(1)" role="tab"><span class="tab-icon">⚡</span>Cuotas Extra</button>
+      <button class="tab-btn" onclick="showPanel(2)" role="tab"><span class="tab-icon">📈</span>Inversión</button>
+      <button class="tab-btn" onclick="showPanel(3)" role="tab"><span class="tab-icon">⚖️</span>Comparador</button>
+    </div>
+  </nav>
+
+  <!-- ===== PANEL 0: CRÉDITO ===== -->
+  <section class="panel active" id="panel-0" role="tabpanel">
+    <h2 class="panel-title"><span class="icon">🏦</span>Simulador de Crédito</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Monto del préstamo
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">El capital inicial que solicitas al banco o entidad financiera.</span></span>
+        </label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="loanAmount" class="form-input" value="174000000" min="1000" step="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Número de cuotas</label>
+        <input type="number" id="loanTerms" class="form-input" value="108" min="1" max="480" oninput="updateConv('loanTerms','yearsConv1')">
+        <span class="hint" id="yearsConv1"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa de interés
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box"><strong>Mensual (TM):</strong> tasa periódica mensual.<br><strong>Efectiva Anual (EA):</strong> se convierte a mensual usando (1+EA)^(1/12)-1.<br><strong>Nominal Anual (NA):</strong> se divide entre 12.</span></span>
+        </label>
+        <div class="rate-row">
+          <input type="number" id="interestRate" class="form-input" value="1.21" min="0.001" step="0.01" oninput="updateRateHint('interestRate','rateType1','rateHint1')">
+          <select id="rateType1" class="rate-type-select form-select" onchange="updateRateHint('interestRate','rateType1','rateHint1')">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="rateHint1"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de inicio</label>
+        <input type="date" id="startDate" class="form-input">
+      </div>
+    </div>
+
+    <div class="flex gap-1 flex-wrap">
+      <button class="btn btn-primary" onclick="calculateLoan()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Calcular
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV('loanTable','credito')">⬇ CSV</button>
+    </div>
+
+    <div id="loanResults" class="hidden">
+      <div class="kpi-grid">
+        <div class="kpi-card accent-primary">
+          <div class="kpi-label">Cuota mensual</div>
+          <div class="kpi-value" id="kpi-monthly">$0</div>
+        </div>
+        <div class="kpi-card accent-gold">
+          <div class="kpi-label">Total intereses
+            <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Suma total de intereses que pagarás durante toda la vida del crédito.</span></span>
+          </div>
+          <div class="kpi-value" id="kpi-totalInt">$0</div>
+        </div>
+        <div class="kpi-card accent-warn">
+          <div class="kpi-label">Total a pagar</div>
+          <div class="kpi-value" id="kpi-totalPay">$0</div>
+        </div>
+        <div class="kpi-card accent-error">
+          <div class="kpi-label">% en intereses
+            <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Porcentaje del total a pagar que corresponde a intereses. Entre más alto, más costoso el crédito.</span></span>
+          </div>
+          <div class="kpi-value" id="kpi-intPct">0%</div>
+          <div class="kpi-sub">del total pagado</div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <div class="chart-header">
+          <span class="chart-title">Capital vs. Intereses por período</span>
+          <div class="toggle-group">
+            <button class="toggle-option active" onclick="setLoanChartType('bar',this)">Barras</button>
+            <button class="toggle-option" onclick="setLoanChartType('balance',this)">Saldo</button>
+          </div>
+        </div>
+        <div class="chart-canvas-wrap"><canvas id="loanChart"></canvas></div>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <span class="table-title">Tabla de amortización</span>
+        </div>
+        <div class="table-scroll">
+          <table id="loanTable">
+            <thead><tr>
+              <th>Cuota</th><th>Fecha</th><th>Capital</th><th>Interés</th><th>Cuota total</th><th>Saldo</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 1: CUOTAS EXTRA ===== -->
+  <section class="panel" id="panel-1" role="tabpanel">
+    <h2 class="panel-title"><span class="icon">⚡</span>Cuotas Extraordinarias</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Monto del préstamo</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="loanAmount2" class="form-input" value="174000000" min="1000" step="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Número de cuotas</label>
+        <input type="number" id="loanTerms2" class="form-input" value="108" min="1" max="480" oninput="updateConv('loanTerms2','yearsConv2')">
+        <span class="hint" id="yearsConv2"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa de interés</label>
+        <div class="rate-row">
+          <input type="number" id="interestRate2" class="form-input" value="1.21" min="0.001" step="0.01" oninput="updateRateHint('interestRate2','rateType2','rateHint2')">
+          <select id="rateType2" class="rate-type-select form-select" onchange="updateRateHint('interestRate2','rateType2','rateHint2')">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="rateHint2"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de inicio</label>
+        <input type="date" id="startDate2" class="form-input">
+      </div>
+    </div>
+
+    <div class="extra-section">
+      <div class="extra-section-title">⚡ Cuotas Extraordinarias Recurrentes</div>
+      <div class="extra-section-desc">Pagos adicionales que se repiten cada cierto período. Reducen el saldo más rápido.</div>
+      <div id="extraPaymentsList"></div>
+      <button class="btn btn-secondary btn-sm mt-1" onclick="addExtraPayment()">+ Agregar cuota recurrente</button>
+    </div>
+
+    <div class="extra-section" style="margin-top:.75rem">
+      <div class="extra-section-title">🎯 Abonos Extraordinarios Únicos</div>
+      <div class="extra-section-desc">Pagos únicos (ej. liquidación, herencia). Se aplican en un mes específico del crédito.</div>
+      <div id="onetimeList"></div>
+      <button class="btn btn-secondary btn-sm mt-1" onclick="addOneTime()">+ Agregar abono único</button>
+    </div>
+
+    <div class="flex gap-1 flex-wrap mt-2">
+      <button class="btn btn-primary" onclick="calculateWithExtra()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Calcular con extras
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV('extraTable','cuotas_extra')">⬇ CSV</button>
+    </div>
+
+    <div id="extraResults" class="hidden">
+      <div class="kpi-grid">
+        <div class="kpi-card accent-success">
+          <div class="kpi-label">Ahorro en intereses</div>
+          <div class="kpi-value" id="kpi-intSaved">$0</div>
+          <div class="kpi-sub" id="kpi-intSavedPct"></div>
+        </div>
+        <div class="kpi-card accent-primary">
+          <div class="kpi-label">Meses ahorrados</div>
+          <div class="kpi-value" id="kpi-monthsSaved">0</div>
+          <div class="kpi-sub" id="kpi-monthsSavedStr"></div>
+        </div>
+        <div class="kpi-card accent-gold">
+          <div class="kpi-label">Nuevo total pagado</div>
+          <div class="kpi-value" id="kpi-newTotal">$0</div>
+        </div>
+        <div class="kpi-card accent-warn">
+          <div class="kpi-label">ROI de cuotas extra
+            <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Por cada peso extra pagado, ¿cuánto se ahorra en intereses? > 1 significa que es rentable hacer el pago extra.</span></span>
+          </div>
+          <div class="kpi-value" id="kpi-roi">0x</div>
+          <div class="kpi-sub">interés ahorrado / extra pagado</div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <div class="chart-header"><span class="chart-title">Saldo restante: normal vs. con cuotas extra</span></div>
+        <div class="chart-canvas-wrap"><canvas id="compChart"></canvas></div>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-toolbar"><span class="table-title">Tabla de amortización con cuotas extra</span></div>
+        <div class="table-scroll">
+          <table id="extraTable">
+            <thead><tr>
+              <th>Cuota</th><th>Fecha</th><th>Capital</th><th>Interés</th><th>Cuota normal</th><th>Pago extra</th><th>Total pagado</th><th>Saldo</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 2: INVERSIÓN ===== -->
+  <section class="panel" id="panel-2" role="tabpanel">
+    <h2 class="panel-title"><span class="icon">📈</span>Inversión Recurrente</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Aporte inicial</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="initInv" class="form-input" value="0" min="0" step="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Aporte mensual</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="monthlyInv" class="form-input" value="500000" min="0" step="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa de rendimiento
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Rendimiento esperado de la inversión. Puede ser mensual, EA o nominal anual.</span></span>
+        </label>
+        <div class="rate-row">
+          <input type="number" id="invRate" class="form-input" value="1.21" min="0.001" step="0.01" oninput="updateRateHint('invRate','invRateType','invRateHint')">
+          <select id="invRateType" class="rate-type-select form-select" onchange="updateRateHint('invRate','invRateType','invRateHint')">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="invRateHint"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Inflación anual esperada
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Tasa de inflación anual para calcular el retorno real (ajustado por inflación). Use 0 si no quiere ajuste.</span></span>
+        </label>
+        <div class="rate-row">
+          <input type="number" id="inflationRate" class="form-input" value="6" min="0" step="0.1">
+          <span style="display:flex;align-items:center;padding:0 .5rem;font-size:.8rem;color:var(--text-muted)">% anual</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Duración</label>
+        <div style="display:flex;gap:.5rem">
+          <input type="number" id="invPeriod" class="form-input" value="108" min="1" max="600" oninput="updateConv('invPeriod','invConv')">
+          <select id="invPeriodType" class="rate-type-select form-select" style="width:90px" onchange="updateConv('invPeriod','invConv')">
+            <option value="months">Meses</option>
+            <option value="years">Años</option>
+          </select>
+        </div>
+        <span class="hint" id="invConv"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Incremento anual del aporte
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Porcentaje en que aumenta el aporte mensual cada año. Útil si planeas incrementar aportes con el salario.</span></span>
+        </label>
+        <div class="rate-row">
+          <input type="number" id="invIncrement" class="form-input" value="0" min="0" step="0.5">
+          <span style="display:flex;align-items:center;padding:0 .5rem;font-size:.8rem;color:var(--text-muted)">% /año</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de inicio</label>
+        <input type="date" id="invStartDate" class="form-input">
+      </div>
+    </div>
+
+    <div class="flex gap-1 flex-wrap">
+      <button class="btn btn-primary" onclick="calculateInvestment()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Calcular
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV('invTable','inversion')">⬇ CSV</button>
+    </div>
+
+    <div id="invResults" class="hidden">
+      <div class="kpi-grid">
+        <div class="kpi-card accent-primary">
+          <div class="kpi-label">Capital final</div>
+          <div class="kpi-value" id="kpi-invFinal">$0</div>
+        </div>
+        <div class="kpi-card accent-gold">
+          <div class="kpi-label">Total aportado</div>
+          <div class="kpi-value" id="kpi-invContrib">$0</div>
+        </div>
+        <div class="kpi-card accent-success">
+          <div class="kpi-label">Intereses ganados</div>
+          <div class="kpi-value" id="kpi-invEarnings">$0</div>
+          <div class="kpi-sub" id="kpi-invEarningsPct"></div>
+        </div>
+        <div class="kpi-card accent-warn">
+          <div class="kpi-label">Capital real (ajust. inflación)
+            <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Valor del capital final expresado en pesos de hoy, descontando el efecto de la inflación acumulada.</span></span>
+          </div>
+          <div class="kpi-value" id="kpi-invReal">$0</div>
+          <div class="kpi-sub" id="kpi-realNote"></div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <div class="chart-header"><span class="chart-title">Crecimiento de la inversión</span></div>
+        <div class="chart-canvas-wrap"><canvas id="invChart"></canvas></div>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-toolbar"><span class="table-title">Tabla de inversión recurrente</span></div>
+        <div class="table-scroll">
+          <table id="invTable">
+            <thead><tr>
+              <th>Mes</th><th>Fecha</th><th>Aporte</th><th>Intereses</th><th>Total aportado</th><th>Capital acumulado</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL 3: COMPARADOR ===== -->
+  <section class="panel" id="panel-3" role="tabpanel">
+    <h2 class="panel-title"><span class="icon">⚖️</span>Comparador: Pagar Deuda vs. Invertir</h2>
+
+    <div class="info-box">
+      <strong>¿Cuándo conviene pagar la deuda antes y cuándo invertir?</strong><br>
+      Si la tasa del crédito es mayor que el rendimiento de la inversión, conviene amortizar la deuda. Si la inversión rinde más, puede ser mejor invertir. Esta herramienta lo calcula con números concretos.
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Saldo actual del crédito</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="cmpDebt" class="form-input" value="174000000" min="1000" step="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cuotas restantes del crédito</label>
+        <input type="number" id="cmpTerms" class="form-input" value="108" min="1" max="480" oninput="updateConv('cmpTerms','cmpConv1')">
+        <span class="hint" id="cmpConv1"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa del crédito</label>
+        <div class="rate-row">
+          <input type="number" id="cmpDebtRate" class="form-input" value="1.21" min="0.001" step="0.01" oninput="updateRateHint('cmpDebtRate','cmpDebtRateType','cmpDebtRateHint')">
+          <select id="cmpDebtRateType" class="rate-type-select form-select" onchange="updateRateHint('cmpDebtRate','cmpDebtRateType','cmpDebtRateHint')">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="cmpDebtRateHint"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa de rendimiento inversión</label>
+        <div class="rate-row">
+          <input type="number" id="cmpInvRate" class="form-input" value="1.5" min="0.001" step="0.01" oninput="updateRateHint('cmpInvRate','cmpInvRateType','cmpInvRateHint')">
+          <select id="cmpInvRateType" class="rate-type-select form-select" onchange="updateRateHint('cmpInvRate','cmpInvRateType','cmpInvRateHint')">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="cmpInvRateHint"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monto extra disponible / mes
+          <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Dinero adicional que tienes cada mes, más allá de la cuota mínima del crédito. Este es el monto que decidirás entre pagar al crédito o invertir.</span></span>
+        </label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" id="cmpExtra" class="form-input" value="500000" min="1000" step="1000">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="calculateComparator()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Comparar escenarios
+    </button>
+
+    <div id="cmpResults" class="hidden">
+      <div class="kpi-grid mt-2">
+        <div class="kpi-card accent-primary">
+          <div class="kpi-label">Escenario A: Pagar deuda</div>
+          <div class="kpi-value" id="kpi-cmpDebtSave">$0</div>
+          <div class="kpi-sub">Ahorro total en intereses</div>
+        </div>
+        <div class="kpi-card accent-success">
+          <div class="kpi-label">Escenario B: Invertir</div>
+          <div class="kpi-value" id="kpi-cmpInvGain">$0</div>
+          <div class="kpi-sub">Ganancia neta en inversión</div>
+        </div>
+        <div class="kpi-card accent-gold">
+          <div class="kpi-label">Diferencia</div>
+          <div class="kpi-value" id="kpi-cmpDiff">$0</div>
+          <div class="kpi-sub" id="kpi-cmpDiffDir"></div>
+        </div>
+        <div class="kpi-card accent-warn">
+          <div class="kpi-label">Tiempo hasta liberarse</div>
+          <div class="kpi-value" id="kpi-cmpFreedom">-</div>
+          <div class="kpi-sub">en escenario A</div>
+        </div>
+      </div>
+
+      <div id="cmpVerdict" class="comparator-result">
+        <div class="verdict">
+          <div class="verdict-title">📊 Veredicto financiero</div>
+          <div class="verdict-text" id="verdictText">—</div>
+          <div class="verdict-sub" id="verdictSub">—</div>
+        </div>
+        <div class="scenario-grid">
+          <div id="scenarioA" class="scenario-card">
+            <div class="scenario-name">🏦 Escenario A — Pagar deuda primero</div>
+            <div class="scenario-val" id="scA-val">$0</div>
+            <div class="scenario-sub" id="scA-sub">patrimonio neto al final</div>
+          </div>
+          <div id="scenarioB" class="scenario-card">
+            <div class="scenario-name">📈 Escenario B — Invertir mensualmente</div>
+            <div class="scenario-val" id="scB-val">$0</div>
+            <div class="scenario-sub" id="scB-sub">patrimonio neto al final</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <div class="chart-header"><span class="chart-title">Patrimonio neto a lo largo del tiempo</span></div>
+        <div class="chart-canvas-wrap"><canvas id="cmpChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  <div class="container">
+    <p>© 2026 Simulador Financiero Personal ·
+      <a href="https://wa.me/573128816469" target="_blank" rel="noopener">WhatsApp</a> ·
+      <a href="mailto:alucard8@gmail.com">Correo</a>
+    </p>
+    <p style="margin-top:.35rem;color:var(--text-faint)">Los cálculos son orientativos. Consulta a un asesor financiero.</p>
+  </div>
+</footer>
+
+<script>
+// =====================================================
+// THEME TOGGLE
+// =====================================================
+(function(){
+  const btn=document.querySelector('[data-theme-toggle]');
+  const root=document.documentElement;
+  let d=matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  root.setAttribute('data-theme',d);
+  updateThemeIcon(d);
+  btn&&btn.addEventListener('click',()=>{
+    d=d==='dark'?'light':'dark';
+    root.setAttribute('data-theme',d);
+    updateThemeIcon(d);
+    Object.values(charts).forEach(c=>{if(c)updateChartTheme(c)});
+  });
+  function updateThemeIcon(t){
+    if(!btn)return;
+    btn.innerHTML=t==='dark'
+      ?'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+})();
+
+// =====================================================
+// STATE
+// =====================================================
+let charts={};
+let _loanSchedule=null;
+let _loanMonthlyPay=0;
+
+// =====================================================
+// HELPERS
+// =====================================================
+function getMonthlyRate(inputId,typeId){
+  const v=parseFloat(document.getElementById(inputId).value)/100;
+  const t=document.getElementById(typeId).value;
+  if(t==='ea') return Math.pow(1+v,1/12)-1;
+  if(t==='nominal') return v/12;
+  return v; // monthly
+}
+
+function toMonthly(val,type){
+  const v=val/100;
+  if(type==='ea') return Math.pow(1+v,1/12)-1;
+  if(type==='nominal') return v/12;
+  return v;
+}
+
+function updateRateHint(inputId,typeId,hintId){
+  const raw=parseFloat(document.getElementById(inputId).value);
+  const t=document.getElementById(typeId).value;
+  const hint=document.getElementById(hintId);
+  if(isNaN(raw)){hint.textContent='';return;}
+  const v=raw/100;
+  if(t==='monthly'){
+    const ea=(Math.pow(1+v,12)-1)*100;
+    hint.textContent=`≈ ${ea.toFixed(2)}% EA`;
+  } else if(t==='ea'){
+    const monthly=(Math.pow(1+v,1/12)-1)*100;
+    hint.textContent=`≈ ${monthly.toFixed(4)}% mensual`;
+  } else {
+    const monthly=v/12*100;
+    hint.textContent=`≈ ${monthly.toFixed(4)}% mensual`;
+  }
+}
+
+function updateConv(inputId,hintId){
+  const v=parseInt(document.getElementById(inputId).value);
+  const hint=document.getElementById(hintId);
+  if(!hint)return;
+  if(isNaN(v)||v<=0){hint.textContent='';return;}
+  const type=inputId==='invPeriod'?document.getElementById('invPeriodType').value:'months';
+  const months=type==='years'?v*12:v;
+  const yrs=Math.floor(months/12), ms=months%12;
+  hint.textContent=yrs>0&&ms>0?`${yrs} año${yrs>1?'s':''} y ${ms} mes${ms>1?'es':''}`
+    :yrs>0?`${yrs} año${yrs>1?'s':''}`:`${ms} mes${ms>1?'es':''}`;
+}
+
+function formatCOP(n){
+  if(isNaN(n))return '$0';
+  const abs=Math.abs(n);
+  const s='$'+(abs>=1e9?(abs/1e9).toFixed(2)+'B':abs>=1e6?(abs/1e6).toFixed(2)+'M':Math.round(abs).toLocaleString('es-CO'));
+  return n<0?'-'+s:s;
+}
+
+function formatNum(n){return isNaN(n)?'0':Math.round(n).toLocaleString('es-CO');}
+
+function fmtDate(d){
+  return d.toLocaleDateString('es-CO',{year:'numeric',month:'short'});
+}
+
+function addMonths(dateStr,n){
+  const d=new Date(dateStr+'T12:00:00');
+  d.setMonth(d.getMonth()+n);
+  return fmtDate(d);
+}
+
+function animateValue(el,target,prefix='',suffix=''){
+  if(!el)return;
+  const start=0,duration=600,steps=24;
+  let step=0;
+  const inc=target/steps;
+  const timer=setInterval(()=>{
+    step++;
+    const cur=step>=steps?target:inc*step;
+    el.textContent=prefix+Math.round(cur).toLocaleString('es-CO')+suffix;
+    if(step>=steps)clearInterval(timer);
+  },duration/steps);
+}
+
+// Chart theme colors
+function getChartColors(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  return{
+    text:isDark?'#cdccca':'#28251d',
+    grid:isDark?'#262523':'#dcd9d5',
+    capital:isDark?'#4f98a3':'#01696f',
+    interest:isDark?'#e8af34':'#d19900',
+    extra:isDark?'#6daa45':'#437a22',
+    compare:isDark?'#bb653b':'#964219',
+    bg:isDark?'#1c1b19':'#f9f8f5'
+  };
+}
+
+function updateChartTheme(chart){
+  const c=getChartColors();
+  if(chart.options.scales){
+    ['x','y','y1'].forEach(ax=>{
+      if(chart.options.scales[ax]){
+        if(chart.options.scales[ax].ticks)chart.options.scales[ax].ticks.color=c.text;
+        if(chart.options.scales[ax].grid)chart.options.scales[ax].grid.color=c.grid;
+      }
+    });
+  }
+  if(chart.options.plugins?.legend?.labels)chart.options.plugins.legend.labels.color=c.text;
+  chart.update();
+}
+
+function commonScaleOpts(){
+  const c=getChartColors();
+  return{
+    ticks:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:11}},
+    grid:{color:c.grid}
+  };
+}
+
+// =====================================================
+// PANEL SWITCH
+// =====================================================
+function showPanel(idx){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+
+// =====================================================
+// PANEL 0 — CRÉDITO
+// =====================================================
+let loanChartMode='bar';
+function setLoanChartType(type,btn){
+  loanChartMode=type;
+  document.querySelectorAll('#panel-0 .toggle-option').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(_loanSchedule)renderLoanChart(_loanSchedule);
+}
+
+function calculateLoan(){
+  const principal=parseFloat(document.getElementById('loanAmount').value);
+  const terms=parseInt(document.getElementById('loanTerms').value);
+  const monthlyRate=getMonthlyRate('interestRate','rateType1');
+  const startDate=document.getElementById('startDate').value;
+  if(!principal||!terms||isNaN(monthlyRate)||!startDate){alert('Completa todos los campos');return;}
+
+  const pmt=principal*(monthlyRate*Math.pow(1+monthlyRate,terms))/(Math.pow(1+monthlyRate,terms)-1);
+  _loanMonthlyPay=pmt;
+  let balance=principal, totalInt=0;
+  const schedule=[];
+
+  for(let m=1;m<=terms;m++){
+    const intP=balance*monthlyRate;
+    const capP=pmt-intP;
+    balance=Math.max(0,balance-capP);
+    totalInt+=intP;
+    schedule.push({month:m,date:addMonths(startDate,m),capital:capP,interest:intP,payment:pmt,balance});
+  }
+  _loanSchedule=schedule;
+
+  const totalPay=principal+totalInt;
+  const intPct=(totalInt/totalPay*100).toFixed(1);
+
+  document.getElementById('kpi-monthly').textContent=formatCOP(pmt);
+  document.getElementById('kpi-totalInt').textContent=formatCOP(totalInt);
+  document.getElementById('kpi-totalPay').textContent=formatCOP(totalPay);
+  document.getElementById('kpi-intPct').textContent=intPct+'%';
+
+  renderLoanTable(schedule);
+  renderLoanChart(schedule);
+  document.getElementById('loanResults').classList.remove('hidden');
+}
+
+function renderLoanChart(schedule){
+  const c=getChartColors();
+  if(charts.loan){charts.loan.destroy();delete charts.loan;}
+  const ctx=document.getElementById('loanChart').getContext('2d');
+  const STRIDE=Math.max(1,Math.floor(schedule.length/60));
+  const data=schedule.filter((_,i)=>i%STRIDE===0||i===schedule.length-1);
+  const labels=data.map(r=>r.date);
+
+  if(loanChartMode==='balance'){
+    charts.loan=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[{
+        label:'Saldo restante',
+        data:data.map(r=>r.balance),
+        borderColor:c.capital,fill:true,
+        backgroundColor:c.capital+'22',tension:.35,pointRadius:0,borderWidth:2
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        scales:{x:{...commonScaleOpts()},y:{...commonScaleOpts(),ticks:{...commonScaleOpts().ticks,callback:v=>formatCOP(v)}}},
+        plugins:{legend:{labels:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:12}}}}}
+    });
+  } else {
+    charts.loan=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[
+        {label:'Capital',data:data.map(r=>r.capital),backgroundColor:c.capital+'cc',stack:'s'},
+        {label:'Interés',data:data.map(r=>r.interest),backgroundColor:c.interest+'cc',stack:'s'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+        scales:{x:{...commonScaleOpts(),stacked:true},y:{...commonScaleOpts(),stacked:true,ticks:{...commonScaleOpts().ticks,callback:v=>formatCOP(v)}}},
+        plugins:{legend:{labels:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:12}}}}}
+    });
+  }
+}
+
+function renderLoanTable(schedule){
+  const tbody=document.querySelector('#loanTable tbody');
+  tbody.innerHTML='';
+  schedule.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.month}</td><td>${r.date}</td><td>${formatCOP(r.capital)}</td><td>${formatCOP(r.interest)}</td><td>${formatCOP(r.payment)}</td><td>${formatCOP(r.balance)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// =====================================================
+// PANEL 1 — CUOTAS EXTRA
+// =====================================================
+function addExtraPayment(amount=null,frequency='',startMonth=null,customFreq=null){
+  const list=document.getElementById('extraPaymentsList');
+  const div=document.createElement('div');
+  div.className='payment-item';
+  div.innerHTML=`
+    <div class="form-group"><label class="payment-label">Monto ($)</label>
+      <input type="number" placeholder="Ej: 500000" min="0" step="1000" value="${amount||''}">
+    </div>
+    <div class="form-group"><label class="payment-label">Frecuencia</label>
+      <select onchange="handleFreqChange(this)">
+        <option value="">— Seleccionar —</option>
+        <option value="monthly" ${frequency==='monthly'?'selected':''}>Mensual</option>
+        <option value="bimonthly" ${frequency==='bimonthly'?'selected':''}>Bimestral</option>
+        <option value="quarterly" ${frequency==='quarterly'?'selected':''}>Trimestral</option>
+        <option value="semiannual" ${frequency==='semiannual'?'selected':''}>Semestral</option>
+        <option value="annual" ${frequency==='annual'?'selected':''}>Anual</option>
+        <option value="custom" ${frequency==='custom'?'selected':''}>Personalizado</option>
+      </select>
+    </div>
+    <div class="form-group start-month-group" style="display:none"><label class="payment-label">Mes inicio (1-12)</label>
+      <input type="number" class="start-month" placeholder="Ej: 6" min="1" max="12" value="${startMonth||''}">
+    </div>
+    <div class="form-group custom-freq-group" style="display:none"><label class="payment-label">Cada X meses</label>
+      <input type="number" class="custom-freq" placeholder="Ej: 4" min="1" max="48" value="${customFreq||''}">
+    </div>
+    <div class="form-group description-input"><label class="payment-label">Descripción</label>
+      <input type="text" placeholder="Prima de junio...">
+    </div>
+    <div style="display:flex;align-items:flex-end"><button class="btn btn-danger" onclick="this.closest('.payment-item').remove()">✕</button></div>
+  `;
+  list.appendChild(div);
+  handleFreqChange(div.querySelector('select'));
+}
+
+function handleFreqChange(sel){
+  const item=sel.closest('.payment-item');
+  const smg=item.querySelector('.start-month-group');
+  const cfg=item.querySelector('.custom-freq-group');
+  const v=sel.value;
+  smg.style.display=['bimonthly','quarterly','semiannual','annual','custom'].includes(v)?'':'none';
+  cfg.style.display=v==='custom'?'':'none';
+}
+
+function addOneTime(month=null,amount=null){
+  const list=document.getElementById('onetimeList');
+  const div=document.createElement('div');
+  div.className='payment-item';
+  div.innerHTML=`
+    <div class="form-group"><label class="payment-label">Mes del abono (Nº cuota)</label>
+      <input type="number" placeholder="Ej: 12" min="1" max="480" value="${month||''}">
+    </div>
+    <div class="form-group"><label class="payment-label">Monto ($)</label>
+      <input type="number" placeholder="Ej: 10000000" min="0" step="1000" value="${amount||''}">
+    </div>
+    <div class="form-group description-input"><label class="payment-label">Descripción</label>
+      <input type="text" placeholder="Liquidación, herencia...">
+    </div>
+    <div style="display:flex;align-items:flex-end"><button class="btn btn-danger" onclick="this.closest('.payment-item').remove()">✕</button></div>
+  `;
+  list.appendChild(div);
+}
+
+function getRecurringPaymentsForMonth(payments,month){
+  let total=0;
+  payments.forEach(p=>{
+    const amt=parseFloat(p.amount)||0;
+    const freq=p.frequency;
+    const start=parseInt(p.startMonth)||1;
+    const cf=parseInt(p.customFreq)||1;
+    if(!amt||!freq)return;
+    let hit=false;
+    switch(freq){
+      case 'monthly':hit=true;break;
+      case 'bimonthly':hit=month>=start&&(month-start)%2===0;break;
+      case 'quarterly':hit=month>=start&&(month-start)%3===0;break;
+      case 'semiannual':hit=month>=start&&(month-start)%6===0;break;
+      case 'annual':hit=month>=start&&(month-start)%12===0;break;
+      case 'custom':hit=month>=start&&(month-start)%cf===0;break;
+    }
+    if(hit)total+=amt;
+  });
+  return total;
+}
+
+function calculateWithExtra(){
+  const principal=parseFloat(document.getElementById('loanAmount2').value);
+  const terms=parseInt(document.getElementById('loanTerms2').value);
+  const monthlyRate=getMonthlyRate('interestRate2','rateType2');
+  const startDate=document.getElementById('startDate2').value;
+  if(!principal||!terms||isNaN(monthlyRate)||!startDate){alert('Completa todos los campos');return;}
+
+  const pmt=principal*(monthlyRate*Math.pow(1+monthlyRate,terms))/(Math.pow(1+monthlyRate,terms)-1);
+
+  // Read recurring payments
+  const recurringPayments=[];
+  document.querySelectorAll('#extraPaymentsList .payment-item').forEach(item=>{
+    const inputs=item.querySelectorAll('input');
+    const sel=item.querySelector('select');
+    recurringPayments.push({
+      amount:inputs[0].value,frequency:sel.value,
+      startMonth:item.querySelector('.start-month')?.value,
+      customFreq:item.querySelector('.custom-freq')?.value
+    });
+  });
+
+  // Read one-time payments
+  const oneTimePayments={};
+  document.querySelectorAll('#onetimeList .payment-item').forEach(item=>{
+    const inputs=item.querySelectorAll('input');
+    const m=parseInt(inputs[0].value);
+    const a=parseFloat(inputs[1].value)||0;
+    if(m&&a)oneTimePayments[m]=(oneTimePayments[m]||0)+a;
+  });
+
+  // Original schedule (no extras)
+  let balOrig=principal,totalIntOrig=0;
+  const origSchedule=[];
+  for(let m=1;m<=terms;m++){
+    const intP=balOrig*monthlyRate;
+    const capP=pmt-intP;
+    balOrig=Math.max(0,balOrig-capP);
+    totalIntOrig+=intP;
+    origSchedule.push({month:m,date:addMonths(startDate,m),balance:balOrig});
+  }
+
+  // Extra schedule
+  let balance=principal,totalIntExtra=0,totalExtraPaid=0;
+  const extraSchedule=[];
+  let actualTerms=terms;
+
+  for(let m=1;m<=terms;m++){
+    if(balance<=0)break;
+    const intP=balance*monthlyRate;
+    const capP=Math.min(pmt-intP,balance);
+    let extra=getRecurringPaymentsForMonth(recurringPayments,m)+(oneTimePayments[m]||0);
+    extra=Math.min(extra,balance-capP);
+    balance=Math.max(0,balance-capP-extra);
+    totalIntExtra+=intP;
+    totalExtraPaid+=extra;
+    actualTerms=m;
+    extraSchedule.push({
+      month:m,date:addMonths(startDate,m),
+      capital:capP,interest:intP,payment:pmt,extra,total:pmt+extra,balance
+    });
+    if(balance<=1)break;
+  }
+
+  const monthsSaved=terms-actualTerms;
+  const intSaved=totalIntOrig-totalIntExtra;
+  const newTotal=principal+totalIntExtra+totalExtraPaid;
+  const roi=totalExtraPaid>0?intSaved/totalExtraPaid:0;
+
+  document.getElementById('kpi-intSaved').textContent=formatCOP(intSaved);
+  document.getElementById('kpi-intSavedPct').textContent=((intSaved/totalIntOrig)*100).toFixed(1)+'% menos intereses';
+  document.getElementById('kpi-monthsSaved').textContent=monthsSaved;
+  document.getElementById('kpi-monthsSavedStr').textContent=monthsSaved>0?`Terminas ${monthsSaved} meses antes`:'Sin cambio en plazo';
+  document.getElementById('kpi-newTotal').textContent=formatCOP(newTotal);
+  document.getElementById('kpi-roi').textContent=roi.toFixed(2)+'x';
+
+  renderExtraTable(extraSchedule);
+  renderCompChart(origSchedule,extraSchedule);
+  document.getElementById('extraResults').classList.remove('hidden');
+}
+
+function renderCompChart(orig,extra){
+  const c=getChartColors();
+  if(charts.comp){charts.comp.destroy();delete charts.comp;}
+  const ctx=document.getElementById('compChart').getContext('2d');
+  const stride=Math.max(1,Math.floor(orig.length/60));
+  const oData=orig.filter((_,i)=>i%stride===0||i===orig.length-1);
+  const eData=[];
+  const maxM=orig.length;
+  for(let i=0;i<oData.length;i++){
+    const m=oData[i].month;
+    const found=extra.find(r=>r.month===m);
+    eData.push(found?found.balance:0);
+  }
+  charts.comp=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:oData.map(r=>r.date),
+      datasets:[
+        {label:'Saldo normal',data:oData.map(r=>r.balance),borderColor:c.interest,fill:false,tension:.35,pointRadius:0,borderWidth:2},
+        {label:'Saldo con extras',data:eData,borderColor:c.extra,fill:true,backgroundColor:c.extra+'22',tension:.35,pointRadius:0,borderWidth:2}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{...commonScaleOpts()},y:{...commonScaleOpts(),ticks:{...commonScaleOpts().ticks,callback:v=>formatCOP(v)}}},
+      plugins:{legend:{labels:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:12}}}}}
+  });
+}
+
+function renderExtraTable(schedule){
+  const tbody=document.querySelector('#extraTable tbody');
+  tbody.innerHTML='';
+  schedule.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.month}</td><td>${r.date}</td><td>${formatCOP(r.capital)}</td><td>${formatCOP(r.interest)}</td><td>${formatCOP(r.payment)}</td><td>${r.extra>0?'<span class="text-success">'+formatCOP(r.extra)+'</span>':'—'}</td><td>${formatCOP(r.total)}</td><td>${formatCOP(r.balance)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// =====================================================
+// PANEL 2 — INVERSIÓN
+// =====================================================
+function calculateInvestment(){
+  let initInv=parseFloat(document.getElementById('initInv').value)||0;
+  let monthly=parseFloat(document.getElementById('monthlyInv').value)||0;
+  const monthlyRate=getMonthlyRate('invRate','invRateType');
+  const inflation=parseFloat(document.getElementById('inflationRate').value)||0;
+  const periodType=document.getElementById('invPeriodType').value;
+  let periodVal=parseInt(document.getElementById('invPeriod').value);
+  const startDate=document.getElementById('invStartDate').value;
+  const annualIncrement=parseFloat(document.getElementById('invIncrement').value)||0;
+
+  if((initInv===0&&monthly===0)||isNaN(monthlyRate)||!periodVal||!startDate){
+    alert('Completa todos los campos');return;
+  }
+  const totalMonths=periodType==='years'?periodVal*12:periodVal;
+  const monthlyInflation=Math.pow(1+inflation/100,1/12)-1;
+  const monthlyIncrement=Math.pow(1+annualIncrement/100,1/12)-1;
+
+  let balance=initInv,totalContrib=initInv;
+  let mc=monthly;
+  const schedule=[];
+
+  for(let m=1;m<=totalMonths;m++){
+    const intE=balance*monthlyRate;
+    balance+=intE+mc;
+    totalContrib+=mc;
+    schedule.push({month:m,date:addMonths(startDate,m),contribution:mc,interest:intE,totalContrib,balance});
+    mc*=(1+monthlyIncrement);
+  }
+
+  const earnings=balance-totalContrib;
+  const inflationFactor=Math.pow(1+monthlyInflation,totalMonths);
+  const realValue=balance/inflationFactor;
+  const realReturn=((realValue/totalContrib-1)*100).toFixed(1);
+
+  document.getElementById('kpi-invFinal').textContent=formatCOP(balance);
+  document.getElementById('kpi-invContrib').textContent=formatCOP(totalContrib);
+  document.getElementById('kpi-invEarnings').textContent=formatCOP(earnings);
+  document.getElementById('kpi-invEarningsPct').textContent=((earnings/totalContrib)*100).toFixed(1)+'% de retorno sobre aportes';
+  document.getElementById('kpi-invReal').textContent=formatCOP(realValue);
+  document.getElementById('kpi-realNote').textContent=inflation>0?`Retorno real: ${realReal(balance,totalContrib,inflation,totalMonths)}%`:'(sin ajuste de inflación)';
+
+  renderInvTable(schedule);
+  renderInvChart(schedule);
+  document.getElementById('invResults').classList.remove('hidden');
+}
+
+function realReal(finalV,contrib,infAnn,months){
+  const inflFactor=Math.pow(1+infAnn/100,months/12);
+  const real=(finalV/inflFactor-contrib)/contrib*100;
+  return real.toFixed(1);
+}
+
+function renderInvChart(schedule){
+  const c=getChartColors();
+  if(charts.inv){charts.inv.destroy();delete charts.inv;}
+  const ctx=document.getElementById('invChart').getContext('2d');
+  const stride=Math.max(1,Math.floor(schedule.length/60));
+  const data=schedule.filter((_,i)=>i%stride===0||i===schedule.length-1);
+  charts.inv=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:data.map(r=>r.date),
+      datasets:[
+        {label:'Total aportado',data:data.map(r=>r.totalContrib),borderColor:c.interest,fill:true,backgroundColor:c.interest+'33',tension:.35,pointRadius:0,borderWidth:2},
+        {label:'Capital acumulado',data:data.map(r=>r.balance),borderColor:c.extra,fill:true,backgroundColor:c.extra+'22',tension:.35,pointRadius:0,borderWidth:2}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{x:{...commonScaleOpts()},y:{...commonScaleOpts(),ticks:{...commonScaleOpts().ticks,callback:v=>formatCOP(v)}}},
+      plugins:{legend:{labels:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:12}}}}}
+  });
+}
+
+function renderInvTable(schedule){
+  const tbody=document.querySelector('#invTable tbody');
+  tbody.innerHTML='';
+  schedule.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.month}</td><td>${r.date}</td><td>${formatCOP(r.contribution)}</td><td>${formatCOP(r.interest)}</td><td>${formatCOP(r.totalContrib)}</td><td>${formatCOP(r.balance)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// =====================================================
+// PANEL 3 — COMPARADOR
+// =====================================================
+function calculateComparator(){
+  const debt=parseFloat(document.getElementById('cmpDebt').value);
+  const terms=parseInt(document.getElementById('cmpTerms').value);
+  const debtRate=getMonthlyRate('cmpDebtRate','cmpDebtRateType');
+  const invRate=getMonthlyRate('cmpInvRate','cmpInvRateType');
+  const extra=parseFloat(document.getElementById('cmpExtra').value);
+
+  if(!debt||!terms||isNaN(debtRate)||isNaN(invRate)||!extra){alert('Completa todos los campos');return;}
+
+  const pmt=debt*(debtRate*Math.pow(1+debtRate,terms))/(Math.pow(1+debtRate,terms)-1);
+
+  // ---- ESCENARIO A: Pagar deuda antes ----
+  // Each month pay pmt + extra to debt
+  let balDebtA=debt, totalIntA=0, totalExtraA=0, fredomMonth=terms;
+  const netA=[]; // patrimony = -remaining_debt_value
+  for(let m=1;m<=terms;m++){
+    if(balDebtA<=0){netA.push(0);continue;}
+    const intP=balDebtA*debtRate;
+    const capP=Math.min(pmt-intP,balDebtA);
+    let ex=Math.min(extra,balDebtA-capP);
+    balDebtA=Math.max(0,balDebtA-capP-ex);
+    totalIntA+=intP;
+    totalExtraA+=ex;
+    netA.push(-balDebtA); // net worth = negative remaining debt
+    if(balDebtA<=1){fredomMonth=m;break;}
+  }
+  // After debt paid, invest the extra
+  let invAfterDebt=0;
+  const totalMonths=terms;
+  for(let m=fredomMonth+1;m<=totalMonths;m++){
+    invAfterDebt+=extra+pmt;
+    invAfterDebt*=(1+invRate);
+  }
+  const finalNetA=invAfterDebt;
+
+  // ---- ESCENARIO B: Solo pagar cuota mínima + invertir extra ----
+  let balDebtB=debt, totalIntB=0, invB=0;
+  const netB=[];
+  for(let m=1;m<=terms;m++){
+    const intP=balDebtB*debtRate;
+    const capP=pmt-intP;
+    balDebtB=Math.max(0,balDebtB-capP);
+    totalIntB+=intP;
+    invB=(invB+extra)*(1+invRate);
+    netB.push(invB-balDebtB); // net worth = investment - remaining debt
+  }
+  const finalNetB=invB;
+
+  const debtSaving=totalIntB-totalIntA;
+  const invGainB=invB-extra*terms;
+  const diff=Math.abs(finalNetB-finalNetA);
+  const aWins=finalNetA>=finalNetB;
+
+  document.getElementById('kpi-cmpDebtSave').textContent=formatCOP(debtSaving);
+  document.getElementById('kpi-cmpInvGain').textContent=formatCOP(invGainB);
+  document.getElementById('kpi-cmpDiff').textContent=formatCOP(diff);
+  document.getElementById('kpi-cmpDiffDir').textContent=aWins?'Escenario A es mejor':'Escenario B es mejor';
+  document.getElementById('kpi-cmpFreedom').textContent=fredomMonth+' meses';
+
+  document.getElementById('scA-val').textContent=formatCOP(finalNetA);
+  document.getElementById('scA-sub').textContent='patrimonio al final del período';
+  document.getElementById('scB-val').textContent=formatCOP(finalNetB);
+  document.getElementById('scB-sub').textContent='inversión acumulada (deuda = $0)';
+
+  document.getElementById('scenarioA').classList.toggle('winner',aWins);
+  document.getElementById('scenarioB').classList.toggle('winner',!aWins);
+
+  const debtEA=((Math.pow(1+debtRate,12)-1)*100).toFixed(2);
+  const invEA=((Math.pow(1+invRate,12)-1)*100).toFixed(2);
+
+  if(aWins){
+    document.getElementById('verdictText').textContent=`Conviene más pagar la deuda antes 🏦`;
+    document.getElementById('verdictSub').textContent=`La tasa del crédito (${debtEA}% EA) supera el rendimiento de la inversión (${invEA}% EA). Amortizar más rápido genera un mayor beneficio neto.`;
+  } else {
+    document.getElementById('verdictText').textContent=`Conviene más invertir el dinero extra 📈`;
+    document.getElementById('verdictSub').textContent=`El rendimiento de la inversión (${invEA}% EA) supera el costo del crédito (${debtEA}% EA). Mantener la deuda y reinvertir produce más riqueza neta.`;
+  }
+
+  renderCmpChart(netA,netB,debt,terms,debtRate,invRate,extra);
+  document.getElementById('cmpResults').classList.remove('hidden');
+}
+
+function renderCmpChart(netA,netB,debt,terms,dr,ir,extra){
+  const c=getChartColors();
+  if(charts.cmp){charts.cmp.destroy();delete charts.cmp;}
+  const ctx=document.getElementById('cmpChart').getContext('2d');
+  const pmt=debt*(dr*Math.pow(1+dr,terms))/(Math.pow(1+dr,terms)-1);
+
+  // Build full month labels
+  const startDate=document.getElementById('cmpDebt').dataset.start||new Date().toISOString().split('T')[0];
+  const today=new Date();
+  const labels=[];
+  for(let m=1;m<=terms;m++){
+    const d=new Date(today);d.setMonth(d.getMonth()+m);
+    labels.push(fmtDate(d));
+  }
+  const stride=Math.max(1,Math.floor(terms/60));
+  const idx=labels.map((_,i)=>i).filter(i=>i%stride===0||i===terms-1);
+  const lbl=idx.map(i=>labels[i]);
+  const dA=idx.map(i=>netA[i]??netA[netA.length-1]??0);
+  const dB=idx.map(i=>netB[i]??netB[netB.length-1]??0);
+
+  charts.cmp=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:lbl,
+      datasets:[
+        {label:'Escenario A (pagar deuda)',data:dA,borderColor:c.capital,fill:false,tension:.35,pointRadius:0,borderWidth:2},
+        {label:'Escenario B (invertir)',data:dB,borderColor:c.extra,fill:false,tension:.35,pointRadius:0,borderDash:[],borderWidth:2}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      scales:{
+        x:{...commonScaleOpts()},
+        y:{...commonScaleOpts(),ticks:{...commonScaleOpts().ticks,callback:v=>formatCOP(v)}}
+      },
+      plugins:{legend:{labels:{color:c.text,font:{family:'Satoshi,system-ui,sans-serif',size:12}}}}}
+  });
+}
+
+// =====================================================
+// CSV EXPORT
+// =====================================================
+function exportCSV(tableId,filename){
+  const table=document.getElementById(tableId);
+  if(!table){alert('Primero calcula los resultados');return;}
+  const rows=[];
+  table.querySelectorAll('tr').forEach(tr=>{
+    rows.push(Array.from(tr.querySelectorAll('th,td')).map(td=>'"'+td.textContent.trim().replace(/"/g,'""')+'"').join(','));
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename+'_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+}
+
+// =====================================================
+// INIT
+// =====================================================
+document.addEventListener('DOMContentLoaded',()=>{
+  const today=new Date().toISOString().split('T')[0];
+  ['startDate','startDate2','invStartDate'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&!el.value)el.value=today;
+  });
+  // Default rate hints
+  ['interestRate|rateType1|rateHint1','interestRate2|rateType2|rateHint2','invRate|invRateType|invRateHint','cmpDebtRate|cmpDebtRateType|cmpDebtRateHint','cmpInvRate|cmpInvRateType|cmpInvRateHint'].forEach(s=>{
+    const [a,b,c]=s.split('|');
+    updateRateHint(a,b,c);
+  });
+  ['loanTerms|yearsConv1','loanTerms2|yearsConv2','invPeriod|invConv','cmpTerms|cmpConv1'].forEach(s=>{
+    const [a,b]=s.split('|');updateConv(a,b);
+  });
+  // Default extra payments
+  addExtraPayment(500000,'monthly',null,null);
+  addExtraPayment(3000000,'semiannual',7,null);
+  addExtraPayment(6000000,'annual',12,null);
+});
+</script>
+</body>
+</html>
