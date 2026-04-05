@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio de Telemetría IRIG 106</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root, [data-theme="light"] {
+  --color-bg:             #f7f6f2;
+  --color-surface:        #f9f8f5;
+  --color-surface-2:      #fbfbf9;
+  --color-surface-offset: #f3f0ec;
+  --color-surface-dynamic:#e6e4df;
+  --color-divider:        #dcd9d5;
+  --color-border:         #d4d1ca;
+  --color-text:           #28251d;
+  --color-text-muted:     #7a7974;
+  --color-text-faint:     #bab9b4;
+  --color-primary:        #01696f;
+  --color-primary-hover:  #0c4e54;
+  --color-accent:         #006494;
+  --color-accent-hover:   #0b5177;
+  --color-warning:        #964219;
+  --color-success:        #437a22;
+  --color-error:          #a12c7b;
+  --color-gold:           #d19900;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 80 / 0.12);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;
+  --space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
+  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
+  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  --transition-interactive: 180ms cubic-bezier(0.16,1,0.3,1);
+  --plot-bg: #f9f8f5;
+  --plot-paper: #f9f8f5;
+  --plot-text: #28251d;
+  --plot-grid: rgba(40,37,29,0.08);
+}
+[data-theme="dark"] {
+  --color-bg:             #171614;
+  --color-surface:        #1c1b19;
+  --color-surface-2:      #201f1d;
+  --color-surface-offset: #1d1c1a;
+  --color-surface-dynamic:#2d2c2a;
+  --color-divider:        #262523;
+  --color-border:         #393836;
+  --color-text:           #cdccca;
+  --color-text-muted:     #797876;
+  --color-text-faint:     #5a5957;
+  --color-primary:        #4f98a3;
+  --color-primary-hover:  #227f8b;
+  --color-accent:         #5591c7;
+  --color-accent-hover:   #3b78ab;
+  --color-warning:        #bb653b;
+  --color-success:        #6daa45;
+  --color-error:          #d163a7;
+  --color-gold:           #e8af34;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.4);
+  --plot-bg: #1c1b19;
+  --plot-paper: #1c1b19;
+  --plot-text: #cdccca;
+  --plot-grid: rgba(205,204,202,0.08);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) {
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a;--color-surface-dynamic:#2d2c2a;
+  --color-divider:#262523;--color-border:#393836;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
+  --color-primary:#4f98a3;--color-primary-hover:#227f8b;
+  --color-accent:#5591c7;--color-accent-hover:#3b78ab;
+  --color-warning:#bb653b;--color-success:#6daa45;
+  --color-error:#d163a7;--color-gold:#e8af34;
+  --plot-bg:#1c1b19;--plot-paper:#1c1b19;--plot-text:#cdccca;--plot-grid:rgba(205,204,202,0.08);
+}}
+
+/* ===== BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth;}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);transition:background var(--transition-interactive),color var(--transition-interactive);}
+img,svg{display:block;max-width:100%;}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;}
+a,button,[role="button"]{transition:color var(--transition-interactive),background var(--transition-interactive),border-color var(--transition-interactive),box-shadow var(--transition-interactive);}
+h1,h2,h3,h4{text-wrap:balance;line-height:1.15;}
+p,li{max-width:72ch;}
+
+/* ===== LAYOUT ===== */
+.app-wrapper { display:flex; flex-direction:column; min-height:100dvh; }
+.main-content { flex:1; }
+header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-6);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.header-brand { display:flex; align-items:center; gap: var(--space-3); }
+.logo-mark {
+  width: 36px; height: 36px; flex-shrink: 0;
+}
+.brand-text h1 { font-size: var(--text-sm); font-weight: 700; line-height:1.2; }
+.brand-text span { font-size: var(--text-xs); color: var(--color-text-muted); }
+.header-controls { display: flex; align-items:center; gap: var(--space-3); }
+.theme-toggle {
+  width: 36px; height: 36px; border-radius: var(--radius-md);
+  display:flex; align-items:center; justify-content:center;
+  color: var(--color-text-muted); border: 1px solid var(--color-border);
+  background: var(--color-surface-offset);
+}
+.theme-toggle:hover { color:var(--color-text); background:var(--color-surface-dynamic); }
+.badge {
+  font-size: var(--text-xs); font-weight: 600; padding: 2px var(--space-2);
+  border-radius: var(--radius-full); background: var(--color-primary);
+  color: #fff; letter-spacing: 0.03em;
+}
+
+.page-body { padding: var(--space-8) var(--space-6); max-width: 1400px; margin:0 auto; }
+.section-title {
+  font-size: var(--text-lg); font-weight: 700; color: var(--color-text);
+  margin-bottom: var(--space-6); display:flex; align-items:center; gap: var(--space-3);
+}
+.section-title .num {
+  width: 28px; height: 28px; border-radius: var(--radius-full);
+  background: var(--color-primary); color: #fff;
+  font-size: var(--text-xs); font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink: 0;
+}
+
+/* ===== GRID ===== */
+.lab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(540px, 100%), 1fr)); gap: var(--space-6); }
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-interactive);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-5); padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+.card-title { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); display:flex; align-items:center; gap:var(--space-2); }
+.card-badge {
+  font-size: 10px; font-weight: 700; letter-spacing:0.06em;
+  padding: 2px 8px; border-radius: var(--radius-full);
+  background: color-mix(in oklch, var(--color-primary) 15%, var(--color-surface));
+  color: var(--color-primary); text-transform: uppercase;
+}
+
+/* ===== FORM CONTROLS ===== */
+.field { margin-bottom: var(--space-4); }
+.field-label {
+  display:flex; align-items:center; justify-content:space-between;
+  font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted);
+  margin-bottom: var(--space-2); text-transform: uppercase; letter-spacing:0.04em;
+}
+.field-value { color: var(--color-primary); font-weight: 700; font-size: var(--text-sm); font-family: var(--font-mono); }
+input[type="range"] {
+  width:100%; cursor:pointer; accent-color: var(--color-primary);
+  height: 6px; border-radius: var(--radius-full);
+}
+input[type="text"], input[type="number"], select {
+  width:100%; padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text); font-size: var(--text-sm);
+  transition: border-color var(--transition-interactive);
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
+  outline: none; border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 20%, transparent);
+}
+
+/* Unit Toggle */
+.unit-toggle {
+  display: inline-flex; border-radius: var(--radius-md);
+  border: 1px solid var(--color-border); overflow: hidden;
+}
+.unit-btn {
+  padding: 3px 10px; font-size: var(--text-xs); font-weight: 600;
+  color: var(--color-text-muted); background: var(--color-surface-offset);
+  border: none; cursor: pointer; transition: all var(--transition-interactive);
+}
+.unit-btn.active { background: var(--color-primary); color: #fff; }
+.unit-btn:not(.active):hover { color: var(--color-text); background: var(--color-surface-dynamic); }
+
+/* ===== OUTPUT / CODE BLOCKS ===== */
+.output-block {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  line-height: 1.7;
+  word-break: break-all;
+}
+.output-block.dark-code {
+  background: #0f1117; border-color: #262523; color: #4ade80;
+}
+[data-theme="light"] .output-block.dark-code {
+  background: #1e293b; color: #38bdf8;
+}
+.label-row { display:flex; justify-content:space-between; margin-bottom: var(--space-1); }
+.label-tag {
+  font-size: 10px; font-weight: 700; text-transform:uppercase; letter-spacing:0.07em;
+  color: var(--color-text-faint); background: var(--color-surface-dynamic);
+  padding: 1px 6px; border-radius: var(--radius-sm);
+}
+
+/* ===== LINK BUDGET RESULT ===== */
+.budget-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.budget-item {
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+}
+.budget-item .bi-label { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: 2px; }
+.budget-item .bi-value { font-size: var(--text-sm); font-weight: 700; font-family: var(--font-mono); color: var(--color-text); }
+.budget-item .bi-value.good { color: var(--color-success); }
+.budget-item .bi-value.warn { color: var(--color-warning); }
+.budget-item .bi-value.bad  { color: var(--color-error); }
+.budget-row {
+  display: flex; align-items:center; justify-content:space-between;
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--color-divider);
+  font-size: var(--text-xs);
+}
+.budget-row:last-child { border-bottom: none; }
+.budget-row .br-label { color: var(--color-text-muted); }
+.budget-row .br-val { font-family: var(--font-mono); font-weight: 600; }
+
+/* Margin bar */
+.margin-bar-wrap { margin-top: var(--space-4); }
+.margin-bar-label { font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-2); display:flex; justify-content:space-between; }
+.margin-bar-track { height: 8px; background: var(--color-surface-dynamic); border-radius: var(--radius-full); overflow:hidden; }
+.margin-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.4s cubic-bezier(0.16,1,0.3,1), background 0.4s; }
+
+/* ===== WARNING ===== */
+.alert {
+  display:none; padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md); margin-top: var(--space-3);
+  font-size: var(--text-xs); font-weight: 600;
+  border: 1px solid;
+}
+.alert.warn { background: color-mix(in oklch, var(--color-warning) 12%, var(--color-surface)); border-color: color-mix(in oklch, var(--color-warning) 30%, transparent); color: var(--color-warning); }
+.alert.info { background: color-mix(in oklch, var(--color-primary) 10%, var(--color-surface)); border-color: color-mix(in oklch, var(--color-primary) 25%, transparent); color: var(--color-primary); }
+.alert.show { display:block; }
+
+/* ===== PLOT ===== */
+.plot-wrap { border-radius: var(--radius-md); overflow:hidden; margin-top: var(--space-4); border: 1px solid var(--color-border); }
+.plotly-graph-div { width:100% !important; }
+
+/* ===== INFO ROW ===== */
+.info-chips { display:flex; flex-wrap:wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.chip {
+  font-size: var(--text-xs); font-weight: 600; padding: 3px 10px;
+  border-radius: var(--radius-full); border: 1px solid var(--color-border);
+  background: var(--color-surface-offset); color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+.chip.active { border-color: var(--color-primary); color: var(--color-primary); background: color-mix(in oklch, var(--color-primary) 10%, var(--color-surface)); }
+
+/* ===== DIGITAL STATUS ===== */
+.digital-status {
+  background: #0f1117;
+  border: 1px solid #262523;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--space-2) var(--space-4);
+}
+[data-theme="light"] .digital-status { background: #1e293b; }
+.ds-row { }
+.ds-label { font-size: 10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color: #5a5957; margin-bottom: 2px; }
+.ds-value { font-family: var(--font-mono); font-size: var(--text-xs); color: #4ade80; word-break: break-all; }
+.ds-value.cyan { color: #38bdf8; }
+.ds-value.amber { color: #fbbf24; }
+.ds-value.violet { color: #c084fc; }
+.ds-full { grid-column: 1/-1; }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-5) var(--space-6);
+  margin-top: var(--space-16);
+}
+.footer-content {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-4);
+  font-size: var(--text-xs); color: var(--color-text-muted);
+}
+.footer-content a {
+  color: var(--color-text-muted); text-decoration: none;
+  transition: color var(--transition-interactive);
+}
+.footer-content a:hover { color: var(--color-primary); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .page-body { padding: var(--space-5) var(--space-4); }
+  header { padding: var(--space-3) var(--space-4); }
+  .lab-grid { grid-template-columns: 1fr; }
+  .budget-grid { grid-template-columns: 1fr; }
+  .digital-status { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <svg class="logo-mark" viewBox="0 0 36 36" fill="none" aria-label="Logo Telemetría">
+      <rect width="36" height="36" rx="8" fill="var(--color-primary)" opacity="0.15"/>
+      <circle cx="18" cy="18" r="4" fill="var(--color-primary)"/>
+      <circle cx="18" cy="18" r="8" stroke="var(--color-primary)" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>
+      <circle cx="18" cy="18" r="13" stroke="var(--color-primary)" stroke-width="1" opacity="0.4" fill="none"/>
+      <line x1="18" y1="5" x2="18" y2="1" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div class="brand-text">
+      <h1>Laboratorio de Telemetría</h1>
+      <span>Simulador IRIG 106 — Modulación &amp; Enlace</span>
+    </div>
+  </div>
+  <div class="header-controls">
+    <span class="badge">IRIG 106</span>
+    <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<div class="main-content">
+<div class="page-body">
+
+<div class="lab-grid">
+
+  <!-- ===================== CARD 1: CODIFICACIÓN ===================== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span style="color:var(--color-primary)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </span>
+        Codificación de Datos
+      </div>
+      <span class="card-badge">ASCII / HEX / BIN</span>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Entrada de comandos ASCII</div>
+      <input type="text" id="asciiInput" placeholder="Ej: DATA106 TELEMETRY" oninput="convertData()" maxlength="32">
+    </div>
+
+    <div class="label-row" style="margin-top:var(--space-4)">
+      <span class="label-tag">Hexadecimal</span>
+      <span style="font-size:var(--text-xs);color:var(--color-text-faint)" id="hexLen">0 bytes</span>
+    </div>
+    <div id="hexOut" class="output-block dark-code" style="min-height:44px">—</div>
+
+    <div class="label-row" style="margin-top:var(--space-3)">
+      <span class="label-tag">Binario (8-bit por carácter)</span>
+    </div>
+    <div id="binOut" class="output-block dark-code" style="min-height:44px">—</div>
+
+    <div class="label-row" style="margin-top:var(--space-3)">
+      <span class="label-tag">Decimales ASCII</span>
+    </div>
+    <div id="decOut" class="output-block" style="min-height:36px;color:var(--color-gold)">—</div>
+  </div>
+
+  <!-- ===================== CARD 2: LINK BUDGET ===================== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span style="color:var(--color-accent)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 6l7 6-7 6M23 6l-7 6 7 6"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </span>
+        Presupuesto de Enlace
+      </div>
+      <span class="card-badge" style="background:color-mix(in oklch,var(--color-accent) 15%,var(--color-surface));color:var(--color-accent)">Link Budget</span>
+    </div>
+
+    <!-- Frequency -->
+    <div class="field">
+      <div class="field-label">
+        <span>Frecuencia</span>
+        <div style="display:flex;align-items:center;gap:var(--space-2)">
+          <span class="field-value" id="v-freq">2400</span>
+          <div class="unit-toggle">
+            <button class="unit-btn active" id="btn-mhz" onclick="setFreqUnit('MHz')">MHz</button>
+            <button class="unit-btn" id="btn-ghz" onclick="setFreqUnit('GHz')">GHz</button>
+          </div>
+        </div>
+      </div>
+      <input type="range" id="freq" min="100" max="6000" value="2400" step="10" oninput="updateLink()">
+    </div>
+
+    <!-- Distance -->
+    <div class="field">
+      <div class="field-label">
+        <span>Distancia</span>
+        <div style="display:flex;align-items:center;gap:var(--space-2)">
+          <span class="field-value" id="v-dist">10.0</span>
+          <div class="unit-toggle">
+            <button class="unit-btn active" id="btn-km" onclick="setDistUnit('km')">km</button>
+            <button class="unit-btn" id="btn-mi" onclick="setDistUnit('mi')">mi</button>
+          </div>
+        </div>
+      </div>
+      <input type="range" id="dist" min="1" max="200" value="10" step="1" oninput="updateLink()">
+    </div>
+
+    <!-- Tx Power & Antenna gain -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+      <div class="field" style="margin-bottom:0">
+        <div class="field-label">
+          <span>Potencia Tx</span>
+          <span class="field-value" id="v-txp">10</span>
+        </div>
+        <input type="range" id="txPower" min="1" max="50" value="10" step="1" oninput="updateLink()">
+        <div style="font-size:10px;color:var(--color-text-faint);margin-top:2px">dBm (1–50)</div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <div class="field-label">
+          <span>Ganancia Ant.</span>
+          <span class="field-value" id="v-gain">6</span>
+        </div>
+        <input type="range" id="antGain" min="0" max="30" value="6" step="1" oninput="updateLink()">
+        <div style="font-size:10px;color:var(--color-text-faint);margin-top:2px">dBi (0–30)</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="budget-grid" id="budgetGrid" style="margin-top:var(--space-5)">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- Margin bar -->
+    <div class="margin-bar-wrap">
+      <div class="margin-bar-label">
+        <span>Margen del sistema</span>
+        <span id="marginLabel">—</span>
+      </div>
+      <div class="margin-bar-track">
+        <div class="margin-bar-fill" id="marginBar" style="width:0%;background:var(--color-success)"></div>
+      </div>
+    </div>
+
+    <!-- Detail rows -->
+    <div style="margin-top:var(--space-4)">
+      <div class="budget-row"><span class="br-label">Pérdida FSPL</span><span class="br-val" id="br-fspl">—</span></div>
+      <div class="budget-row"><span class="br-label">EIRP</span><span class="br-val" id="br-eirp">—</span></div>
+      <div class="budget-row"><span class="br-label">Potencia recibida (Prx)</span><span class="br-val" id="br-prx">—</span></div>
+      <div class="budget-row"><span class="br-label">Sensibilidad Rx (–100 dBm)</span><span class="br-val" style="color:var(--color-text-muted)">–100.00 dBm</span></div>
+      <div class="budget-row"><span class="br-label">Margen de enlace</span><span class="br-val" id="br-margin">—</span></div>
+      <div class="budget-row"><span class="br-label">Longitud de onda (λ)</span><span class="br-val" id="br-lambda">—</span></div>
+    </div>
+
+    <div id="linkAlert" class="alert warn">⚠ Margen insuficiente. Incrementa potencia o ganancia, o reduce distancia.</div>
+  </div>
+
+  <!-- ===================== CARD 3: AM / FM ===================== -->
+  <div class="card" style="grid-column: 1/-1">
+    <div class="card-header">
+      <div class="card-title">
+        <span style="color:var(--color-gold)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h2l3-9 4 18 3-9h2l3 5h3"/></svg>
+        </span>
+        Modulación AM y FM — Ajustable
+      </div>
+      <span class="card-badge" style="background:color-mix(in oklch,var(--color-gold) 15%,var(--color-surface));color:var(--color-gold)">Analógica</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6)">
+      <!-- AM controls -->
+      <div>
+        <div style="font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">Modulación AM</div>
+        <div class="field">
+          <div class="field-label">
+            <span>Índice de modulación (m)</span>
+            <span class="field-value" id="v-am">0.50</span>
+          </div>
+          <input type="range" id="m_am" min="0" max="2.0" step="0.05" value="0.5" oninput="updateAnalog()">
+        </div>
+        <div id="amInfo" class="info-chips"></div>
+        <div id="amAlert" class="alert warn">⚠ Sobremodulación (m > 1): distorsión de envolvente</div>
+      </div>
+      <!-- FM controls -->
+      <div>
+        <div style="font-size:var(--text-xs);font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">Modulación FM</div>
+        <div class="field">
+          <div class="field-label">
+            <span>Desviación de frecuencia (Δf)</span>
+            <span class="field-value" id="v-fm">5</span>
+          </div>
+          <input type="range" id="m_fm" min="0" max="25" step="0.5" value="5" oninput="updateAnalog()">
+        </div>
+        <div id="fmInfo" class="info-chips"></div>
+        <div id="fmAlert" class="alert info">ℹ Banda ancha Carson: 2(Δf + fm)</div>
+      </div>
+    </div>
+
+    <div class="plot-wrap">
+      <div id="plot-analog" style="height:380px;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== CARD 4: DIGITAL PCM/PWM/PPM ===================== -->
+  <div class="card" style="grid-column: 1/-1">
+    <div class="card-header">
+      <div class="card-title">
+        <span style="color:var(--color-success)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="4" height="18" rx="1"/><rect x="10" y="8" width="4" height="13" rx="1"/><rect x="18" y="5" width="4" height="16" rx="1"/></svg>
+        </span>
+        Digitalización: PCM / PWM / PPM
+      </div>
+      <span class="card-badge" style="background:color-mix(in oklch,var(--color-success) 12%,var(--color-surface));color:var(--color-success)">Digital</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr auto;gap:var(--space-4);align-items:end;margin-bottom:var(--space-2)">
+      <p style="font-size:var(--text-xs);color:var(--color-text-muted)">Pasa el cursor sobre la señal analógica para ver la representación digital en PCM, PWM y PPM en tiempo real.</p>
+      <div class="field" style="margin-bottom:0;min-width:140px">
+        <div class="field-label"><span>Bits PCM</span><span class="field-value" id="v-bits">8</span></div>
+        <input type="range" id="pcmBits" min="2" max="16" value="8" step="1" oninput="updateDigitalPlot()">
+      </div>
+    </div>
+
+    <div class="plot-wrap">
+      <div id="plot-digital" style="height:420px;"></div>
+    </div>
+
+    <div class="digital-status" id="digitalStatus">
+      <div class="ds-row">
+        <div class="ds-label">Valor muestreado</div>
+        <div class="ds-value" id="ds-val">—</div>
+      </div>
+      <div class="ds-row">
+        <div class="ds-label">Nivel cuantizado</div>
+        <div class="ds-value cyan" id="ds-pcm-dec">—</div>
+      </div>
+      <div class="ds-row ds-full">
+        <div class="ds-label">PCM (binario)</div>
+        <div class="ds-value amber" id="ds-pcm-bin">Pasa el cursor sobre la gráfica</div>
+      </div>
+      <div class="ds-row">
+        <div class="ds-label">PWM (ancho)</div>
+        <div class="ds-value violet" id="ds-pwm">—</div>
+      </div>
+      <div class="ds-row">
+        <div class="ds-label">PPM (posición)</div>
+        <div class="ds-value" id="ds-ppm">—</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /lab-grid -->
+</div><!-- /page-body -->
+</div><!-- /main-content -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-content">
+    <p>© 2026 • INVERSIONES ARIPAR</p>
+    <div style="display: flex; gap: 20px;">
+      <a href="https://wa.me/573128816469" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      <a href="mailto:alucard8@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+
+</div><!-- /app-wrapper -->
+
+<!-- ============================= SCRIPTS ============================= -->
+<script>
+// ─── THEME TOGGLE ─────────────────────────────────────────────────────
+(function(){
+  const btn = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let theme = 'dark'; // start dark
+  root.setAttribute('data-theme', theme);
+  function renderIcon(){
+    btn.innerHTML = theme === 'dark'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  renderIcon();
+  btn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+    renderIcon();
+    refreshPlots();
+  });
+})();
+
+// ─── PLOT LAYOUT HELPERS ──────────────────────────────────────────────
+function getPlotLayout(extra){
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return Object.assign({
+    paper_bgcolor: dark ? '#1c1b19' : '#f9f8f5',
+    plot_bgcolor:  dark ? '#1c1b19' : '#f9f8f5',
+    font: { color: dark ? '#cdccca' : '#28251d', family: 'Inter, sans-serif', size: 11 },
+    xaxis: { gridcolor: dark ? 'rgba(205,204,202,0.08)' : 'rgba(40,37,29,0.08)', zerolinecolor: dark ? 'rgba(205,204,202,0.15)' : 'rgba(40,37,29,0.15)' },
+    yaxis: { gridcolor: dark ? 'rgba(205,204,202,0.08)' : 'rgba(40,37,29,0.08)', zerolinecolor: dark ? 'rgba(205,204,202,0.15)' : 'rgba(40,37,29,0.15)' },
+    margin: {t:30, b:40, l:50, r:20},
+    legend: {orientation:'h', y:1.08, bgcolor:'rgba(0,0,0,0)', font:{size:11}},
+    hovermode: 'x unified',
+  }, extra || {});
+}
+
+// ─── CODIFICACIÓN ─────────────────────────────────────────────────────
+function convertData() {
+  const txt = document.getElementById('asciiInput').value;
+  const hex=[],bin=[],dec=[];
+  for(let c of txt){
+    const code=c.charCodeAt(0);
+    hex.push(code.toString(16).toUpperCase().padStart(2,'0'));
+    bin.push(code.toString(2).padStart(8,'0'));
+    dec.push(code);
+  }
+  document.getElementById('hexOut').textContent = hex.length ? hex.join(' ') : '—';
+  document.getElementById('binOut').textContent = bin.length ? bin.join('  ') : '—';
+  document.getElementById('decOut').textContent = dec.length ? dec.join('  ') : '—';
+  document.getElementById('hexLen').textContent = txt.length + ' byte' + (txt.length!==1?'s':'');
+}
+
+// ─── LINK BUDGET ──────────────────────────────────────────────────────
+let freqUnit = 'MHz';
+let distUnit = 'km';
+
+function setFreqUnit(u){
+  freqUnit = u;
+  document.getElementById('btn-mhz').classList.toggle('active', u==='MHz');
+  document.getElementById('btn-ghz').classList.toggle('active', u==='GHz');
+  updateLink();
+}
+function setDistUnit(u){
+  distUnit = u;
+  document.getElementById('btn-km').classList.toggle('active', u==='km');
+  document.getElementById('btn-mi').classList.toggle('active', u==='mi');
+  updateLink();
+}
+
+function updateLink(){
+  const fRaw = parseFloat(document.getElementById('freq').value); // always MHz internally
+  const dRaw = parseFloat(document.getElementById('dist').value); // always km internally
+  const txP  = parseFloat(document.getElementById('txPower').value); // dBm
+  const gAnt = parseFloat(document.getElementById('antGain').value); // dBi
+
+  // Display values with units
+  const fDisplay = freqUnit === 'GHz' ? (fRaw/1000).toFixed(3) : fRaw.toFixed(0);
+  const dDisplay = distUnit === 'mi'  ? (dRaw*0.621371).toFixed(2) : dRaw.toFixed(1);
+  document.getElementById('v-freq').textContent = fDisplay;
+  document.getElementById('v-dist').textContent = dDisplay;
+  document.getElementById('v-txp').textContent  = txP;
+  document.getElementById('v-gain').textContent = gAnt;
+
+  // Calculations (always in MHz and km)
+  const fspl = 20*Math.log10(dRaw) + 20*Math.log10(fRaw) + 32.44;
+  const eirp  = txP + gAnt;
+  const rxSens = -100; // dBm assumed
+  const cableLoss = 2; // dB assumed
+  const prx = eirp - fspl - cableLoss;
+  const margin = prx - rxSens;
+  const lambda_m = 3e8 / (fRaw * 1e6);
+
+  // Wavelength display
+  const lambdaStr = lambda_m < 0.01
+    ? (lambda_m*100).toFixed(2)+' cm'
+    : lambda_m.toFixed(4)+' m';
+
+  document.getElementById('br-fspl').textContent   = fspl.toFixed(2)+' dB';
+  document.getElementById('br-eirp').textContent   = eirp.toFixed(2)+' dBm';
+  document.getElementById('br-prx').textContent    = prx.toFixed(2)+' dBm';
+  document.getElementById('br-margin').textContent = margin.toFixed(2)+' dB';
+  document.getElementById('br-lambda').textContent = lambdaStr;
+
+  // Margin bar
+  const pct = Math.max(0, Math.min(100, (margin/40)*100));
+  const bar = document.getElementById('marginBar');
+  bar.style.width = pct+'%';
+  const marginLabel = document.getElementById('marginLabel');
+  if(margin >= 20){ bar.style.background='var(--color-success)'; marginLabel.style.color='var(--color-success)'; }
+  else if(margin >= 10){ bar.style.background='var(--color-gold)'; marginLabel.style.color='var(--color-gold)'; }
+  else if(margin >= 0) { bar.style.background='var(--color-warning)'; marginLabel.style.color='var(--color-warning)'; }
+  else { bar.style.background='var(--color-error)'; marginLabel.style.color='var(--color-error)'; }
+  marginLabel.textContent = margin.toFixed(1)+' dB';
+
+  // Summary cards
+  const marClass = margin >= 20 ? 'good' : margin >= 10 ? '' : margin >= 0 ? 'warn' : 'bad';
+  document.getElementById('budgetGrid').innerHTML = `
+    <div class="budget-item">
+      <div class="bi-label">FSPL</div>
+      <div class="bi-value">${fspl.toFixed(1)} dB</div>
+    </div>
+    <div class="budget-item">
+      <div class="bi-label">EIRP</div>
+      <div class="bi-value">${eirp.toFixed(1)} dBm</div>
+    </div>
+    <div class="budget-item">
+      <div class="bi-label">Prx</div>
+      <div class="bi-value ${prx < rxSens ? 'bad' : 'good'}">${prx.toFixed(1)} dBm</div>
+    </div>
+    <div class="budget-item">
+      <div class="bi-label">Margen</div>
+      <div class="bi-value ${marClass}">${margin.toFixed(1)} dB</div>
+    </div>`;
+
+  // Alert
+  const alert = document.getElementById('linkAlert');
+  alert.classList.toggle('show', margin < 10);
+}
+
+// ─── AM / FM ─────────────────────────────────────────────────────────
+const N = 600;
+const t = Array.from({length:N},(_,i)=>i/300);
+const fc = 15, fm_signal = 1;
+const msgSig = t.map(v => Math.sin(2*Math.PI*fm_signal*v));
+const carrier = t.map(v => Math.cos(2*Math.PI*fc*v));
+
+function updateAnalog(){
+  const m  = parseFloat(document.getElementById('m_am').value);
+  const df = parseFloat(document.getElementById('m_fm').value);
+  const beta = df / fm_signal;
+
+  document.getElementById('v-am').textContent = m.toFixed(2);
+  document.getElementById('v-fm').textContent = df.toFixed(1);
+
+  const am       = t.map((v,i)=>(1+m*msgSig[i])*Math.cos(2*Math.PI*fc*v));
+  const envPos   = t.map((v,i)=> 1+m*msgSig[i]);
+  const envNeg   = t.map((v,i)=>-(1+m*msgSig[i]));
+  const fm       = t.map(v => Math.cos(2*Math.PI*(fc*v + beta*Math.sin(2*Math.PI*fm_signal*v))));
+
+  // AM chips
+  const bwAm = 2*fm_signal;
+  document.getElementById('amInfo').innerHTML =
+    `<span class="chip active">m = ${m.toFixed(2)}</span>
+     <span class="chip">BW = ${bwAm} Hz</span>
+     <span class="chip ${m>1?'active':''}">Eficiencia = ${(m*m/(2+m*m)*100).toFixed(1)}%</span>`;
+
+  // FM chips — Carson's rule
+  const bwCarson = 2*(df + fm_signal);
+  document.getElementById('fmInfo').innerHTML =
+    `<span class="chip active">β = ${beta.toFixed(2)}</span>
+     <span class="chip">BW Carson = ${bwCarson.toFixed(1)} Hz</span>
+     <span class="chip">${beta < 1 ? 'Banda Estrecha' : 'Banda Ancha'}</span>`;
+
+  // Alerts
+  document.getElementById('amAlert').classList.toggle('show', m > 1);
+  document.getElementById('fmAlert').classList.toggle('show', beta > 1);
+  document.getElementById('fmAlert').textContent = `ℹ Carson BW = 2(Δf + fm) = 2(${df}+${fm_signal}) = ${bwCarson.toFixed(1)} Hz · β=${beta.toFixed(2)}`;
+
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const layout = getPlotLayout({
+    title: {text:'Señales de Modulación Analógica', font:{size:13}, x:0.5},
+    grid: {rows:2, columns:1, pattern:'independent'},
+    height: 380,
+    yaxis:  {title:'AM', range:[-3,3], tickfont:{size:10}},
+    yaxis2: {title:'FM', range:[-1.5,1.5], tickfont:{size:10}},
+    xaxis:  {title:'Tiempo (s)', tickfont:{size:10}},
+    xaxis2: {title:'Tiempo (s)', tickfont:{size:10}},
+  });
+
+  Plotly.react('plot-analog', [
+    {x:t, y:msgSig, name:'Mensaje (1Hz)', xaxis:'x', yaxis:'y',
+     line:{color:'#9ca3af', width:1, dash:'dot'}, opacity:0.7},
+    {x:t, y:envPos, name:'Envolvente',    xaxis:'x', yaxis:'y',
+     line:{color:'#f59e0b', width:1, dash:'dash'}, opacity:0.5, showlegend:false},
+    {x:t, y:envNeg, xaxis:'x', yaxis:'y',
+     line:{color:'#f59e0b', width:1, dash:'dash'}, opacity:0.5, showlegend:false},
+    {x:t, y:am,     name:'AM modulada',   xaxis:'x', yaxis:'y',
+     line:{color:'#f59e0b', width:2}},
+    {x:t, y:fm,     name:'FM modulada',   xaxis:'x2', yaxis:'y2',
+     line:{color:'#3b82f6', width:2}},
+    {x:t, y:carrier,name:'Portadora',     xaxis:'x2', yaxis:'y2',
+     line:{color:'#6b7280', width:1, dash:'dot'}, opacity:0.5},
+  ], layout, {responsive:true, displayModeBar:false});
+}
+
+// ─── PCM / PWM / PPM ─────────────────────────────────────────────────
+const xDig = Array.from({length:120},(_,i)=>i/60);
+const yDig = xDig.map(x => 0.8*Math.sin(2*Math.PI*x) + 0.2*Math.sin(2*Math.PI*3*x));
+let pcmBitsVal = 8;
+
+function updateDigitalPlot(){
+  pcmBitsVal = parseInt(document.getElementById('pcmBits').value);
+  document.getElementById('v-bits').textContent = pcmBitsVal;
+  const levels = Math.pow(2, pcmBitsVal);
+
+  // Quantized waveform
+  const yQuant = yDig.map(v=>{
+    const q = Math.round(((v+1)/2)*(levels-1));
+    return (q/(levels-1))*2 - 1;
+  });
+
+  // Quantization error
+  const qErr = yDig.map((v,i)=>yQuant[i]-v);
+
+  const layout = getPlotLayout({
+    title: {text:'Digitalización de Señal Analógica', font:{size:13}, x:0.5},
+    grid: {rows:2, columns:1, pattern:'independent', roworder:'top to bottom'},
+    height: 420,
+    yaxis:  {title:'Amplitud', range:[-1.4,1.4], tickfont:{size:10}},
+    yaxis2: {title:'Error Q', range:[-0.3,0.3], tickfont:{size:10}},
+    xaxis:  {title:'', showticklabels:false},
+    xaxis2: {title:'Tiempo (s)', tickfont:{size:10}},
+  });
+
+  const traces = [
+    {x:xDig, y:yDig,   name:'Original',   xaxis:'x',  yaxis:'y',
+     line:{color:'#9ca3af', width:1.5, dash:'dot'}, mode:'lines'},
+    {x:xDig, y:yQuant, name:`PCM ${pcmBitsVal}-bit`, xaxis:'x', yaxis:'y',
+     line:{color:'#fbbf24', width:2}, mode:'lines'},
+    {x:xDig, y:qErr,   name:'Error Q',    xaxis:'x2', yaxis:'y2',
+     line:{color:'#f87171', width:1.5}, fill:'tozeroy',
+     fillcolor:'rgba(248,113,113,0.15)', mode:'lines'},
+  ];
+
+  Plotly.react('plot-digital', traces, layout, {responsive:true, displayModeBar:false})
+    .then(()=>{
+      document.getElementById('plot-digital').on('plotly_hover', function(data){
+        if(!data.points.length) return;
+        const val = data.points[0].y;
+        const levels = Math.pow(2, pcmBitsVal);
+        const pcmVal = Math.round(((val+1)/2)*(levels-1));
+        const pcmBin = pcmVal.toString(2).padStart(pcmBitsVal,'0');
+        const width  = Math.round(((val+1)/2)*20);
+        const pwmStr = '█'.repeat(width) + '░'.repeat(20-width);
+        const ppmPos = '_'.repeat(Math.min(width,19)) + '▲' + '_'.repeat(Math.max(0,19-width));
+
+        document.getElementById('ds-val').textContent     = val.toFixed(4);
+        document.getElementById('ds-pcm-dec').textContent = `${pcmVal} / ${levels-1} (${pcmBitsVal} bits → ${levels} niveles)`;
+        document.getElementById('ds-pcm-bin').textContent = pcmBin;
+        document.getElementById('ds-pwm').textContent     = `[${pwmStr}] ${width}/20`;
+        document.getElementById('ds-ppm').textContent     = `[${ppmPos}]`;
+      });
+    });
+}
+
+// ─── REFRESH ALL PLOTS ON THEME CHANGE ───────────────────────────────
+function refreshPlots(){ updateAnalog(); updateDigitalPlot(); }
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+updateLink();
+updateAnalog();
+updateDigitalPlot();
+</script>
+</body>
+</html>
