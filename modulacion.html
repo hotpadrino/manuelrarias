@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Telemetría Avanzado IRIG 106</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef2f3; padding: 20px; color: #333; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 25px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2 { color: #2563eb; margin-top: 0; font-size: 1.2rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        label { display: block; margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
+        input[type="range"] { width: 100%; cursor: pointer; margin: 10px 0; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        .output { background: #1e293b; color: #38bdf8; padding: 15px; border-radius: 6px; font-family: 'Courier New', monospace; margin-top: 10px; font-size: 0.9rem; }
+        .val-display { float: right; color: #2563eb; }
+    </style>
+</head>
+<body>
+
+<h1 style="text-align: center;">Laboratorio Interactivo de Telemetría</h1>
+
+<div class="grid">
+    <div class="card">
+        <h2>1. Codificación de Datos (Hex / Bin)</h2>
+        <label>Entrada de comandos ASCII:</label>
+        <input type="text" id="asciiInput" placeholder="Ej: DATA106" oninput="convertData()">
+        <p>Hexadecimal:</p>
+        <div id="hexOut" class="output">00</div>
+        <p>Binario:</p>
+        <div id="binOut" class="output">00000000</div>
+    </div>
+
+    <div class="card">
+        <h2>2. Presupuesto de Enlace (Link Budget)</h2>
+        <label>Frecuencia: <span id="v-freq" class="val-display">2400</span> MHz</label>
+        <input type="range" id="freq" min="100" max="6000" value="2400" oninput="updateLink()">
+        <label>Distancia: <span id="v-dist" class="val-display">10</span> km</label>
+        <input type="range" id="dist" min="1" max="100" value="10" oninput="updateLink()">
+        <div id="linkResult" class="output">Calculando...</div>
+    </div>
+
+    <div class="card">
+        <h2>3. Modulación AM y FM (Ajustable)</h2>
+        <label>Índice Modulación AM (m): <span id="v-am" class="val-display">0.5</span></label>
+        <input type="range" id="m_am" min="0" max="1.5" step="0.1" value="0.5" oninput="updateAnalog()">
+        
+        <label>Desviación Frecuencia FM (Δf): <span id="v-fm" class="val-display">5</span></label>
+        <input type="range" id="m_fm" min="0" max="20" step="1" value="5" oninput="updateAnalog()">
+        
+        <div id="plot-analog" style="height:350px;"></div>
+    </div>
+
+    <div class="card">
+        <h2>4. Digitalización: PCM / PWM / PPM</h2>
+        <p style="font-size: 0.85rem; color: #666;">Pasa el cursor por la señal para digitalizar el punto:</p>
+        <div id="plot-digital" style="height:350px;"></div>
+        <div id="digitalStatus" class="output">Muestreo: - | Bits: -</div>
+    </div>
+</div>
+
+<script>
+    // --- Lógica de Conversión ---
+    function convertData() {
+        const text = document.getElementById('asciiInput').value;
+        let hex = [], bin = [];
+        for (let i = 0; i < text.length; i++) {
+            const code = text.charCodeAt(i);
+            hex.push(code.toString(16).toUpperCase());
+            bin.push(code.toString(2).padStart(8, '0'));
+        }
+        document.getElementById('hexOut').innerText = hex.join(' ') || '00';
+        document.getElementById('binOut').innerText = bin.join(' ') || '00000000';
+    }
+
+    // --- Lógica Link Budget ---
+    function updateLink() {
+        const f = document.getElementById('freq').value;
+        const d = document.getElementById('dist').value;
+        document.getElementById('v-freq').innerText = f;
+        document.getElementById('v-dist').innerText = d;
+        
+        const fspl = 20 * Math.log10(d) + 20 * Math.log10(f) + 32.44;
+        document.getElementById('linkResult').innerHTML = `Pérdida (FSPL): ${fspl.toFixed(2)} dB`;
+    }
+
+    // --- Gráficas Modulación ---
+    const t = Array.from({length: 400}, (_, i) => i / 200);
+    const signalMod = t.map(v => Math.sin(2 * Math.PI * 1 * v)); // Señal mensaje (1Hz)
+
+    function updateAnalog() {
+        const m = parseFloat(document.getElementById('m_am').value);
+        const df = parseFloat(document.getElementById('m_fm').value);
+        document.getElementById('v-am').innerText = m;
+        document.getElementById('v-fm').innerText = df;
+
+        const am = t.map((v, i) => (1 + m * signalMod[i]) * Math.sin(2 * Math.PI * 15 * v));
+        const fm = t.map((v, i) => Math.sin(2 * Math.PI * (15 * v + df * Math.sin(2 * Math.PI * 1 * v))));
+
+        Plotly.react('plot-analog', [
+            {x: t, y: am, name: 'AM', line: {color: '#f59e0b'}},
+            {x: t, y: fm, name: 'FM', line: {color: '#3b82f6'}}
+        ], { margin: {t: 10, b: 30, l: 30, r: 10}, legend: {orientation: 'h', y: 1.1} });
+    }
+
+    // --- Modulación Digital ---
+    const gd = document.getElementById('plot-digital');
+    const xDig = Array.from({length: 100}, (_, i) => i);
+    const yDig = xDig.map(x => Math.sin(x * 0.15));
+
+    Plotly.newPlot(gd, [{
+        x: xDig, y: yDig, name: 'Señal Seno', mode: 'lines+markers',
+        line: {shape: 'spline'}, marker: {size: 6}
+    }], { margin: {t: 10, b: 30, l: 30, r: 10} });
+
+    gd.on('plotly_hover', function(data){
+        const val = data.points[0].y;
+        // PCM: Cuantización 8 bits (0-255)
+        const pcmVal = Math.floor(((val + 1) / 2) * 255);
+        const pcmBin = pcmVal.toString(2).padStart(8, '0');
+        
+        // PWM: Representación por ancho de caracteres
+        const width = Math.floor(((val + 1) / 2) * 15);
+        const pwmVis = "█".repeat(width).padEnd(15, '░');
+        
+        // PPM: Posición de un pulso
+        const pos = "_".repeat(width) + "▲" + "_".repeat(15 - width-1);
+
+        document.getElementById('digitalStatus').innerHTML = 
+            `VALOR: ${val.toFixed(2)}<br>PCM (8-bit): ${pcmBin}<br>PWM: [${pwmVis}]<br>PPM: [${pos}]`;
+    });
+
+    // Inicio
+    updateLink();
+    updateAnalog();
+</script>
+</body>
+</html>
