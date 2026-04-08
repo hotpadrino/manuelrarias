@@ -97,7 +97,7 @@ Diciembre 2009 – Febrero 2013
 <summary><b>🇺🇸 View English Version (Click to expand)</b></summary>
 
 **Location:** Madrid, Cundinamarca / Bogotá, Colombia  
-**Email:** manuelrarias@gmail.com | alucard8@gmail.com  
+**Email:** manuelrarias@gmail.com  
 **LinkedIn:** [linkedin.com/in/manuelarias84/](https://www.linkedin.com/in/manuelarias84/)  
 **Scientific Profile:** [CVLAC MinCiencias](https://scienti.minciencias.gov.co/cvlac/visualizador/generarCurriculoCv.do?cod_rh=0000783420) | [cite_start][ORCID](https://orcid.org/0009-0009-4431-3133)  
 
@@ -129,7 +129,7 @@ Electronic Engineer and Aeronautical Design Certification Specialist with extens
 
 ### Colombian Aeronautical Industry Corporation (CIAC S.A.) -- Bogotá, Colombia 
 **Program Coordinator / Engineering Lead** 
-*January 2013 – January 2021* 
+*February 2013 – January 2021* 
 
 * Led the engineering section for the modernization of 14 T-27 Tucano aircraft (19M USD investment).
 * Developed engineering orders to extend aircraft service life by 15 years.
@@ -181,7 +181,7 @@ Electronic Engineer and Aeronautical Design Certification Specialist with extens
 ## Skills and Competencies
 
 * **Aeronautical:** RACAE 21, MIL-STD-810, System Safety Assessment (ARP 4761), RPAS Systems Engineering, EWIS.
-* **Auditing:** Lead Auditor in AN 9100, ISO 9001, ISO 25000, and ISO 27001.
+* **Auditing:** Lead Auditor in AS 9100, ISO 9001, ISO 25000, and ISO 27001.
 * **Software:** Python, SAP ERP, VBA (Excel Macros), Catia, Solid Edge, MS Project, Visio.
 * **Languages:** English (Advanced - TOEFL 97), Portuguese (Intermediate), French (Basic).
 * **Other Areas:** Financial Analysis, Data Analytics, MRO Project Management, and Academic Instruction.
