@@ -129,6 +129,39 @@
             border-radius: 8px; border-left: 6px solid var(--danger-color);
         }
 
+        /* --- Estilos del Footer Institucional --- */
+        footer {
+            margin-top: 40px;
+            padding: 30px;
+            background: var(--primary-color);
+            color: #bdc3c7;
+            text-align: center;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+
+        .footer-mission {
+            max-width: 800px;
+            margin: 0 auto 15px;
+            font-style: italic;
+        }
+
+        .footer-motto {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .footer-line {
+            height: 1px;
+            background: var(--secondary-color);
+            margin: 15px auto;
+            width: 50%;
+        }
+        
         /* MEDIA QUERIES PARA CELULAR */
         @media (max-width: 768px) {
             #mobile-menu-btn { display: block; }
@@ -160,6 +193,14 @@
         <h1>Sistema de Información de Flota</h1>
         <p>Seleccione una aeronave para consultar especificaciones técnicas y capacidades tácticas. Optimizado para consulta móvil.</p>
     </div>
+    
+    <footer>
+        <div class="footer-motto">¡ASÍ SE VA A LAS ESTRELLAS!</div>
+        <div class="footer-line"></div>
+        <p><b>COMANDO AÉREO DE MANTENIMIENTO - CAMAN</b></p>
+        <p class="footer-mission">"¡Volar, entrenar y combatir para vencer!"</p>
+        <p>© 2026 - Fuerza Aeroespacial Colombiana | Madrid, Cundinamarca</p>
+    </footer>
 </div>
 
 <script>
@@ -179,7 +220,8 @@
         { nombre: "KC-390 Millennium", año: 2014, valor: "50", autonomia: "12", crucero: 430, rango: 3200, peso: "23", motor: "IAE V2500-E5", arma: "Ninguno.", wiki: "Embraer_C-390_Millennium" },
         { nombre: "UH-1H Huey", año: 1966, valor: "1.5", autonomia: "2.5", crucero: 110, rango: 250, peso: "1.9", motor: "Lycoming T53", arma: "M60/M134 7.62mm, Cohetes 70mm.", wiki: "Bell_UH-1_Iroquois" },
         { nombre: "UH-60 BlackHawk", año: 1974, valor: "20", autonomia: "3", crucero: 180, rango: 200, peso: "9", motor: "GE T700-GE-701C/D", arma: "GAU-19 12.7mm, Misiles Spike (Arpía).", wiki: "Sikorsky_UH-60_Black_Hawk" },
-        { nombre: "Mi-17 Libertad", año: 1975, valor: "18.0", autonomia: "4.0", crucero: 135, rango: 310, peso: "4", motor: "2x Klimov TV3-117VM", arma: "Cohetes S-8 (80 mm), ametralladoras laterales PKM (7.62 mm) o GAU-19 (12.7 mm).", wiki: "Mil_Mi-17" },
+        { nombre: "Mi-17 Libertad", año: 1975, valor: "18.0", autonomia: "4.0", crucero: 135, rango: 310, peso: "4",
+            motor: "2x Klimov TV3-117VM", arma: "Cohetes S-8 (80 mm), ametralladoras laterales PKM (7.62 mm) o GAU-19 (12.7 mm).", wiki: "Mil_Mi-17" },
         { nombre: "A-10C Warthog", año: 1972, valor: "45", autonomia: "4.0", crucero: 300, rango: 2240, peso: "7.2", motor: "2x GE TF34-GE-100", arma: "Cañón GAU-8 30mm, Misiles Maverick.", wiki: "Fairchild-Republic_A-10_Thunderbolt_II" },
         { nombre: "AH-64E Apache", año: 1975, valor: "52.0", autonomia: "2.5", crucero: 150, rango: 260, peso: "5.2", motor: "2x GE T700-GE-701D", arma: "Cañón M230 30mm, Misiles Hellfire.", wiki: "Boeing_AH-64_Apache" }
     ];
@@ -245,4 +287,3 @@
 </script>
 </body>
 </html>
-
