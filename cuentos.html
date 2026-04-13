@@ -307,6 +307,71 @@
             border-radius: 4px;
         }
 
+        /* ── FOOTER INFANTIL ── */
+        .footer-infantil {
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            padding: 10px 20px;
+            z-index: 30;
+            flex-shrink: 0; /* Evita que se comprima */
+        }
+        
+        .footer-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .footer-texto {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s;
+        }
+        
+        .footer-links a:hover {
+            transform: scale(1.05);
+            color: var(--accent2);
+        }
+        
+        /* Ajuste para móviles */
+        @media (max-width: 700px) {
+            .footer-infantil {
+                padding: 8px 12px;
+            }
+            .footer-container {
+                flex-direction: column;
+                gap: 6px;
+                text-align: center;
+            }
+            .footer-texto {
+                font-size: 0.7rem;
+            }
+            .footer-links {
+                gap: 15px;
+            }
+        }
+
         /* ── NAV ── */
         .nav {
             height: var(--nav-h);
@@ -453,6 +518,22 @@
         </div>
 
     </div>
+    <footer class="footer-infantil">
+        <div class="footer-container">
+            <p class="footer-texto">🚀 © 2026 • INVERSIONES ARIPAR • ¡Aprendiendo Juntos!</p>
+            
+            <div class="footer-links">
+                <a href="https://wa.me/573128816469" class="link-whatsapp" target="_blank">
+                    <span>📱</span> WhatsApp
+                </a>
+                <a href="mailto:alucard8@gmail.com" class="link-email">
+                    <span>✉️</span> Email
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+
 </div>
 
 <script>
