@@ -141,14 +141,6 @@
             gap: 14px;
         }
 
-        #langGrid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            max-width: 360px;
-            margin: 0 auto;
-        }
-
         .card {
             background: var(--surface);
             border: 2px solid var(--border);
@@ -452,16 +444,12 @@
         }
 
         @media (max-width: 400px) {
-            #langGrid { grid-template-columns: 1fr 1fr; max-width: 100%; }
             .grid { grid-template-columns: 1fr 1fr; }
             .card { padding: 16px 10px; font-size: 0.9rem; }
         }
-        @media (max-width: 700px) {
-            #storyGrid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
     </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
 
 <div class="app-wrap">
 
@@ -653,10 +641,8 @@ function parseTxt(raw) {
 //  LANGUAGE METADATA
 // ════════════════════════════════════════════════
 const LANG_META = {
-    ES: { label: 'Español',    emoji: '🇪🇸', menuTitle: '¿Qué quieres leer hoy?',    menuSub: 'Elige un cuento para comenzar' },
-    EN: { label: 'English',    emoji: '🇺🇸', menuTitle: 'What do you want to read?', menuSub: 'Choose a story to start' },
-    PT: { label: 'Português',  emoji: '🇧🇷', menuTitle: 'O que você quer ler hoje?', menuSub: 'Escolha uma história para começar' },
-    FR: { label: 'Français',   emoji: '🇫🇷', menuTitle: 'Que veux-tu lire aujourd'hui ?', menuSub: 'Choisis une histoire pour commencer' }
+    ES: { label: 'Español', emoji: '🇪🇸', menuTitle: '¿Qué quieres leer hoy?', menuSub: 'Elige un cuento para comenzar' },
+    EN: { label: 'English', emoji: '🇺🇸', menuTitle: 'What do you want to read?', menuSub: 'Choose a story to start' }
 };
 
 // ════════════════════════════════════════════════
@@ -765,7 +751,6 @@ function showStoryMenu() {
     const stories = RAW_STORIES.filter(s => s.lang === currentLang);
     const state = loadStateObj();
 
-    document.getElementById('storyGrid').style.gridTemplateColumns = 'repeat(3, 1fr)';
     document.getElementById('storyGrid').innerHTML = stories.map((s) => {
         const saved = state.progress?.[s.id];
         const badge = saved > 0
@@ -864,8 +849,8 @@ function renderPage(animate = true) {
 
         // ── TEXT ──
         const total = currentStory.chapters.length;
-        const chapterLabels = { EN: `Chapter ${currentPage+1}`, PT: `Capítulo ${currentPage+1}`, FR: `Chapitre ${currentPage+1}`, ES: `Capítulo ${currentPage+1}` };
-        document.getElementById('chapterBadge').textContent = chapterLabels[currentLang] || `Capítulo ${currentPage+1}`;
+        document.getElementById('chapterBadge').textContent =
+            currentLang === 'EN' ? `Chapter ${currentPage + 1}` : `Capítulo ${currentPage + 1}`;
         document.getElementById('pageTitle').textContent = chap.title;
         document.getElementById('pageText').textContent  = chap.text;
 
@@ -880,9 +865,9 @@ function renderPage(animate = true) {
 
         const nextBtn = document.getElementById('nextBtn');
         const isLast  = currentPage === total - 1;
-        const moreLabels = { EN:'📚 More stories', PT:'📚 Mais histórias', FR:'📚 Plus d'histoires', ES:'📚 Más cuentos' };
-        const nextLabels = { EN:'Next →', PT:'Próxima →', FR:'Suivant →', ES:'Siguiente →' };
-        nextBtn.textContent = isLast ? (moreLabels[currentLang]||moreLabels.ES) : (nextLabels[currentLang]||nextLabels.ES);
+        nextBtn.textContent = isLast
+            ? (currentLang === 'EN' ? '📚 More stories' : '📚 Más cuentos')
+            : (currentLang === 'EN' ? 'Next →' : 'Siguiente →');
         nextBtn.classList.toggle('next-btn', !isLast);
         nextBtn.style.background   = isLast ? '#27ae60' : '';
         nextBtn.style.borderColor  = isLast ? '#27ae60' : '';
@@ -969,9 +954,10 @@ function saveState() {
 
 function loadState() {
     const state = loadStateObj();
-    const theme = state.theme || 'dark';
-    document.body.setAttribute('data-theme', theme);
-    document.getElementById('themeBtn').textContent = theme === 'light' ? '🌙' : '☀️';
+    if (state.theme) {
+        document.body.setAttribute('data-theme', state.theme);
+        document.getElementById('themeBtn').textContent = state.theme === 'light' ? '🌙' : '☀️';
+    }
     if (state.lang) currentLang = state.lang;
 }
 
