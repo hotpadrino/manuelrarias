@@ -2,362 +2,941 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MiniCuentos Interactivos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>Cuentos Mágicos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #fdf6e3;
-            --text-color: #2c3e50;
-            --accent-color: #e67e22;
-            --card-bg: #ffffff;
-            --header-h: 60px;
-            --footer-h: 80px;
+            --bg: #fef9f0;
+            --surface: #fffdf7;
+            --surface2: #f5ede0;
+            --text: #2d1f0e;
+            --text2: #6b4c2a;
+            --accent: #e05c1a;
+            --accent2: #f5a623;
+            --border: #e8d8c0;
+            --shadow: rgba(100, 60, 20, 0.15);
+            --page-flip: #e8c99a;
+            --img-bg: linear-gradient(135deg, #f5a623 0%, #e05c1a 100%);
+            --font-display: 'Baloo 2', cursive;
+            --font-body: 'Lora', serif;
+            --header-h: 56px;
+            --nav-h: 64px;
+            --radius: 20px;
         }
 
         [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --text-color: #ecf0f1;
-            --accent-color: #f39c12;
-            --card-bg: #2c3e50;
+            --bg: #1a1208;
+            --surface: #251a0d;
+            --surface2: #2e2010;
+            --text: #f5e9d5;
+            --text2: #c4a06a;
+            --accent: #f5793a;
+            --accent2: #f5c842;
+            --border: #3d2c15;
+            --shadow: rgba(0,0,0,0.4);
+            --page-flip: #3d2c15;
+            --img-bg: linear-gradient(135deg, #6b3a1f 0%, #3d1a08 100%);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
-            height: 100dvh; /* Altura dinámica para móviles */
-            overflow: hidden; /* Evita el scroll global */
-            display: flex;
-            flex-direction: column;
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.4s, color 0.4s;
         }
 
-        /* --- Cabecera Fija --- */
-        header {
+        /* ── HEADER ── */
+        .header {
             height: var(--header-h);
-            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0,0,0,0.05);
-            backdrop-filter: blur(5px);
-            z-index: 100;
+            padding: 0 16px;
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
         }
 
-        /* --- Contenedor Principal --- */
-        main {
+        .header-left { display: flex; align-items: center; gap: 10px; }
+        .app-title {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            transition: all 0.2s;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn:active { transform: scale(0.96); }
+        .btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .btn.hidden { display: none !important; }
+
+        /* ── MAIN LAYOUT ── */
+        .app-wrap {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .main {
             flex: 1;
+            min-height: 0;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
-            overflow: hidden;
+            padding: 12px 16px;
         }
 
-        .menu-screen {
-            text-align: center;
+        /* ── MENU SCREENS ── */
+        .screen {
             width: 100%;
-            max-width: 600px;
-            max-height: 100%;
-            overflow-y: auto;
-            padding: 20px;
+            max-width: 560px;
+            text-align: center;
+            animation: fadeUp 0.4s ease;
         }
 
-        .grid-options {
+        .screen h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .screen .subtitle {
+            color: var(--text2);
+            font-style: italic;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px;
         }
 
-        .option-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
+        .card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 16px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: 0.3s;
-            font-weight: bold;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text);
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .card .card-emoji { font-size: 2rem; line-height: 1; }
+        .card:hover {
+            border-color: var(--accent);
+            background: var(--surface2);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px var(--shadow);
         }
 
-        .option-card:hover { transform: translateY(-3px); background: var(--accent-color); color: white; }
+        /* Progress badge */
+        .progress-badge {
+            font-size: 0.7rem;
+            background: var(--accent2);
+            color: var(--bg);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-weight: 600;
+        }
 
-        /* --- El Lector Estilo Libro --- */
+        /* ── READER ── */
         #reader {
             display: none;
+            flex-direction: column;
             width: 100%;
             height: 100%;
-            flex-direction: column;
         }
 
-        .book-frame {
+        .reader-inner {
             flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .book-wrap {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        .book {
+            position: absolute;
+            inset: 0;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: var(--card-bg);
-            border-radius: 15px;
+            background: var(--surface);
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 10px;
+            box-shadow: 0 12px 40px var(--shadow), 0 2px 8px var(--shadow);
+            border: 1.5px solid var(--border);
         }
 
-        .image-side {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: #ddd; /* Color de carga */
+        /* Image side */
+        .img-side {
+            position: relative;
+            overflow: hidden;
+            background: var(--img-bg);
         }
 
-        .text-side {
-            padding: 30px;
-            overflow-y: auto; /* Scroll solo para el texto */
-            font-family: 'Comic Neue', cursive;
+        .img-side img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s;
+        }
+
+        .img-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        .img-placeholder {
+            position: absolute;
+            inset: 0;
             display: flex;
             flex-direction: column;
-        }
-
-        .text-side h2 { margin-bottom: 15px; color: var(--accent-color); font-size: 1.8rem; }
-        .text-side p { font-size: 1.4rem; line-height: 1.5; }
-
-        /* --- Navegación Fija Inferior --- */
-        footer {
-            height: var(--footer-h);
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            justify-content: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+        .img-placeholder .big-emoji { font-size: 5rem; }
+        .img-placeholder p { font-family: var(--font-display); font-size: 0.9rem; }
+
+        /* Text side */
+        .text-side {
+            display: flex;
+            flex-direction: column;
+            padding: 32px 36px;
+            overflow: hidden;
         }
 
-        button {
-            padding: 12px 20px;
+        .chapter-badge {
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        .chapter-title {
+            font-family: var(--font-display);
+            font-size: clamp(1.2rem, 2.5vw, 1.9rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .chapter-text {
+            flex: 1;
+            overflow-y: auto;
+            font-size: clamp(1rem, 1.8vw, 1.3rem);
+            line-height: 1.75;
+            color: var(--text);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+            padding-right: 4px;
+        }
+        .chapter-text::-webkit-scrollbar { width: 4px; }
+        .chapter-text::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Page indicator */
+        .page-dots {
+            display: flex;
+            gap: 6px;
+            margin-top: 20px;
+            flex-shrink: 0;
+        }
+        .dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: var(--accent);
+            width: 20px;
+            border-radius: 4px;
+        }
+
+        /* ── NAV ── */
+        .nav {
+            height: var(--nav-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
             border: none;
-            border-radius: 25px;
-            background: var(--accent-color);
-            color: white;
-            font-weight: bold;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 700;
+            background: var(--surface);
+            color: var(--text);
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .nav-btn:active { transform: scale(0.95); }
+        .nav-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+        .nav-btn.next-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .nav-btn.next-btn:hover { background: var(--accent2); border-color: var(--accent2); color: var(--text); }
+
+        .page-counter {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            color: var(--text2);
+            font-weight: 600;
         }
 
-        #resumeBanner {
-            background: var(--accent-color);
-            color: white;
-            padding: 10px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 10px;
-            border-radius: 10px;
+        /* ── PAGE FLIP ANIMATION ── */
+        @keyframes flipOut {
+            0%   { transform: rotateY(0deg) scaleX(1); opacity: 1; }
+            50%  { transform: rotateY(-15deg) scaleX(0.92); opacity: 0.6; }
+            100% { transform: rotateY(0deg) scaleX(1); opacity: 1; }
         }
 
-        /* --- Animaciones --- */
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .flipping { animation: flipOut 0.5s ease-in-out; }
 
-        /* --- Mobile --- */
-        @media (max-width: 768px) {
-            .book-frame { grid-template-columns: 1fr; grid-template-rows: 40% 60%; }
-            .text-side { padding: 20px; }
-            .text-side p { font-size: 1.2rem; }
+        /* ── MISC ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .hidden { display: none !important; }
+
+        /* ── RESPONSIVE MOBILE ── */
+        @media (max-width: 700px) {
+            :root {
+                --header-h: 52px;
+                --nav-h: 60px;
+            }
+            .app-title { font-size: 1.1rem; }
+            .book { grid-template-columns: 1fr; grid-template-rows: 42% 1fr; }
+            .text-side { padding: 16px 20px; }
+            .chapter-title { margin-bottom: 12px; }
+            .page-dots { margin-top: 12px; }
+            .nav-btn { padding: 9px 16px; font-size: 0.85rem; }
+            .main { padding: 8px 10px; }
+        }
+
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: 1fr 1fr; }
+            .card { padding: 16px 10px; font-size: 0.9rem; }
+        }
     </style>
 </head>
 <body data-theme="light">
 
-    <header>
-        <span id="storyIndicator" style="font-weight: bold;">📚 MiniLector</span>
-        <div>
-            <button onclick="toggleTheme()" id="themeBtn">🌙</button>
-            <button onclick="goHome()" id="homeBtn" class="hidden">🏠</button>
+<div class="app-wrap">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <span class="app-title">📚 Cuentos Mágicos</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn hidden" id="backBtn" onclick="goBack()">🏠 Menú</button>
+            <button class="btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
         </div>
     </header>
 
-    <main>
-        <div id="resumeContainer" class="hidden">
-            <div id="resumeBanner" onclick="resumeLastSession()">
-                ¿Continuar leyendo donde lo dejaste? 📖
-            </div>
+    <!-- MAIN -->
+    <div class="main" id="mainArea">
+
+        <!-- 1. LANGUAGE MENU -->
+        <div class="screen" id="langScreen">
+            <h1>✨ Escoge tu idioma</h1>
+            <p class="subtitle">Choose your language</p>
+            <div class="grid" id="langGrid"></div>
         </div>
 
-        <div id="languageMenu" class="menu-screen">
-            <h1>Elige un idioma</h1>
-            <div id="langGrid" class="grid-options"></div>
+        <!-- 2. STORY MENU -->
+        <div class="screen hidden" id="storyScreen">
+            <h1 id="storyMenuTitle">¿Qué leer hoy?</h1>
+            <p class="subtitle" id="storyMenuSub"></p>
+            <div class="grid" id="storyGrid"></div>
         </div>
 
-        <div id="storyMenu" class="menu-screen hidden">
-            <h1 id="langTitle">Cuentos disponibles</h1>
-            <div id="storyGrid" class="grid-options"></div>
-        </div>
-
+        <!-- 3. READER -->
         <div id="reader">
-            <div class="book-frame fade-in" id="bookFrame">
-                <div class="image-side" id="pageImg"></div>
-                <div class="text-side" id="textContainer">
-                    <h2 id="pageTitle"></h2>
-                    <p id="pageText"></p>
+            <div class="reader-inner">
+                <div class="book-wrap">
+                    <div class="book" id="book">
+                        <!-- Image side -->
+                        <div class="img-side" id="imgSide">
+                            <div class="img-placeholder" id="imgPlaceholder">
+                                <span class="big-emoji">📖</span>
+                                <p>Ilustración</p>
+                            </div>
+                            <img id="pageImg" src="" alt="" style="opacity:0" />
+                            <div class="img-overlay"></div>
+                        </div>
+                        <!-- Text side -->
+                        <div class="text-side">
+                            <div class="chapter-badge" id="chapterBadge">Capítulo 1</div>
+                            <h2 class="chapter-title" id="pageTitle"></h2>
+                            <div class="chapter-text" id="pageText"></div>
+                            <div class="page-dots" id="pageDots"></div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- NAV -->
+                <nav class="nav">
+                    <button class="nav-btn" id="prevBtn" onclick="prevPage()">← Anterior</button>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                        <span class="page-counter" id="pageCounter">1 / 1</span>
+                        <button class="nav-btn" id="firstBtn" onclick="goFirstPage()" title="Volver al inicio (↑)" style="padding:4px 12px;font-size:0.75rem;">⏮ Inicio</button>
+                    </div>
+                    <button class="nav-btn next-btn" id="nextBtn" onclick="nextPage()">Siguiente →</button>
+                </nav>
             </div>
-            <footer>
-                <button onclick="prevPage()">⬅ Atrás</button>
-                <span id="pageCounter">1 / 1</span>
-                <button onclick="nextPage()" id="nextBtn">Siguiente ➡</button>
-            </footer>
         </div>
-    </main>
 
-    <script>
-        let allCuentos = [];
-        let currentStory = null;
-        let currentPage = 0;
+    </div>
+</div>
 
-        async function loadData() {
-            try {
-                const resp = await fetch('cuentos.txt');
-                const text = await resp.text();
-                parseCuentos(text);
-                checkPersistence();
-                showLanguageMenu();
-            } catch (e) {
-                alert("Error: Asegúrate de que cuentos.txt esté en la misma carpeta y usa un servidor local (Live Server).");
+<script>
+// ════════════════════════════════════════════════
+//  STORY DATA  (embedded – no fetch needed)
+// ════════════════════════════════════════════════
+const RAW_STORIES = [
+    {
+        lang: "ES",
+        title: "La Tortuga y el Conejo",
+        emoji: "🐢",
+        chapters: [
+            {
+                title: "El Gran Reto",
+                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-1536x1536.jpg",
+                text: "Había una vez un conejo muy presumido que siempre se burlaba de la tortuga por ser tan lenta. Pasaba corriendo, le decía que no estorbara y la hacía sentir muy mal con sus palabras."
+            },
+            {
+                title: "La Carrera del Siglo",
+                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-2-1536x1536.jpg",
+                text: "Un día, la tortuga, cansada de las bromas, lo desafió a una carrera. Todos los animales del bosque se reunieron para ver quién ganaría. El búho fue el juez, y la ardilla marcó la línea de salida."
+            },
+            {
+                title: "Una Siesta Inesperada",
+                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-3-770x770.jpg",
+                text: "El conejo salió corriendo y pronto dejó a la tortuga muy atrás. Confiado en su velocidad, decidió tomar una siesta bajo un árbol. Mientras tanto, la tortuga siguió caminando paso a paso, sin detenerse nunca."
+            },
+            {
+                title: "El Sabor de la Victoria",
+                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-4-770x770.jpg",
+                text: "¡La tortuga cruzó la meta mientras el conejo aún dormía! Todos la felicitaron con gran alegría. El conejo se despertó avergonzado y le pidió perdón, prometiendo no volver a burlarse de nadie nunca más."
             }
-        }
-
-        function parseCuentos(raw) {
-            const blocks = raw.split(/^# /m).filter(b => b.trim());
-            allCuentos = blocks.map((block, idx) => {
-                const lines = block.split('\n');
-                const header = lines.shift();
-                const lang = (header.match(/\[(.*?)\]/) || ["", "ES"])[1].toUpperCase();
-                const title = header.replace(/\[.*?\]/, "").trim();
-                
-                const chapters = block.split(/^## /m).slice(1).map(chap => {
-                    const cLines = chap.split('\n').filter(l => l.trim());
-                    const cTitle = cLines.shift();
-                    const img = (chap.match(/!\[.*?\]\((.*?)\)/) || ["", ""])[1];
-                    const content = cLines.filter(l => !l.startsWith('![')).join('<br><br>');
-                    return { title: cTitle, image: img, text: content };
-                });
-                return { id: idx, title, lang, chapters };
-            });
-        }
-
-        function showLanguageMenu() {
-            const langs = [...new Set(allCuentos.map(c => c.lang))];
-            const grid = document.getElementById('langGrid');
-            grid.innerHTML = langs.map(l => `<div class="option-card" onclick="showStories('${l}')">${l}</div>`).join('');
-            
-            document.getElementById('languageMenu').classList.remove('hidden');
-            document.getElementById('storyMenu').classList.add('hidden');
-            document.getElementById('reader').style.display = 'none';
-            document.getElementById('homeBtn').classList.add('hidden');
-        }
-
-        function showStories(lang) {
-            const filtered = allCuentos.filter(c => c.lang === lang);
-            const grid = document.getElementById('storyGrid');
-            grid.innerHTML = filtered.map(c => `<div class="option-card" onclick="startReading(${c.id}, 0)">${c.title}</div>`).join('');
-            
-            document.getElementById('languageMenu').classList.add('hidden');
-            document.getElementById('storyMenu').classList.remove('hidden');
-            document.getElementById('homeBtn').classList.remove('hidden');
-        }
-
-        function startReading(id, pageIndex) {
-            currentStory = allCuentos.find(c => c.id === id);
-            currentPage = pageIndex;
-            
-            document.getElementById('storyMenu').classList.add('hidden');
-            document.getElementById('languageMenu').classList.add('hidden');
-            document.getElementById('reader').style.display = 'flex';
-            document.getElementById('resumeContainer').classList.add('hidden');
-            
-            renderPage();
-        }
-
-        function renderPage() {
-            const page = currentStory.chapters[currentPage];
-            const isLast = currentPage === currentStory.chapters.length - 1;
-            
-            // Reset de scroll de texto al cambiar de página
-            document.getElementById('textContainer').scrollTop = 0;
-            
-            document.getElementById('pageImg').style.backgroundImage = `url('${page.image}')`;
-            document.getElementById('pageTitle').innerText = page.title;
-            document.getElementById('pageText').innerHTML = page.text;
-            document.getElementById('pageCounter').innerText = `${currentPage + 1} / ${currentStory.chapters.length}`;
-            
-            // Botón Siguiente cambia a "Terminar" en la última página
-            document.getElementById('nextBtn').innerText = isLast ? "Terminar 🏁" : "Siguiente ➡";
-            
-            saveState();
-        }
-
-        function nextPage() {
-            if (currentPage < currentStory.chapters.length - 1) {
-                currentPage++;
-                document.getElementById('bookFrame').classList.remove('fade-in');
-                void document.getElementById('bookFrame').offsetWidth; // Trigger reflow
-                document.getElementById('bookFrame').classList.add('fade-in');
-                renderPage();
-            } else {
-                // Al terminar, vuelve a la lista de cuentos de ese idioma
-                clearState();
-                showStories(currentStory.lang);
+        ]
+    },
+    {
+        lang: "ES",
+        title: "El Pequeño Astronauta",
+        emoji: "🚀",
+        chapters: [
+            {
+                title: "Viaje a la Luna",
+                image: null,
+                emoji: "🚀",
+                text: "Mateo tenía un cohete de cartón, pero en su imaginación era la nave más rápida de la galaxia. Una noche, cerró los ojos y, ¡pum!, aterrizó en la Luna. El suelo era de queso y las estrellas brillaban como diamantes."
+            },
+            {
+                title: "Un Amigo de Marte",
+                image: null,
+                emoji: "🤖",
+                text: "Mientras exploraba un cráter, Mateo encontró a un pequeño robot que saludaba con una antena. Juntos jugaron a saltar con poca gravedad y contaron mil estrellas. Mateo prometió volver cada noche para nuevas aventuras espaciales."
             }
-        }
-
-        function prevPage() {
-            if (currentPage > 0) {
-                currentPage--;
-                renderPage();
+        ]
+    },
+    {
+        lang: "ES",
+        title: "El Dragón de Colores",
+        emoji: "🐉",
+        chapters: [
+            {
+                title: "El Bosque Gris",
+                image: null,
+                emoji: "🌫️",
+                text: "En un bosque donde todo era gris, vivía un dragón que no echaba fuego, sino burbujas de colores. Los otros dragones se reían de él, pero el dragón de colores solo quería que el mundo fuera más alegre y bonito."
+            },
+            {
+                title: "Una Explosión de Alegría",
+                image: null,
+                emoji: "🌈",
+                text: "Un día, sopló la burbuja más grande de la historia. Al explotar, el color se esparció por todos los árboles y flores del bosque. Desde entonces, el bosque gris se convirtió en el lugar más feliz del reino gracias a las burbujas mágicas."
             }
-        }
-
-        function goHome() {
-            clearState();
-            showLanguageMenu();
-        }
-
-        // --- Persistencia ---
-        function saveState() {
-            const data = { id: currentStory.id, page: currentPage, theme: document.body.getAttribute('data-theme') };
-            localStorage.setItem('kids_reader_save', JSON.stringify(data));
-        }
-
-        function clearState() {
-            const currentTheme = document.body.getAttribute('data-theme');
-            localStorage.setItem('kids_reader_save', JSON.stringify({ theme: currentTheme }));
-        }
-
-        function checkPersistence() {
-            const saved = JSON.parse(localStorage.getItem('kids_reader_save'));
-            if (saved && saved.id !== undefined) {
-                document.getElementById('resumeContainer').classList.remove('hidden');
+        ]
+    },
+    {
+        lang: "EN",
+        title: "The Brave Little Seed",
+        emoji: "🌻",
+        chapters: [
+            {
+                title: "Deep in the Ground",
+                image: null,
+                emoji: "🌱",
+                text: "Once there was a tiny seed living under the dark soil. She was a bit scared of the big world outside. \"Wait for the sun,\" whispered the Earth. So the little seed waited patiently and drank the cool rainwater every day."
+            },
+            {
+                title: "Reaching for the Sun",
+                image: null,
+                emoji: "☀️",
+                text: "One morning, she felt a warm touch. It was the Sun! She pushed and pushed until she popped out of the ground. She wasn't a tiny seed anymore — she was becoming a beautiful, bright yellow sunflower standing tall and proud."
             }
-            if (saved && saved.theme) setTheme(saved.theme);
+        ]
+    },
+    {
+        lang: "EN",
+        title: "The Cat and the Moon",
+        emoji: "🌙",
+        chapters: [
+            {
+                title: "A Night Wish",
+                image: null,
+                emoji: "🐱",
+                text: "Luna the cat loved to look at the Moon from her window every single night. \"I want to touch that giant glowing ball,\" she purred softly. She climbed the tallest tree in the garden, stretching her paws as high as she could."
+            },
+            {
+                title: "The Moon's Gift",
+                image: null,
+                emoji: "✨",
+                text: "The Moon smiled and sent a silver beam of light down to touch Luna's fur. It felt warm and completely magical. Luna didn't need to reach the sky anymore, because the Moon had come all the way down to say goodnight to her."
+            }
+        ]
+    },
+    {
+        lang: "EN",
+        title: "The Magic Umbrella",
+        emoji: "☂️",
+        chapters: [
+            {
+                title: "A Rainy Day",
+                image: null,
+                emoji: "🌧️",
+                text: "Leo found an old blue umbrella in the attic. When it started to rain, he opened it and something amazing happened. Instead of getting wet, the raindrops turned into colorful candies falling from the sky all around him!"
+            },
+            {
+                title: "Flying Over the City",
+                image: null,
+                emoji: "🏙️",
+                text: "The wind blew hard, and the umbrella lifted Leo off the ground. He flew over the houses and parks, waving at the birds below. It was the best rainy day ever, and he couldn't wait for the next storm to fly again."
+            }
+        ]
+    }
+];
+
+// Language metadata
+const LANG_META = {
+    ES: { label: "Español", emoji: "🇪🇸", menuTitle: "¿Qué quieres leer hoy?", menuSub: "Elige un cuento para comenzar" },
+    EN: { label: "English", emoji: "🇺🇸", menuTitle: "What do you want to read?", menuSub: "Choose a story to start" }
+};
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let currentLang = null;
+let currentStory = null;
+let currentPage = 0;
+
+// ════════════════════════════════════════════════
+//  AUDIO — page flip sound via Web Audio API
+// ════════════════════════════════════════════════
+let audioCtx = null;
+
+function playFlip() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        // Ascending magic arpeggio: C5 E5 G5 C6
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const master = audioCtx.createGain();
+        master.gain.value = 0.22;
+        master.connect(audioCtx.destination);
+
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const env = audioCtx.createGain();
+            const t = now + i * 0.07;
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.03, t + 0.04); // slight shimmer
+
+            env.gain.setValueAtTime(0, t);
+            env.gain.linearRampToValueAtTime(0.9, t + 0.02);
+            env.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+
+            // Add a gentle harmonic overtone
+            const osc2 = audioCtx.createOscillator();
+            const env2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(freq * 2, t);
+            env2.gain.setValueAtTime(0, t);
+            env2.gain.linearRampToValueAtTime(0.3, t + 0.01);
+            env2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+            osc.connect(env); env.connect(master);
+            osc2.connect(env2); env2.connect(master);
+            osc.start(t); osc.stop(t + 0.6);
+            osc2.start(t); osc2.stop(t + 0.35);
+        });
+
+        // Sparkle noise burst at the start
+        const sparkDur = 0.08;
+        const sparkBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * sparkDur, audioCtx.sampleRate);
+        const sd = sparkBuf.getChannelData(0);
+        for (let i = 0; i < sd.length; i++) sd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / sd.length, 2);
+        const sparkSrc = audioCtx.createBufferSource();
+        sparkSrc.buffer = sparkBuf;
+        const sparkFilter = audioCtx.createBiquadFilter();
+        sparkFilter.type = 'highpass';
+        sparkFilter.frequency.value = 6000;
+        const sparkGain = audioCtx.createGain();
+        sparkGain.gain.value = 0.08;
+        sparkSrc.connect(sparkFilter); sparkFilter.connect(sparkGain); sparkGain.connect(audioCtx.destination);
+        sparkSrc.start(now);
+    } catch(e) {}
+}
+
+// ════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════
+function goFirstPage() {
+    if (!currentStory || currentPage === 0) return;
+    currentPage = 0;
+    renderPage();
+    saveState();
+}
+
+window.addEventListener('keydown', (e) => {
+    const readerVisible = document.getElementById('reader').style.display !== 'none';
+    if (!readerVisible) return;
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); goFirstPage(); }
+});
+
+window.addEventListener('load', () => {
+    loadState();
+    buildLangMenu();
+});
+
+function buildLangMenu() {
+    const langs = [...new Set(RAW_STORIES.map(s => s.lang))];
+    const grid = document.getElementById('langGrid');
+    grid.innerHTML = langs.map(l => {
+        const m = LANG_META[l] || { emoji: '🌐', label: l };
+        return `<div class="card" onclick="selectLang('${l}')">
+            <span class="card-emoji">${m.emoji}</span>
+            <span>${m.label}</span>
+        </div>`;
+    }).join('');
+}
+
+function selectLang(lang) {
+    currentLang = lang;
+    saveState();
+    showStoryMenu();
+}
+
+function showStoryMenu() {
+    const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: 'Choose a story' };
+    document.getElementById('storyMenuTitle').textContent = meta.menuTitle;
+    document.getElementById('storyMenuSub').textContent = meta.menuSub;
+
+    const stories = RAW_STORIES.filter(s => s.lang === currentLang);
+    const grid = document.getElementById('storyGrid');
+
+    // Get saved progress for badges
+    const state = loadStateObj();
+
+    grid.innerHTML = stories.map((s, i) => {
+        const savedPage = state.progress?.[currentLang]?.[i];
+        const badge = (savedPage != null && savedPage > 0)
+            ? `<span class="progress-badge">Pág. ${savedPage + 1}</span>` : '';
+        return `<div class="card" onclick="startStory(${RAW_STORIES.indexOf(s)})">
+            <span class="card-emoji">${s.emoji}</span>
+            <span>${s.title}</span>
+            ${badge}
+        </div>`;
+    }).join('');
+
+    show('storyScreen');
+    hide('langScreen');
+    document.getElementById('backBtn').classList.remove('hidden');
+}
+
+function startStory(globalIdx) {
+    currentStory = RAW_STORIES[globalIdx];
+
+    // Resume saved page
+    const state = loadStateObj();
+    const langStories = RAW_STORIES.filter(s => s.lang === currentLang);
+    const localIdx = langStories.indexOf(currentStory);
+    currentPage = state.progress?.[currentLang]?.[localIdx] ?? 0;
+    if (currentPage >= currentStory.chapters.length) currentPage = 0;
+
+    hide('storyScreen');
+    const reader = document.getElementById('reader');
+    reader.style.display = 'flex';
+    reader.style.flexDirection = 'column';
+    reader.style.width = '100%';
+    reader.style.height = '100%';
+
+    buildDots();
+    renderPage(false);
+    saveState();
+}
+
+// ════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════
+function buildDots() {
+    const dots = document.getElementById('pageDots');
+    dots.innerHTML = currentStory.chapters.map((_, i) =>
+        `<div class="dot" id="dot-${i}"></div>`
+    ).join('');
+}
+
+function renderPage(animate = true) {
+    const chap = currentStory.chapters[currentPage];
+    const book = document.getElementById('book');
+
+    const doRender = () => {
+        // Image
+        const imgEl = document.getElementById('pageImg');
+        const placeholder = document.getElementById('imgPlaceholder');
+        const imgSide = document.getElementById('imgSide');
+
+        if (chap.image && chap.image !== 'null') {
+            imgEl.style.opacity = '0';
+            imgEl.src = chap.image;
+            imgEl.onload = () => { imgEl.style.opacity = '1'; placeholder.style.display = 'none'; };
+            imgEl.onerror = () => {
+                imgEl.style.opacity = '0';
+                placeholder.style.display = 'flex';
+                placeholder.querySelector('.big-emoji').textContent = chap.emoji || '📖';
+            };
+            placeholder.style.display = 'none';
+        } else {
+            imgEl.style.opacity = '0';
+            imgEl.src = '';
+            placeholder.style.display = 'flex';
+            placeholder.querySelector('.big-emoji').textContent = chap.emoji || '📖';
         }
 
-        function resumeLastSession() {
-            const saved = JSON.parse(localStorage.getItem('kids_reader_save'));
-            if (saved) startReading(saved.id, saved.page);
+        // Generate gradient background per chapter
+        const gradients = [
+            'linear-gradient(135deg, #f5a623 0%, #e05c1a 100%)',
+            'linear-gradient(135deg, #6dd5fa 0%, #2980b9 100%)',
+            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+            'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
+            'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
+        ];
+        imgSide.style.background = gradients[currentPage % gradients.length];
+
+        // Text
+        document.getElementById('chapterBadge').textContent = `Capítulo ${currentPage + 1}`;
+        document.getElementById('pageTitle').textContent = chap.title;
+        document.getElementById('pageText').textContent = chap.text;
+
+        // Dots
+        document.querySelectorAll('.dot').forEach((d, i) => {
+            d.classList.toggle('active', i === currentPage);
+        });
+
+        // Counter & buttons
+        const total = currentStory.chapters.length;
+        document.getElementById('pageCounter').textContent = `${currentPage + 1} / ${total}`;
+        document.getElementById('prevBtn').disabled = currentPage === 0;
+        document.getElementById('firstBtn').disabled = currentPage === 0;
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (currentPage === total - 1) {
+            nextBtn.textContent = '📚 Más cuentos';
+            nextBtn.classList.remove('next-btn');
+            nextBtn.style.background = '#27ae60';
+            nextBtn.style.borderColor = '#27ae60';
+            nextBtn.style.color = '#fff';
+        } else {
+            nextBtn.textContent = 'Siguiente →';
+            nextBtn.classList.add('next-btn');
+            nextBtn.style.background = '';
+            nextBtn.style.borderColor = '';
+            nextBtn.style.color = '';
+        }
+    };
+
+    if (animate) {
+        book.classList.add('flipping');
+        playFlip();
+        setTimeout(doRender, 160);
+        setTimeout(() => book.classList.remove('flipping'), 500);
+    } else {
+        doRender();
+    }
+}
+
+// ════════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════════
+function nextPage() {
+    if (currentPage < currentStory.chapters.length - 1) {
+        currentPage++;
+        renderPage();
+        saveState();
+    } else {
+        // Last page → go back to story list
+        goBackToStories();
+    }
+}
+
+function prevPage() {
+    if (currentPage > 0) {
+        currentPage--;
+        renderPage();
+        saveState();
+    }
+}
+
+function goBackToStories() {
+    // Save that we finished
+    saveState();
+    document.getElementById('reader').style.display = 'none';
+    showStoryMenu();
+}
+
+function goBack() {
+    // From story menu → language menu, or from reader → story menu
+    const readerVisible = document.getElementById('reader').style.display !== 'none';
+    if (readerVisible) {
+        saveState();
+        document.getElementById('reader').style.display = 'none';
+        showStoryMenu();
+    } else {
+        hide('storyScreen');
+        show('langScreen');
+        document.getElementById('backBtn').classList.add('hidden');
+    }
+}
+
+// ════════════════════════════════════════════════
+//  THEME
+// ════════════════════════════════════════════════
+function toggleTheme() {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
+    saveState();
+}
+
+// ════════════════════════════════════════════════
+//  PERSISTENCE
+// ════════════════════════════════════════════════
+function loadStateObj() {
+    try { return JSON.parse(localStorage.getItem('cuentos_state')) || {}; }
+    catch(e) { return {}; }
+}
+
+function saveState() {
+    try {
+        const state = loadStateObj();
+        state.theme = document.body.getAttribute('data-theme');
+        state.lang = currentLang;
+
+        if (currentStory && currentLang) {
+            if (!state.progress) state.progress = {};
+            if (!state.progress[currentLang]) state.progress[currentLang] = {};
+            const langStories = RAW_STORIES.filter(s => s.lang === currentLang);
+            const localIdx = langStories.indexOf(currentStory);
+            state.progress[currentLang][localIdx] = currentPage;
         }
 
-        function toggleTheme() {
-            const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            setTheme(newTheme);
-        }
+        localStorage.setItem('cuentos_state', JSON.stringify(state));
+    } catch(e) {}
+}
 
-        function setTheme(theme) {
-            document.body.setAttribute('data-theme', theme);
-            document.getElementById('themeBtn').innerText = theme === 'light' ? '🌙' : '☀️';
-            saveState();
-        }
+function loadState() {
+    const state = loadStateObj();
 
-        window.onload = loadData;
-    </script>
+    // Theme
+    if (state.theme) {
+        document.body.setAttribute('data-theme', state.theme);
+        document.getElementById('themeBtn').textContent = state.theme === 'light' ? '🌙' : '☀️';
+    }
+
+    // Resume language if saved
+    if (state.lang) {
+        currentLang = state.lang;
+    }
+}
+
+// ════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+</script>
 </body>
 </html>
