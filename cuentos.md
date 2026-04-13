@@ -1,3 +1,12 @@
+# 📚 Cuentos Mágicos
+
+> Colecciones de cuentos clásicos en 4 idiomas. Haz clic en cada idioma para desplegar sus cuentos.
+
+---
+
+<details>
+<summary>🇪🇸 <strong>Español</strong> &nbsp;·&nbsp; 6 cuentos</summary>
+
 # El Conejo y La Tortuga [ES]
 
 ## 1. El Presumido
@@ -250,6 +259,12 @@ Cuando el rey llegó, el gato lo recibió: "Bienvenidos al castillo del Marqués
 ![Boda](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg/640px-Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg)
 El joven se casó con la princesa y el gato vivió como un gran señor, usando sus botas mágicas para pasear por el reino por siempre.
 
+</details>
+
+---
+
+<details>
+<summary>🇺🇸 <strong>English</strong> &nbsp;·&nbsp; 6 cuentos</summary>
 
 # The Tortoise and the Hare [EN]
 
@@ -503,6 +518,12 @@ When the king arrived, the cat welcomed him: "Welcome to the Marquis's castle." 
 ![Wedding](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg/640px-Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg)
 The young man married the princess and the cat lived as a great lord, using his magic boots to stroll through the kingdom forever.
 
+</details>
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português</strong> &nbsp;·&nbsp; 6 cuentos</summary>
 
 # A Tartaruga e a Lebre [PT]
 
@@ -756,6 +777,12 @@ Quando o rei chegou, o gato recebeu-o: "Bem-vindos ao castelo do Marquês". O re
 ![Boda](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg/640px-Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg)
 O jovem casou com a princesa e o gato viveu como um grande senhor, usando as suas botas mágicas para passear pelo reino para sempre.
 
+</details>
+
+---
+
+<details>
+<summary>🇫🇷 <strong>Français</strong> &nbsp;·&nbsp; 6 cuentos</summary>
 
 # La Tortue et le Lièvre [FR]
 
@@ -1008,3 +1035,7 @@ Quand le roi arriva, le chat l'accueillit : "Bienvenue au château du Marquis". 
 ## 10. Une Fin de Conte
 ![Mariage](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg/640px-Puss_in_Boots_by_Gustave_Dor%C3%A9.jpg)
 Le jeune homme épousa la princesse et le chat vécut comme un grand seigneur, utilisant ses bottes magiques pour se promener dans le royaume.
+
+</details>
+
+---
