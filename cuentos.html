@@ -141,6 +141,52 @@
             gap: 14px;
         }
 
+        /* Language picker — 2×2 grid, bigger cards */
+        .lang-grid {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 420px;
+            margin: 0 auto;
+            gap: 16px;
+        }
+
+        .lang-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 16px 20px;
+            cursor: pointer;
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--text);
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .lang-card .flag { font-size: 3rem; line-height: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+        .lang-card .lang-name { font-size: 1.1rem; }
+        .lang-card .lang-phrase {
+            font-size: 0.72rem;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--text2);
+            text-align: center;
+            line-height: 1.3;
+        }
+        .lang-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .lang-card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 10px 24px var(--shadow); }
+        .lang-card:hover .lang-phrase { color: var(--accent); }
+
         .card {
             background: var(--surface);
             border: 2px solid var(--border);
@@ -441,6 +487,10 @@
             .page-dots { margin-top: 12px; }
             .nav-btn { padding: 9px 16px; font-size: 0.85rem; }
             .main { padding: 8px 10px; }
+            .lang-grid { max-width: 100%; gap: 12px; }
+            .lang-card { padding: 20px 10px 16px; }
+            .lang-card .flag { font-size: 2.4rem; }
+            .lang-card .lang-name { font-size: 1rem; }
         }
 
         @media (max-width: 400px) {
@@ -469,9 +519,9 @@
 
         <!-- 1. LANGUAGE MENU -->
         <div class="screen" id="langScreen">
-            <h1>✨ Escoge tu idioma</h1>
-            <p class="subtitle">Choose your language</p>
-            <div class="grid" id="langGrid"></div>
+            <h1 id="langTitle">✨ ¿En qué idioma quieres leer?</h1>
+            <p class="subtitle" id="langSubtitle">Choose your language · Escolha seu idioma · Choisissez votre langue</p>
+            <div class="grid lang-grid" id="langGrid"></div>
         </div>
 
         <!-- 2. STORY MENU -->
@@ -526,7 +576,7 @@
                 <a href="https://wa.me/573128816469" class="link-whatsapp" target="_blank">
                     <span>📱</span> WhatsApp
                 </a>
-                <a href="mailto:alucard8@gmail.com" class="link-email">
+                <a href="/cdn-cgi/l/email-protection#fb9a978e989a899fc3bb9c969a9297d5989496" class="link-email">
                     <span>✉️</span> Email
                 </a>
             </div>
@@ -536,7 +586,7 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ════════════════════════════════════════════════
 //  LOAD & PARSE cuentos.txt
 // ════════════════════════════════════════════════
@@ -599,8 +649,18 @@ function parseTxt(raw) {
     // Split on story headers "# Title [LANG]"
     const storyBlocks = raw.split(/\n(?=# )/).filter(s => s.trim());
     const EMOJI_MAP = {
-        'tortuga':'🐢','conejo':'🐇','astronauta':'🚀','dragón':'🐉','dragon':'🐉',
-        'seed':'🌻','cat':'🐱','moon':'🌙','umbrella':'☂️','default':'📖'
+        'tortuga':'🐢','liebre':'🐇','conejo':'🐇','tortoise':'🐢','hare':'🐇',
+        'astronauta':'🚀','dragón':'🐉','dragon':'🐉',
+        'seed':'🌻','cat':'🐱','puss':'🐱','gato':'🐱',
+        'moon':'🌙','umbrella':'☂️',
+        'lion':'🦁','león':'🦁','leão':'🦁',
+        'mouse':'🐭','ratón':'🐭','rato':'🐭',
+        'pigs':'🐷','cerditos':'🐷','porquinhos':'🐷','cochons':'🐷',
+        'riding hood':'🧣','caperucita':'🧣','chapeuzinho':'🧣','chaperon':'🧣',
+        'duckling':'🦢','patito':'🦢','patinho':'🦢','canard':'🦢',
+        'boots':'👢','botas':'👢',
+        'tartaruga':'🐢','lebre':'🐇',
+        'default':'📖'
     };
 
     return storyBlocks.map((block, idx) => {
@@ -641,8 +701,42 @@ function parseTxt(raw) {
 //  LANGUAGE METADATA
 // ════════════════════════════════════════════════
 const LANG_META = {
-    ES: { label: 'Español', emoji: '🇪🇸', menuTitle: '¿Qué quieres leer hoy?', menuSub: 'Elige un cuento para comenzar' },
-    EN: { label: 'English', emoji: '🇺🇸', menuTitle: 'What do you want to read?', menuSub: 'Choose a story to start' }
+    ES: {
+        label: 'Español',   emoji: '🇪🇸',
+        langQ: '¿En qué idioma quieres leer?',
+        menuTitle: '¿Qué cuento quieres leer hoy?',
+        menuSub: 'Elige un cuento para comenzar',
+        chapterWord: 'Capítulo',
+        moreStories: '📚 Más cuentos',
+        next: 'Siguiente →', prev: '← Anterior', first: '⏮ Inicio'
+    },
+    EN: {
+        label: 'English',   emoji: '🇺🇸',
+        langQ: 'What language do you want to read in?',
+        menuTitle: 'Which story do you want to read?',
+        menuSub: 'Choose a story to begin',
+        chapterWord: 'Chapter',
+        moreStories: '📚 More stories',
+        next: 'Next →', prev: '← Back', first: '⏮ Start'
+    },
+    PT: {
+        label: 'Português', emoji: '🇧🇷',
+        langQ: 'Em que idioma você quer ler?',
+        menuTitle: 'Qual história você quer ler hoje?',
+        menuSub: 'Escolha um conto para começar',
+        chapterWord: 'Capítulo',
+        moreStories: '📚 Mais histórias',
+        next: 'Próximo →', prev: '← Anterior', first: '⏮ Início'
+    },
+    FR: {
+        label: 'Français',  emoji: '🇫🇷',
+        langQ: 'Dans quelle langue voulez-vous lire ?',
+        menuTitle: 'Quelle histoire veux-tu lire ?',
+        menuSub: 'Choisissez une histoire pour commencer',
+        chapterWord: 'Chapitre',
+        moreStories: '📚 Plus d\'histoires',
+        next: 'Suivant →', prev: '← Retour', first: '⏮ Début'
+    }
 };
 
 // ════════════════════════════════════════════════
@@ -717,6 +811,14 @@ window.addEventListener('keydown', (e) => {
 // ════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════
+// Phrase shown on each language card (in that language)
+const LANG_PHRASES = {
+    ES: '«Había una vez…»',
+    EN: '"Once upon a time…"',
+    PT: '«Era uma vez…»',
+    FR: '«Il était une fois…»'
+};
+
 function init(demo = false) {
     loadState();
     buildLangMenu(demo);
@@ -726,25 +828,27 @@ function buildLangMenu(demo = false) {
     const langs = [...new Set(RAW_STORIES.map(s => s.lang))];
     document.getElementById('langGrid').innerHTML = langs.map(l => {
         const m = LANG_META[l] || { emoji: '🌐', label: l };
-        return `<div class="card" onclick="selectLang('${l}')">
-            <span class="card-emoji">${m.emoji}</span>
-            <span>${m.label}</span>
+        const phrase = LANG_PHRASES[l] || '';
+        return `<div class="lang-card" onclick="selectLang('${l}')">
+            <span class="flag">${m.emoji}</span>
+            <span class="lang-name">${m.label}</span>
+            <span class="lang-phrase">${phrase}</span>
         </div>`;
     }).join('');
 
-    const sub = document.querySelector('#langScreen .subtitle');
+    const sub = document.getElementById('langSubtitle');
     if (demo) sub.textContent = '⚠️ Modo demo · cuentos.txt no encontrado';
-    else sub.textContent = 'Choose your language';
 }
 
 function selectLang(lang) {
     currentLang = lang;
     saveState();
+    pushState('story');
     showStoryMenu();
 }
 
 function showStoryMenu() {
-    const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: '' };
+    const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: '', emoji: '🌐', label: currentLang };
     document.getElementById('storyMenuTitle').textContent = meta.menuTitle;
     document.getElementById('storyMenuSub').textContent = meta.menuSub;
 
@@ -754,7 +858,7 @@ function showStoryMenu() {
     document.getElementById('storyGrid').innerHTML = stories.map((s) => {
         const saved = state.progress?.[s.id];
         const badge = saved > 0
-            ? `<span class="progress-badge">Pág. ${saved + 1}/${s.chapters.length}</span>` : '';
+            ? `<span class="progress-badge">${meta.chapterWord} ${saved + 1}/${s.chapters.length}</span>` : '';
         return `<div class="card" onclick="startStory(${s.id})">
             <span class="card-emoji">${s.emoji}</span>
             <span>${s.title}</span>
@@ -781,6 +885,7 @@ function startStory(id) {
     reader.style.width = '100%';
     reader.style.height = '100%';
 
+    pushState('reader');
     buildDots();
     renderPage(false);
     saveState();
@@ -847,10 +952,10 @@ function renderPage(animate = true) {
                 CHAPTER_EMOJIS[currentPage % CHAPTER_EMOJIS.length];
         }
 
+        const meta = LANG_META[currentLang] || LANG_META['ES'];
         // ── TEXT ──
         const total = currentStory.chapters.length;
-        document.getElementById('chapterBadge').textContent =
-            currentLang === 'EN' ? `Chapter ${currentPage + 1}` : `Capítulo ${currentPage + 1}`;
+        document.getElementById('chapterBadge').textContent = `${meta.chapterWord} ${currentPage + 1}`;
         document.getElementById('pageTitle').textContent = chap.title;
         document.getElementById('pageText').textContent  = chap.text;
 
@@ -862,12 +967,12 @@ function renderPage(animate = true) {
         document.getElementById('pageCounter').textContent = `${currentPage + 1} / ${total}`;
         document.getElementById('prevBtn').disabled  = currentPage === 0;
         document.getElementById('firstBtn').disabled = currentPage === 0;
+        document.getElementById('prevBtn').textContent  = meta.prev;
+        document.getElementById('firstBtn').textContent = meta.first;
 
         const nextBtn = document.getElementById('nextBtn');
         const isLast  = currentPage === total - 1;
-        nextBtn.textContent = isLast
-            ? (currentLang === 'EN' ? '📚 More stories' : '📚 Más cuentos')
-            : (currentLang === 'EN' ? 'Next →' : 'Siguiente →');
+        nextBtn.textContent = isLast ? meta.moreStories : meta.next;
         nextBtn.classList.toggle('next-btn', !isLast);
         nextBtn.style.background   = isLast ? '#27ae60' : '';
         nextBtn.style.borderColor  = isLast ? '#27ae60' : '';
@@ -910,15 +1015,7 @@ function goFirstPage() {
 }
 
 function goBack() {
-    if (document.getElementById('reader').style.display !== 'none') {
-        saveState();
-        hide('reader');
-        showStoryMenu();
-    } else {
-        hide('storyScreen');
-        show('langScreen');
-        document.getElementById('backBtn').classList.add('hidden');
-    }
+    history.back();
 }
 
 // ════════════════════════════════════════════════
@@ -965,11 +1062,90 @@ function loadState() {
 //  HELPERS
 // ════════════════════════════════════════════════
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
 function hide(id) {
     const el = document.getElementById(id);
     if (id === 'reader') el.style.display = 'none';
     else el.classList.add('hidden');
 }
+
+// ════════════════════════════════════════════════
+//  HISTORY API — back button support
+// ════════════════════════════════════════════════
+function pushState(screen) {
+    // screen: 'lang' | 'story' | 'reader'
+    history.pushState({ screen }, '');
+}
+
+window.addEventListener('popstate', (e) => {
+    const screen = e.state?.screen;
+    if (screen === 'reader' || screen === 'story') {
+        // Going back from reader → story list
+        if (document.getElementById('reader').style.display !== 'none') {
+            saveState();
+            hide('reader');
+            showStoryMenu();
+            // don't push again, the popstate already moved back
+        } else if (!document.getElementById('storyScreen').classList.contains('hidden')) {
+            hide('storyScreen');
+            show('langScreen');
+            document.getElementById('backBtn').classList.add('hidden');
+        }
+    } else {
+        // lang screen — nothing behind it
+        hide('storyScreen');
+        hide('reader');
+        show('langScreen');
+        document.getElementById('backBtn').classList.add('hidden');
+    }
+});
+
+// ════════════════════════════════════════════════
+//  TOUCH — swipe left/right + tap to advance
+// ════════════════════════════════════════════════
+(function setupTouch() {
+    let startX = 0, startY = 0, startT = 0;
+    const SWIPE_MIN = 50;   // px to count as swipe
+    const SWIPE_MAX_Y = 80; // max vertical drift allowed
+    const TAP_MAX_DIST = 10;
+    const TAP_MAX_MS   = 250;
+
+    const book = () => document.getElementById('book');
+
+    function onTouchStart(e) {
+        startX = e.changedTouches[0].clientX;
+        startY = e.changedTouches[0].clientY;
+        startT = Date.now();
+    }
+
+    function onTouchEnd(e) {
+        if (document.getElementById('reader').style.display === 'none') return;
+
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        const dt = Date.now() - startT;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+
+        // Swipe detection (horizontal, not too vertical)
+        if (absDx >= SWIPE_MIN && absDy < SWIPE_MAX_Y) {
+            if (dx < 0) nextPage();   // swipe left  → next
+            else        prevPage();   // swipe right → prev
+            return;
+        }
+
+        // Tap detection (short, small movement)
+        if (dt < TAP_MAX_MS && absDx < TAP_MAX_DIST && absDy < TAP_MAX_DIST) {
+            // Only advance if tap is NOT on a button
+            if (!e.target.closest('button, a')) {
+                nextPage();
+            }
+        }
+    }
+
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend',   onTouchEnd,   { passive: true });
+})();
 
 window.addEventListener('load', loadCuentos);
 </script>
