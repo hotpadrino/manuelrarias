@@ -811,22 +811,27 @@ function renderPage(animate = true) {
     const chap = currentStory.chapters[currentPage];
     const book  = document.getElementById('book');
 
+    console.log("🔍 Intentando cargar capítulo:", chap.title); // 🔍 Log 1
+    console.log("🔍 URL de imagen detectada:", chap.image);     // 🔍 Log 2
+
     const doRender = () => {
-        // ── IMAGE ──
         const imgEl      = document.getElementById('pageImg');
         const placeholder = document.getElementById('imgPlaceholder');
         const imgSide    = document.getElementById('imgSide');
 
         imgSide.style.background = GRADIENTS[currentPage % GRADIENTS.length];
 
-        if (chap.image) {
+        if (chap.image && chap.image !== 'URL_DE_TU_IMAGEN') {
             placeholder.style.display = 'none';
             imgEl.style.opacity = '0';
 
-            // Reset src to force reload and guarantee onload fires even if cached
-            imgEl.src = '';
-            imgEl.onload  = () => { imgEl.style.opacity = '1'; };
+            imgEl.src = ''; 
+            imgEl.onload  = () => { 
+                console.log("✅ Imagen cargada con éxito:", chap.image);
+                imgEl.style.opacity = '1'; 
+            };
             imgEl.onerror = () => {
+                console.error("❌ ERROR cargando la imagen:", chap.image); // 🔍 Log 3
                 imgEl.style.opacity = '0';
                 placeholder.style.display = 'flex';
                 placeholder.querySelector('.big-emoji').textContent =
@@ -834,12 +839,12 @@ function renderPage(animate = true) {
             };
             imgEl.src = chap.image;
 
-            // If already cached, onload won't fire — force it
             if (imgEl.complete && imgEl.naturalWidth > 0) {
                 imgEl.style.opacity = '1';
                 placeholder.style.display = 'none';
             }
         } else {
+            console.warn("⚠️ No hay imagen válida para este capítulo.");
             imgEl.src = '';
             imgEl.style.opacity = '0';
             placeholder.style.display = 'flex';
@@ -847,18 +852,16 @@ function renderPage(animate = true) {
                 CHAPTER_EMOJIS[currentPage % CHAPTER_EMOJIS.length];
         }
 
-        // ── TEXT ──
+        // --- Resto de tu código (TEXT, DOTS, COUNTER) ---
         const total = currentStory.chapters.length;
         document.getElementById('chapterBadge').textContent =
             currentLang === 'EN' ? `Chapter ${currentPage + 1}` : `Capítulo ${currentPage + 1}`;
         document.getElementById('pageTitle').textContent = chap.title;
         document.getElementById('pageText').textContent  = chap.text;
 
-        // ── DOTS ──
         document.querySelectorAll('.dot').forEach((d, i) =>
             d.classList.toggle('active', i === currentPage));
 
-        // ── COUNTER & BUTTONS ──
         document.getElementById('pageCounter').textContent = `${currentPage + 1} / ${total}`;
         document.getElementById('prevBtn').disabled  = currentPage === 0;
         document.getElementById('firstBtn').disabled = currentPage === 0;
@@ -869,14 +872,20 @@ function renderPage(animate = true) {
             ? (currentLang === 'EN' ? '📚 More stories' : '📚 Más cuentos')
             : (currentLang === 'EN' ? 'Next →' : 'Siguiente →');
         nextBtn.classList.toggle('next-btn', !isLast);
-        nextBtn.style.background   = isLast ? '#27ae60' : '';
-        nextBtn.style.borderColor  = isLast ? '#27ae60' : '';
-        nextBtn.style.color        = isLast ? '#fff'    : '';
+        if(isLast) {
+            nextBtn.style.background  = '#27ae60';
+            nextBtn.style.borderColor  = '#27ae60';
+            nextBtn.style.color        = '#fff';
+        } else {
+            nextBtn.style.background  = '';
+            nextBtn.style.borderColor  = '';
+            nextBtn.style.color        = '';
+        }
     };
 
     if (animate) {
         book.classList.add('flipping');
-        playFlip();
+        if(typeof playFlip === 'function') playFlip();
         setTimeout(doRender, 160);
         setTimeout(() => book.classList.remove('flipping'), 500);
     } else {
