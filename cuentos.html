@@ -588,7 +588,7 @@
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ════════════════════════════════════════════════
-//  LOAD & PARSE cuentos.txt
+//  LOAD & PARSE cuentos.md
 // ════════════════════════════════════════════════
 let RAW_STORIES = [];
 
@@ -618,7 +618,7 @@ async function loadCuentos() {
         const tid = setTimeout(() => controller.abort(), 4000); // 4s timeout
         let res;
         try {
-            res = await fetch('cuentos.txt?' + Date.now(), { signal: controller.signal });
+            res = await fetch('cuentos.md?' + Date.now(), { signal: controller.signal });
         } catch(_) { throw new Error('fetch_failed'); }
         clearTimeout(tid);
 
@@ -633,7 +633,7 @@ async function loadCuentos() {
         if (!parsed.length) throw new Error('empty');
         RAW_STORIES = parsed;
     } catch(e) {
-        console.warn('cuentos.txt no disponible (' + e.message + '), usando ejemplos.');
+        console.warn('cuentos.md no disponible (' + e.message + '), usando ejemplos.');
         RAW_STORIES = FALLBACK_STORIES;
         usedFallback = true;
     }
@@ -837,7 +837,7 @@ function buildLangMenu(demo = false) {
     }).join('');
 
     const sub = document.getElementById('langSubtitle');
-    if (demo) sub.textContent = '⚠️ Modo demo · cuentos.txt no encontrado';
+    if (demo) sub.textContent = '⚠️ Modo demo · cuentos.md no encontrado';
 }
 
 function selectLang(lang) {
