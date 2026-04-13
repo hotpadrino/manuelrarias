@@ -417,7 +417,7 @@
         </div>
 
         <!-- 3. READER -->
-        <div id="reader">
+        <div id="reader" style="display:none">
             <div class="reader-inner">
                 <div class="book-wrap">
                     <div class="book" id="book">
@@ -461,17 +461,56 @@
 // ════════════════════════════════════════════════
 let RAW_STORIES = [];
 
+const FALLBACK_STORIES = [
+    {
+        id: 0, lang: 'ES', title: 'La Tortuga y el Conejo', emoji: '🐢',
+        chapters: [
+            { title: 'El Gran Reto', image: 'https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-1536x1536.jpg', text: 'Había una vez un conejo muy presumido que siempre se burlaba de la tortuga por ser tan lenta. Pasaba corriendo, le decía que no estorbara y la hacía sentir muy mal.' },
+            { title: 'La Carrera del Siglo', image: 'https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-2-1536x1536.jpg', text: 'Un día, la tortuga, cansada de las bromas, lo desafió a una carrera. Todos los animales del bosque se reunieron para ver quién ganaría.' },
+            { title: 'Una Siesta Inesperada', image: 'https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-3-770x770.jpg', text: 'El conejo salió corriendo y pronto dejó a la tortuga muy atrás. Confiado en su velocidad, decidió tomar una siesta bajo un árbol. La tortuga siguió paso a paso, sin detenerse.' },
+            { title: 'El Sabor de la Victoria', image: 'https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-4-770x770.jpg', text: '¡La tortuga cruzó la meta mientras el conejo aún dormía! Todos la felicitaron. El conejo se disculpó y prometió no burlarse de nadie nunca más.' }
+        ]
+    },
+    {
+        id: 1, lang: 'EN', title: 'The Brave Little Seed', emoji: '🌻',
+        chapters: [
+            { title: 'Deep in the Ground', image: 'https://imgv2-1-f.scribdassets.com/img/document/858239248/original/961f5aa486/1?v=1', text: 'Once there was a tiny seed living under the dark soil. She was a bit scared of the big world outside. "Wait for the sun," whispered the Earth. So the little seed waited and drank the cool rainwater.' },
+            { title: 'Reaching for the Sun', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6W796ltiMQerPa0gTOknyc6cFBzk6uo1-Ig&s', text: 'One morning, she felt a warm touch — it was the Sun! She pushed and pushed until she popped out of the ground. She was no longer a tiny seed; she had become a beautiful, bright yellow sunflower.' }
+        ]
+    }
+];
+
 async function loadCuentos() {
+    let usedFallback = false;
     try {
-        const res = await fetch('cuentos.txt?' + Date.now()); // bust cache
-        if (!res.ok) throw new Error('No se encontró cuentos.txt');
-        const text = await res.text();
-        RAW_STORIES = parseTxt(text);
-        init();
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 4000); // 4s timeout
+        let res;
+        try {
+            res = await fetch('cuentos.txt?' + Date.now(), { signal: controller.signal });
+        } catch(_) { throw new Error('fetch_failed'); }
+        clearTimeout(tid);
+
+        if (!res.ok) throw new Error('not_ok');
+
+        let text;
+        try { text = await res.text(); } catch(_) { throw new Error('read_failed'); }
+
+        let parsed;
+        try { parsed = parseTxt(text); } catch(_) { throw new Error('parse_failed'); }
+
+        if (!parsed.length) throw new Error('empty');
+        RAW_STORIES = parsed;
     } catch(e) {
-        document.getElementById('langScreen').innerHTML =
-            `<h1>⚠️ Error</h1><p style="margin-top:12px;color:var(--text2)">No se pudo cargar <b>cuentos.txt</b>.<br>Asegúrate de que esté en la misma carpeta que el HTML.</p>`;
-        console.error(e);
+        console.warn('cuentos.txt no disponible (' + e.message + '), usando ejemplos.');
+        RAW_STORIES = FALLBACK_STORIES;
+        usedFallback = true;
+    }
+
+    try {
+        init(usedFallback);
+    } catch(e) {
+        console.error('Error en init:', e);
     }
 }
 
@@ -536,16 +575,52 @@ let currentPage = 0;
 //  AUDIO
 // ════════════════════════════════════════════════
 let flipAudio = null;
+let audioCtx = null;
+let mp3Failed = false;
+
+function playArpeggio() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const master = audioCtx.createGain();
+        master.gain.value = 0.18;
+        master.connect(audioCtx.destination);
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const env = audioCtx.createGain();
+            const t = now + i * 0.07;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, t);
+            env.gain.setValueAtTime(0, t);
+            env.gain.linearRampToValueAtTime(0.9, t + 0.02);
+            env.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+            const osc2 = audioCtx.createOscillator();
+            const env2 = audioCtx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(freq * 2, t);
+            env2.gain.setValueAtTime(0, t);
+            env2.gain.linearRampToValueAtTime(0.25, t + 0.01);
+            env2.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+            osc.connect(env);  env.connect(master);
+            osc2.connect(env2); env2.connect(master);
+            osc.start(t);  osc.stop(t + 0.55);
+            osc2.start(t); osc2.stop(t + 0.3);
+        });
+    } catch(e) {}
+}
 
 function playFlip() {
+    if (mp3Failed) { playArpeggio(); return; }
     try {
         if (!flipAudio) {
             flipAudio = new Audio('cuentos.mp3');
             flipAudio.volume = 0.7;
+            flipAudio.onerror = () => { mp3Failed = true; flipAudio = null; playArpeggio(); };
         }
         flipAudio.currentTime = 0;
-        flipAudio.play().catch(() => {});
-    } catch(e) {}
+        flipAudio.play().catch(() => { mp3Failed = true; playArpeggio(); });
+    } catch(e) { mp3Failed = true; playArpeggio(); }
 }
 
 // ════════════════════════════════════════════════
@@ -561,12 +636,12 @@ window.addEventListener('keydown', (e) => {
 // ════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════
-function init() {
+function init(demo = false) {
     loadState();
-    buildLangMenu();
+    buildLangMenu(demo);
 }
 
-function buildLangMenu() {
+function buildLangMenu(demo = false) {
     const langs = [...new Set(RAW_STORIES.map(s => s.lang))];
     document.getElementById('langGrid').innerHTML = langs.map(l => {
         const m = LANG_META[l] || { emoji: '🌐', label: l };
@@ -575,6 +650,10 @@ function buildLangMenu() {
             <span>${m.label}</span>
         </div>`;
     }).join('');
+
+    const sub = document.querySelector('#langScreen .subtitle');
+    if (demo) sub.textContent = '⚠️ Modo demo · cuentos.txt no encontrado';
+    else sub.textContent = 'Choose your language';
 }
 
 function selectLang(lang) {
