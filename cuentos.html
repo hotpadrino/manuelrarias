@@ -457,137 +457,72 @@
 
 <script>
 // ════════════════════════════════════════════════
-//  STORY DATA  (embedded – no fetch needed)
+//  LOAD & PARSE cuentos.txt
 // ════════════════════════════════════════════════
-const RAW_STORIES = [
-    {
-        lang: "ES",
-        title: "La Tortuga y el Conejo",
-        emoji: "🐢",
-        chapters: [
-            {
-                title: "El Gran Reto",
-                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-1536x1536.jpg",
-                text: "Había una vez un conejo muy presumido que siempre se burlaba de la tortuga por ser tan lenta. Pasaba corriendo, le decía que no estorbara y la hacía sentir muy mal con sus palabras."
-            },
-            {
-                title: "La Carrera del Siglo",
-                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-2-1536x1536.jpg",
-                text: "Un día, la tortuga, cansada de las bromas, lo desafió a una carrera. Todos los animales del bosque se reunieron para ver quién ganaría. El búho fue el juez, y la ardilla marcó la línea de salida."
-            },
-            {
-                title: "Una Siesta Inesperada",
-                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-3-770x770.jpg",
-                text: "El conejo salió corriendo y pronto dejó a la tortuga muy atrás. Confiado en su velocidad, decidió tomar una siesta bajo un árbol. Mientras tanto, la tortuga siguió caminando paso a paso, sin detenerse nunca."
-            },
-            {
-                title: "El Sabor de la Victoria",
-                image: "https://ririro.com/wp-content/uploads/2024/08/la-liebre-y-la-tortuga-4-770x770.jpg",
-                text: "¡La tortuga cruzó la meta mientras el conejo aún dormía! Todos la felicitaron con gran alegría. El conejo se despertó avergonzado y le pidió perdón, prometiendo no volver a burlarse de nadie nunca más."
-            }
-        ]
-    },
-    {
-        lang: "ES",
-        title: "El Pequeño Astronauta",
-        emoji: "🚀",
-        chapters: [
-            {
-                title: "Viaje a la Luna",
-                image: null,
-                emoji: "🚀",
-                text: "Mateo tenía un cohete de cartón, pero en su imaginación era la nave más rápida de la galaxia. Una noche, cerró los ojos y, ¡pum!, aterrizó en la Luna. El suelo era de queso y las estrellas brillaban como diamantes."
-            },
-            {
-                title: "Un Amigo de Marte",
-                image: null,
-                emoji: "🤖",
-                text: "Mientras exploraba un cráter, Mateo encontró a un pequeño robot que saludaba con una antena. Juntos jugaron a saltar con poca gravedad y contaron mil estrellas. Mateo prometió volver cada noche para nuevas aventuras espaciales."
-            }
-        ]
-    },
-    {
-        lang: "ES",
-        title: "El Dragón de Colores",
-        emoji: "🐉",
-        chapters: [
-            {
-                title: "El Bosque Gris",
-                image: null,
-                emoji: "🌫️",
-                text: "En un bosque donde todo era gris, vivía un dragón que no echaba fuego, sino burbujas de colores. Los otros dragones se reían de él, pero el dragón de colores solo quería que el mundo fuera más alegre y bonito."
-            },
-            {
-                title: "Una Explosión de Alegría",
-                image: null,
-                emoji: "🌈",
-                text: "Un día, sopló la burbuja más grande de la historia. Al explotar, el color se esparció por todos los árboles y flores del bosque. Desde entonces, el bosque gris se convirtió en el lugar más feliz del reino gracias a las burbujas mágicas."
-            }
-        ]
-    },
-    {
-        lang: "EN",
-        title: "The Brave Little Seed",
-        emoji: "🌻",
-        chapters: [
-            {
-                title: "Deep in the Ground",
-                image: null,
-                emoji: "🌱",
-                text: "Once there was a tiny seed living under the dark soil. She was a bit scared of the big world outside. \"Wait for the sun,\" whispered the Earth. So the little seed waited patiently and drank the cool rainwater every day."
-            },
-            {
-                title: "Reaching for the Sun",
-                image: null,
-                emoji: "☀️",
-                text: "One morning, she felt a warm touch. It was the Sun! She pushed and pushed until she popped out of the ground. She wasn't a tiny seed anymore — she was becoming a beautiful, bright yellow sunflower standing tall and proud."
-            }
-        ]
-    },
-    {
-        lang: "EN",
-        title: "The Cat and the Moon",
-        emoji: "🌙",
-        chapters: [
-            {
-                title: "A Night Wish",
-                image: null,
-                emoji: "🐱",
-                text: "Luna the cat loved to look at the Moon from her window every single night. \"I want to touch that giant glowing ball,\" she purred softly. She climbed the tallest tree in the garden, stretching her paws as high as she could."
-            },
-            {
-                title: "The Moon's Gift",
-                image: null,
-                emoji: "✨",
-                text: "The Moon smiled and sent a silver beam of light down to touch Luna's fur. It felt warm and completely magical. Luna didn't need to reach the sky anymore, because the Moon had come all the way down to say goodnight to her."
-            }
-        ]
-    },
-    {
-        lang: "EN",
-        title: "The Magic Umbrella",
-        emoji: "☂️",
-        chapters: [
-            {
-                title: "A Rainy Day",
-                image: null,
-                emoji: "🌧️",
-                text: "Leo found an old blue umbrella in the attic. When it started to rain, he opened it and something amazing happened. Instead of getting wet, the raindrops turned into colorful candies falling from the sky all around him!"
-            },
-            {
-                title: "Flying Over the City",
-                image: null,
-                emoji: "🏙️",
-                text: "The wind blew hard, and the umbrella lifted Leo off the ground. He flew over the houses and parks, waving at the birds below. It was the best rainy day ever, and he couldn't wait for the next storm to fly again."
-            }
-        ]
-    }
-];
+let RAW_STORIES = [];
 
-// Language metadata
+async function loadCuentos() {
+    try {
+        const res = await fetch('cuentos.txt?' + Date.now()); // bust cache
+        if (!res.ok) throw new Error('No se encontró cuentos.txt');
+        const text = await res.text();
+        RAW_STORIES = parseTxt(text);
+        init();
+    } catch(e) {
+        document.getElementById('langScreen').innerHTML =
+            `<h1>⚠️ Error</h1><p style="margin-top:12px;color:var(--text2)">No se pudo cargar <b>cuentos.txt</b>.<br>Asegúrate de que esté en la misma carpeta que el HTML.</p>`;
+        console.error(e);
+    }
+}
+
+function parseTxt(raw) {
+    // Split on story headers "# Title [LANG]"
+    const storyBlocks = raw.split(/\n(?=# )/).filter(s => s.trim());
+    const EMOJI_MAP = {
+        'tortuga':'🐢','conejo':'🐇','astronauta':'🚀','dragón':'🐉','dragon':'🐉',
+        'seed':'🌻','cat':'🐱','moon':'🌙','umbrella':'☂️','default':'📖'
+    };
+
+    return storyBlocks.map((block, idx) => {
+        const lines = block.split('\n');
+        const headerLine = lines.shift().replace(/^#\s*/, '').trim();
+        const langMatch = headerLine.match(/\[([A-Z]{2})\]/);
+        const lang = langMatch ? langMatch[1] : 'ES';
+        const title = headerLine.replace(/\[.*?\]/, '').trim();
+
+        // Pick emoji from title keywords
+        const titleLow = title.toLowerCase();
+        const emoji = Object.entries(EMOJI_MAP).find(([k]) => titleLow.includes(k))?.[1] ?? '📖';
+
+        // Split remaining text into chapters on "## "
+        const chapBlocks = lines.join('\n').split(/\n(?=## )/).filter(c => c.trim());
+
+        const chapters = chapBlocks.map((chap, ci) => {
+            const chapLines = chap.split('\n');
+            const chapTitle = chapLines.shift().replace(/^##\s*/, '').trim();
+
+            const imgMatch = chap.match(/!\[.*?\]\((.+?)\)/);
+            const rawUrl = imgMatch ? imgMatch[1].trim() : null;
+            const image = rawUrl && rawUrl !== 'URL_DE_TU_IMAGEN' ? rawUrl : null;
+
+            const text = chapLines
+                .filter(l => l.trim() && !l.trim().startsWith('!['))
+                .join(' ')
+                .trim();
+
+            return { title: chapTitle, image, text };
+        });
+
+        return { id: idx, lang, title, emoji, chapters };
+    });
+}
+
+// ════════════════════════════════════════════════
+//  LANGUAGE METADATA
+// ════════════════════════════════════════════════
 const LANG_META = {
-    ES: { label: "Español", emoji: "🇪🇸", menuTitle: "¿Qué quieres leer hoy?", menuSub: "Elige un cuento para comenzar" },
-    EN: { label: "English", emoji: "🇺🇸", menuTitle: "What do you want to read?", menuSub: "Choose a story to start" }
+    ES: { label: 'Español', emoji: '🇪🇸', menuTitle: '¿Qué quieres leer hoy?', menuSub: 'Elige un cuento para comenzar' },
+    EN: { label: 'English', emoji: '🇺🇸', menuTitle: 'What do you want to read?', menuSub: 'Choose a story to start' }
 };
 
 // ════════════════════════════════════════════════
@@ -598,7 +533,7 @@ let currentStory = null;
 let currentPage = 0;
 
 // ════════════════════════════════════════════════
-//  AUDIO — page flip sound via Web Audio API
+//  AUDIO
 // ════════════════════════════════════════════════
 let flipAudio = null;
 
@@ -614,32 +549,26 @@ function playFlip() {
 }
 
 // ════════════════════════════════════════════════
+//  KEYBOARD
+// ════════════════════════════════════════════════
+window.addEventListener('keydown', (e) => {
+    if (document.getElementById('reader').style.display === 'none') return;
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); prevPage(); }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); goFirstPage(); }
+});
+
+// ════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════
-function goFirstPage() {
-    if (!currentStory || currentPage === 0) return;
-    currentPage = 0;
-    renderPage();
-    saveState();
-}
-
-window.addEventListener('keydown', (e) => {
-    const readerVisible = document.getElementById('reader').style.display !== 'none';
-    if (!readerVisible) return;
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPage(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); prevPage(); }
-    if (e.key === 'ArrowUp') { e.preventDefault(); goFirstPage(); }
-});
-
-window.addEventListener('load', () => {
+function init() {
     loadState();
     buildLangMenu();
-});
+}
 
 function buildLangMenu() {
     const langs = [...new Set(RAW_STORIES.map(s => s.lang))];
-    const grid = document.getElementById('langGrid');
-    grid.innerHTML = langs.map(l => {
+    document.getElementById('langGrid').innerHTML = langs.map(l => {
         const m = LANG_META[l] || { emoji: '🌐', label: l };
         return `<div class="card" onclick="selectLang('${l}')">
             <span class="card-emoji">${m.emoji}</span>
@@ -655,21 +584,18 @@ function selectLang(lang) {
 }
 
 function showStoryMenu() {
-    const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: 'Choose a story' };
+    const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: '' };
     document.getElementById('storyMenuTitle').textContent = meta.menuTitle;
     document.getElementById('storyMenuSub').textContent = meta.menuSub;
 
     const stories = RAW_STORIES.filter(s => s.lang === currentLang);
-    const grid = document.getElementById('storyGrid');
-
-    // Get saved progress for badges
     const state = loadStateObj();
 
-    grid.innerHTML = stories.map((s, i) => {
-        const savedPage = state.progress?.[currentLang]?.[i];
-        const badge = (savedPage != null && savedPage > 0)
-            ? `<span class="progress-badge">Pág. ${savedPage + 1}</span>` : '';
-        return `<div class="card" onclick="startStory(${RAW_STORIES.indexOf(s)})">
+    document.getElementById('storyGrid').innerHTML = stories.map((s) => {
+        const saved = state.progress?.[s.id];
+        const badge = saved > 0
+            ? `<span class="progress-badge">Pág. ${saved + 1}/${s.chapters.length}</span>` : '';
+        return `<div class="card" onclick="startStory(${s.id})">
             <span class="card-emoji">${s.emoji}</span>
             <span>${s.title}</span>
             ${badge}
@@ -678,17 +604,14 @@ function showStoryMenu() {
 
     show('storyScreen');
     hide('langScreen');
+    hide('reader');
     document.getElementById('backBtn').classList.remove('hidden');
 }
 
-function startStory(globalIdx) {
-    currentStory = RAW_STORIES[globalIdx];
-
-    // Resume saved page
+function startStory(id) {
+    currentStory = RAW_STORIES.find(s => s.id === id);
     const state = loadStateObj();
-    const langStories = RAW_STORIES.filter(s => s.lang === currentLang);
-    const localIdx = langStories.indexOf(currentStory);
-    currentPage = state.progress?.[currentLang]?.[localIdx] ?? 0;
+    currentPage = state.progress?.[id] ?? 0;
     if (currentPage >= currentStory.chapters.length) currentPage = 0;
 
     hide('storyScreen');
@@ -706,81 +629,89 @@ function startStory(globalIdx) {
 // ════════════════════════════════════════════════
 //  RENDER
 // ════════════════════════════════════════════════
+const GRADIENTS = [
+    'linear-gradient(135deg,#f5a623,#e05c1a)',
+    'linear-gradient(135deg,#6dd5fa,#2980b9)',
+    'linear-gradient(135deg,#a8edea,#fed6e3)',
+    'linear-gradient(135deg,#d4fc79,#96e6a1)',
+    'linear-gradient(135deg,#fccb90,#d57eeb)',
+    'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+    'linear-gradient(135deg,#f093fb,#f5576c)',
+    'linear-gradient(135deg,#4facfe,#00f2fe)',
+];
+
+const CHAPTER_EMOJIS = ['🌟','🌙','🚀','🌈','🦋','🌸','⭐','🔮'];
+
 function buildDots() {
-    const dots = document.getElementById('pageDots');
-    dots.innerHTML = currentStory.chapters.map((_, i) =>
-        `<div class="dot" id="dot-${i}"></div>`
-    ).join('');
+    document.getElementById('pageDots').innerHTML =
+        currentStory.chapters.map((_, i) => `<div class="dot" id="dot-${i}"></div>`).join('');
 }
 
 function renderPage(animate = true) {
     const chap = currentStory.chapters[currentPage];
-    const book = document.getElementById('book');
+    const book  = document.getElementById('book');
 
     const doRender = () => {
-        // Image
-        const imgEl = document.getElementById('pageImg');
+        // ── IMAGE ──
+        const imgEl      = document.getElementById('pageImg');
         const placeholder = document.getElementById('imgPlaceholder');
-        const imgSide = document.getElementById('imgSide');
+        const imgSide    = document.getElementById('imgSide');
 
-        if (chap.image && chap.image !== 'null') {
+        imgSide.style.background = GRADIENTS[currentPage % GRADIENTS.length];
+
+        if (chap.image) {
+            placeholder.style.display = 'none';
             imgEl.style.opacity = '0';
-            imgEl.src = chap.image;
-            imgEl.onload = () => { imgEl.style.opacity = '1'; placeholder.style.display = 'none'; };
+
+            // Reset src to force reload and guarantee onload fires even if cached
+            imgEl.src = '';
+            imgEl.onload  = () => { imgEl.style.opacity = '1'; };
             imgEl.onerror = () => {
                 imgEl.style.opacity = '0';
                 placeholder.style.display = 'flex';
-                placeholder.querySelector('.big-emoji').textContent = chap.emoji || '📖';
+                placeholder.querySelector('.big-emoji').textContent =
+                    CHAPTER_EMOJIS[currentPage % CHAPTER_EMOJIS.length];
             };
-            placeholder.style.display = 'none';
+            imgEl.src = chap.image;
+
+            // If already cached, onload won't fire — force it
+            if (imgEl.complete && imgEl.naturalWidth > 0) {
+                imgEl.style.opacity = '1';
+                placeholder.style.display = 'none';
+            }
         } else {
-            imgEl.style.opacity = '0';
             imgEl.src = '';
+            imgEl.style.opacity = '0';
             placeholder.style.display = 'flex';
-            placeholder.querySelector('.big-emoji').textContent = chap.emoji || '📖';
+            placeholder.querySelector('.big-emoji').textContent =
+                CHAPTER_EMOJIS[currentPage % CHAPTER_EMOJIS.length];
         }
 
-        // Generate gradient background per chapter
-        const gradients = [
-            'linear-gradient(135deg, #f5a623 0%, #e05c1a 100%)',
-            'linear-gradient(135deg, #6dd5fa 0%, #2980b9 100%)',
-            'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-            'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
-            'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
-            'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-        ];
-        imgSide.style.background = gradients[currentPage % gradients.length];
-
-        // Text
-        document.getElementById('chapterBadge').textContent = `Capítulo ${currentPage + 1}`;
-        document.getElementById('pageTitle').textContent = chap.title;
-        document.getElementById('pageText').textContent = chap.text;
-
-        // Dots
-        document.querySelectorAll('.dot').forEach((d, i) => {
-            d.classList.toggle('active', i === currentPage);
-        });
-
-        // Counter & buttons
+        // ── TEXT ──
         const total = currentStory.chapters.length;
+        document.getElementById('chapterBadge').textContent =
+            currentLang === 'EN' ? `Chapter ${currentPage + 1}` : `Capítulo ${currentPage + 1}`;
+        document.getElementById('pageTitle').textContent = chap.title;
+        document.getElementById('pageText').textContent  = chap.text;
+
+        // ── DOTS ──
+        document.querySelectorAll('.dot').forEach((d, i) =>
+            d.classList.toggle('active', i === currentPage));
+
+        // ── COUNTER & BUTTONS ──
         document.getElementById('pageCounter').textContent = `${currentPage + 1} / ${total}`;
-        document.getElementById('prevBtn').disabled = currentPage === 0;
+        document.getElementById('prevBtn').disabled  = currentPage === 0;
         document.getElementById('firstBtn').disabled = currentPage === 0;
 
         const nextBtn = document.getElementById('nextBtn');
-        if (currentPage === total - 1) {
-            nextBtn.textContent = '📚 Más cuentos';
-            nextBtn.classList.remove('next-btn');
-            nextBtn.style.background = '#27ae60';
-            nextBtn.style.borderColor = '#27ae60';
-            nextBtn.style.color = '#fff';
-        } else {
-            nextBtn.textContent = 'Siguiente →';
-            nextBtn.classList.add('next-btn');
-            nextBtn.style.background = '';
-            nextBtn.style.borderColor = '';
-            nextBtn.style.color = '';
-        }
+        const isLast  = currentPage === total - 1;
+        nextBtn.textContent = isLast
+            ? (currentLang === 'EN' ? '📚 More stories' : '📚 Más cuentos')
+            : (currentLang === 'EN' ? 'Next →' : 'Siguiente →');
+        nextBtn.classList.toggle('next-btn', !isLast);
+        nextBtn.style.background   = isLast ? '#27ae60' : '';
+        nextBtn.style.borderColor  = isLast ? '#27ae60' : '';
+        nextBtn.style.color        = isLast ? '#fff'    : '';
     };
 
     if (animate) {
@@ -802,32 +733,26 @@ function nextPage() {
         renderPage();
         saveState();
     } else {
-        // Last page → go back to story list
-        goBackToStories();
+        saveState();
+        showStoryMenu();
     }
 }
 
 function prevPage() {
-    if (currentPage > 0) {
-        currentPage--;
-        renderPage();
-        saveState();
-    }
+    if (currentPage > 0) { currentPage--; renderPage(); saveState(); }
 }
 
-function goBackToStories() {
-    // Save that we finished
+function goFirstPage() {
+    if (!currentStory || currentPage === 0) return;
+    currentPage = 0;
+    renderPage();
     saveState();
-    document.getElementById('reader').style.display = 'none';
-    showStoryMenu();
 }
 
 function goBack() {
-    // From story menu → language menu, or from reader → story menu
-    const readerVisible = document.getElementById('reader').style.display !== 'none';
-    if (readerVisible) {
+    if (document.getElementById('reader').style.display !== 'none') {
         saveState();
-        document.getElementById('reader').style.display = 'none';
+        hide('reader');
         showStoryMenu();
     } else {
         hide('storyScreen');
@@ -840,8 +765,7 @@ function goBack() {
 //  THEME
 // ════════════════════════════════════════════════
 function toggleTheme() {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
+    const next = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
     document.body.setAttribute('data-theme', next);
     document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
     saveState();
@@ -851,7 +775,7 @@ function toggleTheme() {
 //  PERSISTENCE
 // ════════════════════════════════════════════════
 function loadStateObj() {
-    try { return JSON.parse(localStorage.getItem('cuentos_state')) || {}; }
+    try { return JSON.parse(localStorage.getItem('cuentos_v2')) || {}; }
     catch(e) { return {}; }
 }
 
@@ -859,40 +783,35 @@ function saveState() {
     try {
         const state = loadStateObj();
         state.theme = document.body.getAttribute('data-theme');
-        state.lang = currentLang;
-
-        if (currentStory && currentLang) {
+        state.lang  = currentLang;
+        if (currentStory) {
             if (!state.progress) state.progress = {};
-            if (!state.progress[currentLang]) state.progress[currentLang] = {};
-            const langStories = RAW_STORIES.filter(s => s.lang === currentLang);
-            const localIdx = langStories.indexOf(currentStory);
-            state.progress[currentLang][localIdx] = currentPage;
+            state.progress[currentStory.id] = currentPage;
         }
-
-        localStorage.setItem('cuentos_state', JSON.stringify(state));
+        localStorage.setItem('cuentos_v2', JSON.stringify(state));
     } catch(e) {}
 }
 
 function loadState() {
     const state = loadStateObj();
-
-    // Theme
     if (state.theme) {
         document.body.setAttribute('data-theme', state.theme);
         document.getElementById('themeBtn').textContent = state.theme === 'light' ? '🌙' : '☀️';
     }
-
-    // Resume language if saved
-    if (state.lang) {
-        currentLang = state.lang;
-    }
+    if (state.lang) currentLang = state.lang;
 }
 
 // ════════════════════════════════════════════════
 //  HELPERS
 // ════════════════════════════════════════════════
 function show(id) { document.getElementById(id).classList.remove('hidden'); }
-function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function hide(id) {
+    const el = document.getElementById(id);
+    if (id === 'reader') el.style.display = 'none';
+    else el.classList.add('hidden');
+}
+
+window.addEventListener('load', loadCuentos);
 </script>
 </body>
 </html>
