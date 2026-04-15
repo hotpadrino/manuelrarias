@@ -848,6 +848,7 @@ function selectLang(lang) {
 }
 
 function showStoryMenu() {
+    if (window.lockTouchBriefly) lockTouchBriefly();
     const meta = LANG_META[currentLang] || { menuTitle: 'Stories', menuSub: '', emoji: '🌐', label: currentLang };
     document.getElementById('storyMenuTitle').textContent = meta.menuTitle;
     document.getElementById('storyMenuSub').textContent = meta.menuSub;
@@ -873,6 +874,7 @@ function showStoryMenu() {
 }
 
 function startStory(id) {
+    if (window.lockTouchBriefly) lockTouchBriefly();
     currentStory = RAW_STORIES.find(s => s.id === id);
     const state = loadStateObj();
     currentPage = state.progress?.[id] ?? 0;
@@ -998,8 +1000,12 @@ function nextPage() {
         renderPage();
         saveState();
     } else {
+        // Story complete: reset progress to 0 so next visit starts fresh
+        currentPage = 0;
         saveState();
-        showStoryMenu();
+        // Small delay before showing menu to avoid ghost-click / tap-through
+        // landing on a story card at the same screen position
+        setTimeout(() => showStoryMenu(), 120);
     }
 }
 
@@ -1105,12 +1111,19 @@ window.addEventListener('popstate', (e) => {
 // ════════════════════════════════════════════════
 (function setupTouch() {
     let startX = 0, startY = 0, startT = 0;
-    const SWIPE_MIN = 50;   // px to count as swipe
-    const SWIPE_MAX_Y = 80; // max vertical drift allowed
+    const SWIPE_MIN = 50;
+    const SWIPE_MAX_Y = 80;
     const TAP_MAX_DIST = 10;
     const TAP_MAX_MS   = 250;
+    let locked = false; // blocks ghost clicks during screen transitions
 
     const book = () => document.getElementById('book');
+
+    // Call this whenever we switch screens to block stray taps for 350ms
+    window.lockTouchBriefly = () => {
+        locked = true;
+        setTimeout(() => { locked = false; }, 350);
+    };
 
     function onTouchStart(e) {
         startX = e.changedTouches[0].clientX;
@@ -1119,6 +1132,7 @@ window.addEventListener('popstate', (e) => {
     }
 
     function onTouchEnd(e) {
+        if (locked) return;
         if (document.getElementById('reader').style.display === 'none') return;
 
         const dx = e.changedTouches[0].clientX - startX;
@@ -1127,16 +1141,13 @@ window.addEventListener('popstate', (e) => {
         const absDx = Math.abs(dx);
         const absDy = Math.abs(dy);
 
-        // Swipe detection (horizontal, not too vertical)
         if (absDx >= SWIPE_MIN && absDy < SWIPE_MAX_Y) {
-            if (dx < 0) nextPage();   // swipe left  → next
-            else        prevPage();   // swipe right → prev
+            if (dx < 0) nextPage();
+            else        prevPage();
             return;
         }
 
-        // Tap detection (short, small movement)
         if (dt < TAP_MAX_MS && absDx < TAP_MAX_DIST && absDy < TAP_MAX_DIST) {
-            // Only advance if tap is NOT on a button
             if (!e.target.closest('button, a')) {
                 nextPage();
             }
