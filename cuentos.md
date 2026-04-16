@@ -1,4 +1,4 @@
-📚 Cuentos Mágicos
+<h1>📚 Cuentos Mágicos</h1>
 
 > Colecciones de cuentos clásicos en 4 idiomas. Haz clic en cada idioma para desplegar sus cuentos.
 
