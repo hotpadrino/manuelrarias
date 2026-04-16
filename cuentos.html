@@ -647,7 +647,9 @@ async function loadCuentos() {
 
 function parseTxt(raw) {
     // Split on story headers "# Title [LANG]"
-    const storyBlocks = raw.split(/\n(?=# )/).filter(s => s.trim());
+    const storyBlocks = raw.split(/\n(?=# )/)
+    .map(s => s.trim())
+    .filter(s => s.startsWith('# ')); // 👈 ESTO ignora el título y la intro
     const EMOJI_MAP = {
         'tortuga':'🐢','liebre':'🐇','conejo':'🐇','tortoise':'🐢','hare':'🐇',
         'astronauta':'🚀','dragón':'🐉','dragon':'🐉',
