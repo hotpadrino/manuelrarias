@@ -3,562 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛸 ARIPAR Transport Pro v8</title>
+    <title>🛸 ARIPAR Transport Pro v15</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ══════════════════════════════════════════
-           DARK THEME — FUTURISTIC SPACE (DEFAULT)
-        ══════════════════════════════════════════ */
-        :root,
-        [data-theme="dark"] {
-            --bg:           #030810;
-            --panel:        #080f1e;
-            --panel2:       #0c1628;
-            --glow:         #00ffe7;
-            --glow2:        #005fff;
-            --accent:       #00ffe7;
-            --accent2:      #ff3cf7;
-            --text:         #cfe8ff;
-            --text-muted:   #4a7090;
-            --border:       rgba(0,255,231,0.18);
-            --border-hover: rgba(0,255,231,0.55);
-            --btn-start:    linear-gradient(135deg,#00c470,#009950);
-            --btn-stop:     linear-gradient(135deg,#ff3366,#cc0033);
-            --result-bg:    rgba(0,255,231,0.06);
-            --result-border:#00ffe7;
-            --hist-bg:      rgba(0,95,255,0.07);
-            --shadow:       0 0 30px rgba(0,255,231,0.08);
-            --input-bg:     rgba(0,15,40,0.9);
-            --footer-bg:    rgba(3,8,16,0.96);
-            --star-color:   rgba(255,255,255,0.7);
-            --scanline:     rgba(0,255,231,0.015);
-            --tab-active-bg:rgba(0,255,231,0.08);
-        }
+    /* ═══════════════════════════════════════════
+       VARIABLES — OSCURO (default)
+    ═══════════════════════════════════════════ */
+    :root, [data-theme="dark"] {
+        --bg:             #030810;
+        --panel:          #080f1e;
+        --panel2:         #0c1628;
+        --accent:         #00ffe7;
+        --accent2:        #ff3cf7;
+        --accent3:        #ff9f43;
+        --text:           #cfe8ff;
+        --text-muted:     #4a7090;
+        --border:         rgba(0,255,231,0.15);
+        --border-h:       rgba(0,255,231,0.45);
+        --input-bg:       rgba(0,15,40,0.9);
+        --tab-active-bg:  rgba(0,255,231,0.07);
+        --shadow:         0 0 35px rgba(0,255,231,0.07);
+        --result-bg:      rgba(0,255,231,0.05);
+        --hist-bg:        rgba(0,95,255,0.05);
+        --footer-bg:      rgba(3,8,16,0.97);
+        --scanline:       rgba(0,255,231,0.012);
+        --chart-grid:     rgba(0,255,231,0.06);
+        --chart-tick:     rgba(207,232,255,0.4);
+        --star-alpha:     0.7;
+        --btn-del-bg:     rgba(231,76,60,0.12);
+        --btn-del-col:    #e74c3c;
+        --btn-del-border: rgba(231,76,60,0.3);
+    }
 
-        /* ══════════════════════════════════════════
-           LIGHT THEME — SPACESHIP COCKPIT
-        ══════════════════════════════════════════ */
-        [data-theme="light"] {
-            --bg:           #e8f0fa;
-            --panel:        #f5f8ff;
-            --panel2:       #ffffff;
-            --glow:         #0044cc;
-            --glow2:        #6600cc;
-            --accent:       #0044cc;
-            --accent2:      #cc00aa;
-            --text:         #102040;
-            --text-muted:   #5580aa;
-            --border:       rgba(0,68,204,0.22);
-            --border-hover: rgba(0,68,204,0.6);
-            --btn-start:    linear-gradient(135deg,#00aa55,#007733);
-            --btn-stop:     linear-gradient(135deg,#dd2244,#aa0022);
-            --result-bg:    rgba(0,68,204,0.07);
-            --result-border:#0044cc;
-            --hist-bg:      rgba(0,68,204,0.05);
-            --shadow:       0 4px 30px rgba(0,68,204,0.12);
-            --input-bg:     rgba(240,246,255,0.9);
-            --footer-bg:    rgba(232,240,250,0.97);
-            --star-color:   rgba(0,68,204,0.3);
-            --scanline:     rgba(0,68,204,0.02);
-            --tab-active-bg:rgba(0,68,204,0.08);
-        }
+    /* ═══════════════════════════════════════════
+       VARIABLES — CLARO
+    ═══════════════════════════════════════════ */
+    [data-theme="light"] {
+        --bg:             #eaf0fb;
+        --panel:          #f5f8ff;
+        --panel2:         #ffffff;
+        --accent:         #0044cc;
+        --accent2:        #9900cc;
+        --accent3:        #d4600a;
+        --text:           #102040;
+        --text-muted:     #5075aa;
+        --border:         rgba(0,68,204,0.18);
+        --border-h:       rgba(0,68,204,0.5);
+        --input-bg:       rgba(240,246,255,0.95);
+        --tab-active-bg:  rgba(0,68,204,0.08);
+        --shadow:         0 4px 30px rgba(0,68,204,0.10);
+        --result-bg:      rgba(0,68,204,0.05);
+        --hist-bg:        rgba(0,68,204,0.04);
+        --footer-bg:      rgba(234,240,251,0.97);
+        --scanline:       rgba(0,68,204,0.018);
+        --chart-grid:     rgba(0,68,204,0.07);
+        --chart-tick:     rgba(16,32,64,0.5);
+        --star-alpha:     0.12;
+        --btn-del-bg:     rgba(200,50,50,0.08);
+        --btn-del-col:    #cc2233;
+        --btn-del-border: rgba(200,50,50,0.25);
+    }
 
-        /* ══════════════════ RESET & BASE ══════════════════ */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ═══════════════════ BASE ═══════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Rajdhani', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px 10px 90px;
-            transition: background 0.4s, color 0.4s;
-            position: relative;
-            overflow-x: hidden;
-        }
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 10px 10px 88px;
+        transition: background .4s, color .4s;
+        position: relative; overflow-x: hidden;
+    }
 
-        /* ══════════════════ STARFIELD BG ══════════════════ */
-        #stars-canvas {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 0;
-            opacity: 0.5;
-        }
+    #stars-canvas {
+        position: fixed; top:0; left:0; width:100%; height:100%;
+        pointer-events:none; z-index:0;
+    }
+    body::after {
+        content:''; position:fixed; top:0; left:0; width:100%; height:100%;
+        background: repeating-linear-gradient(0deg, var(--scanline) 0px, transparent 1px, transparent 3px);
+        pointer-events:none; z-index:1;
+    }
 
-        /* Scanline overlay */
-        body::after {
-            content: '';
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                var(--scanline) 0px,
-                transparent 1px,
-                transparent 3px
-            );
-            pointer-events: none; z-index: 1;
-        }
+    /* ═══════════════════ HEADER ═══════════════════ */
+    .header {
+        width:100%; max-width:500px;
+        text-align:center; padding: 16px 0 10px;
+        position:relative; z-index:10;
+    }
+    .header-eyebrow {
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:600;
+        letter-spacing:6px; color:var(--text-muted); text-transform:uppercase; margin-bottom:3px;
+    }
+    .header-title {
+        font-family:'Orbitron',monospace; font-size:21px; font-weight:900;
+        letter-spacing:2px; color:var(--accent);
+        text-shadow: 0 0 18px var(--accent), 0 0 38px var(--accent);
+        animation: glow-pulse 3s infinite;
+    }
+    .header-sub { font-size:11px; color:var(--text-muted); letter-spacing:2.5px; margin-top:2px; }
+    .header-line {
+        height:1px; margin:10px 0 0;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        opacity:.4;
+    }
+    @keyframes glow-pulse {
+        0%,100%{ text-shadow: 0 0 18px var(--accent), 0 0 38px var(--accent); }
+        50%    { text-shadow: 0 0 6px var(--accent); }
+    }
 
-        /* ══════════════════ HEADER ══════════════════ */
-        .header {
-            width: 100%; max-width: 500px;
-            text-align: center;
-            padding: 18px 0 10px;
-            position: relative; z-index: 10;
-        }
-        .header-logo {
-            font-family: 'Orbitron', monospace;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 6px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        .header-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 22px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: var(--accent);
-            text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
-            line-height: 1.2;
-        }
-        .header-sub {
-            font-size: 13px;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            margin-top: 2px;
-        }
-        .header-line {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            margin: 10px 0 0;
-            opacity: 0.5;
-        }
+    /* ═══════════════════ CONTAINER ═══════════════════ */
+    .container {
+        width:100%; max-width:500px;
+        background:var(--panel); border:1px solid var(--border); border-radius:16px;
+        padding:16px; box-shadow:var(--shadow), inset 0 1px 0 var(--border);
+        position:relative; z-index:10; backdrop-filter:blur(10px);
+        transition:background .4s, border .4s;
+        animation: fade-in-up .5s ease;
+    }
+    @keyframes fade-in-up {
+        from{opacity:0; transform:translateY(12px)}
+        to  {opacity:1; transform:translateY(0)}
+    }
+    .container::before, .container::after {
+        content:''; position:absolute; width:12px; height:12px;
+        border-color:var(--accent); border-style:solid; opacity:.45;
+    }
+    .container::before { top:8px; left:8px;  border-width:2px 0 0 2px; border-radius:2px 0 0 0; }
+    .container::after  { top:8px; right:8px; border-width:2px 2px 0 0; border-radius:0 2px 0 0; }
 
-        /* ══════════════════ CONTAINER ══════════════════ */
-        .container {
-            width: 100%; max-width: 500px;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--shadow), inset 0 1px 0 var(--border);
-            position: relative; z-index: 10;
-            backdrop-filter: blur(10px);
-            transition: background 0.4s, border 0.4s;
-        }
+    /* ═══════════════════ TABS ═══════════════════ */
+    .tabs {
+        display:flex; margin-bottom:18px; gap:4px;
+        background:var(--panel2); border-radius:10px;
+        padding:4px; border:1px solid var(--border);
+    }
+    .tab {
+        flex:1; padding:10px 4px; text-align:center; cursor:pointer;
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:600;
+        letter-spacing:1.5px; text-transform:uppercase;
+        color:var(--text-muted); border-radius:7px; transition:.25s;
+    }
+    .tab:hover { color:var(--accent); }
+    .tab.active {
+        background:var(--tab-active-bg); color:var(--accent);
+        border:1px solid var(--border); text-shadow:0 0 8px var(--accent);
+    }
+    .view { display:none; }
+    .view.active { display:block; }
 
-        /* Corner decorations */
-        .container::before, .container::after {
-            content: '';
-            position: absolute;
-            width: 12px; height: 12px;
-            border-color: var(--accent);
-            border-style: solid;
-            opacity: 0.5;
-        }
-        .container::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-radius: 2px 0 0 0; }
-        .container::after  { top: 8px; right: 8px; border-width: 2px 2px 0 0; border-radius: 0 2px 0 0; }
+    /* ═══════════════════ SECTION LABEL ═══════════════════ */
+    .slabel {
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:700;
+        letter-spacing:3px; text-transform:uppercase;
+        color:var(--text-muted); margin:14px 0 8px;
+        display:flex; align-items:center; gap:8px;
+    }
+    .slabel::after {
+        content:''; flex:1; height:1px;
+        background:linear-gradient(90deg, var(--border), transparent);
+    }
 
-        /* ══════════════════ TABS ══════════════════ */
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            gap: 4px;
-            background: var(--panel2);
-            border-radius: 10px;
-            padding: 4px;
-            border: 1px solid var(--border);
-        }
-        .tab {
-            flex: 1; padding: 10px 8px;
-            text-align: center; cursor: pointer;
-            font-family: 'Orbitron', monospace;
-            font-size: 10px; font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            border-radius: 7px;
-            transition: all 0.25s;
-        }
-        .tab:hover { color: var(--accent); }
-        .tab.active {
-            background: var(--tab-active-bg);
-            color: var(--accent);
-            border: 1px solid var(--border);
-            text-shadow: 0 0 8px var(--accent);
-        }
+    label {
+        display:block; font-size:11px; font-weight:600;
+        color:var(--text-muted); letter-spacing:1px; text-transform:uppercase;
+        margin-bottom:5px;
+    }
 
-        .view { display: none; }
-        .view.active { display: block; }
+    /* ═══════════════════ INPUTS ═══════════════════ */
+    input, select {
+        width:100%; padding:11px 12px; border-radius:8px;
+        border:1px solid var(--border); background:var(--input-bg);
+        color:var(--text); font-family:'Orbitron',monospace;
+        font-size:13px; font-weight:600; outline:none;
+        transition:border .2s, box-shadow .2s; -webkit-appearance:none;
+    }
+    input:focus, select:focus {
+        border-color:var(--accent);
+        box-shadow: 0 0 0 2px rgba(0,255,231,.10), 0 0 12px rgba(0,255,231,.08);
+    }
+    select option { background:var(--panel); color:var(--text); }
+    #h-select { display:none; }
 
-        /* ══════════════════ LABELS & SECTION HEADERS ══════════════════ */
-        .section-label {
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; font-weight: 700;
-            letter-spacing: 3px; text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: 8px; margin-top: 16px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .section-label::after {
-            content: ''; flex: 1; height: 1px;
-            background: linear-gradient(90deg, var(--border), transparent);
-        }
+    /* ═══════════════════ TRIP STATUS BAR ═══════════════════ */
+    .trip-status-bar {
+        background:rgba(255,51,102,0.08); border:1px solid rgba(255,51,102,.5);
+        border-radius:12px; padding:12px 16px; margin-bottom:16px;
+        display:none; text-align:center;
+        animation: status-pulse 2s infinite;
+    }
+    .trip-status-bar.active { display:block; }
+    @keyframes status-pulse { 0%,100%{opacity:.8} 50%{opacity:1} }
+    .timer-display {
+        font-family:'Orbitron',monospace; font-size:26px; font-weight:900;
+        color:#ff3366; text-shadow:0 0 14px rgba(255,51,102,.6);
+        letter-spacing:2px;
+    }
+    .timer-label {
+        font-family:'Orbitron',monospace; font-size:9px; letter-spacing:3px;
+        color:rgba(255,51,102,.8); margin-bottom:4px;
+    }
 
-        label {
-            display: block; margin-bottom: 5px;
-            font-size: 12px; font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 1px; text-transform: uppercase;
-        }
+    /* Idle status bar */
+    .idle-bar {
+        display:flex; align-items:center; gap:8px;
+        padding:8px 12px; background:var(--panel2);
+        border:1px solid var(--border); border-radius:8px;
+        margin-bottom:14px;
+    }
+    .pulse-dot {
+        width:8px; height:8px; border-radius:50%; flex-shrink:0;
+        background:#3a6080; animation:none;
+    }
+    .pulse-dot.live { background:#00c470; box-shadow:0 0 6px #00c470; animation:pdot 2s infinite; }
+    @keyframes pdot { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .idle-text { font-family:'Orbitron',monospace; font-size:9px; letter-spacing:2px; color:var(--text-muted); }
 
-        /* ══════════════════ INPUTS ══════════════════ */
-        input, select {
-            width: 100%;
-            padding: 11px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            color: var(--text);
-            font-family: 'Orbitron', monospace;
-            font-size: 14px; font-weight: 600;
-            transition: border 0.2s, box-shadow 0.2s;
-            outline: none;
-            -webkit-appearance: none;
-        }
-        input:focus, select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(0,255,231,0.12), 0 0 12px rgba(0,255,231,0.1);
-        }
-        select option { background: var(--panel); color: var(--text); }
+    /* ═══════════════════ HORARIO BTNS ═══════════════════ */
+    .horario-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:4px; }
+    .hbtn {
+        padding:11px 4px; border-radius:9px; border:1px solid var(--border);
+        background:var(--input-bg); color:var(--text-muted);
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:700;
+        letter-spacing:.5px; text-transform:uppercase; cursor:pointer;
+        text-align:center; transition:.2s;
+    }
+    .hbtn .hbtn-emoji { font-size:17px; display:block; margin-bottom:4px; }
+    .hbtn:hover { border-color:var(--accent); color:var(--accent); }
+    .hbtn.active {
+        background:var(--tab-active-bg); border-color:var(--accent);
+        color:var(--accent); box-shadow:0 0 10px rgba(0,255,231,.12);
+    }
 
-        /* ══════════════════ HORARIO SELECT ══════════════════ */
-        .horario-grid {
-            display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
-            margin-bottom: 4px;
-        }
-        .horario-btn {
-            padding: 12px 4px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: var(--input-bg);
-            color: var(--text-muted);
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; font-weight: 700;
-            letter-spacing: 1px; text-transform: uppercase;
-            cursor: pointer; text-align: center;
-            transition: all 0.2s;
-        }
-        .horario-btn .emoji { font-size: 18px; display: block; margin-bottom: 4px; }
-        .horario-btn:hover { border-color: var(--accent); color: var(--accent); }
-        .horario-btn.active {
-            background: var(--tab-active-bg);
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 10px rgba(0,255,231,0.15);
-        }
+    /* ═══════════════════ GRIDS ═══════════════════ */
+    .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
 
-        /* Keep hidden select for logic */
-        #horario-select { display: none; }
+    /* ═══════════════════ ACTION BUTTONS ═══════════════════ */
+    .btn-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+    .action-btn {
+        padding:38px 10px; border-radius:12px;
+        font-family:'Orbitron',monospace; font-size:11px; font-weight:700;
+        letter-spacing:2px; text-transform:uppercase;
+        border:1px solid transparent; color:white; cursor:pointer;
+        position:relative; overflow:hidden; transition:transform .15s, box-shadow .2s;
+    }
+    .action-btn:active { transform:scale(.97); }
+    .action-btn .aemoji { font-size:26px; display:block; margin-bottom:7px; }
+    #btn-start {
+        background:linear-gradient(135deg,#00c470,#009950);
+        border-color:rgba(0,196,112,.4); box-shadow:0 4px 18px rgba(0,196,112,.22);
+    }
+    #btn-start:hover { box-shadow:0 6px 28px rgba(0,196,112,.42); }
+    #btn-stop {
+        background:linear-gradient(135deg,#ff3366,#cc0033);
+        border-color:rgba(255,51,102,.4); box-shadow:0 4px 18px rgba(255,51,102,.22);
+    }
+    #btn-stop:hover { box-shadow:0 6px 28px rgba(255,51,102,.42); }
+    .action-btn::before {
+        content:''; position:absolute; top:-50%; left:-60%;
+        width:40%; height:200%; background:rgba(255,255,255,.13);
+        transform:skewX(-20deg); animation:shimmer 3s infinite;
+    }
+    @keyframes shimmer { 0%,100%{left:-60%} 60%{left:120%} }
 
-        /* ══════════════════ INPUT GRID ══════════════════ */
-        .input-grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px; margin-bottom: 4px;
-        }
-        .input-group label { font-size: 10px; }
+    /* ═══════════════════ RESULT BOX ═══════════════════ */
+    .result-box {
+        background:var(--result-bg); border:1px solid var(--accent);
+        border-radius:12px; padding:16px 20px; text-align:center;
+        position:relative; overflow:hidden; margin-bottom:18px;
+    }
+    .result-box::before {
+        content:''; position:absolute; left:0; top:0;
+        width:3px; height:100%; background:var(--accent);
+        box-shadow:0 0 10px var(--accent);
+    }
+    .result-label {
+        font-family:'Orbitron',monospace; font-size:9px;
+        letter-spacing:4px; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px;
+    }
+    .result-value {
+        font-family:'Orbitron',monospace; font-size:30px; font-weight:900;
+        color:var(--accent); text-shadow:0 0 18px var(--accent);
+    }
 
-        /* ══════════════════ ACTION BUTTONS ══════════════════ */
-        .button-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 12px; margin: 18px 0;
-        }
-        button.action-btn {
-            padding: 40px 12px;
-            font-family: 'Orbitron', monospace;
-            font-size: 12px; font-weight: 700;
-            letter-spacing: 2px; text-transform: uppercase;
-            border: 1px solid transparent;
-            border-radius: 12px;
-            color: white; cursor: pointer;
-            position: relative; overflow: hidden;
-            transition: transform 0.15s, box-shadow 0.2s;
-        }
-        button.action-btn:active { transform: scale(0.97); }
-        button.action-btn .emoji-big { font-size: 28px; display: block; margin-bottom: 8px; }
+    /* ═══════════════════ HISTORY ═══════════════════ */
+    .history-section { margin-top:18px; border-top:1px solid var(--border); padding-top:15px; }
+    .history-header {
+        display:flex; justify-content:space-between; align-items:center;
+        margin-bottom:12px;
+    }
+    .history-title { font-family:'Orbitron',monospace; font-size:11px; font-weight:700; color:var(--accent); }
 
-        #btn-start {
-            background: var(--btn-start);
-            border-color: rgba(0,196,112,0.5);
-            box-shadow: 0 4px 20px rgba(0,196,112,0.25);
-        }
-        #btn-start:hover { box-shadow: 0 6px 30px rgba(0,196,112,0.45); }
-        #btn-stop {
-            background: var(--btn-stop);
-            border-color: rgba(255,51,102,0.5);
-            box-shadow: 0 4px 20px rgba(255,51,102,0.25);
-        }
-        #btn-stop:hover { box-shadow: 0 6px 30px rgba(255,51,102,0.45); }
+    .history-controls { display:flex; gap:6px; }
+    .btn-sm {
+        padding:7px 11px; font-size:11px; font-weight:700; border-radius:7px;
+        border:1px solid transparent; cursor:pointer; color:white;
+        font-family:'Rajdhani',sans-serif; letter-spacing:1px;
+        transition:transform .1s, box-shadow .2s;
+    }
+    .btn-sm:active { transform:scale(.95); }
+    .btn-export { background:linear-gradient(135deg,#0066ff,#0044aa); border-color:rgba(0,102,255,.35); }
+    .btn-wap    { background:linear-gradient(135deg,#25D366,#128C7E); border-color:rgba(37,211,102,.35); }
+    .btn-clear  { background:linear-gradient(135deg,#e67e22,#c0540d); border-color:rgba(230,126,34,.35); }
 
-        /* Shimmer effect on action buttons */
-        button.action-btn::before {
-            content: '';
-            position: absolute; top: -50%; left: -60%;
-            width: 40%; height: 200%;
-            background: rgba(255,255,255,0.15);
-            transform: skewX(-20deg);
-            animation: shimmer 3s infinite;
-        }
-        @keyframes shimmer { 0%,100%{left:-60%} 60%{left:120%} }
+    /* Stats cards */
+    .stats-row {
+        display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;
+    }
+    .sc {
+        background:var(--panel2); border:1px solid var(--border);
+        border-radius:9px; padding:10px 6px; text-align:center;
+    }
+    .sc .sc-num { font-family:'Orbitron',monospace; font-size:13px; font-weight:700; color:var(--accent); }
+    .sc .sc-lbl { font-size:10px; color:var(--text-muted); letter-spacing:.5px; margin-top:2px; }
 
-        /* ══════════════════ RESULT BOX ══════════════════ */
-        .result-box {
-            background: var(--result-bg);
-            border: 1px solid var(--result-border);
-            border-radius: 12px;
-            padding: 18px 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .result-label {
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
-            color: var(--text-muted); margin-bottom: 4px;
-        }
-        .result-value {
-            font-family: 'Orbitron', monospace;
-            font-size: 32px; font-weight: 900;
-            color: var(--accent);
-            text-shadow: 0 0 20px var(--accent);
-            letter-spacing: 1px;
-        }
-        .result-value .currency { font-size: 18px; margin-right: 2px; }
-        .result-box::before {
-            content: '';
-            position: absolute; left: 0; top: 0;
-            width: 3px; height: 100%;
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-        }
+    /* Meta progress */
+    .meta-bar-wrap {
+        background:var(--panel2); border:1px solid var(--border);
+        border-radius:9px; padding:10px 12px; margin-bottom:14px;
+    }
+    .meta-bar-header {
+        display:flex; justify-content:space-between; align-items:center;
+        margin-bottom:7px;
+    }
+    .meta-bar-label { font-family:'Orbitron',monospace; font-size:9px; color:var(--text-muted); letter-spacing:2px; }
+    .meta-bar-pct   { font-family:'Orbitron',monospace; font-size:11px; font-weight:700; color:var(--accent); }
+    .meta-track { height:6px; border-radius:10px; background:var(--panel); overflow:hidden; }
+    .meta-fill {
+        height:100%; border-radius:10px;
+        background:linear-gradient(90deg, var(--accent2), var(--accent));
+        box-shadow:0 0 8px var(--accent);
+        transition:width .6s cubic-bezier(.4,0,.2,1);
+    }
 
-        /* ══════════════════ PULSE INDICATOR ══════════════════ */
-        .status-bar {
-            display: flex; align-items: center; gap: 8px;
-            margin-bottom: 14px;
-            padding: 8px 12px;
-            background: var(--panel2);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .pulse-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: #00c470;
-            box-shadow: 0 0 6px #00c470;
-            animation: pulse-anim 2s infinite;
-            flex-shrink: 0;
-        }
-        .pulse-dot.idle { background: #4a7090; box-shadow: none; animation: none; }
-        .pulse-dot.running { background: #ff3366; box-shadow: 0 0 6px #ff3366; }
-        @keyframes pulse-anim { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .status-text {
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; letter-spacing: 2px; color: var(--text-muted);
-        }
-        .status-timer {
-            font-family: 'Orbitron', monospace;
-            font-size: 12px; font-weight: 700; color: var(--accent);
-            margin-left: auto;
-        }
+    /* History items */
+    #hist-list {
+        max-height:380px; overflow-y:auto; padding-right:4px;
+        scrollbar-width:thin; scrollbar-color:var(--accent) transparent;
+    }
+    #hist-list::-webkit-scrollbar { width:4px; }
+    #hist-list::-webkit-scrollbar-thumb { background:var(--accent); border-radius:10px; }
 
-        /* ══════════════════ HISTORY ══════════════════ */
-        .history-section {
-            margin-top: 20px;
-            border-top: 1px solid var(--border);
-            padding-top: 16px;
-        }
-        .history-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 12px;
-        }
-        .history-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 11px; font-weight: 700; letter-spacing: 2px;
-            color: var(--accent);
-        }
-        .history-controls { display: flex; gap: 6px; }
-        .btn-small {
-            padding: 8px 12px; font-size: 11px; font-weight: 700;
-            border-radius: 7px; border: 1px solid transparent;
-            cursor: pointer; color: white;
-            font-family: 'Rajdhani', sans-serif;
-            letter-spacing: 1px;
-            transition: transform 0.1s, box-shadow 0.2s;
-        }
-        .btn-small:active { transform: scale(0.95); }
-        .btn-export {
-            background: linear-gradient(135deg,#0066ff,#0044aa);
-            border-color: rgba(0,102,255,0.4);
-            box-shadow: 0 2px 10px rgba(0,102,255,0.2);
-        }
-        .btn-clear {
-            background: linear-gradient(135deg,#e67e22,#c0540d);
-            border-color: rgba(230,126,34,0.4);
-            box-shadow: 0 2px 10px rgba(230,126,34,0.2);
-        }
-        .history-stats {
-            display: grid; grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px; margin-bottom: 14px;
-        }
-        .stat-card {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            padding: 10px 8px; text-align: center;
-        }
-        .stat-card .stat-num {
-            font-family: 'Orbitron', monospace;
-            font-size: 14px; font-weight: 700; color: var(--accent);
-        }
-        .stat-card .stat-label {
-            font-size: 10px; color: var(--text-muted);
-            letter-spacing: 1px; margin-top: 2px;
-        }
-        .history-item {
-            background: var(--hist-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 15px; margin-top: 8px;
-            font-size: 13px; position: relative;
-            transition: border 0.2s;
-        }
-        .history-item:hover { border-color: var(--border-hover); }
-        .history-item .h-date {
-            font-size: 11px; color: var(--text-muted);
-            letter-spacing: 1px; margin-bottom: 4px;
-        }
-        .history-item .h-meta {
-            display: flex; gap: 10px; align-items: center;
-            flex-wrap: wrap;
-        }
-        .history-item .h-badge {
-            font-size: 10px; padding: 3px 8px; border-radius: 20px;
-            border: 1px solid var(--border); color: var(--text-muted);
-            font-family: 'Orbitron', monospace; letter-spacing: 1px;
-        }
-        .history-item .h-val {
-            font-family: 'Orbitron', monospace;
-            font-size: 16px; font-weight: 700; color: var(--accent);
-            margin-left: auto;
-        }
-        .btn-delete-item {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(231,76,60,0.15); color: #e74c3c;
-            border: 1px solid rgba(231,76,60,0.3);
-            border-radius: 6px; padding: 5px 8px;
-            cursor: pointer; font-size: 13px;
-            transition: background 0.2s;
-        }
-        .btn-delete-item:hover { background: rgba(231,76,60,0.35); }
-        .history-empty {
-            text-align: center; padding: 24px;
-            color: var(--text-muted);
-            font-size: 13px; letter-spacing: 1px;
-        }
+    .history-item {
+        background:var(--hist-bg); border:1px solid var(--border);
+        border-radius:10px; padding:10px 12px; margin-bottom:7px;
+        transition:border .2s;
+    }
+    .history-item:hover { border-color:var(--border-h); }
+    .h-date { font-size:10px; color:var(--text-muted); letter-spacing:.5px; margin-bottom:5px; }
+    .h-row  { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .h-badge {
+        font-size:10px; padding:2px 7px; border-radius:20px;
+        border:1px solid var(--border); color:var(--text-muted);
+        font-family:'Orbitron',monospace;
+    }
+    .h-val { font-family:'Orbitron',monospace; font-size:15px; font-weight:700; color:var(--accent); margin-left:auto; }
+    .btn-del {
+        background:var(--btn-del-bg); color:var(--btn-del-col);
+        border:1px solid var(--btn-del-border);
+        border-radius:6px; padding:4px 8px; cursor:pointer;
+        font-size:13px; margin-left:6px; transition:background .2s;
+    }
+    .btn-del:hover { background:rgba(231,76,60,.3); }
+    .hist-empty { text-align:center; padding:24px; color:var(--text-muted); font-size:13px; }
 
-        /* ══════════════════ CONFIG VIEW ══════════════════ */
-        .config-group {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 14px; margin-bottom: 12px;
-        }
-        .config-group-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
-            color: var(--accent); margin-bottom: 12px;
-        }
-        .config-row { margin-bottom: 10px; }
-        .config-row:last-child { margin-bottom: 0; }
-        .config-divider {
-            height: 1px; background: var(--border);
-            margin: 14px 0;
-        }
+    /* ═══════════════════ CHARTS VIEW ═══════════════════ */
+    .chart-filters { display:flex; gap:5px; margin-bottom:14px; }
+    .f-btn {
+        flex:1; padding:9px 4px; font-size:9px; font-family:'Orbitron',monospace;
+        font-weight:700; letter-spacing:1px; text-transform:uppercase;
+        background:var(--panel2); border:1px solid var(--border);
+        color:var(--text-muted); border-radius:7px; cursor:pointer; transition:.2s;
+    }
+    .f-btn:hover { color:var(--accent); border-color:var(--accent); }
+    .f-btn.active { background:var(--tab-active-bg); color:var(--accent); border-color:var(--accent); }
 
-        /* ══════════════════ THEME TOGGLE ══════════════════ */
-        .theme-toggle-wrap {
-            width: 100%; max-width: 500px;
-            display: flex; gap: 10px; margin-top: 12px;
-            position: relative; z-index: 10;
-        }
-        .theme-btn {
-            flex: 1; padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--panel);
-            color: var(--text-muted);
-            font-family: 'Orbitron', monospace;
-            font-size: 9px; font-weight: 700;
-            letter-spacing: 2px; text-transform: uppercase;
-            cursor: pointer; text-align: center;
-            transition: all 0.25s;
-        }
-        .theme-btn.active {
-            border-color: var(--accent); color: var(--accent);
-            background: var(--tab-active-bg);
-        }
-        .theme-btn .t-emoji { font-size: 20px; display: block; margin-bottom: 5px; }
+    /* KPI cards row */
+    .kpi-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .kpi-card {
+        background:var(--panel2); border:1px solid var(--border);
+        border-radius:10px; padding:12px; text-align:center;
+    }
+    .kpi-card .kpi-num { font-family:'Orbitron',monospace; font-size:16px; font-weight:900; color:var(--accent); }
+    .kpi-card .kpi-lbl { font-size:10px; color:var(--text-muted); letter-spacing:1px; margin-top:3px; }
+    .kpi-card .kpi-sub { font-size:10px; color:var(--text-muted); margin-top:1px; }
 
-        /* ══════════════════ FOOTER ══════════════════ */
-        .footer {
-            position: fixed; bottom: 0; left: 0;
-            width: 100%;
-            background: var(--footer-bg);
-            border-top: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            padding: 10px 16px; text-align: center;
-            font-size: 11px; z-index: 100;
-            letter-spacing: 1px;
-        }
-        .footer-brand {
-            font-family: 'Orbitron', monospace;
-            font-size: 10px; font-weight: 700;
-            color: var(--accent); margin-bottom: 3px;
-            text-shadow: 0 0 8px var(--accent);
-        }
-        .footer a {
-            color: var(--text-muted); text-decoration: none;
-            margin: 0 8px; font-weight: 600;
-            transition: color 0.2s;
-        }
-        .footer a:hover { color: var(--accent); }
+    .chart-block {
+        background:var(--panel2); border:1px solid var(--border);
+        border-radius:12px; padding:14px; margin-bottom:12px;
+    }
+    .chart-block-title {
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:700;
+        letter-spacing:2px; text-transform:uppercase; color:var(--accent);
+        margin-bottom:12px; padding-left:8px;
+        border-left:3px solid var(--accent);
+    }
+    .chart-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-        /* ══════════════════ ANIMATIONS ══════════════════ */
-        @keyframes glow-pulse {
-            0%,100% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
-            50% { text-shadow: 0 0 8px var(--accent); }
-        }
-        .header-title { animation: glow-pulse 3s infinite; }
+    /* ═══════════════════ CONFIG VIEW ═══════════════════ */
+    .cfg-block {
+        background:var(--panel2); border:1px solid var(--border);
+        border-radius:10px; padding:14px; margin-bottom:12px;
+    }
+    .cfg-title {
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:700;
+        letter-spacing:3px; color:var(--accent); margin-bottom:12px;
+    }
+    .cfg-row { margin-bottom:10px; }
+    .cfg-row:last-child { margin-bottom:0; }
 
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .container { animation: fade-in-up 0.5s ease; }
+    .btn-full {
+        width:100%; padding:13px; border-radius:9px; cursor:pointer;
+        font-family:'Orbitron',monospace; font-size:10px; font-weight:700;
+        letter-spacing:2px; text-transform:uppercase; transition:.2s;
+    }
+    .btn-ghost {
+        background:var(--panel2); border:1px solid var(--accent);
+        color:var(--accent); margin-bottom:8px;
+    }
+    .btn-ghost:hover { background:var(--tab-active-bg); }
+    .btn-danger {
+        background:linear-gradient(135deg,#ff3366,#cc0033);
+        border:none; color:white;
+    }
 
-        /* ══════════════════ SEPARATOR DECOR ══════════════════ */
-        .decor-sep {
-            text-align: center; font-size: 10px;
-            color: var(--text-muted); letter-spacing: 4px;
-            margin: 6px 0;
-            font-family: 'Orbitron', monospace;
-        }
+    /* ═══════════════════ THEME SWITCHER ═══════════════════ */
+    .theme-wrap {
+        width:100%; max-width:500px;
+        display:grid; grid-template-columns:1fr 1fr; gap:10px;
+        margin-top:12px; position:relative; z-index:10;
+    }
+    .t-btn {
+        padding:12px; border-radius:10px;
+        border:1px solid var(--border); background:var(--panel);
+        color:var(--text-muted); font-family:'Orbitron',monospace;
+        font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+        cursor:pointer; text-align:center; transition:.25s;
+    }
+    .t-btn .t-em { font-size:18px; display:block; margin-bottom:4px; }
+    .t-btn.active { border-color:var(--accent); color:var(--accent); background:var(--tab-active-bg); }
+
+    /* ═══════════════════ FOOTER ═══════════════════ */
+    .footer {
+        position:fixed; bottom:0; left:0; width:100%;
+        background:var(--footer-bg); border-top:1px solid var(--border);
+        backdrop-filter:blur(12px); padding:8px 16px;
+        text-align:center; font-size:11px; z-index:100;
+    }
+    .footer-brand {
+        font-family:'Orbitron',monospace; font-size:9px; font-weight:700;
+        color:var(--accent); text-shadow:0 0 7px var(--accent); margin-bottom:3px;
+    }
+    .footer a {
+        color:var(--text-muted); text-decoration:none;
+        margin:0 8px; font-weight:600; transition:color .2s;
+    }
+    .footer a:hover { color:var(--accent); }
     </style>
 </head>
 <body>
@@ -567,475 +471,683 @@
 
 <!-- HEADER -->
 <div class="header">
-    <div class="header-logo">⬡ Inversiones Aripar ⬡</div>
+    <div class="header-eyebrow">⬡ Inversiones Aripar ⬡</div>
     <div class="header-title">🛸 TRANSPORT PRO</div>
-    <div class="header-sub">Sistema de Tarifas v8.0</div>
+    <div class="header-sub">Sistema de Tarifas v15.0</div>
     <div class="header-line"></div>
 </div>
 
 <!-- MAIN CONTAINER -->
 <div class="container">
     <div class="tabs">
-        <div class="tab active" id="tab-calc" onclick="showView('calc',this)">🚀 Calcular</div>
-        <div class="tab" id="tab-config" onclick="showView('config',this)">⚙️ Ajustes</div>
+        <div id="tab-calc"   class="tab active" onclick="showView('calc',this)">🚀 Calcular</div>
+        <div id="tab-stats"  class="tab"        onclick="showView('stats',this)">📊 Gráficas</div>
+        <div id="tab-config" class="tab"        onclick="showView('config',this)">⚙️ Ajustes</div>
     </div>
 
-    <!-- ════════════ CALCULATOR VIEW ════════════ -->
+    <!-- ══════════════ CALCULADORA ══════════════ -->
     <div id="view-calc" class="view active">
 
-        <!-- STATUS BAR -->
-        <div class="status-bar">
-            <div class="pulse-dot idle" id="pulse-dot"></div>
-            <div class="status-text" id="status-text">SISTEMA EN ESPERA</div>
-            <div class="status-timer" id="live-timer">--:--</div>
+        <!-- Timer / Status -->
+        <div id="trip-indicator" class="trip-status-bar">
+            <div class="timer-label">🔴 VIAJE EN CURSO</div>
+            <div id="timer" class="timer-display">00:00:00</div>
+        </div>
+        <div id="idle-bar" class="idle-bar">
+            <div id="pulse-dot" class="pulse-dot"></div>
+            <div class="idle-text" id="idle-text">SISTEMA EN ESPERA</div>
         </div>
 
-        <!-- HORARIO -->
-        <div class="section-label">⚡ Franja Horaria</div>
+        <!-- Horario -->
+        <div class="slabel">⚡ Franja Horaria</div>
         <div class="horario-grid">
-            <div class="horario-btn active" id="hbtn-valle" onclick="setHorario('valle')">
-                <span class="emoji">🌙</span>Valle
+            <div class="hbtn active" id="hbtn-valle" onclick="setHorario('valle')">
+                <span class="hbtn-emoji">🌙</span>Valle
             </div>
-            <div class="horario-btn" id="hbtn-medio" onclick="setHorario('medio')">
-                <span class="emoji">⚡</span>Medio
+            <div class="hbtn" id="hbtn-medio" onclick="setHorario('medio')">
+                <span class="hbtn-emoji">⚡</span>Medio
             </div>
-            <div class="horario-btn" id="hbtn-pico" onclick="setHorario('pico')">
-                <span class="emoji">🔥</span>Pico
+            <div class="hbtn" id="hbtn-pico" onclick="setHorario('pico')">
+                <span class="hbtn-emoji">🔥</span>Pico
             </div>
         </div>
-        <select id="horario-select" onchange="autoCalculate()">
-            <option value="valle">Valle</option>
-            <option value="medio">Medio</option>
-            <option value="pico">Pico</option>
-        </select>
+        <select id="h-select"><option value="valle">Valle</option><option value="medio">Medio</option><option value="pico">Pico</option></select>
 
-        <!-- TIEMPO -->
-        <div class="section-label">⏱️ Tiempo</div>
-        <div class="input-grid">
-            <div class="input-group">
-                <label>🕐 Inicio</label>
-                <input type="time" id="t-start" oninput="updateTimeDiff()">
-            </div>
-            <div class="input-group">
-                <label>🕔 Fin</label>
-                <input type="time" id="t-end" oninput="updateTimeDiff()">
-            </div>
-            <div class="input-group">
-                <label>⏳ Minutos</label>
-                <input type="number" id="t-total" oninput="autoCalculate()" placeholder="0">
-            </div>
+        <!-- Tiempo -->
+        <div class="slabel">⏱️ Tiempo</div>
+        <div class="grid-3">
+            <div><label>🕐 Inicio</label><input type="time" id="t-start" oninput="updateTimeDiff()"></div>
+            <div><label>🕔 Fin</label><input type="time" id="t-end" oninput="updateTimeDiff()"></div>
+            <div><label>⏳ Min</label><input type="number" id="min-in" oninput="calc()" placeholder="0"></div>
         </div>
 
         <!-- KM -->
-        <div class="section-label">🗺️ Distancia</div>
-        <div class="input-grid">
-            <div class="input-group">
-                <label>📍 KM Inicio</label>
-                <input type="number" id="km-start" step="0.1" oninput="updateKmDiff()" placeholder="0.0">
-            </div>
-            <div class="input-group">
-                <label>🏁 KM Fin</label>
-                <input type="number" id="km-end" step="0.1" oninput="updateKmDiff()" placeholder="0.0">
-            </div>
-            <div class="input-group">
-                <label>📏 Recorrido</label>
-                <input type="number" id="km-total" step="0.1" oninput="autoCalculate()" placeholder="0.0">
-            </div>
+        <div class="slabel">🗺️ Distancia</div>
+        <div class="grid-3">
+            <div><label>📍 KM Ini</label><input type="number" id="km-start" step="0.1" oninput="updateKmDiff()" placeholder="0.0"></div>
+            <div><label>🏁 KM Fin</label><input type="number" id="km-end" step="0.1" oninput="updateKmDiff()" placeholder="0.0"></div>
+            <div><label>📏 Total</label><input type="number" id="km-in" step="0.1" oninput="calc()" placeholder="0.0"></div>
         </div>
 
-        <!-- ACTION BUTTONS -->
-        <div class="button-grid">
-            <button id="btn-start" class="action-btn" onclick="quickStart()">
-                <span class="emoji-big">🚀</span>INICIAR
+        <!-- Buttons -->
+        <div class="btn-grid">
+            <button id="btn-start" class="action-btn" onclick="startTrip()">
+                <span class="aemoji">🚀</span>INICIAR
             </button>
-            <button id="btn-stop" class="action-btn" onclick="quickEndAndSave()">
-                <span class="emoji-big">🏁</span>FINALIZAR
+            <button id="btn-stop" class="action-btn" onclick="stopTrip()">
+                <span class="aemoji">🏁</span>FINALIZAR
             </button>
         </div>
 
-        <!-- RESULT -->
+        <!-- Result -->
         <div class="result-box">
             <div class="result-label">💰 Tarifa Calculada</div>
-            <div class="result-value">
-                <span class="currency">$</span><span id="res-val">0</span>
-            </div>
+            <div id="res-val" class="result-value">$0</div>
         </div>
 
-        <!-- HISTORY SECTION -->
+        <!-- History -->
         <div class="history-section">
             <div class="history-header">
-                <div class="history-title">📊 Historial</div>
+                <div class="history-title">📋 Historial (<span id="count-hist">0</span>)</div>
                 <div class="history-controls">
-                    <button class="btn-small btn-export" onclick="exportCSV()">📥 CSV</button>
-                    <button class="btn-small btn-clear" onclick="clearAllHistory()">🗑️ Limpiar</button>
+                    <button class="btn-sm btn-wap"    onclick="shareWhatsApp()">📲</button>
+                    <button class="btn-sm btn-export" onclick="exportCSV()">📥 CSV</button>
+                    <button class="btn-sm btn-clear"  onclick="clearAll()">🗑️</button>
                 </div>
             </div>
 
-            <!-- Stats Summary -->
-            <div class="history-stats">
-                <div class="stat-card">
-                    <div class="stat-num" id="stat-trips">0</div>
-                    <div class="stat-label">🚖 VIAJES</div>
+            <!-- Mini stats today -->
+            <div class="stats-row">
+                <div class="sc"><div class="sc-num" id="st-trips">0</div><div class="sc-lbl">🚖 Viajes</div></div>
+                <div class="sc"><div class="sc-num" id="st-km">0</div><div class="sc-lbl">🗺️ KM Hoy</div></div>
+                <div class="sc"><div class="sc-num" id="st-total">$0</div><div class="sc-lbl">💵 Total Hoy</div></div>
+            </div>
+
+            <!-- Meta diaria -->
+            <div class="meta-bar-wrap">
+                <div class="meta-bar-header">
+                    <div class="meta-bar-label">🎯 Meta Diaria</div>
+                    <div class="meta-bar-pct" id="meta-pct">0%</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-num" id="stat-km">0</div>
-                    <div class="stat-label">🗺️ KM HOY</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-num" id="stat-total">$0</div>
-                    <div class="stat-label">💵 HOY</div>
-                </div>
+                <div class="meta-track"><div class="meta-fill" id="meta-fill" style="width:0%"></div></div>
             </div>
 
             <div id="hist-list"></div>
         </div>
     </div>
 
-    <!-- ════════════ CONFIG VIEW ════════════ -->
+    <!-- ══════════════ GRÁFICAS ══════════════ -->
+    <div id="view-stats" class="view">
+        <div class="chart-filters">
+            <button class="f-btn active" onclick="changeFilter('7d',this)">7 Días</button>
+            <button class="f-btn" onclick="changeFilter('30d',this)">30 Días</button>
+            <button class="f-btn" onclick="changeFilter('month',this)">Mensual</button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-num" id="kpi-total">$0</div>
+                <div class="kpi-lbl">💵 INGRESOS</div>
+                <div class="kpi-sub" id="kpi-period">en el período</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-num" id="kpi-trips">0</div>
+                <div class="kpi-lbl">🚖 VIAJES</div>
+                <div class="kpi-sub" id="kpi-avg">prom. $0 c/u</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-num" id="kpi-km">0</div>
+                <div class="kpi-lbl">🗺️ KM TOTALES</div>
+                <div class="kpi-sub" id="kpi-km-avg">prom. 0 km/viaje</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-num" id="kpi-best">$0</div>
+                <div class="kpi-lbl">🏆 MEJOR DÍA</div>
+                <div class="kpi-sub" id="kpi-best-date">—</div>
+            </div>
+        </div>
+
+        <!-- Line chart -->
+        <div class="chart-block">
+            <div class="chart-block-title">📈 Ingresos por Período</div>
+            <canvas id="c-income"></canvas>
+        </div>
+
+        <!-- Bar chart -->
+        <div class="chart-block">
+            <div class="chart-block-title">📊 KM vs Minutos</div>
+            <canvas id="c-activity"></canvas>
+        </div>
+
+        <!-- Pie charts -->
+        <div class="chart-row">
+            <div class="chart-block">
+                <div class="chart-block-title" style="font-size:8px">🕐 Viajes por Horario</div>
+                <canvas id="c-pie-trips"></canvas>
+            </div>
+            <div class="chart-block">
+                <div class="chart-block-title" style="font-size:8px">🗺️ KM por Horario</div>
+                <canvas id="c-pie-km"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════ AJUSTES ══════════════ -->
     <div id="view-config" class="view">
-        <div class="config-group">
-            <div class="config-group-title">🚖 Tarifas Base</div>
-            <div class="config-row">
-                <label>🚩 Banderazo ($)</label>
-                <input type="number" id="cfg-base" oninput="saveConfig()">
-            </div>
-            <div class="config-row">
-                <label>🗺️ Costo por KM ($)</label>
-                <input type="number" id="cfg-km" oninput="saveConfig()">
-            </div>
-            <div class="config-row">
-                <label>⏱️ Costo por Minuto ($)</label>
-                <input type="number" id="cfg-min" oninput="saveConfig()">
-            </div>
+        <div class="cfg-block">
+            <div class="cfg-title">🚖 Tarifas Base</div>
+            <div class="cfg-row"><label>🚩 Banderazo ($)</label><input type="number" id="cfg-base" oninput="saveCfg()"></div>
+            <div class="cfg-row"><label>🗺️ Valor por KM ($)</label><input type="number" id="cfg-km" oninput="saveCfg()"></div>
+            <div class="cfg-row"><label>⏱️ Valor por Minuto ($)</label><input type="number" id="cfg-min" oninput="saveCfg()"></div>
         </div>
-
-        <div class="config-group">
-            <div class="config-group-title">⚡ Recargos por Horario (%)</div>
-            <div class="config-row">
-                <label>⚡ Incremento Horario Medio</label>
-                <input type="number" id="cfg-p-medio" oninput="saveConfig()">
-            </div>
-            <div class="config-row">
-                <label>🔥 Incremento Horario Pico</label>
-                <input type="number" id="cfg-p-pico" oninput="saveConfig()">
-            </div>
+        <div class="cfg-block">
+            <div class="cfg-title">⚡ Recargos por Horario (%)</div>
+            <div class="cfg-row"><label>⚡ Incremento Medio</label><input type="number" id="cfg-medio" oninput="saveCfg()"></div>
+            <div class="cfg-row"><label>🔥 Incremento Pico</label><input type="number" id="cfg-pico" oninput="saveCfg()"></div>
         </div>
-
-        <div class="decor-sep">· · · · · · · · ·</div>
-        <p style="font-size:11px;color:var(--text-muted);text-align:center;letter-spacing:1px;">
-            ⚙️ Los cambios se guardan automáticamente
-        </p>
+        <div class="cfg-block">
+            <div class="cfg-title">🎯 Meta Diaria de Ingresos</div>
+            <div class="cfg-row"><label>💵 Meta ($)</label><input type="number" id="cfg-meta" oninput="saveCfg()" placeholder="Ej: 150000"></div>
+        </div>
+        <button class="btn-full btn-ghost" onclick="generateTestData()">🧬 GENERAR +50 VIAJES DE PRUEBA</button>
+        <button class="btn-full btn-danger" onclick="clearAll()">🗑️ BORRAR TODO EL HISTORIAL</button>
     </div>
 </div>
 
-<!-- THEME TOGGLE -->
-<div class="theme-toggle-wrap">
-    <button class="theme-btn active" id="tbtn-dark" onclick="setTheme('dark')">
-        <span class="t-emoji">🌌</span>OSCURO
+<!-- THEME SWITCHER -->
+<div class="theme-wrap">
+    <button class="t-btn active" id="tbtn-dark" onclick="setTheme('dark')">
+        <span class="t-em">🌌</span>OSCURO
     </button>
-    <button class="theme-btn" id="tbtn-light" onclick="setTheme('light')">
-        <span class="t-emoji">🛸</span>NAVE ESPACIAL
+    <button class="t-btn" id="tbtn-light" onclick="setTheme('light')">
+        <span class="t-em">☀️</span>CLARO
     </button>
 </div>
 
 <!-- FOOTER -->
 <footer class="footer">
     <div class="footer-brand">⬡ INVERSIONES ARIPAR ⬡</div>
-    <div>
-        <a href="https://wa.me/573128816469" target="_blank">📲 WhatsApp</a>
-        <a href="mailto:alucard8@gmail.com">📧 Correo</a>
-    </div>
+    <a href="https://wa.me/573128816469" target="_blank">📲 WhatsApp</a>
+    <a href="mailto:alucard8@gmail.com">📧 Correo</a>
 </footer>
 
-<!-- ════════════════════ SCRIPTS ════════════════════ -->
 <script>
-    /* ─── CONFIG ─── */
-    let config = JSON.parse(localStorage.getItem('aripar_cfg_v8')) || {
-        base: 4000, km: 1000, min: 200, medio: 15, pico: 30
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let config = JSON.parse(localStorage.getItem('aripar_cfg_v15')) || {
+    base:4000, km:1000, min:200, medio:15, pico:30, meta:150000
+};
+let cInc, cAct, cPieTrips, cPieKm;
+let timerInterval = null;
+let tripStart = null;
+let currentFilter = '7d';
+
+/* ═══════════════════════════════════════════
+   STARFIELD
+═══════════════════════════════════════════ */
+(function() {
+    const c = document.getElementById('stars-canvas');
+    const ctx = c.getContext('2d');
+    let stars = [];
+    function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
+    function make(n) {
+        stars = Array.from({length:n}, () => ({
+            x: Math.random() * c.width, y: Math.random() * c.height,
+            r: Math.random() * 1.1 + 0.2, a: Math.random(), s: Math.random() * .003 + .001
+        }));
+    }
+    function draw() {
+        ctx.clearRect(0,0,c.width,c.height);
+        const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+        stars.forEach(st => {
+            st.a += st.s; if(st.a>1||st.a<0) st.s *= -1;
+            ctx.beginPath(); ctx.arc(st.x,st.y,st.r,0,Math.PI*2);
+            ctx.fillStyle = dark
+                ? `rgba(170,215,255,${Math.abs(st.a)*.7})`
+                : `rgba(0,68,204,${Math.abs(st.a)*.12})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(draw);
+    }
+    resize(); make(130); draw();
+    window.addEventListener('resize', () => { resize(); make(130); });
+})();
+
+/* ═══════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════ */
+function setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('aripar_theme_v15', t);
+    document.getElementById('tbtn-dark').classList.toggle('active', t==='dark');
+    document.getElementById('tbtn-light').classList.toggle('active', t==='light');
+}
+(function() { setTheme(localStorage.getItem('aripar_theme_v15') || 'dark'); })();
+
+/* ═══════════════════════════════════════════
+   VIEWS
+═══════════════════════════════════════════ */
+function showView(v, el) {
+    document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    el.classList.add('active');
+    if(v==='stats')  setTimeout(initCharts, 80);
+    if(v==='config') loadCfgUI();
+    if(v==='calc')   renderHist();
+}
+
+/* ═══════════════════════════════════════════
+   HORARIO
+═══════════════════════════════════════════ */
+function setHorario(h) {
+    ['valle','medio','pico'].forEach(k => {
+        document.getElementById('hbtn-'+k).classList.toggle('active', k===h);
+    });
+    document.getElementById('h-select').value = h;
+    calc();
+}
+
+/* auto-detect franja by time */
+function autoDetectHorario() {
+    const h = new Date().getHours();
+    const htype = (h>=6&&h<10)||(h>=17&&h<21) ? 'pico' : (h>=10&&h<17)||(h>=21&&h<23) ? 'medio' : 'valle';
+    setHorario(htype);
+}
+
+/* ═══════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════ */
+function loadCfgUI() {
+    document.getElementById('cfg-base').value  = config.base;
+    document.getElementById('cfg-km').value    = config.km;
+    document.getElementById('cfg-min').value   = config.min;
+    document.getElementById('cfg-medio').value = config.medio;
+    document.getElementById('cfg-pico').value  = config.pico;
+    document.getElementById('cfg-meta').value  = config.meta;
+}
+function saveCfg() {
+    config = {
+        base:  parseFloat(document.getElementById('cfg-base').value)  || 0,
+        km:    parseFloat(document.getElementById('cfg-km').value)    || 0,
+        min:   parseFloat(document.getElementById('cfg-min').value)   || 0,
+        medio: parseFloat(document.getElementById('cfg-medio').value) || 0,
+        pico:  parseFloat(document.getElementById('cfg-pico').value)  || 0,
+        meta:  parseFloat(document.getElementById('cfg-meta').value)  || 0,
     };
+    localStorage.setItem('aripar_cfg_v15', JSON.stringify(config));
+    calc();
+}
 
-    /* ─── STARS CANVAS ─── */
-    (function initStars() {
-        const canvas = document.getElementById('stars-canvas');
-        const ctx = canvas.getContext('2d');
-        let stars = [], W, H;
+/* ═══════════════════════════════════════════
+   CALCULATE
+═══════════════════════════════════════════ */
+function updateTimeDiff() {
+    const s = document.getElementById('t-start').value;
+    const e = document.getElementById('t-end').value;
+    if(s && e) {
+        const [h1,m1] = s.split(':').map(Number);
+        const [h2,m2] = e.split(':').map(Number);
+        let d = (h2*60+m2) - (h1*60+m1);
+        if(d<0) d+=1440;
+        document.getElementById('min-in').value = d;
+    }
+    calc();
+}
+function updateKmDiff() {
+    const k1 = parseFloat(document.getElementById('km-start').value);
+    const k2 = parseFloat(document.getElementById('km-end').value);
+    if(!isNaN(k1)&&!isNaN(k2))
+        document.getElementById('km-in').value = Math.abs(k2-k1).toFixed(2);
+    calc();
+}
+function calc() {
+    const km = parseFloat(document.getElementById('km-in').value) || 0;
+    const m  = parseFloat(document.getElementById('min-in').value) || 0;
+    let t = config.base + (km*config.km) + (m*config.min);
+    const h = document.getElementById('h-select').value;
+    if(h==='medio') t *= (1 + config.medio/100);
+    if(h==='pico')  t *= (1 + config.pico/100);
+    const r = Math.round(t);
+    document.getElementById('res-val').textContent = '$' + r.toLocaleString('es-CO');
+    return r;
+}
 
-        function resize() {
-            W = canvas.width = window.innerWidth;
-            H = canvas.height = window.innerHeight;
+/* ═══════════════════════════════════════════
+   TRIP CONTROL
+═══════════════════════════════════════════ */
+function startTrip() {
+    tripStart = new Date();
+    autoDetectHorario();
+    document.getElementById('t-start').value = tripStart.toTimeString().slice(0,5);
+    document.getElementById('t-end').value = '';
+    document.getElementById('min-in').value = '';
+    document.getElementById('km-start').value = '';
+    document.getElementById('km-end').value = '';
+    document.getElementById('km-in').value = '';
+    document.getElementById('trip-indicator').classList.add('active');
+    document.getElementById('idle-bar').style.display = 'none';
+    document.getElementById('pulse-dot').classList.add('live');
+    if(timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const diff = Date.now() - tripStart.getTime();
+        const hh = String(Math.floor(diff/3600000)).padStart(2,'0');
+        const mm = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+        const ss = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+        document.getElementById('timer').textContent = `${hh}:${mm}:${ss}`;
+    }, 1000);
+    calc();
+}
+
+function stopTrip() {
+    if(!tripStart) return;
+    clearInterval(timerInterval);
+    document.getElementById('t-end').value = new Date().toTimeString().slice(0,5);
+    document.getElementById('trip-indicator').classList.remove('active');
+    document.getElementById('idle-bar').style.display = 'flex';
+    document.getElementById('pulse-dot').classList.remove('live');
+    document.getElementById('idle-text').textContent = 'SISTEMA EN ESPERA';
+    updateTimeDiff();
+    const t = calc();
+    if(t <= 0) return;
+    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    hist.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleDateString('es-CO'),
+        fullDate: new Date().toISOString(),
+        km:  document.getElementById('km-in').value  || 0,
+        min: document.getElementById('min-in').value || 0,
+        val: t,
+        h:   document.getElementById('h-select').value
+    });
+    localStorage.setItem('aripar_hist_v15', JSON.stringify(hist));
+    tripStart = null;
+    renderHist();
+}
+
+/* ═══════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════ */
+const horarioLabel = { valle:'🌙 Valle', medio:'⚡ Medio', pico:'🔥 Pico' };
+
+function renderHist() {
+    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    document.getElementById('count-hist').textContent = hist.length;
+
+    // Today stats
+    const today = new Date().toLocaleDateString('es-CO');
+    const todayItems = hist.filter(i => i.date === today);
+    const todayTotal = todayItems.reduce((s,i)=>s+i.val, 0);
+    const todayKm    = todayItems.reduce((s,i)=>s+(parseFloat(i.km)||0), 0);
+    document.getElementById('st-trips').textContent = todayItems.length;
+    document.getElementById('st-km').textContent    = todayKm.toFixed(1);
+    document.getElementById('st-total').textContent = '$' + todayTotal.toLocaleString('es-CO');
+
+    // Meta bar
+    if(config.meta > 0) {
+        const pct = Math.min(100, Math.round(todayTotal / config.meta * 100));
+        document.getElementById('meta-pct').textContent  = pct + '%';
+        document.getElementById('meta-fill').style.width = pct + '%';
+    }
+
+    const list = document.getElementById('hist-list');
+    if(!hist.length) {
+        list.innerHTML = '<div class="hist-empty">🛸 Sin viajes registrados aún</div>';
+        return;
+    }
+    list.innerHTML = hist.map(i => `
+        <div class="history-item">
+            <div class="h-date">📅 ${i.date}</div>
+            <div class="h-row">
+                <span class="h-badge">🗺️ ${i.km} km</span>
+                <span class="h-badge">⏱️ ${i.min} min</span>
+                <span class="h-badge">${horarioLabel[i.h]||i.h}</span>
+                <span class="h-val">$${i.val.toLocaleString('es-CO')}</span>
+                <button class="btn-del" onclick="delRec(${i.id})">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function delRec(id) {
+    if(!confirm('¿Eliminar este registro?')) return;
+    let h = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    localStorage.setItem('aripar_hist_v15', JSON.stringify(h.filter(x=>x.id!==id)));
+    renderHist();
+}
+function clearAll() {
+    if(!confirm('¿Borrar TODO el historial?')) return;
+    localStorage.removeItem('aripar_hist_v15');
+    renderHist();
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT / SHARE
+═══════════════════════════════════════════ */
+function exportCSV() {
+    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    if(!hist.length) { alert('No hay datos'); return; }
+    let csv = 'Fecha,KM,Min,Total,Horario\n';
+    hist.forEach(i => { csv += `${i.date},${i.km},${i.min},${i.val},${i.h}\n`; });
+    const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+        download: `aripar_${new Date().toLocaleDateString('es-CO').replace(/\//g,'-')}.csv`
+    });
+    a.click();
+}
+
+function shareWhatsApp() {
+    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    const today = new Date().toLocaleDateString('es-CO');
+    const todayItems = hist.filter(i => i.date === today);
+    if(!todayItems.length) { alert('No hay viajes hoy para compartir'); return; }
+    const total = todayItems.reduce((s,i)=>s+i.val,0);
+    const km    = todayItems.reduce((s,i)=>s+(parseFloat(i.km)||0),0);
+    const txt = `🛸 *ARIPAR Transport Pro*\n📅 Resumen del ${today}\n\n🚖 Viajes: ${todayItems.length}\n🗺️ KM recorridos: ${km.toFixed(1)}\n💵 Total: $${total.toLocaleString('es-CO')}\n\n_Generado por ARIPAR Transport Pro_`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+function getChartColors() {
+    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    return {
+        accent:  dark ? '#00ffe7' : '#0044cc',
+        accent2: dark ? '#ff3cf7' : '#9900cc',
+        accent3: dark ? '#ff9f43' : '#d4600a',
+        grid:    dark ? 'rgba(0,255,231,0.07)' : 'rgba(0,68,204,0.07)',
+        tick:    dark ? 'rgba(207,232,255,0.5)' : 'rgba(16,32,64,0.5)',
+        pie:     dark ? ['#00ffe7','#ff3cf7','#ff9f43'] : ['#0044cc','#9900cc','#d4600a'],
+        fill:    dark ? 'rgba(0,255,231,0.06)' : 'rgba(0,68,204,0.06)',
+        bar1:    dark ? 'rgba(255,60,247,0.7)' : 'rgba(153,0,204,0.7)',
+        bar2:    dark ? 'rgba(0,255,231,0.6)' : 'rgba(0,68,204,0.6)',
+    };
+}
+
+function processData(range) {
+    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    const sorted = [...hist].sort((a,b) => new Date(a.fullDate)-new Date(b.fullDate));
+    const map = {};
+    const days   = ['D','L','M','X','J','V','S'];
+    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const limitDays = range==='7d'?7 : range==='30d'?30 : 9999;
+    const now = new Date();
+    let v_trips=0,m_trips=0,p_trips=0,v_km=0,m_km=0,p_km=0;
+    let totalInc=0, totalKm=0, totalTrips=0;
+    const dayTotals = {};
+
+    sorted.forEach(i => {
+        const dt = new Date(i.fullDate);
+        const diff = (now - dt)/(1000*3600*24);
+        if(diff > limitDays && range !== 'month') return;
+
+        let key;
+        if(range==='7d') key = days[dt.getDay()];
+        else if(range==='month') key = months[dt.getMonth()];
+        else key = dt.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit'});
+
+        if(!map[key]) map[key] = {inc:0,km:0,min:0};
+        map[key].inc += i.val;
+        map[key].km  += parseFloat(i.km)||0;
+        map[key].min += parseInt(i.min)||0;
+
+        totalInc += i.val; totalKm += parseFloat(i.km)||0; totalTrips++;
+
+        const dk = dt.toLocaleDateString('es-CO');
+        dayTotals[dk] = (dayTotals[dk]||0) + i.val;
+
+        if(i.h==='valle'){v_trips++;v_km+=parseFloat(i.km)||0;}
+        else if(i.h==='medio'){m_trips++;m_km+=parseFloat(i.km)||0;}
+        else{p_trips++;p_km+=parseFloat(i.km)||0;}
+    });
+
+    const bestDay = Object.entries(dayTotals).sort((a,b)=>b[1]-a[1])[0];
+    const labels = Object.keys(map);
+    return {
+        labels, inc:labels.map(l=>map[l].inc), km:labels.map(l=>map[l].km), min:labels.map(l=>map[l].min),
+        v_trips,m_trips,p_trips, v_km,m_km,p_km,
+        totalInc,totalKm,totalTrips,bestDay
+    };
+}
+
+function updateKPIs(d) {
+    const avg = d.totalTrips>0 ? Math.round(d.totalInc/d.totalTrips) : 0;
+    const avgKm = d.totalTrips>0 ? (d.totalKm/d.totalTrips).toFixed(1) : 0;
+    document.getElementById('kpi-total').textContent  = '$'+d.totalInc.toLocaleString('es-CO');
+    document.getElementById('kpi-trips').textContent  = d.totalTrips;
+    document.getElementById('kpi-avg').textContent    = `prom. $${avg.toLocaleString('es-CO')} c/u`;
+    document.getElementById('kpi-km').textContent     = d.totalKm.toFixed(1);
+    document.getElementById('kpi-km-avg').textContent = `prom. ${avgKm} km/viaje`;
+    if(d.bestDay) {
+        document.getElementById('kpi-best').textContent      = '$'+d.bestDay[1].toLocaleString('es-CO');
+        document.getElementById('kpi-best-date').textContent = d.bestDay[0];
+    }
+}
+
+function initCharts() {
+    const d = processData(currentFilter);
+    const clr = getChartColors();
+    updateKPIs(d);
+
+    const baseOpts = {
+        responsive:true,
+        plugins:{ legend:{display:false}, tooltip:{
+            backgroundColor:'rgba(8,15,30,0.9)', borderColor:clr.accent, borderWidth:1,
+            titleFont:{family:'Orbitron',size:10}, bodyFont:{family:'Rajdhani',size:13},
+            titleColor:clr.accent, bodyColor:'#cfe8ff', padding:10
+        }},
+        scales:{
+            x:{ grid:{color:clr.grid}, ticks:{color:clr.tick, font:{family:'Orbitron',size:8}} },
+            y:{ grid:{color:clr.grid}, ticks:{color:clr.tick, font:{family:'Orbitron',size:8}} }
         }
-
-        function createStars(n) {
-            stars = [];
-            for (let i = 0; i < n; i++) {
-                stars.push({
-                    x: Math.random() * W,
-                    y: Math.random() * H,
-                    r: Math.random() * 1.2 + 0.2,
-                    a: Math.random(),
-                    s: Math.random() * 0.003 + 0.001
-                });
+    };
+    const pieOpts = {
+        responsive:true,
+        plugins:{
+            legend:{ position:'bottom', labels:{ boxWidth:10, color:clr.tick, font:{size:9,family:'Orbitron'} } },
+            tooltip:{
+                backgroundColor:'rgba(8,15,30,0.9)', borderColor:clr.accent, borderWidth:1,
+                titleFont:{family:'Orbitron',size:9}, bodyFont:{family:'Rajdhani',size:12},
+                titleColor:clr.accent, bodyColor:'#cfe8ff'
             }
         }
-
-        function draw() {
-            ctx.clearRect(0, 0, W, H);
-            const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-            stars.forEach(star => {
-                star.a += star.s;
-                if (star.a > 1) star.s = -star.s;
-                if (star.a < 0) star.s = Math.abs(star.s);
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-                ctx.fillStyle = isDark
-                    ? `rgba(180,220,255,${star.a * 0.7})`
-                    : `rgba(0,68,204,${star.a * 0.15})`;
-                ctx.fill();
-            });
-            requestAnimationFrame(draw);
-        }
-
-        resize();
-        createStars(120);
-        draw();
-        window.addEventListener('resize', () => { resize(); createStars(120); });
-    })();
-
-    /* ─── THEME ─── */
-    function setTheme(t) {
-        document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('aripar_theme_v8', t);
-        document.getElementById('tbtn-dark').classList.toggle('active', t === 'dark');
-        document.getElementById('tbtn-light').classList.toggle('active', t === 'light');
-    }
-
-    (function initTheme() {
-        const saved = localStorage.getItem('aripar_theme_v8') || 'dark';
-        setTheme(saved);
-    })();
-
-    /* ─── VIEWS ─── */
-    function showView(v, el) {
-        document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
-        document.getElementById('view-' + v).classList.add('active');
-        el.classList.add('active');
-        if (v === 'config') loadConfigUI();
-    }
-
-    /* ─── HORARIO ─── */
-    function setHorario(h) {
-        ['valle','medio','pico'].forEach(k => {
-            document.getElementById('hbtn-' + k).classList.toggle('active', k === h);
-        });
-        document.getElementById('horario-select').value = h;
-        autoCalculate();
-    }
-
-    /* ─── CONFIG ─── */
-    function loadConfigUI() {
-        document.getElementById('cfg-base').value = config.base;
-        document.getElementById('cfg-km').value = config.km;
-        document.getElementById('cfg-min').value = config.min;
-        document.getElementById('cfg-p-medio').value = config.medio;
-        document.getElementById('cfg-p-pico').value = config.pico;
-    }
-
-    function saveConfig() {
-        config = {
-            base: parseFloat(document.getElementById('cfg-base').value) || 0,
-            km:   parseFloat(document.getElementById('cfg-km').value) || 0,
-            min:  parseFloat(document.getElementById('cfg-min').value) || 0,
-            medio: parseFloat(document.getElementById('cfg-p-medio').value) || 0,
-            pico:  parseFloat(document.getElementById('cfg-p-pico').value) || 0
-        };
-        localStorage.setItem('aripar_cfg_v8', JSON.stringify(config));
-        autoCalculate();
-    }
-
-    /* ─── TIME DIFF ─── */
-    function updateTimeDiff() {
-        const h1 = document.getElementById('t-start').value;
-        const h2 = document.getElementById('t-end').value;
-        if (h1 && h2) {
-            const d1 = new Date("2000-01-01 " + h1);
-            const d2 = new Date("2000-01-01 " + h2);
-            let diff = (d2 - d1) / 60000;
-            if (diff < 0) diff += 1440;
-            document.getElementById('t-total').value = Math.round(diff);
-        }
-        autoCalculate();
-    }
-
-    /* ─── KM DIFF ─── */
-    function updateKmDiff() {
-        const k1 = parseFloat(document.getElementById('km-start').value);
-        const k2 = parseFloat(document.getElementById('km-end').value);
-        if (!isNaN(k1) && !isNaN(k2)) {
-            document.getElementById('km-total').value = Math.abs(k2 - k1).toFixed(2);
-        }
-        autoCalculate();
-    }
-
-    /* ─── CALCULATE ─── */
-    function autoCalculate() {
-        const km = parseFloat(document.getElementById('km-total').value) || 0;
-        const mins = parseFloat(document.getElementById('t-total').value) || 0;
-        let total = config.base + (km * config.km) + (mins * config.min);
-        const horario = document.getElementById('horario-select').value;
-        if (horario === 'medio') total *= (1 + config.medio / 100);
-        if (horario === 'pico')  total *= (1 + config.pico / 100);
-        const rounded = Math.round(total);
-        document.getElementById('res-val').innerText = rounded.toLocaleString('es-CO');
-        return rounded;
-    }
-
-    /* ─── LIVE TIMER ─── */
-    let tripStartTime = null;
-    let timerInterval = null;
-
-    function startLiveTimer() {
-        tripStartTime = Date.now();
-        const dot = document.getElementById('pulse-dot');
-        const txt = document.getElementById('status-text');
-        dot.className = 'pulse-dot running';
-        txt.textContent = 'VIAJE EN CURSO';
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - tripStartTime) / 1000);
-            const m = String(Math.floor(elapsed / 60)).padStart(2,'0');
-            const s = String(elapsed % 60).padStart(2,'0');
-            document.getElementById('live-timer').textContent = m + ':' + s;
-        }, 1000);
-    }
-
-    function stopLiveTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        timerInterval = null;
-        tripStartTime = null;
-        const dot = document.getElementById('pulse-dot');
-        const txt = document.getElementById('status-text');
-        dot.className = 'pulse-dot idle';
-        txt.textContent = 'SISTEMA EN ESPERA';
-        document.getElementById('live-timer').textContent = '--:--';
-    }
-
-    /* ─── QUICK START ─── */
-    function quickStart() {
-        const now = new Date();
-        document.getElementById('t-start').value = now.toTimeString().slice(0, 5);
-        document.getElementById('t-end').value = '';
-        document.getElementById('t-total').value = '';
-        document.getElementById('km-start').value = '';
-        document.getElementById('km-end').value = '';
-        document.getElementById('km-total').value = '';
-        document.getElementById('res-val').textContent = '0';
-        updateTimeDiff();
-        startLiveTimer();
-    }
-
-    /* ─── QUICK END & SAVE ─── */
-    function quickEndAndSave() {
-        document.getElementById('t-end').value = new Date().toTimeString().slice(0, 5);
-        updateTimeDiff();
-        stopLiveTimer();
-        const total = autoCalculate();
-        const km = document.getElementById('km-total').value || 0;
-        const min = document.getElementById('t-total').value || 0;
-        const horario = document.getElementById('horario-select').value;
-
-        if (total > 0) {
-            let hist = JSON.parse(localStorage.getItem('aripar_hist_v8')) || [];
-            hist.unshift({
-                id: Date.now(),
-                date: new Date().toLocaleString('es-CO'),
-                km: parseFloat(km) || 0,
-                min: parseFloat(min) || 0,
-                val: total,
-                h: horario
-            });
-            localStorage.setItem('aripar_hist_v8', JSON.stringify(hist));
-            renderHistory();
-        }
-    }
-
-    /* ─── DELETE RECORD ─── */
-    function deleteRecord(id) {
-        if (confirm("¿Eliminar este registro del historial?")) {
-            let hist = JSON.parse(localStorage.getItem('aripar_hist_v8')) || [];
-            hist = hist.filter(item => item.id !== id);
-            localStorage.setItem('aripar_hist_v8', JSON.stringify(hist));
-            renderHistory();
-        }
-    }
-
-    /* ─── CLEAR HISTORY ─── */
-    function clearAllHistory() {
-        if (confirm("¿Borrar TODO el historial definitivamente?")) {
-            localStorage.removeItem('aripar_hist_v8');
-            renderHistory();
-        }
-    }
-
-    /* ─── EXPORT CSV ─── */
-    function exportCSV() {
-        const hist = JSON.parse(localStorage.getItem('aripar_hist_v8')) || [];
-        if (hist.length === 0) return alert("No hay datos en el historial");
-        let csv = "Fecha,KM,Minutos,Horario,Total\n";
-        hist.forEach(i => {
-            csv += `"${i.date}",${i.km},${i.min},"${i.h}",${i.val}\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `aripar_viajes_${new Date().toLocaleDateString('es-CO').replace(/\//g,'-')}.csv`;
-        link.click();
-    }
-
-    /* ─── HORARIO BADGE LABELS ─── */
-    const horarioBadge = {
-        valle: '🌙 Valle',
-        medio: '⚡ Medio',
-        pico:  '🔥 Pico'
     };
 
-    /* ─── RENDER HISTORY ─── */
-    function renderHistory() {
-        const list = document.getElementById('hist-list');
-        const hist = JSON.parse(localStorage.getItem('aripar_hist_v8')) || [];
+    [cInc,cAct,cPieTrips,cPieKm].forEach(c => { if(c) c.destroy(); });
 
-        // Stats (today)
-        const todayStr = new Date().toLocaleDateString('es-CO');
-        const today = hist.filter(i => i.date.startsWith(todayStr.split('/').join('/')));
-        const todayTotal = today.reduce((s, i) => s + i.val, 0);
-        const todayKm = today.reduce((s, i) => s + (parseFloat(i.km) || 0), 0);
-        document.getElementById('stat-trips').textContent = today.length || hist.length;
-        document.getElementById('stat-km').textContent = todayKm.toFixed(1);
-        document.getElementById('stat-total').textContent = '$' + todayTotal.toLocaleString('es-CO');
+    cInc = new Chart(document.getElementById('c-income'), {
+        type:'line',
+        data:{
+            labels:d.labels,
+            datasets:[{
+                label:'$', data:d.inc,
+                borderColor:clr.accent, backgroundColor:clr.fill,
+                fill:true, tension:.4, pointBackgroundColor:clr.accent,
+                pointBorderColor:clr.accent, pointRadius:4, borderWidth:2
+            }]
+        },
+        options: baseOpts
+    });
 
-        if (hist.length === 0) {
-            list.innerHTML = '<div class="history-empty">🛸 Sin viajes registrados aún</div>';
-            return;
-        }
+    cAct = new Chart(document.getElementById('c-activity'), {
+        type:'bar',
+        data:{
+            labels:d.labels,
+            datasets:[
+                {label:'KM',  data:d.km,  backgroundColor:clr.bar1, borderRadius:4},
+                {label:'Min', data:d.min, backgroundColor:clr.bar2, borderRadius:4}
+            ]
+        },
+        options:{ ...baseOpts, plugins:{ ...baseOpts.plugins, legend:{
+            display:true, position:'top',
+            labels:{boxWidth:10,color:clr.tick,font:{size:9,family:'Orbitron'}}
+        }}}
+    });
 
-        list.innerHTML = hist.map(i => `
-            <div class="history-item">
-                <div class="h-date">📅 ${i.date}</div>
-                <div class="h-meta">
-                    <span class="h-badge">🗺️ ${i.km} km</span>
-                    <span class="h-badge">⏱️ ${i.min} min</span>
-                    <span class="h-badge">${horarioBadge[i.h] || i.h}</span>
-                    <span class="h-val">$${i.val.toLocaleString('es-CO')}</span>
-                </div>
-                <button class="btn-delete-item" onclick="deleteRecord(${i.id})">🗑️</button>
-            </div>
-        `).join('');
+    cPieTrips = new Chart(document.getElementById('c-pie-trips'), {
+        type:'doughnut',
+        data:{
+            labels:['Valle','Medio','Pico'],
+            datasets:[{ data:[d.v_trips,d.m_trips,d.p_trips], backgroundColor:clr.pie, borderWidth:0 }]
+        },
+        options:pieOpts
+    });
+
+    cPieKm = new Chart(document.getElementById('c-pie-km'), {
+        type:'doughnut',
+        data:{
+            labels:['Valle','Medio','Pico'],
+            datasets:[{ data:[d.v_km.toFixed(1),d.m_km.toFixed(1),d.p_km.toFixed(1)], backgroundColor:clr.pie, borderWidth:0 }]
+        },
+        options:pieOpts
+    });
+}
+
+function changeFilter(range, btn) {
+    currentFilter = range;
+    document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const d = processData(range);
+    updateKPIs(d);
+    cInc.data.labels = d.labels; cInc.data.datasets[0].data = d.inc; cInc.update();
+    cAct.data.labels = d.labels; cAct.data.datasets[0].data = d.km; cAct.data.datasets[1].data = d.min; cAct.update();
+    cPieTrips.data.datasets[0].data = [d.v_trips,d.m_trips,d.p_trips]; cPieTrips.update();
+    cPieKm.data.datasets[0].data   = [d.v_km,d.m_km,d.p_km]; cPieKm.update();
+}
+
+/* ═══════════════════════════════════════════
+   TEST DATA GENERATOR
+═══════════════════════════════════════════ */
+function generateTestData() {
+    let hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    const types = ['valle','medio','pico'];
+    for(let i=1; i<=50; i++) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const km = (Math.random()*12+1).toFixed(1);
+        const m  = Math.floor(Math.random()*30+5);
+        const h  = types[Math.floor(Math.random()*3)];
+        let val = config.base + (km*config.km) + (m*config.min);
+        if(h==='medio') val *= 1+(config.medio/100);
+        else if(h==='pico')  val *= 1+(config.pico/100);
+        hist.push({
+            id:Date.now()+i, date:d.toLocaleDateString('es-CO'),
+            fullDate:d.toISOString(), km, min:m, val:Math.round(val), h
+        });
     }
+    localStorage.setItem('aripar_hist_v15', JSON.stringify(hist));
+    alert('🧬 +50 viajes generados. ¡Ve a Gráficas para verlos!');
+    renderHist();
+}
 
-    /* ─── INIT ─── */
-    loadConfigUI();
-    renderHistory();
-    autoCalculate();
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+loadCfgUI();
+renderHist();
+calc();
 </script>
 </body>
 </html>
