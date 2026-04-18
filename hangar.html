@@ -1,495 +1,831 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAC FLOTA v16 - HANGAR</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
-        body { transition: background-color 0.3s ease; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FAC FLOTA v24.0 — Simulador Táctico</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080c10;--bg2:#0d1219;--panel:#111820;
+  --amber:#e8a020;--amber-d:#7a5210;--amber-g:rgba(232,160,32,0.1);
+  --cyan:#00e5cc;--cyan-d:#004d45;
+  --red:#ff3b3b;--red-d:#5c0a0a;--red-g:rgba(255,59,59,0.08);
+  --green:#00d16c;--green-d:#004d27;--green-g:rgba(0,209,108,0.08);
+  --blue:#3b82f6;--blue-d:#1a3a6b;
+  --text:#c8d8e8;--dim:#4a6070;--border:#1e2d3d;
+  --hl:rgba(0,229,204,0.07);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;height:100vh;
+  background-image:linear-gradient(var(--hl) 1px,transparent 1px),linear-gradient(90deg,var(--hl) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+}
+
+/* NAV */
+nav{background:var(--bg2);border-bottom:1px solid var(--amber-d);padding:0 12px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:600;position:relative;}
+nav::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.3;}
+.nav-brand{font-family:'Share Tech Mono',monospace;color:var(--amber);font-size:.8em;
+  letter-spacing:.1em;display:flex;align-items:center;gap:8px;}
+.nav-hex{width:28px;height:28px;background:var(--amber);flex-shrink:0;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.65em;font-weight:900;}
+.nav-sub{font-size:.6em;color:var(--dim);letter-spacing:.08em}
+.nav-links{display:flex;gap:3px}
+.nav-links button{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.73em;
+  letter-spacing:.1em;background:transparent;border:1px solid var(--border);color:var(--dim);
+  padding:5px 10px;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;}
+.nav-links button:hover{color:var(--amber);border-color:var(--amber-d)}
+.nav-links button.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+
+/* FLEET BAR */
+#fleet-container{background:var(--bg2);padding:8px 12px 5px;border-bottom:1px solid var(--border);
+  flex-shrink:0;transition:max-height .35s ease,padding .3s ease;overflow:hidden;max-height:180px;}
+#fleet-container.collapsed{max-height:46px;padding:4px 12px}
+#fleet-container.collapsed .fleet-row:not(.is-selected){display:none}
+#fleet-container.collapsed #status-msg{display:none}
+.fleet-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.fleet-lbl{font-family:'Share Tech Mono',monospace;font-size:.63em;color:var(--dim);min-width:66px;letter-spacing:.04em;white-space:nowrap}
+.fleet-bar{flex:1;height:24px;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:3px;overflow:hidden;position:relative;cursor:pointer;transition:border-color .2s;}
+.fleet-bar:hover{border-color:var(--amber-d)}
+.fleet-bar.is-sel{border-color:var(--amber);box-shadow:0 0 10px rgba(232,160,32,.2)}
+.bar-fill{height:100%;position:absolute;left:0;top:0;transition:width .9s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(90deg,#004d27,var(--green));}
+.bar-fill.red{background:linear-gradient(90deg,#5c0a0a,var(--red))}
+.bar-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;font-size:.65em;color:#fff;text-shadow:0 0 6px rgba(0,0,0,.9);letter-spacing:.05em;}
+.fleet-hr{font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--amber);min-width:48px;text-align:right}
+#status-msg{font-family:'Share Tech Mono',monospace;font-size:.63em;color:var(--cyan);
+  text-align:center;min-height:17px;padding:2px 0;letter-spacing:.04em;opacity:.8;}
+
+/* LAYOUT */
+main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.content-area{flex:1;overflow-y:auto;padding:14px 14px 30px}
+.content-area::-webkit-scrollbar{width:3px}
+.content-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* SECTION LABEL */
+.slbl{font-family:'Share Tech Mono',monospace;font-size:.62em;letter-spacing:.12em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TEAM SWITCHER */
+.team-sw{display:flex;gap:7px;overflow-x:auto;padding:0 0 9px;scrollbar-width:none;margin-bottom:12px;}
+.team-sw::-webkit-scrollbar{display:none}
+.team-btn{flex-shrink:0;padding:6px 16px;background:var(--panel);border:1px solid var(--border);
+  color:var(--dim);border-radius:20px;font-family:'Rajdhani',sans-serif;font-weight:700;
+  font-size:.8em;cursor:pointer;white-space:nowrap;letter-spacing:.08em;transition:all .15s;}
+.team-btn:hover{border-color:var(--amber-d);color:var(--amber)}
+.team-btn.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+
+/* PLAYER CARDS */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:960px;margin:0 auto}
+@media(max-width:640px){.team-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:380px){.team-grid{grid-template-columns:1fr}}
+
+.player-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;
+  padding:12px 10px 14px;text-align:center;position:relative;min-height:168px;
+  transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.player-card:hover{border-color:var(--amber-d)}
+.player-card.sanctioned{opacity:.15;filter:grayscale(1) brightness(.4);pointer-events:none}
+.player-card.reveal-good{border-color:var(--green)!important;background:linear-gradient(145deg,var(--green-d),var(--panel))!important;box-shadow:0 0 18px rgba(0,209,108,.15)}
+.player-card.reveal-bad{border-color:var(--red)!important;background:linear-gradient(145deg,var(--red-d),var(--panel))!important;box-shadow:0 0 18px rgba(255,59,59,.15)}
+.card-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.86em;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
+.card-role{font-family:'Share Tech Mono',monospace;font-size:.62em;letter-spacing:.04em;padding:2px 7px;border-radius:3px}
+.card-role.g{color:var(--green);background:var(--green-g)}
+.card-role.b{color:var(--red);background:var(--red-g)}
+
+/* DICE */
+.dice-box{width:62px;height:62px;background:var(--bg);border:2px solid var(--border);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;
+  font-size:1.45em;font-weight:bold;color:var(--dim);cursor:pointer;transition:all .15s;user-select:none;}
+.dice-box:hover{border-color:var(--cyan);color:var(--cyan)}
+.dice-box.rolling{border-color:var(--cyan);color:var(--cyan);animation:dRoll .11s infinite;box-shadow:0 0 14px rgba(0,229,204,.25)}
+.dice-box.done{border-color:var(--amber);color:var(--amber);box-shadow:0 0 8px rgba(232,160,32,.2)}
+@keyframes dRoll{0%{transform:rotate(-5deg) scale(1.05)}50%{transform:rotate(5deg) scale(.96)}100%{transform:rotate(-5deg) scale(1.05)}}
+.emp-lbl{font-family:'Share Tech Mono',monospace;font-size:.67em;color:var(--dim);letter-spacing:.04em}
+.emp-lbl span{color:var(--amber);font-size:1.1em}
+input[type=range]{-webkit-appearance:none;appearance:none;width:88%;height:4px;background:var(--border);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 6px rgba(232,160,32,.5)}
+input[type=range]:disabled{opacity:.25}
+.btn-sanc{position:absolute;top:7px;right:7px;background:var(--red-d);border:1px solid var(--red);
+  color:var(--red);width:25px;height:25px;border-radius:50%;font-size:.7em;font-weight:bold;
+  cursor:pointer;transition:all .15s;line-height:1;font-family:'Share Tech Mono',monospace;}
+.btn-sanc:hover{background:var(--red);color:#fff}
+
+/* COMPUTE BTN */
+.compute-btn{display:block;width:100%;max-width:300px;margin:18px auto 0;padding:13px 20px;
+  background:linear-gradient(135deg,var(--green-d),#006035);border:1px solid var(--green);
+  color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95em;
+  letter-spacing:.15em;cursor:pointer;border-radius:4px;position:relative;overflow:hidden;transition:all .2s;}
+.compute-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .4s;}
+.compute-btn:hover{box-shadow:0 0 20px rgba(0,209,108,.3)}
+.compute-btn:hover::before{left:100%}
+.compute-btn:active{transform:scale(.97)}
+
+/* ALERT / BANNERS */
+.alert-box{border:1px solid var(--red);background:rgba(255,59,59,.05);border-radius:6px;padding:24px;
+  text-align:center;color:var(--red);font-family:'Share Tech Mono',monospace;font-size:.76em;
+  letter-spacing:.05em;animation:pRed 2.2s infinite;}
+@keyframes pRed{0%,100%{box-shadow:0 0 0 rgba(255,59,59,0)}50%{box-shadow:0 0 22px rgba(255,59,59,.15)}}
+.end-banner{padding:10px;border-radius:4px;text-align:center;font-family:'Exo 2',sans-serif;
+  font-weight:900;font-size:.9em;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;}
+.end-banner.win{background:var(--green-g);border:1px solid var(--green);color:var(--green)}
+.end-banner.lose{background:var(--red-g);border:1px solid var(--red);color:var(--red)}
+
+/* RULES */
+.rules-hero{text-align:center;padding:10px 0 16px}
+.rules-hero h2{font-family:'Exo 2',sans-serif;font-weight:900;font-size:1.45em;color:var(--amber);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
+.rules-hero p{font-family:'Share Tech Mono',monospace;font-size:.66em;color:var(--dim);letter-spacing:.1em}
+.chars-row{display:flex;justify-content:center;align-items:flex-end;gap:0;padding:8px 0 6px;position:relative}
+.char-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px}
+.char-anim.bob{animation:bob 2s ease-in-out infinite}
+.char-anim.susp{animation:susp 2.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes susp{
+  0%,15%,35%,100%{transform:rotate(0deg)}
+  10%{transform:rotate(-9deg)}
+  25%{transform:rotate(7deg)}
+  50%{transform:rotate(0deg) translateY(-6px)}
+  55%{transform:rotate(0deg) translateY(0)}
+}
+.char-lbl{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.8em;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 13px;border-radius:12px;}
+.char-lbl.good{color:var(--green);background:var(--green-g);border:1px solid var(--green)}
+.char-lbl.bad{color:var(--red);background:var(--red-g);border:1px solid var(--red)}
+.vs-div{font-family:'Exo 2',sans-serif;font-weight:900;font-size:1.8em;color:var(--dim);padding:0 4px;margin-bottom:30px}
+
+.rule-sec{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:15px 17px;margin-bottom:11px;position:relative}
+.rule-sec::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:3px;background:linear-gradient(180deg,transparent,var(--amber),transparent);border-radius:2px}
+.rule-sec h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.86em;letter-spacing:.13em;color:var(--amber);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-n{font-family:'Share Tech Mono',monospace;font-size:.76em;color:var(--dim);border:1px solid var(--border);padding:1px 5px;border-radius:2px}
+.rule-sec p,.rule-sec li{font-size:.87em;line-height:1.65;color:var(--text)}
+.rule-sec ul{list-style:none;padding:0}
+.rule-sec ul li{padding:2px 0 2px 14px;position:relative}
+.rule-sec ul li::before{content:'›';position:absolute;left:0;color:var(--amber);font-weight:bold}
+.formula{background:var(--bg);border:1px solid var(--border);border-radius:4px;
+  padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:.71em;
+  color:var(--cyan);letter-spacing:.04em;line-height:1.9;margin-top:8px;}
+.rtable{width:100%;border-collapse:collapse;font-size:.79em;margin-top:8px}
+.rtable th{background:var(--amber-g);color:var(--amber);font-family:'Rajdhani',sans-serif;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 9px;border:1px solid var(--border);text-align:left}
+.rtable td{border:1px solid var(--border);padding:7px 9px;vertical-align:top;color:var(--text);line-height:1.5}
+.rtable td:first-child{color:var(--dim);font-weight:600;font-size:.86em;letter-spacing:.05em}
+.win{color:var(--green);font-weight:700}.lose{color:var(--red);font-weight:700}
+
+/* CONFIG */
+textarea{width:100%;height:175px;background:var(--bg);color:var(--cyan);border:1px solid var(--border);
+  border-radius:4px;padding:11px;font-family:'Share Tech Mono',monospace;font-size:.78em;
+  resize:vertical;outline:none;letter-spacing:.04em;line-height:1.72;margin-bottom:11px}
+textarea:focus{border-color:var(--amber-d)}
+.cfg-btns{display:flex;gap:8px;margin-bottom:20px}
+.cfg-btn{flex:1;padding:12px;border:none;border-radius:5px;font-family:'Rajdhani',sans-serif;
+  font-weight:700;font-size:.8em;letter-spacing:.1em;cursor:pointer;transition:all .15s;
+  text-transform:uppercase;position:relative;overflow:hidden;}
+.cfg-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .4s;}
+.cfg-btn:hover::after{left:100%}
+.cfg-btn:active{transform:scale(.96)}
+.btn-g{background:linear-gradient(135deg,var(--blue-d),#2563eb);color:#fff;border:1px solid var(--blue)}
+.btn-s{background:linear-gradient(135deg,var(--green-d),#006035);color:#fff;border:1px solid var(--green)}
+.btn-b{background:linear-gradient(135deg,#2a1010,#5c1a1a);color:var(--red);border:1px solid #3d1515;flex:0 0 auto;padding:12px 16px}
+.btn-b:hover{border-color:var(--red)}
+.instr-dice{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:13px;display:flex;justify-content:center;gap:20px}
+.dice-itm{text-align:center}
+.dice-itm small{display:block;font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--dim);margin-top:4px;letter-spacing:.07em}
+.dice-sm{width:54px!important;height:54px!important;font-size:1.2em!important}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--amber-d);padding:0 14px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
+footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.2;}
+.ft-brand{display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;
+  font-size:.68em;color:var(--amber);letter-spacing:.1em;}
+.ft-hex{width:22px;height:22px;background:linear-gradient(135deg,var(--amber-d),var(--amber));
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
+.ft-links{display:flex;gap:6px}
+.ft-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.74em;letter-spacing:.08em;
+  text-decoration:none;transition:all .18s;text-transform:uppercase;border:1px solid;cursor:pointer;}
+.ft-wa{color:#25d366;border-color:rgba(37,211,102,.28);background:rgba(37,211,102,.05)}
+.ft-wa:hover{background:rgba(37,211,102,.13);border-color:#25d366;box-shadow:0 0 12px rgba(37,211,102,.2)}
+.ft-mail{color:var(--cyan);border-color:rgba(0,229,204,.22);background:rgba(0,229,204,.04)}
+.ft-mail:hover{background:rgba(0,229,204,.12);border-color:var(--cyan);box-shadow:0 0 12px rgba(0,229,204,.18)}
+
+/* FX */
+#confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:9000;display:none}
+#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:8900;display:none}
+.fx-p{position:fixed;pointer-events:none;animation:flyOut 1.6s ease-out forwards;font-size:22px;line-height:1;transform-origin:center}
+@keyframes flyOut{
+  0%{transform:translate(0,0) scale(1.5) rotate(0deg);opacity:1}
+  100%{transform:translate(var(--ex,40px),var(--ey,-70px)) scale(.1) rotate(var(--er,180deg));opacity:0}
+}
+</style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-start justify-center p-4 pt-10">
+<body>
 
-    <div id="app" class="w-full max-w-2xl bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700">
-        
-        <div id="view-login" class="max-w-md mx-auto">
-            <h1 class="text-3xl font-black mb-2 text-center text-blue-400 tracking-widest">FAC FLOTA v16</h1>
-            <p class="text-center text-slate-400 mb-8 font-mono">PROTOCOLO DE HANGAR</p>
-            
-            <div class="space-y-4">
-                <input id="input-room" type="text" placeholder="ID del Hangar (ej: ALFA)" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500 uppercase">
-                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
-                
-                <div class="flex gap-4 pt-4">
-                    <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition shadow-lg">Ingresar</button>
-                    <button onclick="conectar('instructor')" class="flex-1 bg-slate-600 hover:bg-slate-500 p-3 rounded font-bold transition text-sm">Instructor</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-instructor" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-700 pb-4">
-                <h2 class="text-xl font-bold">Hangar: <span id="display-room-i" class="text-blue-400 uppercase"></span></h2>
-                <button onclick="iniciarJuego()" id="btn-iniciar-juego" class="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 px-6 py-2 rounded font-bold shadow-lg transition">
-                    🔒 INICIAR MISIÓN
-                </button>
-            </div>
-
-            <div id="panel-avion" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-700 mb-6 shadow-inner">
-                <div class="flex items-center gap-4 mb-2">
-                    <span class="text-2xl font-bold">✈️ Integridad</span>
-                    <span id="texto-progreso" class="text-3xl font-black text-blue-400">50%</span>
-                    <div id="cuadro-variacion" class="hidden px-2 py-1 rounded text-sm font-bold animate-bounce text-white shadow-md">
-                        <span id="valor-variacion"></span>
-                    </div>
-                </div>
-                
-                <div class="w-full bg-slate-800 rounded-full h-6 border border-slate-600 overflow-hidden mb-6">
-                    <div id="barra-progreso" class="bg-blue-500 h-6 rounded-full transition-all duration-500" style="width: 50%"></div>
-                </div>
-                
-                <div class="flex gap-4 items-end">
-                    <div class="flex-1">
-                        <label class="text-xs text-slate-400 uppercase font-bold tracking-wider">Factor Velocidad</label>
-                        <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1 font-mono text-lg">
-                    </div>
-                    <button onclick="computarRonda()" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold shadow-lg h-12 flex items-center justify-center">
-                        ⚙️ COMPUTAR
-                    </button>
-                    <button onclick="nuevaRonda()" class="bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center" title="Liberar celulares para nueva ronda">
-                        🔄
-                    </button>
-                </div>
-            </div>
-
-            <h3 class="text-slate-400 mb-3 uppercase text-xs font-bold tracking-widest">Técnicos & Telemetría</h3>
-            <div id="fichas-ronda" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"></div>
-        </div>
-
-        <div id="view-alumno" class="hidden w-full max-w-sm mx-auto flex flex-col items-center">
-            <h2 class="mb-6 text-slate-400 font-mono text-sm">Operador: <span id="display-name-a" class="text-white font-bold text-xl uppercase tracking-wider"></span></h2>
-            
-            <div id="seccion-rol" class="hidden w-full mb-8">
-                <button 
-                    onmousedown="revelarRol(true)" onmouseup="revelarRol(false)" onmouseleave="revelarRol(false)"
-                    ontouchstart="revelarRol(true)" ontouchend="revelarRol(false)"
-                    class="w-full bg-slate-900 p-6 rounded-xl border-2 border-dashed border-slate-600 select-none shadow-inner active:border-slate-400 transition-colors">
-                    <span id="rol-placeholder" class="text-sm text-slate-400 uppercase font-bold tracking-widest">Manten presionado para ver tu ROL</span>
-                    <div id="rol-revelado" class="hidden font-black text-3xl uppercase tracking-widest"></div>
-                </button>
-            </div>
-
-            <div id="controles-alumno" class="w-full space-y-6">
-                <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
-                    <label class="flex justify-between items-center text-sm mb-4 text-slate-300 font-bold uppercase tracking-wider">
-                        Compromiso <span id="val-comp" class="text-blue-400 text-2xl bg-slate-800 px-3 py-1 rounded">5</span>
-                    </label>
-                    <input type="range" id="input-compromiso" min="0" max="10" value="5" 
-                           class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                           oninput="document.getElementById('val-comp').innerText = this.value">
-                </div>
-
-                <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-6 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-2xl font-black uppercase transition-all flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
-                    🎲 Ejecutar Tarea
-                </button>
-            </div>
-
-            <div id="espera-alumno" class="hidden w-full text-center mt-8 p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">
-                <p class="text-blue-400 font-bold text-xl mb-2 flex items-center justify-center gap-2">
-                    <span class="animate-pulse">📡</span> Datos Transmitidos
-                </p>
-                <p class="text-slate-500 text-sm">Esperando autorización de torre de control para el siguiente ciclo...</p>
-            </div>
-        </div>
-
+<nav>
+  <div class="nav-brand">
+    <div class="nav-hex">✦</div>
+    <div>
+      <div style="font-size:.95em;font-weight:bold;letter-spacing:.12em">FAC FLOTA</div>
+      <div class="nav-sub">SIMULADOR TÁCTICO v24.0</div>
     </div>
+  </div>
+  <div class="nav-links">
+    <button onclick="showTab('rules')" id="btn-rules">INSTRUCCIONES</button>
+    <button onclick="showTab('config')" id="btn-config" class="active">CONFIG</button>
+    <button onclick="showTab('game')" id="btn-game">HANGAR</button>
+  </div>
+</nav>
 
-    <script>
-        // CONFIGURACIÓN SUPABASE (CREDENDIALES PÚBLICAS)
-        const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<div id="fleet-container" style="display:none">
+  <div id="fleet-status"></div>
+  <div id="status-msg"></div>
+</div>
 
-        let canal = null;
-        let miNombre = "";
-        let miSala = "";
-        
-        // Variables Instructor
-        let progresoAvion = 50;
-        let rondaActual = [];
-        let listaInfiltrados = [];
-        let listaLeales = [];
-        let totalJugadores = 0;
-        let sancionados = 0;
+<main>
+<div class="content-area" id="mainScroll">
 
-        // Variables Alumno
-        let miRol = "Técnico"; 
-        let esFaseJuegoLocal = false; // Bandera para evitar llamadas continuas a la base de datos
+<!-- ══════════ INSTRUCCIONES ══════════ -->
+<div id="rules" class="tab-content" style="display:none">
+  <div class="rules-hero">
+    <h2>📋 Manual Doctrinario</h2>
+    <p>FAC FLOTA v24.0 — Simulador de Mantenimiento Táctico Aeronáutico</p>
+  </div>
 
-        // 1. AUTO-RECONEXIÓN
-        window.onload = () => {
-            const salaGuardada = localStorage.getItem('mi_sala');
-            const nombreGuardado = localStorage.getItem('mi_nombre');
-            const rolGuardado = localStorage.getItem('mi_rol');
+  <div class="chars-row">
+    <div class="char-wrap">
+      <div class="char-anim bob" id="charGood"></div>
+      <div class="char-lbl good">🟢 Técnico Leal</div>
+    </div>
+    <div class="vs-div">VS</div>
+    <div class="char-wrap">
+      <div class="char-anim susp" id="charBad"></div>
+      <div class="char-lbl bad">🔴 Infiltrado</div>
+    </div>
+  </div>
 
-            if (salaGuardada && nombreGuardado && rolGuardado) {
-                document.getElementById('input-room').value = salaGuardada;
-                document.getElementById('input-name').value = nombreGuardado;
-                conectar(rolGuardado, true);
-            }
-        };
+  <div class="rule-sec">
+    <h4><span class="sec-n">01</span>Arquitectura Lógica de la Ronda</h4>
+    <p>El progreso de cada aeronave depende del <strong style="color:var(--amber)">empeño humano</strong> y el <strong style="color:var(--cyan)">azar técnico</strong>. No es lineal; cada turno es una operación táctica.</p>
+    <div class="formula">
+E  = Empeño (0–10)         →  Dedicación del técnico<br>
+D  = Dado técnico (-5 a +5)  →  Factores externos / suerte<br>
+──────────────────────────────────────────────────<br>
+TÉCNICO LEAL:    Aporte = E × D<br>
+INFILTRADO:      Aporte = −1 × (|E × D| + 2) × 2.5<br>
+──────────────────────────────────────────────────<br>
+TURNO TOTAL:     Δ% = Σ(aportes) ÷ 8.0<br>
+VÁLVULA DE DAÑO: Δ% mínimo = −20% por ronda
+    </div>
+  </div>
 
-        // 2. SISTEMA DE ACCESO
-        async function conectar(rol, esReconexion = false) {
-            miSala = document.getElementById('input-room').value.trim().toUpperCase();
-            miNombre = document.getElementById('input-name').value.trim();
+  <div class="rule-sec">
+    <h4><span class="sec-n">02</span>Doctrina de Roles</h4>
+    <table class="rtable">
+      <thead><tr><th>Característica</th><th>🟢 Técnico Leal</th><th>🔴 Infiltrado</th></tr></thead>
+      <tbody>
+        <tr><td>OBJETIVO</td><td>Alcanzar 100% de integridad</td><td>Llevar la integridad al 0%</td></tr>
+        <tr><td>ESTRATEGIA</td><td>Maximizar el empeño en cada turno</td><td>Camuflar el daño como "mala suerte"</td></tr>
+        <tr><td>VISIBILIDAD</td><td>Verde al revelar roles</td><td>Rojo al revelar roles</td></tr>
+        <tr><td>IMPACTO SANCIÓN</td><td>Si es expulsado, debilita la unidad</td><td>Si es expulsado, el avión vuela</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-            if (!miSala || (!miNombre && rol === 'alumno')) return;
+  <div class="rule-sec">
+    <h4><span class="sec-n">03</span>Protocolos de Operación</h4>
+    <ul>
+      <li><strong style="color:var(--amber)">Quórum:</strong> Mínimo <strong>2 técnicos activos</strong> para procesar cualquier turno.</li>
+      <li><strong style="color:var(--amber)">Consenso:</strong> Sin líder único. Las sanciones se deciden por debate grupal.</li>
+      <li><strong style="color:var(--amber)">Superioridad:</strong> Si infiltrados activos ≥ técnicos leales, el hangar se pierde automáticamente.</li>
+      <li><strong style="color:var(--amber)">Cuota:</strong> En modo automático, máximo <strong>33.9%</strong> de infiltrados. Siempre hay al menos uno.</li>
+    </ul>
+  </div>
 
-            const { data: sala, error: errSala } = await _supabase.from('salas').select('fase, activa').eq('id_sala', miSala).single();
+  <div class="rule-sec">
+    <h4><span class="sec-n">04</span>Modos de Ejecución (Pestaña CONFIG)</h4>
+    <ul>
+      <li><strong style="color:var(--blue)">Jugar en Grupo:</strong> Lee el textarea. Un <em>espacio al final del nombre</em> lo designa como infiltrado. El instructor controla quiénes son.</li>
+      <li><strong style="color:var(--green)">Jugar Solitario:</strong> El sistema asigna infiltrados aleatoriamente respetando la regla de proporcionalidad (≤33.9%).</li>
+      <li><strong style="color:var(--red)">Borrar Partida:</strong> Elimina la sesión guardada y regresa a los nombres por defecto.</li>
+      <li><strong style="color:var(--amber)">Dados del Instructor:</strong> D6, D20 y D100 para introducir eventos externos (clima, suministros, etc.).</li>
+    </ul>
+  </div>
 
-            if (rol === 'instructor') {
-                if (!esReconexion) await _supabase.from('salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
-                guardarSesionLocal('instructor', miSala, 'Instructor');
-                iniciarConexionRealtime('instructor');
-            } else {
-                if (errSala || !sala || !sala.activa) return alert("El hangar no existe o se encuentra inactivo.");
-                if (sala.fase === 'juego' && !esReconexion) return alert("⛔ Operación en curso. El acceso está bloqueado.");
+  <div class="rule-sec">
+    <h4><span class="sec-n">05</span>Condiciones de Cierre</h4>
+    <ul>
+      <li><span class="win">🏆 VICTORIA TÉCNICA:</span> Integridad al <strong>100%</strong>. "¡El avión está EN VUELO!"</li>
+      <li><span class="win">🏆 VICTORIA ESTRATÉGICA:</span> Se expulsan TODOS los infiltrados → el avión vuela al instante.</li>
+      <li><span class="lose">❌ DERROTA CATASTRÓFICA:</span> Integridad al <strong>0%</strong>. "¡El avión se cayó de los gatos!"</li>
+      <li><span class="lose">❌ DERROTA POR SUPERIORIDAD:</span> Infiltrados ≥ Leales. El hangar fue tomado.</li>
+    </ul>
+  </div>
 
-                esFaseJuegoLocal = (sala.fase === 'juego');
+  <div class="rule-sec">
+    <h4><span class="sec-n">06</span>Válvulas de Seguridad del Sistema</h4>
+    <ul>
+      <li><strong style="color:var(--cyan)">Resiliencia:</strong> Daño máximo <strong>−20%</strong> por ronda. Ningún sabotaje destruye el avión de inmediato.</li>
+      <li><strong style="color:var(--cyan)">Factor de Escala:</strong> Resultado ÷ <strong>8.0</strong>. Curva de progresión suavizada.</li>
+      <li><strong style="color:var(--cyan)">Inicio Neutral:</strong> Cada aeronave comienza en <strong>50%</strong> de integridad.</li>
+    </ul>
+  </div>
+</div>
 
-                // Registro o validación de jugador
-                const { error: errJugador } = await _supabase.from('jugadores').insert({ sala_id: miSala, nombre: miNombre });
-                if (errJugador && errJugador.code === '23505' && !esReconexion) {
-                    return alert("🚫 Identidad en uso. Por favor utiliza otra credencial.");
-                }
+<!-- ══════════ CONFIG ══════════ -->
+<div id="config" class="tab-content">
+  <div class="slbl">LISTA DE PERSONAL</div>
+  <textarea id="configText"></textarea>
+  <div class="cfg-btns">
+    <button class="cfg-btn btn-g" onclick="parseConfig('manual')">▶ JUGAR EN GRUPO</button>
+    <button class="cfg-btn btn-s" onclick="parseConfig('solo')">🎲 JUGAR SOLITARIO</button>
+    <button class="cfg-btn btn-b" onclick="clearGame()">✕ BORRAR</button>
+  </div>
+  <div class="slbl">DADOS DEL INSTRUCTOR</div>
+  <div class="instr-dice">
+    <div class="dice-itm">
+      <div class="dice-box dice-sm" onclick="rollGlobalDice(1,6,this)">?</div>
+      <small>D6 · 1–6</small>
+    </div>
+    <div class="dice-itm">
+      <div class="dice-box dice-sm" onclick="rollGlobalDice(1,20,this)">?</div>
+      <small>D20 · 1–20</small>
+    </div>
+    <div class="dice-itm">
+      <div class="dice-box dice-sm" onclick="rollGlobalDice(0,100,this)">?</div>
+      <small>D100 · 0–100</small>
+    </div>
+  </div>
+</div>
 
-                // Verificar inhabilitación
-                const { data: userData } = await _supabase.from('jugadores').select('deshabilitado').eq('nombre', miNombre).eq('sala_id', miSala).single();
-                if (userData && userData.deshabilitado) return mostrarPantallaSancion();
+<!-- ══════════ HANGAR ══════════ -->
+<div id="game" class="tab-content" style="display:none">
+  <div class="team-sw" id="teamSw"></div>
+  <div id="game-board" style="display:none">
+    <div id="banner-area"></div>
+    <div class="slbl">PERSONAL TÉCNICO ACTIVO</div>
+    <div class="team-grid" id="playerGrid"></div>
+    <button class="compute-btn" onclick="computeWork()">⚙ COMPUTAR TURNO</button>
+  </div>
+  <div id="infiltrator-alert" style="display:none">
+    <div class="alert-box">⚠ SEGURIDAD OPERACIONAL COMPROMETIDA<br><br>
+      <span style="color:var(--dim);font-size:.9em">Sin infiltrados designados.<br>Configure la misión en CONFIG.</span>
+    </div>
+  </div>
+  <div id="no-game-msg" style="text-align:center;padding:40px 20px;color:var(--dim)">
+    <div style="font-size:2.5em;margin-bottom:14px">✈</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.75em;letter-spacing:.06em">
+      Sin misión activa.<br>Ve a CONFIG e inicia una partida.
+    </div>
+  </div>
+</div>
 
-                guardarSesionLocal('alumno', miSala, miNombre);
-                iniciarConexionRealtime('alumno');
-            }
-        }
+</div><!-- /content-area -->
+</main>
 
-        function guardarSesionLocal(rol, sala, nombre) {
-            localStorage.setItem('mi_rol', rol);
-            localStorage.setItem('mi_sala', sala);
-            localStorage.setItem('mi_nombre', nombre);
-        }
+<footer>
+  <div class="ft-brand">
+    <div class="ft-hex"></div>
+    <span>INVERSIONES ARIPAR</span>
+  </div>
+  <div class="ft-links">
+    <a href="https://wa.me/573128816469" target="_blank" class="ft-btn ft-wa">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.116 1.525 5.842L.057 23.5a.5.5 0 00.613.613l5.692-1.46A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.87 0-3.628-.487-5.154-1.341l-.369-.213-3.827.982.998-3.742-.23-.384A9.96 9.96 0 012 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
+      </svg>
+      WhatsApp
+    </a>
+    <a href="mailto:alucard8@gmail.com" class="ft-btn ft-mail">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+      </svg>
+      Correo
+    </a>
+  </div>
+</footer>
 
-        // 3. CONEXIÓN EN TIEMPO REAL
-        function iniciarConexionRealtime(rol) {
-            document.getElementById('view-login').classList.add('hidden');
-            
-            // Creamos el canal y registramos la llave de presencia
-            canal = _supabase.channel(`sala_${miSala}`, { config: { presence: { key: miNombre } } });
+<canvas id="confettiCanvas"></canvas>
+<div id="fxLayer"></div>
 
-            if (rol === 'instructor') {
-                document.getElementById('view-instructor').classList.remove('hidden');
-                document.getElementById('display-room-i').innerText = miSala;
-                
-                // Escuchas del Instructor
-                canal.on('presence', { event: 'sync' }, () => actualizarFichasLobby(canal.presenceState()));
-                canal.on('broadcast', { event: 'nuevo_resultado' }, (payload) => procesarJugada(payload.payload));
-                
-                // Cierre de sala al salir
-                window.addEventListener('beforeunload', async () => {
-                    await _supabase.from('salas').update({ activa: false }).eq('id_sala', miSala);
-                });
+<script>
+// ── STATE ──
+let fleetData={},selectedTeam=null,currentTab='config';
 
-            } else {
-                document.getElementById('view-alumno').classList.remove('hidden');
-                document.getElementById('display-name-a').innerText = miNombre;
-                
-                // Escuchas del Alumno
-                canal.on('broadcast', { event: 'asignar_roles' }, (payload) => {
-                    esFaseJuegoLocal = true;
-                    procesarRol(payload.payload.infiltrados);
-                });
-                canal.on('broadcast', { event: 'reset_ronda' }, () => reiniciarVistaTurno());
-                canal.on('broadcast', { event: 'usuario_sancionado' }, (payload) => {
-                    if (miNombre === payload.payload.nombre) mostrarPantallaSancion();
-                });
+const DEFAULT_CONFIG=`#Equipo Alpha
+Carlos García 
+Ana Martínez
+Pedro López
+María Rodríguez 
+Juan Pérez
+Laura Gómez
 
-                // Restauración de estado visual si recarga en medio del juego
-                if (esFaseJuegoLocal) {
-                    const rolGuardado = localStorage.getItem('rol_asignado');
-                    if (rolGuardado) {
-                        miRol = rolGuardado;
-                        document.getElementById('seccion-rol').classList.remove('hidden');
-                    }
-                }
-            }
+#Equipo Bravo
+Diego Torres 
+Sofía Vargas
+Andrés Morales
+Valentina Cruz
+Felipe Reyes 
+Camila Díaz`;
 
-            // Iniciar conexión
-            canal.subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') await canal.track({ nombre: miNombre });
-            });
-        }
+const POS=[
+  '✓ Actuador instalado · Torque verificado según manual técnico.',
+  '✓ Prueba de estanqueidad superada · Sistemas nominales.',
+  '✓ Aviónica sincronizada · FOD removido · Área despejada.',
+  '✓ Reparación estructural certificada · Presión estable.',
+  '✓ Tren de aterrizaje ciclado · Combustible purgado.',
+  '✓ Baterías al 100% · Sistema eléctrico nominal.',
+  '✓ Instrumentos calibrados · Sin anomalías detectadas.',
+  '✓ Sistemas de control de vuelo operativos.',
+  '✓ Motor inspeccionado · Sin FOD detectado.',
+  '✓ Lista de chequeo pre-vuelo aprobada.'
+];
+const NEG=[
+  '⚠ Herramienta olvidada en controles · Inspección requerida.',
+  '⚠ Torque fuera de tolerancia · Fuga detectada.',
+  '⚠ Tornillo trasroscado · Número de parte incorrecto.',
+  '⚠ Corrosión detectada · Cortocircuito en arnés.',
+  '⚠ Sujetador suelto por vibración · Lista omitida.',
+  '⚠ FOD crítico en admisión · Área no despejada.',
+  '⚠ Falla hidráulica · Presión insuficiente.',
+  '⚠ Anomalía en actuador · Requiere inspección mayor.',
+  '⚠ Señal errática en sensor de temperatura.',
+  '⚠ Discrepancia en peso y balance · Misión en espera.'
+];
 
-        // ==========================================
-        // LÓGICA DEL INSTRUCTOR
-        // ==========================================
+// ── AMONG US SVG ──
+function makeAU(body,dark,glass,uid){
+  return `<svg viewBox="-8 0 116 148" xmlns="http://www.w3.org/2000/svg" width="88" height="114">
+    <defs>
+      <filter id="f_${uid}" x="-20%" y="-10%" width="140%" height="130%">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="3.5" result="e"/>
+        <feFlood flood-color="#06090d" result="b"/>
+        <feComposite in="b" in2="e" operator="in" result="o"/>
+        <feComposite in="SourceGraphic" in2="o" operator="over"/>
+      </filter>
+    </defs>
+    <ellipse cx="52" cy="143" rx="28" ry="6" fill="rgba(0,0,0,0.16)"/>
+    <g filter="url(#f_${uid})">
+      <rect x="7" y="52" width="19" height="36" rx="10" fill="${dark}"/>
+      <ellipse cx="52" cy="70" rx="32" ry="56" fill="${body}"/>
+      <ellipse cx="52" cy="43" rx="25" ry="31" fill="${glass}"/>
+      <ellipse cx="64" cy="34" rx="10" ry="7" fill="rgba(255,255,255,0.56)" transform="rotate(-13 64 34)"/>
+      <ellipse cx="38" cy="53" rx="5" ry="4" fill="rgba(255,255,255,0.18)" transform="rotate(-13 38 53)"/>
+      <rect x="22" y="113" width="22" height="26" rx="11" fill="${dark}"/>
+      <rect x="58" y="113" width="22" height="26" rx="11" fill="${dark}"/>
+    </g>
+  </svg>`;
+}
 
-        function actualizarFichasLobby(estado) {
-            // Solo dibujamos los que no han enviado datos en la ronda actual para no sobreescribir la telemetría
-            const contenedor = document.getElementById('fichas-ronda');
-            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n !== "Instructor");
-            
-            nombresConectados.forEach(nombre => {
-                let ficha = document.getElementById(`ficha-${nombre}`);
-                
-                if (!ficha) {
-                    ficha = document.createElement('div');
-                    ficha.id = `ficha-${nombre}`;
-                    contenedor.appendChild(ficha);
-                }
+// ── CONFETTI ──
+function launchConfetti(){
+  const canvas=document.getElementById('confettiCanvas');
+  canvas.style.display='block';
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  const cols=['#e8a020','#00e5cc','#00d16c','#3b82f6','#ff6b35','#ffffff','#f0c040','#a78bfa','#fb7185'];
+  const sh=['rect','circ','tri'];
+  const pcs=Array.from({length:140},()=>({
+    x:Math.random()*canvas.width,y:-20-Math.random()*120,
+    w:7+Math.random()*9,h:4+Math.random()*7,
+    col:cols[Math.floor(Math.random()*cols.length)],
+    sh:sh[Math.floor(Math.random()*sh.length)],
+    rot:Math.random()*360,vx:(Math.random()-.5)*3.5,
+    vy:2.5+Math.random()*4,vr:(Math.random()-.5)*12,op:1
+  }));
+  let t=0;
+  function anim(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);t++;
+    let alive=false;
+    pcs.forEach(p=>{
+      p.x+=p.vx+Math.sin(t*.03+p.y*.01)*.6;
+      p.y+=p.vy;p.rot+=p.vr;p.vy=Math.min(p.vy+.08,8);
+      p.op=Math.max(0,1-p.y/canvas.height*1.35);
+      if(p.y<canvas.height+20)alive=true;
+      ctx.save();ctx.globalAlpha=p.op;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;
+      if(p.sh==='rect')ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      else if(p.sh==='circ'){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}
+      else{ctx.beginPath();ctx.moveTo(0,-p.w/2);ctx.lineTo(p.w/2,p.w/2);ctx.lineTo(-p.w/2,p.w/2);ctx.closePath();ctx.fill();}
+      ctx.restore();
+    });
+    if(alive)requestAnimationFrame(anim);
+    else{canvas.style.display='none';ctx.clearRect(0,0,canvas.width,canvas.height);}
+  }
+  requestAnimationFrame(anim);
+}
 
-                // Si este jugador ya está en rondaActual, no le pisamos su interfaz visual
-                if (!rondaActual.find(j => j.nombre === nombre)) {
-                    ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-slate-500 shadow-md flex justify-between items-center transition-all";
-                    ficha.innerHTML = `
-                        <div>
-                            <span class="font-black uppercase text-sm tracking-tighter text-slate-300 block">${nombre}</span>
-                            <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 rounded uppercase tracking-widest font-bold">Conectado</span>
-                        </div>
-                        <button onclick="sancionar('${nombre}')" class="text-[10px] bg-red-900/30 hover:bg-red-600 text-red-400 px-2 py-1 rounded transition uppercase">Sancionar</button>
-                    `;
-                }
-            });
-        }
+// ── EXPLOSION ──
+function launchExplosion(){
+  const layer=document.getElementById('fxLayer');
+  layer.innerHTML='';layer.style.display='block';
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  const tools=['🔧','🔨','💥','🔥','⚡','💨','🪛','⚠️','☠️','🛠️','🌪️','🔴'];
+  const n=20;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');
+    el.className='fx-p';
+    const angle=(i/n)*Math.PI*2;
+    const dist=80+Math.random()*150;
+    el.style.left=cx+'px';el.style.top=cy+'px';
+    el.style.fontSize=(18+Math.random()*18)+'px';
+    el.style.animationDelay=(Math.random()*.3)+'s';
+    el.style.setProperty('--ex',(Math.cos(angle)*dist)+'px');
+    el.style.setProperty('--ey',(Math.sin(angle)*dist-50)+'px');
+    el.style.setProperty('--er',(Math.random()*720-360)+'deg');
+    el.textContent=tools[Math.floor(Math.random()*tools.length)];
+    layer.appendChild(el);
+  }
+  // shake screen
+  document.body.style.animation='none';
+  setTimeout(()=>{document.body.style.animation='';},50);
+  setTimeout(()=>{layer.innerHTML='';layer.style.display='none';},2600);
+}
 
-        async function iniciarJuego() {
-            const state = canal.presenceState();
-            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n !== "Instructor");
-            
-            totalJugadores = nombres.length;
-            if (totalJugadores < 4) return alert("Quórum insuficiente. Se requieren mínimo 4 técnicos.");
+// ── STORAGE ──
+function save(){
+  try{localStorage.setItem('fac_flota_v24',JSON.stringify({fleetData,configRaw:document.getElementById('configText').value}));}catch(e){}
+}
+function load(){
+  // Render Among Us characters in rules
+  document.getElementById('charGood').innerHTML=makeAU('#2ecc71','#1a7a40','#5ae0b0','good');
+  document.getElementById('charBad').innerHTML=makeAU('#e83030','#8a1818','#7cc8dc','bad');
+  try{
+    const s=localStorage.getItem('fac_flota_v24');
+    if(s){
+      const p=JSON.parse(s);
+      fleetData=p.fleetData||{};
+      document.getElementById('configText').value=p.configRaw||DEFAULT_CONFIG;
+      if(Object.keys(fleetData).length>0){
+        renderFleet();updateTeamSw();
+        document.getElementById('no-game-msg').style.display='none';
+        selectedTeam=Object.keys(fleetData)[0];
+        showTab('game');selectTeam(selectedTeam);return;
+      }
+    }
+  }catch(e){}
+  document.getElementById('configText').value=DEFAULT_CONFIG;
+  showTab('config');
+}
 
-            // Regla: Infiltrados estrictamente menor al 34% (min 1)
-            const numInfiltrados = Math.max(1, Math.floor(totalJugadores * 0.33));
-            const barajados = nombres.sort(() => 0.5 - Math.random());
-            listaInfiltrados = barajados.slice(0, numInfiltrados);
-            listaLeales = barajados.slice(numInfiltrados);
+// ── PARSE CONFIG ──
+function parseConfig(mode){
+  const lines=document.getElementById('configText').value.split('\n');
+  fleetData={};let cur='';
+  lines.forEach(line=>{
+    const raw=line.replace(/\r/,'');
+    const isSab=(mode==='manual')?raw.endsWith(' '):false;
+    const clean=raw.trim();
+    if(clean.startsWith('#')){
+      cur=clean.substring(1).trim();
+      fleetData[cur]={progress:50,workHours:0,lastDelta:0,gameEnded:false,techs:[]};
+    }else if(clean!==''&&cur!==''){
+      fleetData[cur].techs.push({name:clean,isImpostor:isSab,lastLuck:0,hasRolled:false,selectedEmpeno:0,sanctioned:false});
+    }
+  });
+  if(mode==='solo'){
+    Object.keys(fleetData).forEach(name=>{
+      const team=fleetData[name];
+      team.techs.forEach(t=>t.isImpostor=false);
+      const maxSab=Math.floor(team.techs.length*.3399);
+      const target=Math.max(1,Math.floor(Math.random()*maxSab)+1);
+      const idxs=[...Array(team.techs.length).keys()].sort(()=>Math.random()-.5);
+      for(let i=0;i<target;i++)team.techs[idxs[i]].isImpostor=true;
+    });
+    let out='';
+    Object.keys(fleetData).forEach(name=>{
+      out+=`#${name}\n`;
+      fleetData[name].techs.forEach(t=>out+=t.name+(t.isImpostor?' ':'')+'\n');
+      out+='\n';
+    });
+    document.getElementById('configText').value=out.trim();
+  }
+  save();renderFleet();updateTeamSw();
+  document.getElementById('no-game-msg').style.display='none';
+  selectedTeam=null;showTab('game');
+  if(Object.keys(fleetData).length>0)selectTeam(Object.keys(fleetData)[0]);
+}
 
-            // Cerrar la sala en la DB
-            await _supabase.from('salas').update({ fase: 'juego' }).eq('id_sala', miSala);
+function clearGame(){
+  if(!confirm('¿Eliminar la partida guardada y volver a los nombres por defecto?'))return;
+  try{localStorage.removeItem('fac_flota_v24');}catch(e){}
+  fleetData={};selectedTeam=null;
+  document.getElementById('configText').value=DEFAULT_CONFIG;
+  document.getElementById('fleet-status').innerHTML='';
+  document.getElementById('status-msg').innerText='';
+  document.getElementById('teamSw').innerHTML='';
+  document.getElementById('game-board').style.display='none';
+  document.getElementById('infiltrator-alert').style.display='none';
+  document.getElementById('no-game-msg').style.display='block';
+  document.getElementById('banner-area').innerHTML='';
+}
 
-            document.getElementById('btn-iniciar-juego').classList.add('hidden');
-            document.getElementById('panel-avion').classList.remove('hidden');
+// ── FLEET RENDER ──
+function renderFleet(){
+  const c=document.getElementById('fleet-status');c.innerHTML='';
+  Object.keys(fleetData).forEach(name=>{
+    const team=fleetData[name];
+    const pct=team.progress.toFixed(1);
+    const isSel=selectedTeam===name;
+    const wrap=document.createElement('div');
+    wrap.className='fleet-row'+(isSel?' is-selected':'');
+    wrap.innerHTML=`<div class="fleet-lbl">✈ ${name.toUpperCase().substring(0,9)}</div>
+      <div class="fleet-bar${isSel?' is-sel':''}" onclick="switchTeam('${name}')">
+        <div class="bar-fill${team.progress<40?' red':''}" style="width:${pct}%"></div>
+        <div class="bar-lbl">${pct}%</div>
+      </div>
+      <div class="fleet-hr">⏱${team.workHours}h</div>`;
+    c.appendChild(wrap);
+  });
+}
 
-            // Emitir roles
-            canal.send({
-                type: 'broadcast',
-                event: 'asignar_roles',
-                payload: { infiltrados: listaInfiltrados }
-            });
-            
-            alert("MISIÓN INICIADA. Roles asignados de forma clasificada.");
-        }
+function switchTeam(name){
+  selectedTeam=name;
+  document.getElementById('mainScroll').scrollTop=0;
+  renderFleet();updateTeamSw();showGameBoard();loadTechGrid();
+}
 
-        function procesarJugada(data) {
-            if (rondaActual.find(j => j.nombre === data.nombre)) return;
-            rondaActual.push(data);
+// ── TEAM SWITCHER ──
+function updateTeamSw(){
+  const sw=document.getElementById('teamSw');sw.innerHTML='';
+  Object.keys(fleetData).forEach(name=>{
+    const btn=document.createElement('button');
+    btn.className='team-btn'+(selectedTeam===name?' active':'');
+    btn.textContent=name;btn.onclick=()=>switchTeam(name);
+    sw.appendChild(btn);
+  });
+}
 
-            const ficha = document.getElementById(`ficha-${data.nombre}`);
-            if (!ficha) return;
+function selectTeam(name){
+  selectedTeam=name;renderFleet();updateTeamSw();showGameBoard();loadTechGrid();
+}
 
-            ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-blue-500 shadow-md relative transition-all";
-            ficha.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <span class="font-black uppercase tracking-wider text-white text-sm">${data.nombre}</span>
-                    <button onclick="sancionar('${data.nombre}')" class="text-[10px] bg-red-900/50 hover:bg-red-600 text-red-200 px-2 py-1 rounded transition uppercase">Sancionar</button>
-                </div>
-                <div class="flex gap-2 text-xs bg-slate-900 p-2 rounded items-center">
-                    <div class="flex-1 text-center">Pericia<br><b class="text-yellow-400 text-lg">${data.valor_dado}</b></div>
-                    <div class="w-px h-8 bg-slate-700"></div>
-                    <div class="flex-1 text-center">Compromiso<br><b class="text-blue-400 text-lg">${data.valor_compromiso}</b></div>
-                </div>
-            `;
-        }
+function showGameBoard(){
+  const team=fleetData[selectedTeam];
+  if(!team)return;
+  document.getElementById('no-game-msg').style.display='none';
+  if(!team.techs.some(t=>t.isImpostor)){
+    document.getElementById('game-board').style.display='none';
+    document.getElementById('infiltrator-alert').style.display='block';
+  }else{
+    document.getElementById('infiltrator-alert').style.display='none';
+    document.getElementById('game-board').style.display='block';
+  }
+}
 
-        function computarRonda() {
-            const quorum = rondaActual.length;
-            if (quorum < 2) return alert("Operación denegada. Se requieren al menos 2 técnicos activos enviando telemetría.");
+// ── PLAYER GRID ──
+function loadTechGrid(){
+  const grid=document.getElementById('playerGrid');
+  const ba=document.getElementById('banner-area');
+  if(!selectedTeam)return;
+  grid.innerHTML='';ba.innerHTML='';
+  const team=fleetData[selectedTeam];if(!team)return;
+  if(team.gameEnded){
+    const won=team.progress>=100;
+    const b=document.createElement('div');
+    b.className='end-banner '+(won?'win':'lose');
+    b.textContent=won?'🏆 MISIÓN CUMPLIDA — EN VUELO':'❌ HANGAR PERDIDO — DERROTA';
+    ba.appendChild(b);
+  }
+  team.techs.forEach((p,i)=>{
+    p.selectedEmpeno=p.selectedEmpeno||0;p.hasRolled=false;
+    let cls=p.sanctioned?'sanctioned':'';
+    if(team.gameEnded)cls+=' '+(p.isImpostor?'reveal-bad':'reveal-good');
+    const card=document.createElement('div');
+    card.className='player-card '+cls;
+    const roleTag=team.gameEnded?`<div class="card-role ${p.isImpostor?'b':'g'}">${p.isImpostor?'🔴 INFILTRADO':'🟢 TÉCNICO LEAL'}</div>`:'';
+    const sanctBtn=(!team.gameEnded&&!p.sanctioned)?`<button class="btn-sanc" onclick="sanction(${i})">✕</button>`:'';
+    card.innerHTML=`${sanctBtn}
+      <div class="card-name">${p.name}</div>${roleTag}
+      <div class="dice-box" id="dice-${i}" onclick="startDiceRoll(${i},this)">?</div>
+      <div class="emp-lbl">EMPEÑO: <span id="val-${i}">${p.selectedEmpeno}</span></div>
+      <input type="range" min="0" max="10" value="${p.selectedEmpeno}" ${(p.sanctioned||team.gameEnded)?'disabled':''} oninput="updEmp(${i},this.value)">`;
+    grid.appendChild(card);
+  });
+}
 
-            let puntosLeales = 0;
-            let puntosInfiltrados = 0;
+function updEmp(i,v){
+  document.getElementById('val-'+i).innerText=v;
+  fleetData[selectedTeam].techs[i].selectedEmpeno=parseInt(v);
+}
 
-            rondaActual.forEach(j => {
-                const aporte = j.valor_dado * j.valor_compromiso;
-                if (listaInfiltrados.includes(j.nombre)) {
-                    puntosInfiltrados += aporte;
-                } else {
-                    puntosLeales += aporte;
-                }
-            });
+// ── SANCTION ──
+function sanction(idx){
+  const team=fleetData[selectedTeam];const p=team.techs[idx];
+  if(!confirm(`¿Confirmar sanción a ${p.name}?`))return;
+  p.sanctioned=true;
+  if(p.isImpostor){
+    const rem=team.techs.filter(t=>t.isImpostor&&!t.sanctioned).length;
+    if(rem===0){
+      team.progress=100;team.gameEnded=true;
+      save();renderFleet();selectTeam(selectedTeam);launchConfetti();
+      setTimeout(()=>alert('🏆 VICTORIA ESTRATÉGICA\nTodos los infiltrados identificados.\n¡El avión está listo para volar!'),300);return;
+    }else alert(`✅ ÉXITO — ${p.name} era un INFILTRADO.\nQuedan ${rem} infiltrado(s) activo(s).`);
+  }else{
+    alert(`❌ ERROR — ${p.name} era un TÉCNICO LEAL.`);
+    const inf=team.techs.filter(t=>t.isImpostor&&!t.sanctioned).length;
+    const loy=team.techs.filter(t=>!t.isImpostor&&!t.sanctioned).length;
+    if(inf>=loy){
+      team.progress=0;team.gameEnded=true;
+      save();renderFleet();selectTeam(selectedTeam);launchExplosion();
+      setTimeout(()=>alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados controlan el hangar.'),300);return;
+    }
+  }
+  save();renderFleet();selectTeam(selectedTeam);
+}
 
-            const mult = parseFloat(document.getElementById('input-multiplicador').value) || 1;
-            
-            // Fórmula: Impacto = ((Leales - (Infiltrados * Quorum)) / 50) * Mult
-            let delta = ((puntosLeales - (puntosInfiltrados * quorum)) / 50) * mult;
+// ── DICE ROLL ──
+function startDiceRoll(idx,el){
+  const p=fleetData[selectedTeam].techs[idx];
+  if(p.hasRolled||p.sanctioned||fleetData[selectedTeam].gameEnded)return;
+  if(p.selectedEmpeno===0){el.style.animation='dRoll .1s 2';setTimeout(()=>el.style.animation='',300);return;}
+  p.hasRolled=true;el.classList.add('rolling');
+  let cnt=0;
+  const itv=setInterval(()=>{
+    el.innerText=Math.floor(Math.random()*11)-5;cnt+=100;
+    if(cnt>=2200){clearInterval(itv);p.lastLuck=parseInt(el.innerText);el.classList.remove('rolling');el.classList.add('done');save();}
+  },100);
+}
 
-            // Restricción de impacto máximo +/- 20%
-            if (delta > 20) delta = 20;
-            if (delta < -20) delta = -20;
+// ── COMPUTE ──
+function computeWork(){
+  const team=fleetData[selectedTeam];
+  if(!team||team.gameEnded)return;
+  const actives=team.techs.filter(p=>p.selectedEmpeno>0&&!p.sanctioned);
+  if(actives.length<2){alert('⚠ QUÓRUM INSUFICIENTE\nMínimo 2 técnicos activos.');return;}
+  if(actives.some(p=>!p.hasRolled)){alert('⚠ Lance el dado de todos los técnicos activos.');return;}
+  const nInf=actives.filter(p=>p.isImpostor).length;
+  const nLoy=actives.length-nInf;
+  if(nInf>=nLoy){
+    team.progress=0;team.gameEnded=true;save();renderFleet();selectTeam(selectedTeam);launchExplosion();
+    setTimeout(()=>alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados dominan el turno.'),300);return;
+  }
+  let sum=0;
+  actives.forEach(p=>{let s=p.selectedEmpeno*p.lastLuck;if(p.isImpostor)s=-1*(Math.abs(s)+2)*2.5;sum+=s;});
+  let delta=sum/8.0;if(delta<-20)delta=-20;
+  team.progress=Math.max(0,Math.min(100,team.progress+delta));
+  team.lastDelta=delta;team.workHours++;
+  document.getElementById('status-msg').innerText=(sum>=0?POS:NEG)[Math.floor(Math.random()*10)];
+  if(team.progress<=0||team.progress>=100){
+    team.gameEnded=true;const won=team.progress>=100;
+    save();renderFleet();selectTeam(selectedTeam);
+    if(won){launchConfetti();setTimeout(()=>alert('🏆 VICTORIA\n¡El avión está EN VUELO!\nMisión completada.'),300);}
+    else{launchExplosion();setTimeout(()=>alert('❌ DERROTA CATASTRÓFICA\n¡El avión se cayó de los gatos!'),300);}
+    return;
+  }
+  save();renderFleet();selectTeam(selectedTeam);
+}
 
-            mostrarVariacion(delta);
-            actualizarProgreso(progresoAvion + delta);
-        }
+// ── GLOBAL DICE ──
+function rollGlobalDice(min,max,el){
+  el.classList.remove('done');el.classList.add('rolling');let cnt=0;
+  const itv=setInterval(()=>{
+    el.innerText=Math.floor(Math.random()*(max-min+1))+min;cnt+=100;
+    if(cnt>=2000){clearInterval(itv);el.classList.remove('rolling');el.classList.add('done');}
+  },100);
+}
 
-        function actualizarProgreso(nuevoValor) {
-            progresoAvion = Math.max(0, Math.min(100, nuevoValor));
-            document.getElementById('barra-progreso').style.width = `${progresoAvion}%`;
-            document.getElementById('texto-progreso').innerText = `${Math.round(progresoAvion)}%`;
+// ── TABS ──
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).style.display='block';
+  document.getElementById('btn-'+id).classList.add('active');
+  currentTab=id;
+  const fc=document.getElementById('fleet-container');
+  if(id==='rules'){fc.style.display='none';}
+  else{fc.style.display='block';fc.classList.remove('collapsed');}
+  if(id==='game'){
+    document.getElementById('mainScroll').scrollTop=0;
+    updateTeamSw();
+    if(!selectedTeam&&Object.keys(fleetData).length>0)selectTeam(Object.keys(fleetData)[0]);
+    if(Object.keys(fleetData).length===0){
+      document.getElementById('no-game-msg').style.display='block';
+      document.getElementById('game-board').style.display='none';
+      document.getElementById('infiltrator-alert').style.display='none';
+    }
+  }
+}
 
-            if (progresoAvion >= 100) alert("🏆 VICTORIA: Certificación completada al 100%. El hangar ha triunfado.");
-            if (progresoAvion <= 0) alert("💥 DERROTA: La integridad de los sistemas llegó a 0%.");
-            
-            rondaActual = [];
-            // Refrescar estado visual a conectado
-            actualizarFichasLobby(canal.presenceState());
-        }
+// ── SCROLL COLLAPSE ──
+document.getElementById('mainScroll').addEventListener('scroll',function(){
+  if(currentTab!=='game')return;
+  document.getElementById('fleet-container').classList.toggle('collapsed',this.scrollTop>35);
+});
 
-        function nuevaRonda() {
-            canal.send({ type: 'broadcast', event: 'reset_ronda' });
-        }
-
-        async function sancionar(nombre) {
-            if (!confirm(`Sancionar a ${nombre} lo inhabilitará permanentemente. ¿Confirmar orden?`)) return;
-
-            // Actualización persistente
-            await _supabase.from('jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
-            
-            sancionados++;
-            const elemento = document.getElementById(`ficha-${nombre}`);
-            if (elemento) elemento.remove();
-            
-            // Retirar de la ronda actual si ya había tirado
-            rondaActual = rondaActual.filter(j => j.nombre !== nombre); 
-
-            // Avisar al afectado
-            canal.send({ type: 'broadcast', event: 'usuario_sancionado', payload: { nombre } });
-
-            // Validación de Condición de Derrota por Superioridad
-            const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
-            let infActivos = listaInfiltrados.length;
-            let leaActivos = listaLeales.length;
-
-            // Ajuste manual sin re-consultar DB para agilidad visual
-            if(esInfiltradoSancionado) {
-                listaInfiltrados = listaInfiltrados.filter(n => n !== nombre);
-                infActivos--;
-            } else {
-                listaLeales = listaLeales.filter(n => n !== nombre);
-                leaActivos--;
-            }
-
-            if (infActivos === 0) {
-                alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
-            } else if (infActivos >= leaActivos) {
-                actualizarProgreso(0);
-                alert("🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
-            }
-        }
-
-        function mostrarVariacion(valor) {
-            const cuadro = document.getElementById('cuadro-variacion');
-            const texto = document.getElementById('valor-variacion');
-            cuadro.classList.remove('hidden', 'bg-red-600', 'bg-green-600');
-            
-            if (valor >= 0) {
-                cuadro.classList.add('bg-green-600');
-                texto.innerText = `+${valor.toFixed(1)}%`;
-            } else {
-                cuadro.classList.add('bg-red-600');
-                texto.innerText = `${valor.toFixed(1)}%`;
-            }
-            setTimeout(() => cuadro.classList.add('hidden'), 4000);
-        }
-
-        // ==========================================
-        // LÓGICA DEL ALUMNO (TÉCNICO)
-        // ==========================================
-
-        function procesarRol(infiltrados) {
-            miRol = infiltrados.includes(miNombre) ? "Infiltrado" : "Técnico";
-            localStorage.setItem('rol_asignado', miRol);
-            document.getElementById('seccion-rol').classList.remove('hidden');
-        }
-
-        function revelarRol(mostrar) {
-            const pl = document.getElementById('rol-placeholder');
-            const rev = document.getElementById('rol-revelado');
-            const body = document.body;
-
-            if (mostrar) {
-                pl.classList.add('hidden');
-                rev.classList.remove('hidden');
-                rev.innerText = miRol;
-                
-                body.classList.remove('bg-slate-900');
-                if (miRol === "Infiltrado") {
-                    rev.style.color = "#fca5a5";
-                    body.classList.add('bg-red-950');
-                } else {
-                    rev.style.color = "#86efac";
-                    body.classList.add('bg-green-950');
-                }
-            } else {
-                pl.classList.remove('hidden');
-                rev.classList.add('hidden');
-                body.classList.remove('bg-red-950', 'bg-green-950');
-                body.classList.add('bg-slate-900');
-            }
-        }
-
-        async function lanzarTurno() {
-            // Animación de feedback local
-            const btn = document.getElementById('btn-lanzar');
-            btn.classList.add('scale-95', 'bg-indigo-800');
-            setTimeout(() => btn.classList.remove('scale-95', 'bg-indigo-800'), 150);
-
-            const compromiso = document.getElementById('input-compromiso').value;
-            const dado = Math.floor(Math.random() * 20) + 1;
-
-            if (esFaseJuegoLocal) {
-                // Modo Misión: Bloquear y Enviar
-                document.getElementById('controles-alumno').classList.add('hidden');
-                document.getElementById('espera-alumno').classList.remove('hidden');
-
-                canal.send({
-                    type: 'broadcast',
-                    event: 'nuevo_resultado',
-                    payload: { nombre: miNombre, valor_dado: dado, valor_compromiso: compromiso }
-                });
-            } else {
-                // Modo Entrenamiento: Solo animación
-                console.log(`[Modo Práctica] Dado: ${dado} | Compromiso: ${compromiso}`);
-            }
-        }
-
-        function reiniciarVistaTurno() {
-            document.getElementById('controles-alumno').classList.remove('hidden');
-            document.getElementById('espera-alumno').classList.add('hidden');
-        }
-
-        function mostrarPantallaSancion() {
-            document.body.innerHTML = `
-                <div class="flex flex-col items-center justify-center w-full h-screen bg-black text-red-600 p-8 text-center">
-                    <h1 class="text-8xl mb-6 animate-pulse">⛔</h1>
-                    <h2 class="text-3xl font-black uppercase tracking-widest leading-tight">Credencial Revocada</h2>
-                    <p class="text-slate-500 mt-6 font-mono border border-slate-800 p-4 rounded bg-slate-900">Has sido retirado de la operación por la Autoridad Aeronáutica.</p>
-                </div>
-            `;
-            localStorage.clear();
-        }
-    </script>
+window.onload=load;
+</script>
 </body>
 </html>
