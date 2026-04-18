@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAC FLOTA v16 - HANGAR</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        body { transition: background-color 0.3s ease; }
+        /* Ocultar barra de desplazamiento para un look más de app */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-start justify-center p-4 pt-10">
+
+    <div id="app" class="w-full max-w-2xl bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl border border-slate-700">
+        
+        <div id="view-login" class="max-w-md mx-auto">
+            <h1 class="text-3xl font-black mb-2 text-center text-blue-400 tracking-widest">FAC FLOTA v16</h1>
+            <p class="text-center text-slate-400 mb-8 font-mono">PROTOCOLO DE HANGAR</p>
+            
+            <div class="space-y-4">
+                <input id="input-room" type="text" placeholder="ID del Hangar (ej: ALFA)" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500 uppercase">
+                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
+                
+                <div class="flex gap-4 pt-4">
+                    <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition shadow-lg">Ingresar</button>
+                    <button onclick="conectar('instructor')" class="flex-1 bg-slate-600 hover:bg-slate-500 p-3 rounded font-bold transition text-sm">Instructor</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-instructor" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-xl font-bold">Hangar: <span id="display-room-i" class="text-blue-400 uppercase"></span></h2>
+                    <button onclick="cerrarHangarDefinitivo()" class="text-xs bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-3 py-1 rounded border border-red-900/50 transition mt-2 font-bold uppercase tracking-tighter shadow-sm">
+                        💥 CLAUSURAR HANGAR Y EXPULSAR
+                    </button>
+                </div>
+                <button onclick="iniciarJuego()" id="btn-iniciar-juego" class="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 px-6 py-3 rounded font-bold shadow-lg transition uppercase">
+                    🔒 INICIAR MISIÓN
+                </button>
+            </div>
+
+            <div id="panel-avion" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-700 mb-6 shadow-inner">
+                <div class="flex items-center gap-4 mb-2">
+                    <span class="text-2xl font-bold">✈️ Integridad</span>
+                    <span id="texto-progreso" class="text-3xl font-black text-blue-400">50%</span>
+                    <div id="cuadro-variacion" class="hidden px-2 py-1 rounded text-sm font-bold animate-bounce text-white shadow-md">
+                        <span id="valor-variacion"></span>
+                    </div>
+                </div>
+                
+                <div class="w-full bg-slate-800 rounded-full h-6 border border-slate-600 overflow-hidden mb-6">
+                    <div id="barra-progreso" class="bg-blue-500 h-6 rounded-full transition-all duration-500" style="width: 50%"></div>
+                </div>
+                
+                <div class="flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="text-xs text-slate-400 uppercase font-bold tracking-wider">Factor Velocidad</label>
+                        <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1 font-mono text-lg text-center">
+                    </div>
+                    <button onclick="computarRonda()" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold shadow-lg h-12 flex items-center justify-center">
+                        ⚙️ COMPUTAR
+                    </button>
+                    <button onclick="nuevaRonda()" class="bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center" title="Liberar celulares para nueva ronda">
+                        🔄
+                    </button>
+                </div>
+            </div>
+
+            <h3 class="text-slate-400 mb-3 uppercase text-xs font-bold tracking-widest">Técnicos & Telemetría</h3>
+            <div id="fichas-ronda" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"></div>
+        </div>
+
+        <div id="view-alumno" class="hidden w-full max-w-sm mx-auto flex flex-col items-center">
+            <div class="w-full text-center mb-6 border-b border-slate-700 pb-4">
+                <h2 class="text-slate-400 font-mono text-sm">Operador: <span id="display-name-a" class="text-white font-bold text-xl uppercase tracking-wider"></span></h2>
+                <button onclick="cerrarSesionAlumno()" class="text-xs text-red-400 hover:text-red-300 underline mt-2">Desconectar y Salir</button>
+            </div>
+            
+            <div id="seccion-rol" class="hidden w-full mb-8">
+                <button 
+                    onmousedown="revelarRol(true)" onmouseup="revelarRol(false)" onmouseleave="revelarRol(false)"
+                    ontouchstart="revelarRol(true)" ontouchend="revelarRol(false)"
+                    class="w-full bg-slate-900 p-6 rounded-xl border-2 border-dashed border-slate-600 select-none shadow-inner active:border-slate-400 transition-colors">
+                    <span id="rol-placeholder" class="text-sm text-slate-400 uppercase font-bold tracking-widest">Manten presionado para ver tu ROL</span>
+                    <div id="rol-revelado" class="hidden font-black text-3xl uppercase tracking-widest"></div>
+                </button>
+            </div>
+
+            <div id="controles-alumno" class="w-full space-y-6">
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
+                    <label class="flex justify-between items-center text-sm mb-4 text-slate-300 font-bold uppercase tracking-wider">
+                        Compromiso <span id="val-comp" class="text-blue-400 text-2xl bg-slate-800 px-3 py-1 rounded">5</span>
+                    </label>
+                    <input type="range" id="input-compromiso" min="0" max="10" value="5" 
+                           class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                           oninput="document.getElementById('val-comp').innerText = this.value">
+                </div>
+
+                <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-6 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-2xl font-black uppercase transition-all flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
+                    🎲 Ejecutar Tarea
+                </button>
+            </div>
+
+            <div id="espera-alumno" class="hidden w-full text-center mt-2 p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">
+                <p class="text-blue-400 font-bold text-xl mb-2 flex items-center justify-center gap-2">
+                    <span class="animate-pulse">📡</span> Datos Transmitidos
+                </p>
+                <p class="text-slate-500 text-sm font-mono mt-4">Esperando instrucciones...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let canal = null;
+        let miNombre = "";
+        let miSala = "";
+        
+        // Variables Instructor
+        let progresoAvion = 50;
+        let rondaActual = [];
+        let listaInfiltrados = [];
+        let listaLeales = [];
+        let sancionados = 0;
+
+        // Variables Alumno
+        let miRol = "Técnico"; 
+        let esFaseJuegoLocal = false; 
+
+        // ==========================================
+        // 1. AUTO-RECONEXIÓN Y GESTIÓN DE SESIÓN
+        // ==========================================
+        window.onload = () => {
+            const salaGuardada = localStorage.getItem('mi_sala');
+            const nombreGuardado = localStorage.getItem('mi_nombre');
+            const rolGuardado = localStorage.getItem('mi_rol');
+
+            if (salaGuardada && nombreGuardado && rolGuardado) {
+                document.getElementById('input-room').value = salaGuardada;
+                document.getElementById('input-name').value = nombreGuardado;
+                conectar(rolGuardado, true);
+            }
+        };
+
+        function guardarSesionLocal(rol, sala, nombre) {
+            localStorage.setItem('mi_rol', rol);
+            localStorage.setItem('mi_sala', sala);
+            localStorage.setItem('mi_nombre', nombre);
+        }
+
+        async function cerrarSesionAlumno() {
+            if(canal) await canal.unsubscribe();
+            localStorage.clear();
+            window.location.reload();
+        }
+
+        async function cerrarHangarDefinitivo() {
+            if (!confirm("⚠️ ¿Confirmas la clausura del hangar? Todos los datos de los técnicos serán eliminados.")) return;
+
+            // Borrar jugadores de la base de datos
+            await _supabase.from('jugadores').delete().eq('sala_id', miSala);
+            // Desactivar sala
+            await _supabase.from('salas').update({ activa: false, fase: 'lobby' }).eq('id_sala', miSala);
+
+            // Emitir orden de retirada
+            canal.send({
+                type: 'broadcast',
+                event: 'hangar_clausurado',
+                payload: { motivo: 'Misión finalizada por el instructor' }
+            });
+
+            if(canal) await canal.unsubscribe();
+            localStorage.clear();
+            window.location.reload();
+        }
+
+        // ==========================================
+        // 2. SISTEMA DE ACCESO Y CONEXIÓN REALTIME
+        // ==========================================
+        async function conectar(rol, esReconexion = false) {
+            miSala = document.getElementById('input-room').value.trim().toUpperCase();
+            miNombre = document.getElementById('input-name').value.trim();
+
+            if (!miSala || (!miNombre && rol === 'alumno')) return;
+
+            const { data: sala, error: errSala } = await _supabase.from('salas').select('fase, activa').eq('id_sala', miSala).single();
+
+            if (rol === 'instructor') {
+                if (!esReconexion) await _supabase.from('salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
+                guardarSesionLocal('instructor', miSala, 'Instructor');
+                iniciarConexionRealtime('instructor');
+            } else {
+                if (errSala || !sala || !sala.activa) return alert("El hangar no existe o se encuentra inactivo.");
+                if (sala.fase === 'juego' && !esReconexion) return alert("⛔ Operación en curso. El acceso está bloqueado.");
+
+                esFaseJuegoLocal = (sala.fase === 'juego');
+
+                const { error: errJugador } = await _supabase.from('jugadores').insert({ sala_id: miSala, nombre: miNombre });
+                if (errJugador && errJugador.code === '23505' && !esReconexion) {
+                    return alert("🚫 Identidad en uso. Por favor utiliza otra credencial.");
+                }
+
+                const { data: userData } = await _supabase.from('jugadores').select('deshabilitado').eq('nombre', miNombre).eq('sala_id', miSala).single();
+                if (userData && userData.deshabilitado) return mostrarPantallaSancion();
+
+                guardarSesionLocal('alumno', miSala, miNombre);
+                iniciarConexionRealtime('alumno');
+            }
+        }
+
+        function iniciarConexionRealtime(rol) {
+            document.getElementById('view-login').classList.add('hidden');
+            canal = _supabase.channel(`sala_${miSala}`, { config: { presence: { key: miNombre } } });
+
+            if (rol === 'instructor') {
+                document.getElementById('view-instructor').classList.remove('hidden');
+                document.getElementById('display-room-i').innerText = miSala;
+                
+                canal.on('presence', { event: 'sync' }, () => actualizarFichasLobby(canal.presenceState()));
+                canal.on('broadcast', { event: 'nuevo_resultado' }, (payload) => procesarJugada(payload.payload));
+                
+                window.addEventListener('beforeunload', async () => {
+                    await _supabase.from('salas').update({ activa: false }).eq('id_sala', miSala);
+                });
+
+            } else {
+                document.getElementById('view-alumno').classList.remove('hidden');
+                document.getElementById('display-name-a').innerText = miNombre;
+                
+                canal.on('broadcast', { event: 'asignar_roles' }, (payload) => {
+                    esFaseJuegoLocal = true;
+                    procesarRol(payload.payload.infiltrados);
+                });
+                canal.on('broadcast', { event: 'reset_ronda' }, () => reiniciarVistaTurno());
+                
+                canal.on('broadcast', { event: 'usuario_sancionado' }, (payload) => {
+                    if (miNombre === payload.payload.nombre) mostrarPantallaSancion();
+                });
+
+                canal.on('broadcast', { event: 'hangar_clausurado' }, () => {
+                    alert("🚀 El instructor ha cerrado el hangar. Regresando a la base...");
+                    localStorage.clear();
+                    window.location.reload();
+                });
+
+                if (esFaseJuegoLocal) {
+                    const rolGuardado = localStorage.getItem('rol_asignado');
+                    if (rolGuardado) {
+                        miRol = rolGuardado;
+                        document.getElementById('seccion-rol').classList.remove('hidden');
+                    }
+                }
+            }
+
+            canal.subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') await canal.track({ nombre: miNombre });
+            });
+        }
+
+        // ==========================================
+        // 3. LÓGICA DEL INSTRUCTOR
+        // ==========================================
+        function actualizarFichasLobby(estado) {
+            const contenedor = document.getElementById('fichas-ronda');
+            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n !== "Instructor");
+            
+            nombresConectados.forEach(nombre => {
+                let ficha = document.getElementById(`ficha-${nombre}`);
+                
+                if (!ficha) {
+                    ficha = document.createElement('div');
+                    ficha.id = `ficha-${nombre}`;
+                    contenedor.appendChild(ficha);
+                }
+
+                if (!rondaActual.find(j => j.nombre === nombre)) {
+                    ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-slate-500 shadow-md flex justify-between items-center transition-all";
+                    ficha.innerHTML = `
+                        <div>
+                            <span class="font-black uppercase text-sm tracking-tighter text-slate-300 block">${nombre}</span>
+                            <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 rounded uppercase tracking-widest font-bold">Conectado</span>
+                        </div>
+                        <button onclick="sancionar('${nombre}')" class="text-[10px] bg-red-900/30 hover:bg-red-600 text-red-400 px-2 py-1 rounded transition uppercase font-bold tracking-wider">Sancionar</button>
+                    `;
+                }
+            });
+        }
+
+        async function iniciarJuego() {
+            const state = canal.presenceState();
+            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n !== "Instructor");
+            
+            const totalJugadores = nombres.length;
+            if (totalJugadores < 4) return alert("Quórum insuficiente. Se requieren mínimo 4 técnicos.");
+
+            const numInfiltrados = Math.max(1, Math.floor(totalJugadores * 0.33));
+            const barajados = nombres.sort(() => 0.5 - Math.random());
+            listaInfiltrados = barajados.slice(0, numInfiltrados);
+            listaLeales = barajados.slice(numInfiltrados);
+
+            await _supabase.from('salas').update({ fase: 'juego' }).eq('id_sala', miSala);
+
+            document.getElementById('btn-iniciar-juego').classList.add('hidden');
+            document.getElementById('panel-avion').classList.remove('hidden');
+
+            canal.send({
+                type: 'broadcast',
+                event: 'asignar_roles',
+                payload: { infiltrados: listaInfiltrados }
+            });
+            
+            alert("MISIÓN INICIADA. Roles asignados de forma clasificada.");
+        }
+
+        function procesarJugada(data) {
+            if (rondaActual.find(j => j.nombre === data.nombre)) return;
+            rondaActual.push(data);
+
+            const ficha = document.getElementById(`ficha-${data.nombre}`);
+            if (!ficha) return;
+
+            ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-blue-500 shadow-md relative transition-all";
+            ficha.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <span class="font-black uppercase tracking-wider text-white text-sm">${data.nombre}</span>
+                    <button onclick="sancionar('${data.nombre}')" class="text-[10px] bg-red-900/50 hover:bg-red-600 text-red-200 px-2 py-1 rounded transition uppercase font-bold tracking-wider">Sancionar</button>
+                </div>
+                <div class="flex gap-2 text-xs bg-slate-900 p-2 rounded items-center">
+                    <div class="flex-1 text-center text-slate-400">PERICIA<br><b class="text-yellow-400 text-lg">${data.valor_dado}</b></div>
+                    <div class="w-px h-8 bg-slate-700"></div>
+                    <div class="flex-1 text-center text-slate-400">COMPROMISO<br><b class="text-blue-400 text-lg">${data.valor_compromiso}</b></div>
+                </div>
+            `;
+        }
+
+        function computarRonda() {
+            const quorum = rondaActual.length;
+            if (quorum < 2) return alert("Operación denegada. Se requieren al menos 2 técnicos activos enviando telemetría.");
+
+            let puntosLeales = 0;
+            let puntosInfiltrados = 0;
+
+            rondaActual.forEach(j => {
+                const aporte = j.valor_dado * j.valor_compromiso;
+                if (listaInfiltrados.includes(j.nombre)) {
+                    puntosInfiltrados += aporte;
+                } else {
+                    puntosLeales += aporte;
+                }
+            });
+
+            const mult = parseFloat(document.getElementById('input-multiplicador').value) || 1;
+            
+            let delta = ((puntosLeales - (puntosInfiltrados * quorum)) / 50) * mult;
+
+            if (delta > 20) delta = 20;
+            if (delta < -20) delta = -20;
+
+            mostrarVariacion(delta);
+            actualizarProgreso(progresoAvion + delta);
+        }
+
+        function actualizarProgreso(nuevoValor) {
+            progresoAvion = Math.max(0, Math.min(100, nuevoValor));
+            document.getElementById('barra-progreso').style.width = `${progresoAvion}%`;
+            document.getElementById('texto-progreso').innerText = `${Math.round(progresoAvion)}%`;
+
+            if (progresoAvion >= 100) alert("🏆 VICTORIA: Certificación completada al 100%. El hangar ha triunfado.");
+            if (progresoAvion <= 0) alert("💥 DERROTA: La integridad de los sistemas llegó a 0%.");
+            
+            rondaActual = [];
+            actualizarFichasLobby(canal.presenceState());
+        }
+
+        function nuevaRonda() {
+            canal.send({ type: 'broadcast', event: 'reset_ronda' });
+        }
+
+        async function sancionar(nombre) {
+            if (!confirm(`Sancionar a ${nombre} lo inhabilitará permanentemente. ¿Confirmar orden?`)) return;
+
+            await _supabase.from('jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
+            
+            sancionados++;
+            const elemento = document.getElementById(`ficha-${nombre}`);
+            if (elemento) elemento.remove();
+            
+            rondaActual = rondaActual.filter(j => j.nombre !== nombre); 
+            canal.send({ type: 'broadcast', event: 'usuario_sancionado', payload: { nombre } });
+
+            const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
+            let infActivos = listaInfiltrados.length;
+            let leaActivos = listaLeales.length;
+
+            if(esInfiltradoSancionado) {
+                listaInfiltrados = listaInfiltrados.filter(n => n !== nombre);
+                infActivos--;
+            } else {
+                listaLeales = listaLeales.filter(n => n !== nombre);
+                leaActivos--;
+            }
+
+            if (infActivos === 0) {
+                alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
+            } else if (infActivos >= leaActivos) {
+                actualizarProgreso(0);
+                alert("🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
+            }
+        }
+
+        function mostrarVariacion(valor) {
+            const cuadro = document.getElementById('cuadro-variacion');
+            const texto = document.getElementById('valor-variacion');
+            cuadro.classList.remove('hidden', 'bg-red-600', 'bg-green-600');
+            
+            if (valor >= 0) {
+                cuadro.classList.add('bg-green-600');
+                texto.innerText = `+${valor.toFixed(1)}%`;
+            } else {
+                cuadro.classList.add('bg-red-600');
+                texto.innerText = `${valor.toFixed(1)}%`;
+            }
+            setTimeout(() => cuadro.classList.add('hidden'), 4000);
+        }
+
+        // ==========================================
+        // 4. LÓGICA DEL ALUMNO (TÉCNICO)
+        // ==========================================
+        function procesarRol(infiltrados) {
+            miRol = infiltrados.includes(miNombre) ? "Infiltrado" : "Técnico";
+            localStorage.setItem('rol_asignado', miRol);
+            document.getElementById('seccion-rol').classList.remove('hidden');
+        }
+
+        function revelarRol(mostrar) {
+            const pl = document.getElementById('rol-placeholder');
+            const rev = document.getElementById('rol-revelado');
+            const body = document.body;
+
+            if (mostrar) {
+                pl.classList.add('hidden');
+                rev.classList.remove('hidden');
+                rev.innerText = miRol;
+                
+                body.classList.remove('bg-slate-900');
+                if (miRol === "Infiltrado") {
+                    rev.style.color = "#fca5a5";
+                    body.classList.add('bg-red-950');
+                } else {
+                    rev.style.color = "#86efac";
+                    body.classList.add('bg-green-950');
+                }
+            } else {
+                pl.classList.remove('hidden');
+                rev.classList.add('hidden');
+                body.classList.remove('bg-red-950', 'bg-green-950');
+                body.classList.add('bg-slate-900');
+            }
+        }
+
+        async function lanzarTurno() {
+            const btn = document.getElementById('btn-lanzar');
+            btn.classList.add('scale-95', 'bg-indigo-800');
+            setTimeout(() => btn.classList.remove('scale-95', 'bg-indigo-800'), 150);
+
+            const compromiso = document.getElementById('input-compromiso').value;
+            const dado = Math.floor(Math.random() * 20) + 1;
+
+            if (esFaseJuegoLocal) {
+                document.getElementById('controles-alumno').classList.add('hidden');
+                document.getElementById('espera-alumno').classList.remove('hidden');
+
+                canal.send({
+                    type: 'broadcast',
+                    event: 'nuevo_resultado',
+                    payload: { nombre: miNombre, valor_dado: dado, valor_compromiso: compromiso }
+                });
+            } else {
+                console.log(`[Modo Entrenamiento] Dado: ${dado} | Compromiso: ${compromiso}`);
+            }
+        }
+
+        function reiniciarVistaTurno() {
+            document.getElementById('controles-alumno').classList.remove('hidden');
+            document.getElementById('espera-alumno').classList.add('hidden');
+        }
+
+        function mostrarPantallaSancion() {
+            document.body.innerHTML = `
+                <div class="flex flex-col items-center justify-center w-full h-screen bg-black text-red-600 p-8 text-center">
+                    <h1 class="text-8xl mb-6 animate-pulse">⛔</h1>
+                    <h2 class="text-3xl font-black uppercase tracking-widest leading-tight">Credencial Revocada</h2>
+                    <p class="text-slate-500 mt-6 font-mono border border-slate-800 p-4 rounded bg-slate-900">Has sido retirado de la operación por la Autoridad Aeronáutica.</p>
+                </div>
+            `;
+            localStorage.clear();
+        }
+    </script>
+</body>
+</html>
