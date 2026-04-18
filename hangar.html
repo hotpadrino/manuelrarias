@@ -25,25 +25,25 @@
                 <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
                 
                 <div class="flex gap-4 pt-4">
-                    <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition">Ingresar</button>
+                    <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition shadow-lg">Ingresar</button>
                     <button onclick="conectar('instructor')" class="flex-1 bg-slate-600 hover:bg-slate-500 p-3 rounded font-bold transition text-sm">Instructor</button>
                 </div>
             </div>
         </div>
 
         <div id="view-instructor" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h2 class="text-xl font-bold">Hangar: <span id="display-room-i" class="text-blue-400"></span></h2>
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-700 pb-4">
+                <h2 class="text-xl font-bold">Hangar: <span id="display-room-i" class="text-blue-400 uppercase"></span></h2>
                 <button onclick="iniciarJuego()" id="btn-iniciar-juego" class="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 px-6 py-2 rounded font-bold shadow-lg transition">
-                    🔒 INICIAR JUEGO
+                    🔒 INICIAR MISIÓN
                 </button>
             </div>
 
-            <div id="panel-avion" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-700 mb-6">
+            <div id="panel-avion" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-700 mb-6 shadow-inner">
                 <div class="flex items-center gap-4 mb-2">
                     <span class="text-2xl font-bold">✈️ Integridad</span>
                     <span id="texto-progreso" class="text-3xl font-black text-blue-400">50%</span>
-                    <div id="cuadro-variacion" class="hidden px-2 py-1 rounded text-sm font-bold animate-bounce text-white">
+                    <div id="cuadro-variacion" class="hidden px-2 py-1 rounded text-sm font-bold animate-bounce text-white shadow-md">
                         <span id="valor-variacion"></span>
                     </div>
                 </div>
@@ -54,60 +54,62 @@
                 
                 <div class="flex gap-4 items-end">
                     <div class="flex-1">
-                        <label class="text-xs text-slate-400 uppercase font-bold">Factor Velocidad</label>
-                        <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1">
+                        <label class="text-xs text-slate-400 uppercase font-bold tracking-wider">Factor Velocidad</label>
+                        <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1 font-mono text-lg">
                     </div>
-                    <button onclick="computarRonda()" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold">
+                    <button onclick="computarRonda()" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold shadow-lg h-12 flex items-center justify-center">
                         ⚙️ COMPUTAR
                     </button>
-                    <button onclick="nuevaRonda()" class="bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold" title="Liberar celulares">
+                    <button onclick="nuevaRonda()" class="bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center" title="Liberar celulares para nueva ronda">
                         🔄
                     </button>
                 </div>
             </div>
 
-            <h3 class="text-slate-400 mb-2 uppercase text-xs font-bold tracking-wider border-b border-slate-700 pb-2">Datos de Telemetría (Ronda)</h3>
+            <h3 class="text-slate-400 mb-3 uppercase text-xs font-bold tracking-widest">Técnicos & Telemetría</h3>
             <div id="fichas-ronda" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"></div>
         </div>
 
-        <div id="view-alumno" class="hidden max-w-sm mx-auto flex flex-col items-center">
-            <h2 class="mb-4 text-slate-400">Técnico: <span id="display-name-a" class="text-white font-bold text-xl"></span></h2>
+        <div id="view-alumno" class="hidden w-full max-w-sm mx-auto flex flex-col items-center">
+            <h2 class="mb-6 text-slate-400 font-mono text-sm">Operador: <span id="display-name-a" class="text-white font-bold text-xl uppercase tracking-wider"></span></h2>
             
             <div id="seccion-rol" class="hidden w-full mb-8">
                 <button 
                     onmousedown="revelarRol(true)" onmouseup="revelarRol(false)" onmouseleave="revelarRol(false)"
                     ontouchstart="revelarRol(true)" ontouchend="revelarRol(false)"
-                    class="w-full bg-slate-900 p-6 rounded-xl border-2 border-dashed border-slate-600 select-none shadow-inner">
-                    <span id="rol-placeholder" class="text-sm text-slate-400">Manten presionado para ver tu ROL</span>
-                    <div id="rol-revelado" class="hidden font-black text-2xl uppercase tracking-widest"></div>
+                    class="w-full bg-slate-900 p-6 rounded-xl border-2 border-dashed border-slate-600 select-none shadow-inner active:border-slate-400 transition-colors">
+                    <span id="rol-placeholder" class="text-sm text-slate-400 uppercase font-bold tracking-widest">Manten presionado para ver tu ROL</span>
+                    <div id="rol-revelado" class="hidden font-black text-3xl uppercase tracking-widest"></div>
                 </button>
             </div>
 
             <div id="controles-alumno" class="w-full space-y-6">
                 <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-md">
-                    <label class="flex justify-between text-sm mb-4 text-slate-300 font-bold uppercase">
-                        Compromiso <span id="val-comp" class="text-blue-400 text-xl">5</span>
+                    <label class="flex justify-between items-center text-sm mb-4 text-slate-300 font-bold uppercase tracking-wider">
+                        Compromiso <span id="val-comp" class="text-blue-400 text-2xl bg-slate-800 px-3 py-1 rounded">5</span>
                     </label>
                     <input type="range" id="input-compromiso" min="0" max="10" value="5" 
-                           class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                           class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
                            oninput="document.getElementById('val-comp').innerText = this.value">
                 </div>
 
-                <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-6 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-2xl font-black uppercase transition-all active:scale-95 flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0">
+                <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-6 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-2xl font-black uppercase transition-all flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
                     🎲 Ejecutar Tarea
                 </button>
             </div>
 
-            <div id="espera-alumno" class="hidden w-full text-center mt-10 animate-pulse">
-                <p class="text-blue-400 font-bold text-xl mb-2">Datos Transmitidos</p>
-                <p class="text-slate-500 text-sm">Esperando autorización de torre de control...</p>
+            <div id="espera-alumno" class="hidden w-full text-center mt-8 p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">
+                <p class="text-blue-400 font-bold text-xl mb-2 flex items-center justify-center gap-2">
+                    <span class="animate-pulse">📡</span> Datos Transmitidos
+                </p>
+                <p class="text-slate-500 text-sm">Esperando autorización de torre de control para el siguiente ciclo...</p>
             </div>
         </div>
 
     </div>
 
     <script>
-        // CONFIGURACIÓN SUPABASE
+        // CONFIGURACIÓN SUPABASE (CREDENDIALES PÚBLICAS)
         const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -126,8 +128,9 @@
 
         // Variables Alumno
         let miRol = "Técnico"; 
+        let esFaseJuegoLocal = false; // Bandera para evitar llamadas continuas a la base de datos
 
-        // AUTO-RECONEXIÓN
+        // 1. AUTO-RECONEXIÓN
         window.onload = () => {
             const salaGuardada = localStorage.getItem('mi_sala');
             const nombreGuardado = localStorage.getItem('mi_nombre');
@@ -140,7 +143,7 @@
             }
         };
 
-        // --- SISTEMA DE ACCESO ---
+        // 2. SISTEMA DE ACCESO
         async function conectar(rol, esReconexion = false) {
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
             miNombre = document.getElementById('input-name').value.trim();
@@ -154,16 +157,18 @@
                 guardarSesionLocal('instructor', miSala, 'Instructor');
                 iniciarConexionRealtime('instructor');
             } else {
-                if (errSala || !sala || !sala.activa) return alert("El hangar no existe o está cerrado.");
-                if (sala.fase === 'juego' && !esReconexion) return alert("⛔ Operación en curso. No se admiten nuevos técnicos.");
+                if (errSala || !sala || !sala.activa) return alert("El hangar no existe o se encuentra inactivo.");
+                if (sala.fase === 'juego' && !esReconexion) return alert("⛔ Operación en curso. El acceso está bloqueado.");
 
-                // Registro
+                esFaseJuegoLocal = (sala.fase === 'juego');
+
+                // Registro o validación de jugador
                 const { error: errJugador } = await _supabase.from('jugadores').insert({ sala_id: miSala, nombre: miNombre });
                 if (errJugador && errJugador.code === '23505' && !esReconexion) {
-                    return alert("🚫 Nombre en uso en este hangar.");
+                    return alert("🚫 Identidad en uso. Por favor utiliza otra credencial.");
                 }
 
-                // Verificar si está deshabilitado
+                // Verificar inhabilitación
                 const { data: userData } = await _supabase.from('jugadores').select('deshabilitado').eq('nombre', miNombre).eq('sala_id', miSala).single();
                 if (userData && userData.deshabilitado) return mostrarPantallaSancion();
 
@@ -178,9 +183,11 @@
             localStorage.setItem('mi_nombre', nombre);
         }
 
+        // 3. CONEXIÓN EN TIEMPO REAL
         function iniciarConexionRealtime(rol) {
             document.getElementById('view-login').classList.add('hidden');
             
+            // Creamos el canal y registramos la llave de presencia
             canal = _supabase.channel(`sala_${miSala}`, { config: { presence: { key: miNombre } } });
 
             if (rol === 'instructor') {
@@ -188,8 +195,10 @@
                 document.getElementById('display-room-i').innerText = miSala;
                 
                 // Escuchas del Instructor
+                canal.on('presence', { event: 'sync' }, () => actualizarFichasLobby(canal.presenceState()));
                 canal.on('broadcast', { event: 'nuevo_resultado' }, (payload) => procesarJugada(payload.payload));
                 
+                // Cierre de sala al salir
                 window.addEventListener('beforeunload', async () => {
                     await _supabase.from('salas').update({ activa: false }).eq('id_sala', miSala);
                 });
@@ -199,76 +208,116 @@
                 document.getElementById('display-name-a').innerText = miNombre;
                 
                 // Escuchas del Alumno
-                canal.on('broadcast', { event: 'asignar_roles' }, (payload) => procesarRol(payload.payload.infiltrados));
+                canal.on('broadcast', { event: 'asignar_roles' }, (payload) => {
+                    esFaseJuegoLocal = true;
+                    procesarRol(payload.payload.infiltrados);
+                });
                 canal.on('broadcast', { event: 'reset_ronda' }, () => reiniciarVistaTurno());
                 canal.on('broadcast', { event: 'usuario_sancionado' }, (payload) => {
                     if (miNombre === payload.payload.nombre) mostrarPantallaSancion();
                 });
 
-                // Recuperar rol si recarga
-                const rolGuardado = localStorage.getItem('rol_asignado');
-                if (rolGuardado) {
-                    miRol = rolGuardado;
-                    document.getElementById('seccion-rol').classList.remove('hidden');
+                // Restauración de estado visual si recarga en medio del juego
+                if (esFaseJuegoLocal) {
+                    const rolGuardado = localStorage.getItem('rol_asignado');
+                    if (rolGuardado) {
+                        miRol = rolGuardado;
+                        document.getElementById('seccion-rol').classList.remove('hidden');
+                    }
                 }
             }
 
+            // Iniciar conexión
             canal.subscribe(async (status) => {
                 if (status === 'SUBSCRIBED') await canal.track({ nombre: miNombre });
             });
         }
 
-        // --- LÓGICA DEL INSTRUCTOR ---
+        // ==========================================
+        // LÓGICA DEL INSTRUCTOR
+        // ==========================================
+
+        function actualizarFichasLobby(estado) {
+            // Solo dibujamos los que no han enviado datos en la ronda actual para no sobreescribir la telemetría
+            const contenedor = document.getElementById('fichas-ronda');
+            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n !== "Instructor");
+            
+            nombresConectados.forEach(nombre => {
+                let ficha = document.getElementById(`ficha-${nombre}`);
+                
+                if (!ficha) {
+                    ficha = document.createElement('div');
+                    ficha.id = `ficha-${nombre}`;
+                    contenedor.appendChild(ficha);
+                }
+
+                // Si este jugador ya está en rondaActual, no le pisamos su interfaz visual
+                if (!rondaActual.find(j => j.nombre === nombre)) {
+                    ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-slate-500 shadow-md flex justify-between items-center transition-all";
+                    ficha.innerHTML = `
+                        <div>
+                            <span class="font-black uppercase text-sm tracking-tighter text-slate-300 block">${nombre}</span>
+                            <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 rounded uppercase tracking-widest font-bold">Conectado</span>
+                        </div>
+                        <button onclick="sancionar('${nombre}')" class="text-[10px] bg-red-900/30 hover:bg-red-600 text-red-400 px-2 py-1 rounded transition uppercase">Sancionar</button>
+                    `;
+                }
+            });
+        }
+
         async function iniciarJuego() {
             const state = canal.presenceState();
             const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n !== "Instructor");
             
             totalJugadores = nombres.length;
-            if (totalJugadores < 4) return alert("Mínimo 4 técnicos en el hangar.");
+            if (totalJugadores < 4) return alert("Quórum insuficiente. Se requieren mínimo 4 técnicos.");
 
-            // Regla: Infiltrados < 34%, mínimo 1
+            // Regla: Infiltrados estrictamente menor al 34% (min 1)
             const numInfiltrados = Math.max(1, Math.floor(totalJugadores * 0.33));
             const barajados = nombres.sort(() => 0.5 - Math.random());
             listaInfiltrados = barajados.slice(0, numInfiltrados);
             listaLeales = barajados.slice(numInfiltrados);
 
+            // Cerrar la sala en la DB
             await _supabase.from('salas').update({ fase: 'juego' }).eq('id_sala', miSala);
 
             document.getElementById('btn-iniciar-juego').classList.add('hidden');
             document.getElementById('panel-avion').classList.remove('hidden');
 
+            // Emitir roles
             canal.send({
                 type: 'broadcast',
                 event: 'asignar_roles',
                 payload: { infiltrados: listaInfiltrados }
             });
-            alert("Operación iniciada. Roles distribuidos.");
+            
+            alert("MISIÓN INICIADA. Roles asignados de forma clasificada.");
         }
 
         function procesarJugada(data) {
             if (rondaActual.find(j => j.nombre === data.nombre)) return;
             rondaActual.push(data);
 
-            const contenedor = document.getElementById('fichas-ronda');
-            const ficha = document.createElement('div');
-            ficha.id = `ficha-${data.nombre}`;
-            ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-indigo-500 animate-fade-in relative shadow-md";
+            const ficha = document.getElementById(`ficha-${data.nombre}`);
+            if (!ficha) return;
+
+            ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-blue-500 shadow-md relative transition-all";
             ficha.innerHTML = `
-                <div class="flex justify-between items-start mb-2">
-                    <span class="font-black uppercase tracking-wider text-white">${data.nombre}</span>
-                    <button onclick="sancionar('${data.nombre}')" class="text-xs bg-red-900/50 hover:bg-red-600 text-red-200 px-2 py-1 rounded transition">Sancionar</button>
+                <div class="flex justify-between items-start mb-3">
+                    <span class="font-black uppercase tracking-wider text-white text-sm">${data.nombre}</span>
+                    <button onclick="sancionar('${data.nombre}')" class="text-[10px] bg-red-900/50 hover:bg-red-600 text-red-200 px-2 py-1 rounded transition uppercase">Sancionar</button>
                 </div>
-                <div class="flex gap-4 text-sm bg-slate-900 p-2 rounded">
-                    <div class="flex-1">Pericia: <b class="text-yellow-400 text-lg">${data.valor_dado}</b></div>
-                    <div class="flex-1 border-l border-slate-700 pl-4">Compromiso: <b class="text-blue-400 text-lg">${data.valor_compromiso}</b></div>
+                <div class="flex gap-2 text-xs bg-slate-900 p-2 rounded items-center">
+                    <div class="flex-1 text-center">Pericia<br><b class="text-yellow-400 text-lg">${data.valor_dado}</b></div>
+                    <div class="w-px h-8 bg-slate-700"></div>
+                    <div class="flex-1 text-center">Compromiso<br><b class="text-blue-400 text-lg">${data.valor_compromiso}</b></div>
                 </div>
             `;
-            contenedor.appendChild(ficha);
         }
 
         function computarRonda() {
             const quorum = rondaActual.length;
-            if (quorum < 2) return alert("Quórum insuficiente: Mínimo 2 técnicos activos requeridos.");
+            if (quorum < 2) return alert("Operación denegada. Se requieren al menos 2 técnicos activos enviando telemetría.");
 
             let puntosLeales = 0;
             let puntosInfiltrados = 0;
@@ -284,10 +333,10 @@
 
             const mult = parseFloat(document.getElementById('input-multiplicador').value) || 1;
             
-            // Fórmula central
+            // Fórmula: Impacto = ((Leales - (Infiltrados * Quorum)) / 50) * Mult
             let delta = ((puntosLeales - (puntosInfiltrados * quorum)) / 50) * mult;
 
-            // Limitar daño total por ronda (+/- 20%)
+            // Restricción de impacto máximo +/- 20%
             if (delta > 20) delta = 20;
             if (delta < -20) delta = -20;
 
@@ -300,12 +349,12 @@
             document.getElementById('barra-progreso').style.width = `${progresoAvion}%`;
             document.getElementById('texto-progreso').innerText = `${Math.round(progresoAvion)}%`;
 
-            if (progresoAvion >= 100) alert("🏆 VICTORIA: Avión certificado al 100%.");
-            if (progresoAvion <= 0) alert("💥 DERROTA: La integridad del avión llegó a 0%.");
+            if (progresoAvion >= 100) alert("🏆 VICTORIA: Certificación completada al 100%. El hangar ha triunfado.");
+            if (progresoAvion <= 0) alert("💥 DERROTA: La integridad de los sistemas llegó a 0%.");
             
-            // Limpiar área
             rondaActual = [];
-            document.getElementById('fichas-ronda').innerHTML = "";
+            // Refrescar estado visual a conectado
+            actualizarFichasLobby(canal.presenceState());
         }
 
         function nuevaRonda() {
@@ -313,31 +362,40 @@
         }
 
         async function sancionar(nombre) {
-            if (!confirm(`Sancionar a ${nombre} lo expulsará del hangar. ¿Proceder?`)) return;
+            if (!confirm(`Sancionar a ${nombre} lo inhabilitará permanentemente. ¿Confirmar orden?`)) return;
 
+            // Actualización persistente
             await _supabase.from('jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
             
             sancionados++;
             const elemento = document.getElementById(`ficha-${nombre}`);
             if (elemento) elemento.remove();
-            rondaActual = rondaActual.filter(j => j.nombre !== nombre); // Sacar de la ronda si ya había enviado
+            
+            // Retirar de la ronda actual si ya había tirado
+            rondaActual = rondaActual.filter(j => j.nombre !== nombre); 
 
+            // Avisar al afectado
             canal.send({ type: 'broadcast', event: 'usuario_sancionado', payload: { nombre } });
 
-            // Verificar Superioridad Inmediata
-            const lealesActivos = listaLeales.length - sancionados; // Asumiendo que solo se sancionan leales en el peor caso. Lógica fina requiere rastrear quién fue sancionado.
+            // Validación de Condición de Derrota por Superioridad
             const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
-            
             let infActivos = listaInfiltrados.length;
             let leaActivos = listaLeales.length;
 
-            if(esInfiltradoSancionado) infActivos--; else leaActivos--;
+            // Ajuste manual sin re-consultar DB para agilidad visual
+            if(esInfiltradoSancionado) {
+                listaInfiltrados = listaInfiltrados.filter(n => n !== nombre);
+                infActivos--;
+            } else {
+                listaLeales = listaLeales.filter(n => n !== nombre);
+                leaActivos--;
+            }
 
             if (infActivos === 0) {
-                alert("🏆 VICTORIA: Todos los infiltrados han sido expulsados.");
+                alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
             } else if (infActivos >= leaActivos) {
                 actualizarProgreso(0);
-                alert("🚨 SABOTAJE: Superioridad numérica infiltrada. Se ha perdido el control del hangar.");
+                alert("🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
             }
         }
 
@@ -356,7 +414,10 @@
             setTimeout(() => cuadro.classList.add('hidden'), 4000);
         }
 
-        // --- LÓGICA DEL ALUMNO ---
+        // ==========================================
+        // LÓGICA DEL ALUMNO (TÉCNICO)
+        // ==========================================
+
         function procesarRol(infiltrados) {
             miRol = infiltrados.includes(miNombre) ? "Infiltrado" : "Técnico";
             localStorage.setItem('rol_asignado', miRol);
@@ -389,18 +450,29 @@
             }
         }
 
-        function lanzarTurno() {
+        async function lanzarTurno() {
+            // Animación de feedback local
+            const btn = document.getElementById('btn-lanzar');
+            btn.classList.add('scale-95', 'bg-indigo-800');
+            setTimeout(() => btn.classList.remove('scale-95', 'bg-indigo-800'), 150);
+
             const compromiso = document.getElementById('input-compromiso').value;
             const dado = Math.floor(Math.random() * 20) + 1;
 
-            document.getElementById('controles-alumno').classList.add('hidden');
-            document.getElementById('espera-alumno').classList.remove('hidden');
+            if (esFaseJuegoLocal) {
+                // Modo Misión: Bloquear y Enviar
+                document.getElementById('controles-alumno').classList.add('hidden');
+                document.getElementById('espera-alumno').classList.remove('hidden');
 
-            canal.send({
-                type: 'broadcast',
-                event: 'nuevo_resultado',
-                payload: { nombre: miNombre, valor_dado: dado, valor_compromiso: compromiso }
-            });
+                canal.send({
+                    type: 'broadcast',
+                    event: 'nuevo_resultado',
+                    payload: { nombre: miNombre, valor_dado: dado, valor_compromiso: compromiso }
+                });
+            } else {
+                // Modo Entrenamiento: Solo animación
+                console.log(`[Modo Práctica] Dado: ${dado} | Compromiso: ${compromiso}`);
+            }
         }
 
         function reiniciarVistaTurno() {
@@ -411,9 +483,9 @@
         function mostrarPantallaSancion() {
             document.body.innerHTML = `
                 <div class="flex flex-col items-center justify-center w-full h-screen bg-black text-red-600 p-8 text-center">
-                    <h1 class="text-8xl mb-6">⛔</h1>
-                    <h2 class="text-3xl font-black uppercase tracking-widest">Acreditación Revocada</h2>
-                    <p class="text-slate-400 mt-4 font-mono">Has sido sancionado por la Autoridad Aeronáutica.</p>
+                    <h1 class="text-8xl mb-6 animate-pulse">⛔</h1>
+                    <h2 class="text-3xl font-black uppercase tracking-widest leading-tight">Credencial Revocada</h2>
+                    <p class="text-slate-500 mt-6 font-mono border border-slate-800 p-4 rounded bg-slate-900">Has sido retirado de la operación por la Autoridad Aeronáutica.</p>
                 </div>
             `;
             localStorage.clear();
