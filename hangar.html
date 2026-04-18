@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego en Tiempo Real - Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-md bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
+        
+        <div id="view-login">
+            <h1 class="text-2xl font-bold mb-6 text-center text-blue-400">Unirse a la Sesión</h1>
+            <div class="space-y-4">
+                <input id="input-room" type="text" placeholder="ID de la Sala (ej: JUEGO1)" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
+                <input id="input-name" type="text" placeholder="Tu Nombre" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
+                
+                <div class="flex gap-4">
+                    <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition">Alumno</button>
+                    <button onclick="conectar('instructor')" class="flex-1 bg-slate-600 hover:bg-slate-500 p-3 rounded font-bold transition text-sm">Instructor</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-instructor" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Sala: <span id="display-room-i" class="text-blue-400"></span></h2>
+                <span class="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded">En Vivo</span>
+            </div>
+            <div id="lista-resultados" class="space-y-2 max-h-80 overflow-y-auto mb-4">
+                <p class="text-slate-500 italic text-center">Esperando lanzamientos...</p>
+            </div>
+            <button onclick="location.reload()" class="w-full text-slate-400 text-sm underline">Cerrar Sesión</button>
+        </div>
+
+        <div id="view-alumno" class="hidden text-center">
+            <h2 class="mb-2 text-slate-400">Bienvenido, <span id="display-name-a" class="text-white font-bold"></span></h2>
+            <p class="text-sm mb-8 italic text-slate-500 font-mono text-xs uppercase">Conectado a: <span id="display-room-a"></span></p>
+            
+            <div class="mb-8">
+                <button onclick="lanzarDado()" id="btn-dado" class="w-32 h-32 bg-indigo-600 hover:bg-indigo-500 rounded-2xl shadow-lg shadow-indigo-500/50 text-5xl flex items-center justify-center mx-auto transition-transform active:scale-90">
+                    🎲
+                </button>
+                <p class="mt-4 text-slate-400">Toca el dado para lanzar</p>
+            </div>
+
+            <div id="ultimo-resultado" class="text-2xl font-bold text-yellow-400 hidden">
+                ¡Lanzaste un <span id="valor-dado">0</span>!
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // CONFIGURACIÓN DE SUPABASE
+        const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let canal = null;
+        let miNombre = "";
+        let miSala = "";
+
+        async function conectar(rol) {
+            miSala = document.getElementById('input-room').value.trim().toUpperCase();
+            miNombre = document.getElementById('input-name').value.trim();
+
+            if (!miSala || (!miNombre && rol === 'alumno')) {
+                alert("Por favor rellena los campos");
+                return;
+            }
+
+            // Cambiar Vistas
+            document.getElementById('view-login').classList.add('hidden');
+            
+            // Suscribirse al canal en tiempo real
+            canal = _supabase.channel(`sala_${miSala}`);
+
+            if (rol === 'instructor') {
+                document.getElementById('view-instructor').classList.remove('hidden');
+                document.getElementById('display-room-i').innerText = miSala;
+                
+                // Escuchar los dados de los alumnos
+                canal.on('broadcast', { event: 'nuevo_dado' }, (payload) => {
+                    actualizarListaInstructor(payload.payload);
+                });
+
+            } else {
+                document.getElementById('view-alumno').classList.remove('hidden');
+                document.getElementById('display-name-a').innerText = miNombre;
+                document.getElementById('display-room-a').innerText = miSala;
+            }
+
+            canal.subscribe((status) => {
+                if (status !== 'SUBSCRIBED') console.log("Error de conexión:", status);
+            });
+        }
+
+        // LÓGICA ALUMNO
+        function lanzarDado() {
+            const resultado = Math.floor(Math.random() * 20) + 1;
+            
+            // Animación visual
+            const btn = document.getElementById('btn-dado');
+            btn.classList.add('animate-bounce');
+            setTimeout(() => btn.classList.remove('animate-bounce'), 500);
+
+            // Mostrar resultado local
+            document.getElementById('ultimo-resultado').classList.remove('hidden');
+            document.getElementById('valor-dado').innerText = resultado;
+
+            // ENVIAR POR BROADCAST
+            canal.send({
+                type: 'broadcast',
+                event: 'nuevo_dado',
+                payload: { nombre: miNombre, valor: resultado, hora: new Date().toLocaleTimeString() }
+            });
+        }
+
+        // LÓGICA INSTRUCTOR
+        function actualizarListaInstructor(data) {
+            const lista = document.getElementById('lista-resultados');
+            
+            // Limpiar mensaje de "esperando" la primera vez
+            if (lista.querySelector('p')) lista.innerHTML = "";
+
+            const item = document.createElement('div');
+            item.className = "flex justify-between items-center bg-slate-700 p-3 rounded border-l-4 border-blue-500 animate-fade-in";
+            item.innerHTML = `
+                <div>
+                    <span class="font-bold text-blue-200">${data.nombre}</span>
+                    <span class="text-[10px] text-slate-400 block">${data.hora}</span>
+                </div>
+                <div class="text-2xl font-black text-yellow-400">
+                    ${data.valor}
+                </div>
+            `;
+            lista.prepend(item); // Poner el más reciente arriba
+        }
+    </script>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+    </style>
+</body>
+</html>
