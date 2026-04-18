@@ -1,0 +1,17 @@
+name: Despertador Supabase Aripar
+
+on:
+  schedule:
+    # Se ejecuta a las 05:00 AM UTC cada 3 días (Aprox medianoche en Colombia)
+    - cron: '0 5 */3 * *'
+  workflow_dispatch: # Esto te permite ejecutarlo manualmente para probar
+
+jobs:
+  ping_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviando señal a la base de datos
+        run: |
+          curl -X GET "https://yfbfbywjwslxsrgamqhj.supabase.co/rest/v1/entrenamiento_usuarios?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
