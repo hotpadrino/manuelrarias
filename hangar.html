@@ -612,7 +612,7 @@ const TIPS=[
   "💡 Velocidad alta = partidas cortas. Velocidad baja = más análisis.",
 ];
 const POS_MSGS=["✓ Actuador instalado · Torque verificado.","✓ Estanqueidad superada · Sistemas nominales.","✓ Aviónica sincronizada · FOD removido.","✓ Reparación certificada · Presión OK.","✓ Tren de aterrizaje ciclado · Combustible purgado.","✓ Baterías 100% · Eléctrico verificado ✈","✓ Panel calibrado · Sin anomalías.","✓ Sistemas de control de vuelo operativos.","✓ Motor inspeccionado · Sin FOD.","✓ Lista de verificación pre-vuelo aprobada."];
-const NEG_MSGS=["⚠ Herramienta olvidada en panel.","⚠ Torque fuera de tolerancia · Fuga hidráulica.","⚠ Tornillo trasroscado · Número de parte incorrecto.","⚠ Corrosión bajo recubrimiento · Cortocircuito.","⚠ Sujetador suelto por vibración.","⚠ FOD crítico en admisión · Detención.","⚠ Falla hidráulica · Presión insuficiente.","⚠ Anomalía en actuador de flap.","⚠ Sensor de temperatura errático.","⚠ Discrepancia peso/balance · Misión suspendida."];
+const NEG_MSGS=["⚠ Herramienta olvidada en los controles.","⚠ Torque fuera de tolerancia · Fuga hidráulica.","⚠ Tornillo trasroscado · Número de parte incorrecto.","⚠ Corrosión bajo recubrimiento · Cortocircuito.","⚠ Sujetador suelto por vibración.","⚠ FOD crítico en toma de aire · Detención.","⚠ Falla hidráulica · Presión insuficiente.","⚠ Anomalía en actuador de flap.","⚠ Sensor de temperatura errático.","⚠ Discrepancia peso/balance · Misión suspendida."];
 
 // ══ STATE ══
 let fleetData = {}, selectedTeam = null, speedMod = 5, currentTab = 'config';
@@ -966,7 +966,7 @@ function computeWork() {
   if (nI >= act.length - nI) {
     team.progress = 0; team.lastDelta = -50; team.gameEnded = true;
     save(); updateBar(); selectTeam(selectedTeam);
-    setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SABOTAJE\nLos infiltrados dominan el turno.'); }, 80);
+    setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SABOTAJE\nLos infiltrados dominan el hangar.'); }, 80);
     return;
   }
   let sum = 0;
