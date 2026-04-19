@@ -374,7 +374,7 @@
             rondaActual.forEach(j => {
                 const aporte = j.valor_dado * j.valor_compromiso;
                 if (listaInfiltrados.includes(j.nombre)) {
-                    puntosInfiltrados += aporte;
+                    puntosInfiltrados += Math.abs(aporte);
                 } else {
                     puntosLeales += aporte;
                 }
