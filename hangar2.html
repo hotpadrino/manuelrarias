@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAC FLOTA v16 - HANGAR</title>
+    <title>FAC FLOTA v17 - HANGAR</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -410,11 +410,13 @@
                 barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-green-700 opacity-90";
                 barraDelta.style.left = `${oldProgreso}%`;
                 barraDelta.style.width = `${progresoAvion - oldProgreso}%`;
+                lanzarParticulas('positivo');
             } else if (delta < 0) {
                 barraBase.style.width = `${progresoAvion}%`;
                 barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-red-600 opacity-90";
                 barraDelta.style.left = `${progresoAvion}%`;
                 barraDelta.style.width = `${oldProgreso - progresoAvion}%`;
+                lanzarParticulas('negativo');
             } else {
                 barraBase.style.width = `${progresoAvion}%`;
                 barraDelta.style.width = `0%`;
@@ -465,8 +467,10 @@
             const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
             
             if (esInfiltradoSancionado) {
+                lanzarParticulas('infiltrado');
                 alert(`🎯 ¡ACIERTO TÁCTICO! Has neutralizado al infiltrado: ${nombre}.`);
             } else {
+                lanzarParticulas('leal');
                 alert(`❌ ¡FALLO DE INTELIGENCIA! Has expulsado a un técnico leal: ${nombre}.`);
             }
         
@@ -485,10 +489,8 @@
             // 3. Evaluar fin del juego integrando el efecto visual del avión y el fondo
             setTimeout(() => {
                 if (infActivos === 0) {
-                    // Activa la victoria: Avión al 100%, barra verde, fondo verde oscuro
                     actualizarProgreso(100, 100 - progresoAvion, "🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido expulsados.");
                 } else if (infActivos >= leaActivos) {
-                    // Activa la derrota: Avión al 0%, barra roja, fondo rojo oscuro
                     actualizarProgreso(0, -progresoAvion, "🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
                 }
             }, 500);
@@ -524,32 +526,10 @@
 
             setTimeout(() => {
                 clearInterval(intervaloRuleta);
+                display.innerText = Math.floor(Math.random() * 21) - 10;
                 
-                const dadoFinal = Math.floor(Math.random() * 21) - 10;
-                displayPericia.innerText = dadoFinal;
-
-                setTimeout(() => {
-                    // --- NUEVO: Inyectar datos en la pantalla de espera ---
-                    document.getElementById('res-pericia').innerText = dadoFinal;
-                    document.getElementById('res-compromiso').innerText = compromiso;
-                    // ------------------------------------------------------
-
-                    if (esFaseJuegoLocal) {
-                        document.getElementById('controles-alumno').classList.add('hidden');
-                        document.getElementById('espera-alumno').classList.remove('hidden');
-
-                        canal.send({
-                            type: 'broadcast',
-                            event: 'nuevo_resultado',
-                            payload: { nombre: miNombre, valor_dado: dadoFinal, valor_compromiso: compromiso }
-                        });
-                    } else {
-                        console.log(`[Modo Entrenamiento] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
-                        btn.disabled = false;
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
-                    }
-                }, 1000);
-
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
             }, 3000);
         }
 
@@ -605,6 +585,9 @@
                 displayPericia.innerText = dadoFinal;
 
                 setTimeout(() => {
+                    document.getElementById('res-pericia').innerText = dadoFinal;
+                    document.getElementById('res-compromiso').innerText = compromiso;
+
                     if (esFaseJuegoLocal) {
                         document.getElementById('controles-alumno').classList.add('hidden');
                         document.getElementById('espera-alumno').classList.remove('hidden');
@@ -643,6 +626,51 @@
                 </div>
             `;
             localStorage.clear();
+        }
+
+        // --- SISTEMA DE PARTÍCULAS (CONFETI DOM) ---
+        function lanzarParticulas(tipo) {
+            const emojis = {
+                'positivo': ['🔧', '⚙️', '🔨', '✈️'],
+                'negativo': ['💣', '💥', '🧨', '🔥'],
+                'infiltrado': ['🎯', '👏', '🚨'],
+                'leal': ['❌', '💀', '👎']
+            }[tipo];
+
+            const container = document.createElement('div');
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.width = '100vw';
+            container.style.height = '100vh';
+            container.style.pointerEvents = 'none';
+            container.style.zIndex = '9999';
+            container.style.overflow = 'hidden';
+            document.body.appendChild(container);
+
+            for (let i = 0; i < 40; i++) {
+                const el = document.createElement('div');
+                el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                el.style.position = 'absolute';
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.top = '-10vh';
+                el.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                el.style.opacity = Math.random() + 0.5;
+                el.style.transform = `rotate(${Math.random() * 360}deg)`;
+                // Transición para caída
+                el.style.transition = `transform ${Math.random() * 2 + 2}s linear, top ${Math.random() * 2 + 2}s linear, opacity ${Math.random() * 2 + 2}s linear`;
+                container.appendChild(el);
+
+                // Activar animación en el siguiente frame
+                setTimeout(() => {
+                    el.style.top = '110vh';
+                    el.style.transform = `rotate(${Math.random() * 720}deg)`;
+                    el.style.opacity = '0';
+                }, 50);
+            }
+
+            // Limpiar el DOM después de la animación
+            setTimeout(() => container.remove(), 4500);
         }
     </script>
 </body>
