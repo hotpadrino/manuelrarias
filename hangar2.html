@@ -438,7 +438,7 @@
         async function sancionar(nombre) {
             if (!confirm(`Sancionar a ${nombre} lo inhabilitará permanentemente. ¿Confirmar orden?`)) return;
         
-            // 1. Actualizar base de datos y limpiar interfaz
+            // 1. Actualizar base de datos y limpiar interfaz local
             await _supabase.from('jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
             
             sancionados++;
@@ -448,20 +448,19 @@
             rondaActual = rondaActual.filter(j => j.nombre !== nombre); 
             canal.send({ type: 'broadcast', event: 'usuario_sancionado', payload: { nombre } });
         
-            // 2. Evaluar identidad
+            // 2. Evaluar identidad y dar retroalimentación inmediata
             const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
             
-            // --- NUEVO: MENSAJE DE REVELACIÓN INMEDIATO ---
             if (esInfiltradoSancionado) {
                 alert(`🎯 ¡ACIERTO TÁCTICO! Has neutralizado al infiltrado: ${nombre}.`);
             } else {
                 alert(`❌ ¡FALLO DE INTELIGENCIA! Has expulsado a un técnico leal: ${nombre}.`);
             }
-            // ---------------------------------------------
         
             let infActivos = listaInfiltrados.length;
             let leaActivos = listaLeales.length;
         
+            // Actualizar conteos
             if(esInfiltradoSancionado) {
                 listaInfiltrados = listaInfiltrados.filter(n => n !== nombre);
                 infActivos--;
@@ -470,18 +469,18 @@
                 leaActivos--;
             }
         
-            // 3. Evaluar fin del juego con un ligero retraso para no solapar alertas
+            // 3. Evaluar fin del juego integrando el efecto visual del avión y el fondo
             setTimeout(() => {
                 if (infActivos === 0) {
-                    // El fondo se pondrá verde gracias a actualizarProgreso si decides usarlo, o directo alerta
-                    alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
-                    window.location.reload(); // Opcional: recargar para limpiar tras victoria
+                    // Activa la victoria: Avión al 100%, barra verde, fondo verde oscuro
+                    actualizarProgreso(100, 100 - progresoAvion, "🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido expulsados.");
                 } else if (infActivos >= leaActivos) {
+                    // Activa la derrota: Avión al 0%, barra roja, fondo rojo oscuro
                     actualizarProgreso(0, -progresoAvion, "🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
                 }
             }, 500);
         }
-        
+                
         function mostrarVariacion(valor) {
             const cuadro = document.getElementById('cuadro-variacion');
             const texto = document.getElementById('valor-variacion');
