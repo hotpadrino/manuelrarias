@@ -411,7 +411,7 @@ VÁLVULA DAÑO:   Δ% mínimo = −20% × Velocidad</div>
       <li><strong style="color:var(--amber)">Quórum:</strong> Mínimo 2 técnicos con Compromiso &gt; 0 por turno.</li>
       <li><strong style="color:var(--amber)">Pericia:</strong> Solo activa cuando Compromiso &gt; 0. Al lanzar, el Compromiso queda bloqueado.</li>
       <li><strong style="color:var(--amber)">Superioridad:</strong> Infiltrados activos ≥ Leales activos → derrota automática.</li>
-      <li><strong style="color:var(--amber)">Cuota infiltrados:</strong> Modo auto asigna máx. 33.9%, mínimo 1.</li>
+      <li><strong style="color:var(--amber)">Cuota infiltrados:</strong> Modo auto asigna máx. 34%, mínimo 1.</li>
     </ul>
   </div>
 
@@ -784,7 +784,7 @@ function parseConfig(mode) {
   if (mode === 'solo') {
     Object.keys(fleetData).forEach(nm => {
       const t = fleetData[nm].techs;
-      const max = Math.floor(t.length * .3399);
+      const max = Math.floor(t.length * .34);
       const target = Math.max(1, Math.floor(Math.random() * max) + 1);
       const idx = [...Array(t.length).keys()].sort(() => Math.random() - .5);
       for (let i = 0; i < target; i++) t[idx[i]].isImpostor = true;
