@@ -10,7 +10,6 @@
         @keyframes fade-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
         body { transition: background-color 0.3s ease; }
-        /* Ocultar barra de desplazamiento para un look más de app */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
     </style>
@@ -65,10 +64,10 @@
                         <label class="text-xs text-slate-400 uppercase font-bold tracking-wider">Factor Velocidad</label>
                         <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1 font-mono text-lg text-center">
                     </div>
-                    <button onclick="computarRonda()" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold shadow-lg h-12 flex items-center justify-center">
+                    <button onclick="computarRonda()" id="btn-computar" class="flex-1 bg-green-600 hover:bg-green-500 p-3 rounded font-bold shadow-lg h-12 flex items-center justify-center transition-all">
                         ⚙️ COMPUTAR
                     </button>
-                    <button onclick="nuevaRonda()" class="bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center" title="Liberar celulares para nueva ronda">
+                    <button onclick="nuevaRonda()" id="btn-liberar" disabled class="opacity-50 cursor-not-allowed bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center transition-all" title="Liberar celulares para nueva ronda">
                         🔄
                     </button>
                 </div>
@@ -104,9 +103,16 @@
                            oninput="document.getElementById('val-comp').innerText = this.value">
                 </div>
 
-                <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-6 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-2xl font-black uppercase transition-all flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
-                    🎲 Ejecutar Tarea
-                </button>
+                <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-md text-center">
+                    <label class="block text-sm mb-2 text-slate-300 font-bold uppercase tracking-widest">Pericia</label>
+                    <div id="display-pericia" class="text-6xl font-black text-yellow-400 mb-6 h-20 flex items-center justify-center font-mono tracking-tighter">
+                        0
+                    </div>
+                    
+                    <button onclick="lanzarTurno()" id="btn-lanzar" class="w-full py-5 bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-lg text-xl font-black uppercase transition-all flex items-center justify-center gap-3 border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1">
+                        ⚙️ Ejecutar Tarea
+                    </button>
+                </div>
             </div>
 
             <div id="espera-alumno" class="hidden w-full text-center mt-2 p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">
@@ -129,20 +135,15 @@
         let miNombre = "";
         let miSala = "";
         
-        // Variables Instructor
         let progresoAvion = 50;
         let rondaActual = [];
         let listaInfiltrados = [];
         let listaLeales = [];
         let sancionados = 0;
 
-        // Variables Alumno
         let miRol = "Técnico"; 
         let esFaseJuegoLocal = false; 
 
-        // ==========================================
-        // 1. AUTO-RECONEXIÓN Y GESTIÓN DE SESIÓN
-        // ==========================================
         window.onload = () => {
             const salaGuardada = localStorage.getItem('mi_sala');
             const nombreGuardado = localStorage.getItem('mi_nombre');
@@ -169,13 +170,9 @@
 
         async function cerrarHangarDefinitivo() {
             if (!confirm("⚠️ ¿Confirmas la clausura del hangar? Todos los datos de los técnicos serán eliminados.")) return;
-
-            // Borrar jugadores de la base de datos
             await _supabase.from('jugadores').delete().eq('sala_id', miSala);
-            // Desactivar sala
             await _supabase.from('salas').update({ activa: false, fase: 'lobby' }).eq('id_sala', miSala);
 
-            // Emitir orden de retirada
             canal.send({
                 type: 'broadcast',
                 event: 'hangar_clausurado',
@@ -187,9 +184,6 @@
             window.location.reload();
         }
 
-        // ==========================================
-        // 2. SISTEMA DE ACCESO Y CONEXIÓN REALTIME
-        // ==========================================
         async function conectar(rol, esReconexion = false) {
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
             miNombre = document.getElementById('input-name').value.trim();
@@ -270,9 +264,7 @@
             });
         }
 
-        // ==========================================
-        // 3. LÓGICA DEL INSTRUCTOR
-        // ==========================================
+        // --- LÓGICA DEL INSTRUCTOR ---
         function actualizarFichasLobby(estado) {
             const contenedor = document.getElementById('fichas-ronda');
             const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n !== "Instructor");
@@ -316,12 +308,7 @@
             document.getElementById('btn-iniciar-juego').classList.add('hidden');
             document.getElementById('panel-avion').classList.remove('hidden');
 
-            canal.send({
-                type: 'broadcast',
-                event: 'asignar_roles',
-                payload: { infiltrados: listaInfiltrados }
-            });
-            
+            canal.send({ type: 'broadcast', event: 'asignar_roles', payload: { infiltrados: listaInfiltrados } });
             alert("MISIÓN INICIADA. Roles asignados de forma clasificada.");
         }
 
@@ -363,7 +350,6 @@
             });
 
             const mult = parseFloat(document.getElementById('input-multiplicador').value) || 1;
-            
             let delta = ((puntosLeales - (puntosInfiltrados * quorum)) / 50) * mult;
 
             if (delta > 20) delta = 20;
@@ -371,6 +357,13 @@
 
             mostrarVariacion(delta);
             actualizarProgreso(progresoAvion + delta);
+
+            // GESTIÓN DE BOTONES (Bloqueo Computar / Activar Liberar)
+            document.getElementById('btn-computar').disabled = true;
+            document.getElementById('btn-computar').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            document.getElementById('btn-liberar').disabled = false;
+            document.getElementById('btn-liberar').classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
         function actualizarProgreso(nuevoValor) {
@@ -387,6 +380,13 @@
 
         function nuevaRonda() {
             canal.send({ type: 'broadcast', event: 'reset_ronda' });
+            
+            // GESTIÓN DE BOTONES (Bloqueo Liberar / Activar Computar)
+            document.getElementById('btn-liberar').disabled = true;
+            document.getElementById('btn-liberar').classList.add('opacity-50', 'cursor-not-allowed');
+            
+            document.getElementById('btn-computar').disabled = false;
+            document.getElementById('btn-computar').classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
         async function sancionar(nombre) {
@@ -436,9 +436,7 @@
             setTimeout(() => cuadro.classList.add('hidden'), 4000);
         }
 
-        // ==========================================
-        // 4. LÓGICA DEL ALUMNO (TÉCNICO)
-        // ==========================================
+        // --- LÓGICA DEL ALUMNO (TÉCNICO) ---
         function procesarRol(infiltrados) {
             miRol = infiltrados.includes(miNombre) ? "Infiltrado" : "Técnico";
             localStorage.setItem('rol_asignado', miRol);
@@ -473,29 +471,58 @@
 
         async function lanzarTurno() {
             const btn = document.getElementById('btn-lanzar');
-            btn.classList.add('scale-95', 'bg-indigo-800');
-            setTimeout(() => btn.classList.remove('scale-95', 'bg-indigo-800'), 150);
-
+            const displayPericia = document.getElementById('display-pericia');
             const compromiso = document.getElementById('input-compromiso').value;
-            const dado = Math.floor(Math.random() * 20) + 1;
 
-            if (esFaseJuegoLocal) {
-                document.getElementById('controles-alumno').classList.add('hidden');
-                document.getElementById('espera-alumno').classList.remove('hidden');
+            // Bloquear botón inmediatamente para evitar doble pulsación
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
 
-                canal.send({
-                    type: 'broadcast',
-                    event: 'nuevo_resultado',
-                    payload: { nombre: miNombre, valor_dado: dado, valor_compromiso: compromiso }
-                });
-            } else {
-                console.log(`[Modo Entrenamiento] Dado: ${dado} | Compromiso: ${compromiso}`);
-            }
+            // 1. Iniciar Animación de Ruleta (cambio cada 100ms)
+            let intervaloRuleta = setInterval(() => {
+                // Rango aleatorio entre -10 y 10
+                displayPericia.innerText = Math.floor(Math.random() * 21) - 10; 
+            }, 100);
+
+            // 2. Detener tras 3 segundos (3000 ms)
+            setTimeout(() => {
+                clearInterval(intervaloRuleta);
+                
+                // Determinar valor final
+                const dadoFinal = Math.floor(Math.random() * 21) - 10;
+                displayPericia.innerText = dadoFinal;
+
+                // 3. Esperar 1 segundo para que el usuario vea su resultado final y luego enviar
+                setTimeout(() => {
+                    if (esFaseJuegoLocal) {
+                        document.getElementById('controles-alumno').classList.add('hidden');
+                        document.getElementById('espera-alumno').classList.remove('hidden');
+
+                        canal.send({
+                            type: 'broadcast',
+                            event: 'nuevo_resultado',
+                            payload: { nombre: miNombre, valor_dado: dadoFinal, valor_compromiso: compromiso }
+                        });
+                    } else {
+                        // En modo práctica, permitimos volver a lanzar
+                        console.log(`[Modo Práctica] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
+                    }
+                }, 1000);
+
+            }, 3000);
         }
 
         function reiniciarVistaTurno() {
             document.getElementById('controles-alumno').classList.remove('hidden');
             document.getElementById('espera-alumno').classList.add('hidden');
+            
+            // Restablecer panel de Pericia para la nueva ronda
+            document.getElementById('display-pericia').innerText = "0";
+            const btn = document.getElementById('btn-lanzar');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
         }
 
         function mostrarPantallaSancion() {
