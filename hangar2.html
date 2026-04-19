@@ -60,7 +60,7 @@
                     <div id="barra-delta" class="h-6 absolute top-0 rounded-full transition-all duration-500" style="width: 0%; left: 50%;"></div>
                 </div>
                 
-                <div class="flex gap-4 items-end">
+                <div class="flex gap-4 items-end mb-6">
                     <div class="flex-1">
                         <label class="text-xs text-slate-400 uppercase font-bold tracking-wider">Factor Velocidad</label>
                         <input type="number" id="input-multiplicador" value="1.0" step="0.1" class="w-full p-3 rounded bg-slate-800 border border-slate-600 mt-1 font-mono text-lg text-center">
@@ -70,6 +70,16 @@
                     </button>
                     <button onclick="nuevaRonda()" id="btn-liberar" disabled class="opacity-50 cursor-not-allowed bg-blue-600 hover:bg-blue-500 p-3 rounded font-bold shadow-lg h-12 w-12 flex items-center justify-center transition-all" title="Liberar celulares para nueva ronda">
                         🔄
+                    </button>
+                </div>
+
+                <div class="border-t border-slate-700 pt-4 flex justify-between items-center">
+                    <div>
+                        <label class="text-xs text-slate-500 uppercase font-bold tracking-wider block mb-1">Dado Auxiliar (Local)</label>
+                        <div id="display-pericia-instructor" class="text-4xl font-black text-slate-300 font-mono tracking-tighter">0</div>
+                    </div>
+                    <button onclick="lanzarDadoInstructor()" id="btn-lanzar-instructor" class="bg-indigo-900 hover:bg-indigo-700 text-indigo-200 px-6 py-3 rounded-lg shadow-md font-bold uppercase transition-all active:scale-95 border border-indigo-700 flex items-center gap-2">
+                        🎲 Lanzar
                     </button>
                 </div>
             </div>
@@ -275,7 +285,6 @@
         // --- LÓGICA DEL INSTRUCTOR ---
         function actualizarFichasLobby(estado) {
             const contenedor = document.getElementById('fichas-ronda');
-            // Filtrar explícitamente al instructor para que no aparezca en las fichas
             const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n && n !== "INSTRUCTOR" && n.toUpperCase() !== "INSTRUCTOR");
             
             nombresConectados.forEach(nombre => {
@@ -380,18 +389,15 @@
             
             document.getElementById('texto-progreso').innerText = `${Math.round(progresoAvion)}%`;
 
-            // LÓGICA DE BARRA DUAL (Delta Visual)
             const barraBase = document.getElementById('barra-base');
             const barraDelta = document.getElementById('barra-delta');
 
             if (delta > 0) {
-                // Avance: Base se queda en lo viejo, el delta dibuja lo nuevo en verde oscuro
                 barraBase.style.width = `${oldProgreso}%`;
                 barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-green-700 opacity-90";
                 barraDelta.style.left = `${oldProgreso}%`;
                 barraDelta.style.width = `${progresoAvion - oldProgreso}%`;
             } else if (delta < 0) {
-                // Retroceso: Base se encoge a lo nuevo, el delta dibuja el vacío en rojo
                 barraBase.style.width = `${progresoAvion}%`;
                 barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-red-600 opacity-90";
                 barraDelta.style.left = `${progresoAvion}%`;
@@ -411,7 +417,6 @@
         function nuevaRonda() {
             canal.send({ type: 'broadcast', event: 'reset_ronda' });
             
-            // Sincronizar y limpiar el delta visual para la nueva ronda
             document.getElementById('barra-base').style.width = `${progresoAvion}%`;
             document.getElementById('barra-delta').style.width = `0%`;
             
@@ -449,7 +454,6 @@
             if (infActivos === 0) {
                 alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
             } else if (infActivos >= leaActivos) {
-                // Sanción letal: delta equivalente a toda la barra
                 actualizarProgreso(0, -progresoAvion);
                 alert("🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
             }
@@ -468,6 +472,28 @@
                 texto.innerText = `${valor.toFixed(1)}%`;
             }
             setTimeout(() => cuadro.classList.add('hidden'), 4000);
+        }
+
+        function lanzarDadoInstructor() {
+            const btn = document.getElementById('btn-lanzar-instructor');
+            const display = document.getElementById('display-pericia-instructor');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
+            display.classList.add('text-yellow-400');
+            display.classList.remove('text-slate-300');
+
+            let intervaloRuleta = setInterval(() => {
+                display.innerText = Math.floor(Math.random() * 21) - 10; 
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(intervaloRuleta);
+                display.innerText = Math.floor(Math.random() * 21) - 10;
+                
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
+            }, 3000);
         }
 
         // --- LÓGICA DEL ALUMNO (TÉCNICO) ---
