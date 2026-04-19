@@ -2,830 +2,1031 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>FAC FLOTA v24.0 — Simulador Táctico</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;400;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>FAC FLOTA v24.0</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Exo+2:wght@300;700;900&display=swap" rel="stylesheet">
 <style>
-:root {
+:root{
   --bg:#080c10;--bg2:#0d1219;--panel:#111820;
-  --amber:#e8a020;--amber-d:#7a5210;--amber-g:rgba(232,160,32,0.1);
-  --cyan:#00e5cc;--cyan-d:#004d45;
-  --red:#ff3b3b;--red-d:#5c0a0a;--red-g:rgba(255,59,59,0.08);
-  --green:#00d16c;--green-d:#004d27;--green-g:rgba(0,209,108,0.08);
-  --blue:#3b82f6;--blue-d:#1a3a6b;
-  --text:#c8d8e8;--dim:#4a6070;--border:#1e2d3d;
-  --hl:rgba(0,229,204,0.07);
+  --amber:#e8a020;--amber-dim:#8a5e12;
+  --cyan:#00e5cc;--cyan-dim:#004d45;
+  --red:#ff3b3b;--red-dim:#5c0a0a;
+  --green:#00d16c;--green-b:#00a854;--green-d:#006030;--green-dim:#004d27;
+  --blue:#3b82f6;--blue-dim:#1a3a6b;
+  --text:#c8d8e8;--text-dim:#4a6070;--border:#1e2d3d;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
 body{
   font-family:'Rajdhani',sans-serif;background:var(--bg);color:var(--text);
-  display:flex;flex-direction:column;height:100vh;
-  background-image:linear-gradient(var(--hl) 1px,transparent 1px),linear-gradient(90deg,var(--hl) 1px,transparent 1px);
-  background-size:44px 44px;
+  display:flex;flex-direction:column;height:100dvh;
+  background-image:linear-gradient(rgba(0,229,204,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,204,.055) 1px,transparent 1px);
+  background-size:40px 40px;
 }
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
-}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px);}
 
-/* NAV */
-nav{background:var(--bg2);border-bottom:1px solid var(--amber-d);padding:0 12px;height:52px;
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:600;position:relative;}
-nav::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;
+/* ══ NAV ══ */
+nav{background:var(--bg2);border-bottom:1px solid var(--amber-dim);padding:0 10px;height:50px;
+  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;z-index:600;position:relative;}
+nav::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;
   background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.3;}
-.nav-brand{font-family:'Share Tech Mono',monospace;color:var(--amber);font-size:.8em;
-  letter-spacing:.1em;display:flex;align-items:center;gap:8px;}
-.nav-hex{width:28px;height:28px;background:var(--amber);flex-shrink:0;
+.nav-brand{display:flex;align-items:center;gap:7px;}
+.logo-hex{width:26px;height:26px;background:var(--amber);flex-shrink:0;
   clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-  display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.65em;font-weight:900;}
-.nav-sub{font-size:.6em;color:var(--dim);letter-spacing:.08em}
-.nav-links{display:flex;gap:3px}
-.nav-links button{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.73em;
-  letter-spacing:.1em;background:transparent;border:1px solid var(--border);color:var(--dim);
-  padding:5px 10px;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;}
-.nav-links button:hover{color:var(--amber);border-color:var(--amber-d)}
-.nav-links button.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+  display:flex;align-items:center;justify-content:center;color:#000;font-size:.6em;font-weight:900;}
+.nav-title{font-family:'Share Tech Mono',monospace;color:var(--amber);font-size:.84em;font-weight:bold;letter-spacing:.1em;line-height:1.2;}
+.nav-sub{font-family:'Share Tech Mono',monospace;font-size:.54em;color:var(--text-dim);letter-spacing:.08em;}
+/* Connection dot */
+.conn-dot{width:8px;height:8px;border-radius:50%;background:#555;flex-shrink:0;transition:background .4s;margin-left:4px;}
+.conn-dot.connecting{background:var(--amber);animation:dotPulse 1s infinite;}
+.conn-dot.connected{background:var(--green);}
+.conn-dot.error{background:var(--red);}
+@keyframes dotPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.nav-center{display:flex;align-items:center;gap:6px;flex:1;justify-content:center;}
+.sync-badge{font-family:'Share Tech Mono',monospace;font-size:.58em;color:var(--green);
+  border:1px solid rgba(0,209,108,.35);border-radius:10px;padding:2px 7px;letter-spacing:.06em;
+  opacity:0;transition:opacity .4s;pointer-events:none;}
+.sync-badge.show{opacity:1;}
+.nav-links{display:flex;gap:3px;}
+.nav-links button{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.74em;letter-spacing:.08em;
+  background:transparent;border:1px solid var(--border);color:var(--text-dim);
+  padding:5px 9px;cursor:pointer;border-radius:3px;transition:all .15s;}
+.nav-links button:hover{color:var(--amber);border-color:var(--amber-dim);}
+.nav-links button.active{color:#000;background:var(--amber);border-color:var(--amber);}
 
-/* FLEET BAR */
-#fleet-container{background:var(--bg2);padding:8px 12px 5px;border-bottom:1px solid var(--border);
-  flex-shrink:0;transition:max-height .35s ease,padding .3s ease;overflow:hidden;max-height:180px;}
-#fleet-container.collapsed{max-height:46px;padding:4px 12px}
-#fleet-container.collapsed .fleet-row:not(.is-selected){display:none}
-#fleet-container.collapsed #status-msg{display:none}
-.fleet-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.fleet-lbl{font-family:'Share Tech Mono',monospace;font-size:.63em;color:var(--dim);min-width:66px;letter-spacing:.04em;white-space:nowrap}
-.fleet-bar{flex:1;height:24px;background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:3px;overflow:hidden;position:relative;cursor:pointer;transition:border-color .2s;}
-.fleet-bar:hover{border-color:var(--amber-d)}
-.fleet-bar.is-sel{border-color:var(--amber);box-shadow:0 0 10px rgba(232,160,32,.2)}
-.bar-fill{height:100%;position:absolute;left:0;top:0;transition:width .9s cubic-bezier(.4,0,.2,1);
-  background:linear-gradient(90deg,#004d27,var(--green));}
-.bar-fill.red{background:linear-gradient(90deg,#5c0a0a,var(--red))}
-.bar-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Share Tech Mono',monospace;font-size:.65em;color:#fff;text-shadow:0 0 6px rgba(0,0,0,.9);letter-spacing:.05em;}
-.fleet-hr{font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--amber);min-width:48px;text-align:right}
-#status-msg{font-family:'Share Tech Mono',monospace;font-size:.63em;color:var(--cyan);
-  text-align:center;min-height:17px;padding:2px 0;letter-spacing:.04em;opacity:.8;}
+/* ══ GAME STICKY ══ */
+#game-sticky{background:var(--bg2);border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:7px 12px 5px;display:none;}
+.team-tabs{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.team-tabs::-webkit-scrollbar{display:none;}
+.team-tab{font-family:'Share Tech Mono',monospace;font-size:.65em;letter-spacing:.05em;
+  white-space:nowrap;padding:4px 12px;border:1px solid var(--border);border-radius:20px;
+  background:transparent;color:var(--text-dim);cursor:pointer;transition:all .15s;flex-shrink:0;}
+.team-tab:hover{border-color:var(--amber-dim);color:var(--amber);}
+.team-tab.active{background:rgba(232,160,32,.14);border-color:var(--amber);color:var(--amber);}
 
-/* LAYOUT */
-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
-.content-area{flex:1;overflow-y:auto;padding:14px 14px 30px}
-.content-area::-webkit-scrollbar{width:3px}
-.content-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* Bar */
+.ac-bar-wrap{display:flex;align-items:center;gap:8px;margin-top:5px;}
+.ac-bar-tag{font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--text-dim);min-width:50px;}
+.ac-bar{flex:1;height:26px;background:rgba(0,0,0,.5);border:1px solid var(--border);
+  border-radius:3px;overflow:hidden;position:relative;transition:box-shadow .3s;}
+.ac-bar.blinking{animation:acBlink 1.1s ease-in-out infinite;}
+@keyframes acBlink{0%,100%{box-shadow:0 0 0 rgba(0,229,204,0);}50%{box-shadow:0 0 12px rgba(0,229,204,.5);border-color:rgba(0,229,204,.6);}}
+.ab-base{position:absolute;left:0;top:0;height:100%;
+  background:linear-gradient(90deg,#004428,var(--green-b));transition:width .8s cubic-bezier(.4,0,.2,1);}
+.ab-dpos{position:absolute;top:0;height:100%;background:var(--green-d);display:none;
+  transition:left .8s cubic-bezier(.4,0,.2,1),width .8s;}
+.ab-dneg{position:absolute;top:0;height:100%;background:rgba(255,59,59,.72);display:none;
+  transition:left .8s cubic-bezier(.4,0,.2,1),width .8s;}
+.ab-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Share Tech Mono',monospace;font-size:.67em;color:#fff;
+  text-shadow:0 0 5px rgba(0,0,0,.95);letter-spacing:.06em;pointer-events:none;}
+.ac-hours{font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--amber);min-width:44px;text-align:right;}
+#status-msg{font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--cyan);
+  text-align:center;min-height:15px;padding:2px 0;letter-spacing:.04em;transition:opacity .35s;opacity:.85;}
 
-/* SECTION LABEL */
-.slbl{font-family:'Share Tech Mono',monospace;font-size:.62em;letter-spacing:.12em;color:var(--dim);
-  text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-.slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ══ SCROLL ══ */
+main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.scroll-area{flex:1;overflow-y:auto;padding:13px;scroll-behavior:smooth;}
+.scroll-area::-webkit-scrollbar{width:3px;}
+.scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* TEAM SWITCHER */
-.team-sw{display:flex;gap:7px;overflow-x:auto;padding:0 0 9px;scrollbar-width:none;margin-bottom:12px;}
-.team-sw::-webkit-scrollbar{display:none}
-.team-btn{flex-shrink:0;padding:6px 16px;background:var(--panel);border:1px solid var(--border);
-  color:var(--dim);border-radius:20px;font-family:'Rajdhani',sans-serif;font-weight:700;
-  font-size:.8em;cursor:pointer;white-space:nowrap;letter-spacing:.08em;transition:all .15s;}
-.team-btn:hover{border-color:var(--amber-d);color:var(--amber)}
-.team-btn.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+/* shared label */
+.sec-lbl{font-family:'Share Tech Mono',monospace;font-size:.62em;letter-spacing:.1em;
+  color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
 
-/* PLAYER CARDS */
-.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:960px;margin:0 auto}
-@media(max-width:640px){.team-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:380px){.team-grid{grid-template-columns:1fr}}
+/* ══ STANDBY SCREEN ══ */
+#standby{display:none;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:18px;padding:30px;}
+.standby-icon{font-size:3em;animation:mBob 2.5s ease-in-out infinite;}
+.standby-title{font-family:'Exo 2',sans-serif;font-weight:700;font-size:1.1em;
+  color:var(--amber);letter-spacing:.12em;text-transform:uppercase;text-align:center;}
+.standby-sub{font-family:'Share Tech Mono',monospace;font-size:.72em;color:var(--text-dim);
+  text-align:center;letter-spacing:.06em;line-height:1.7;}
+.standby-pulse{width:12px;height:12px;border-radius:50%;background:var(--cyan);
+  animation:dotPulse .9s ease-in-out infinite;margin:0 auto;}
 
-.player-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;
-  padding:12px 10px 14px;text-align:center;position:relative;min-height:168px;
-  transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:5px;}
-.player-card:hover{border-color:var(--amber-d)}
-.player-card.sanctioned{opacity:.15;filter:grayscale(1) brightness(.4);pointer-events:none}
-.player-card.reveal-good{border-color:var(--green)!important;background:linear-gradient(145deg,var(--green-d),var(--panel))!important;box-shadow:0 0 18px rgba(0,209,108,.15)}
-.player-card.reveal-bad{border-color:var(--red)!important;background:linear-gradient(145deg,var(--red-d),var(--panel))!important;box-shadow:0 0 18px rgba(255,59,59,.15)}
-.card-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.86em;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;line-height:1.2}
-.card-role{font-family:'Share Tech Mono',monospace;font-size:.62em;letter-spacing:.04em;padding:2px 7px;border-radius:3px}
-.card-role.g{color:var(--green);background:var(--green-g)}
-.card-role.b{color:var(--red);background:var(--red-g)}
+/* ══ MASCOT ══ */
+.mascot-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:13px;}
+.mascot-svg{animation:mBob 2.6s ease-in-out infinite;width:80px;flex-shrink:0;}
+@keyframes mBob{0%,100%{transform:translateY(0) rotate(0);}25%{transform:translateY(-6px) rotate(1.2deg);}75%{transform:translateY(-3px) rotate(-1deg);}}
+.bubble{background:var(--panel);border:1px solid var(--amber);border-radius:10px;
+  padding:9px 12px;font-size:.83em;line-height:1.55;color:var(--text);position:relative;flex:1;}
+.bubble::before{content:'';position:absolute;left:-9px;top:16px;
+  border:5px solid transparent;border-right-color:var(--amber);}
+.bubble strong{color:var(--amber);}
+.tip{font-family:'Share Tech Mono',monospace;font-size:.74em;color:var(--cyan);
+  margin-top:7px;display:block;transition:opacity .4s;}
 
-/* DICE */
-.dice-box{width:62px;height:62px;background:var(--bg);border:2px solid var(--border);border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;
-  font-size:1.45em;font-weight:bold;color:var(--dim);cursor:pointer;transition:all .15s;user-select:none;}
-.dice-box:hover{border-color:var(--cyan);color:var(--cyan)}
-.dice-box.rolling{border-color:var(--cyan);color:var(--cyan);animation:dRoll .11s infinite;box-shadow:0 0 14px rgba(0,229,204,.25)}
-.dice-box.done{border-color:var(--amber);color:var(--amber);box-shadow:0 0 8px rgba(232,160,32,.2)}
-@keyframes dRoll{0%{transform:rotate(-5deg) scale(1.05)}50%{transform:rotate(5deg) scale(.96)}100%{transform:rotate(-5deg) scale(1.05)}}
-.emp-lbl{font-family:'Share Tech Mono',monospace;font-size:.67em;color:var(--dim);letter-spacing:.04em}
-.emp-lbl span{color:var(--amber);font-size:1.1em}
-input[type=range]{-webkit-appearance:none;appearance:none;width:88%;height:4px;background:var(--border);border-radius:2px;outline:none}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 6px rgba(232,160,32,.5)}
-input[type=range]:disabled{opacity:.25}
-.btn-sanc{position:absolute;top:7px;right:7px;background:var(--red-d);border:1px solid var(--red);
-  color:var(--red);width:25px;height:25px;border-radius:50%;font-size:.7em;font-weight:bold;
-  cursor:pointer;transition:all .15s;line-height:1;font-family:'Share Tech Mono',monospace;}
-.btn-sanc:hover{background:var(--red);color:#fff}
-
-/* COMPUTE BTN */
-.compute-btn{display:block;width:100%;max-width:300px;margin:18px auto 0;padding:13px 20px;
-  background:linear-gradient(135deg,var(--green-d),#006035);border:1px solid var(--green);
-  color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95em;
-  letter-spacing:.15em;cursor:pointer;border-radius:4px;position:relative;overflow:hidden;transition:all .2s;}
-.compute-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .4s;}
-.compute-btn:hover{box-shadow:0 0 20px rgba(0,209,108,.3)}
-.compute-btn:hover::before{left:100%}
-.compute-btn:active{transform:scale(.97)}
-
-/* ALERT / BANNERS */
-.alert-box{border:1px solid var(--red);background:rgba(255,59,59,.05);border-radius:6px;padding:24px;
-  text-align:center;color:var(--red);font-family:'Share Tech Mono',monospace;font-size:.76em;
-  letter-spacing:.05em;animation:pRed 2.2s infinite;}
-@keyframes pRed{0%,100%{box-shadow:0 0 0 rgba(255,59,59,0)}50%{box-shadow:0 0 22px rgba(255,59,59,.15)}}
-.end-banner{padding:10px;border-radius:4px;text-align:center;font-family:'Exo 2',sans-serif;
-  font-weight:900;font-size:.9em;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;}
-.end-banner.win{background:var(--green-g);border:1px solid var(--green);color:var(--green)}
-.end-banner.lose{background:var(--red-g);border:1px solid var(--red);color:var(--red)}
-
-/* RULES */
-.rules-hero{text-align:center;padding:10px 0 16px}
-.rules-hero h2{font-family:'Exo 2',sans-serif;font-weight:900;font-size:1.45em;color:var(--amber);letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
-.rules-hero p{font-family:'Share Tech Mono',monospace;font-size:.66em;color:var(--dim);letter-spacing:.1em}
-.chars-row{display:flex;justify-content:center;align-items:flex-end;gap:0;padding:8px 0 6px;position:relative}
-.char-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 12px}
-.char-anim.bob{animation:bob 2s ease-in-out infinite}
-.char-anim.susp{animation:susp 2.8s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-@keyframes susp{
-  0%,15%,35%,100%{transform:rotate(0deg)}
-  10%{transform:rotate(-9deg)}
-  25%{transform:rotate(7deg)}
-  50%{transform:rotate(0deg) translateY(-6px)}
-  55%{transform:rotate(0deg) translateY(0)}
-}
-.char-lbl{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.8em;letter-spacing:.1em;
-  text-transform:uppercase;padding:4px 13px;border-radius:12px;}
-.char-lbl.good{color:var(--green);background:var(--green-g);border:1px solid var(--green)}
-.char-lbl.bad{color:var(--red);background:var(--red-g);border:1px solid var(--red)}
-.vs-div{font-family:'Exo 2',sans-serif;font-weight:900;font-size:1.8em;color:var(--dim);padding:0 4px;margin-bottom:30px}
-
-.rule-sec{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:15px 17px;margin-bottom:11px;position:relative}
-.rule-sec::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:3px;background:linear-gradient(180deg,transparent,var(--amber),transparent);border-radius:2px}
-.rule-sec h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.86em;letter-spacing:.13em;color:var(--amber);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.sec-n{font-family:'Share Tech Mono',monospace;font-size:.76em;color:var(--dim);border:1px solid var(--border);padding:1px 5px;border-radius:2px}
-.rule-sec p,.rule-sec li{font-size:.87em;line-height:1.65;color:var(--text)}
-.rule-sec ul{list-style:none;padding:0}
-.rule-sec ul li{padding:2px 0 2px 14px;position:relative}
-.rule-sec ul li::before{content:'›';position:absolute;left:0;color:var(--amber);font-weight:bold}
+/* ══ RULE PANELS ══ */
+.hpanel{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:12px 15px;margin-bottom:9px;position:relative;}
+.hpanel::before{content:'';position:absolute;left:0;top:14%;bottom:14%;width:3px;
+  background:linear-gradient(180deg,transparent,var(--amber),transparent);border-radius:2px;}
+.hpanel h4{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.86em;
+  letter-spacing:.12em;color:var(--amber);text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;}
+.sn{font-family:'Share Tech Mono',monospace;font-size:.75em;color:var(--text-dim);
+  border:1px solid var(--border);padding:1px 4px;border-radius:2px;}
+.hpanel p,.hpanel li{font-size:.85em;line-height:1.65;color:var(--text);}
+.hpanel ul{list-style:none;padding:0;}
+.hpanel ul li{padding:2px 0 2px 13px;position:relative;}
+.hpanel ul li::before{content:'›';position:absolute;left:0;color:var(--amber);font-weight:bold;}
 .formula{background:var(--bg);border:1px solid var(--border);border-radius:4px;
-  padding:10px 13px;font-family:'Share Tech Mono',monospace;font-size:.71em;
-  color:var(--cyan);letter-spacing:.04em;line-height:1.9;margin-top:8px;}
-.rtable{width:100%;border-collapse:collapse;font-size:.79em;margin-top:8px}
-.rtable th{background:var(--amber-g);color:var(--amber);font-family:'Rajdhani',sans-serif;
-  font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 9px;border:1px solid var(--border);text-align:left}
-.rtable td{border:1px solid var(--border);padding:7px 9px;vertical-align:top;color:var(--text);line-height:1.5}
-.rtable td:first-child{color:var(--dim);font-weight:600;font-size:.86em;letter-spacing:.05em}
-.win{color:var(--green);font-weight:700}.lose{color:var(--red);font-weight:700}
+  padding:9px 11px;font-family:'Share Tech Mono',monospace;
+  font-size:.71em;color:var(--cyan);letter-spacing:.04em;line-height:1.85;margin-top:8px;}
+.rtable{width:100%;border-collapse:collapse;font-size:.77em;margin-top:8px;}
+.rtable th{background:rgba(232,160,32,.1);color:var(--amber);
+  font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:5px 7px;border:1px solid var(--border);text-align:left;}
+.rtable td{border:1px solid var(--border);padding:5px 7px;vertical-align:top;line-height:1.4;font-size:.9em;}
+.rtable td:first-child{color:var(--text-dim);font-weight:600;}
+.bw{color:var(--green);font-weight:700;} .bl{color:var(--red);font-weight:700;}
 
-/* CONFIG */
-textarea{width:100%;height:175px;background:var(--bg);color:var(--cyan);border:1px solid var(--border);
-  border-radius:4px;padding:11px;font-family:'Share Tech Mono',monospace;font-size:.78em;
-  resize:vertical;outline:none;letter-spacing:.04em;line-height:1.72;margin-bottom:11px}
-textarea:focus{border-color:var(--amber-d)}
-.cfg-btns{display:flex;gap:8px;margin-bottom:20px}
-.cfg-btn{flex:1;padding:12px;border:none;border-radius:5px;font-family:'Rajdhani',sans-serif;
-  font-weight:700;font-size:.8em;letter-spacing:.1em;cursor:pointer;transition:all .15s;
-  text-transform:uppercase;position:relative;overflow:hidden;}
-.cfg-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);transition:left .4s;}
-.cfg-btn:hover::after{left:100%}
-.cfg-btn:active{transform:scale(.96)}
-.btn-g{background:linear-gradient(135deg,var(--blue-d),#2563eb);color:#fff;border:1px solid var(--blue)}
-.btn-s{background:linear-gradient(135deg,var(--green-d),#006035);color:#fff;border:1px solid var(--green)}
-.btn-b{background:linear-gradient(135deg,#2a1010,#5c1a1a);color:var(--red);border:1px solid #3d1515;flex:0 0 auto;padding:12px 16px}
-.btn-b:hover{border-color:var(--red)}
-.instr-dice{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:13px;display:flex;justify-content:center;gap:20px}
-.dice-itm{text-align:center}
-.dice-itm small{display:block;font-family:'Share Tech Mono',monospace;font-size:.6em;color:var(--dim);margin-top:4px;letter-spacing:.07em}
-.dice-sm{width:54px!important;height:54px!important;font-size:1.2em!important}
+/* ══ CONFIG ══ */
+textarea{width:100%;height:180px;background:var(--bg);color:var(--cyan);
+  border:1px solid var(--border);border-radius:4px;padding:10px;
+  font-family:'Share Tech Mono',monospace;font-size:.79em;resize:vertical;
+  outline:none;letter-spacing:.04em;line-height:1.7;margin-bottom:11px;}
+textarea:focus{border-color:var(--amber-dim);}
+.cfg-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.cbtn{flex:1;min-width:80px;padding:11px 4px;border:1px solid;border-radius:4px;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.77em;
+  letter-spacing:.07em;cursor:pointer;transition:opacity .15s,transform .1s;}
+.cbtn:active{opacity:.75;transform:scale(.97);}
+.cbtn-g{background:linear-gradient(135deg,var(--blue-dim),var(--blue));color:#fff;border-color:var(--blue);position:relative;}
+.cbtn-g .sync-icon{margin-right:3px;}
+.cbtn-s{background:linear-gradient(135deg,var(--green-dim),#005a2e);color:#fff;border-color:var(--green);}
+.cbtn-r{background:linear-gradient(135deg,var(--red-dim),#400a0a);color:var(--red);border-color:var(--red);}
 
-/* FOOTER */
-footer{background:var(--bg2);border-top:1px solid var(--amber-d);padding:0 14px;height:52px;
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;}
-footer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:.2;}
-.ft-brand{display:flex;align-items:center;gap:7px;font-family:'Share Tech Mono',monospace;
-  font-size:.68em;color:var(--amber);letter-spacing:.1em;}
-.ft-hex{width:22px;height:22px;background:linear-gradient(135deg,var(--amber-d),var(--amber));
+/* Broadcast status */
+.broadcast-info{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);
+  border-radius:5px;padding:9px 12px;margin-bottom:12px;
+  font-family:'Share Tech Mono',monospace;font-size:.68em;color:rgba(180,210,255,.8);
+  line-height:1.6;letter-spacing:.04em;}
+.broadcast-info strong{color:var(--blue);}
+
+/* Speed */
+.speed-wrap{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:11px 13px;margin-bottom:13px;}
+.speed-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.speed-lbl{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.8em;
+  letter-spacing:.1em;color:var(--amber);text-transform:uppercase;}
+.speed-val{font-family:'Share Tech Mono',monospace;font-size:.8em;color:var(--cyan);}
+.speed-marks{display:flex;justify-content:space-between;
+  font-family:'Share Tech Mono',monospace;font-size:.56em;color:var(--text-dim);margin-top:4px;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;
+  background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+  border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 7px rgba(232,160,32,.5);}
+input[type=range]:disabled{opacity:.3;}
+
+.dice-panel{background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  padding:11px;display:flex;justify-content:center;gap:18px;}
+.dice-item{text-align:center;}
+.dice-item small{display:block;font-family:'Share Tech Mono',monospace;font-size:.59em;color:var(--text-dim);margin-top:3px;}
+
+/* ══ PLAYER CARDS ══ */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:960px;margin:0 auto;}
+@media(max-width:600px){.team-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:340px){.team-grid{grid-template-columns:1fr;}}
+.pcard{background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:11px 9px 13px;text-align:center;position:relative;
+  min-height:176px;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.pcard:hover{border-color:var(--amber-dim);}
+.pcard.sanctioned{opacity:.18;filter:grayscale(1) brightness(.5);pointer-events:none;}
+.pcard.reveal-g{border-color:var(--green)!important;background:linear-gradient(135deg,var(--green-dim),var(--panel))!important;box-shadow:0 0 14px rgba(0,209,108,.18);}
+.pcard.reveal-r{border-color:var(--red)!important;background:linear-gradient(135deg,var(--red-dim),var(--panel))!important;box-shadow:0 0 14px rgba(255,59,59,.18);}
+.pname{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.84em;
+  color:var(--amber);letter-spacing:.06em;text-transform:uppercase;line-height:1.2;}
+.role-tag{font-family:'Share Tech Mono',monospace;font-size:.64em;letter-spacing:.05em;}
+.dice-box{width:60px;height:60px;background:var(--bg);border:2px solid var(--border);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  font-family:'Share Tech Mono',monospace;font-size:1.4em;font-weight:bold;color:var(--text-dim);
+  cursor:pointer;transition:all .15s;user-select:none;position:relative;}
+.dice-box .dlbl{font-family:'Share Tech Mono',monospace;font-size:.3em;color:var(--text-dim);
+  letter-spacing:.08em;text-transform:uppercase;margin-top:1px;line-height:1;}
+.dice-box:hover:not(.inactive){border-color:var(--cyan);color:var(--cyan);}
+.dice-box.inactive{cursor:default;opacity:.4;}
+.dice-box.rolling{border-color:var(--cyan);color:var(--cyan);animation:dRoll .12s infinite;box-shadow:0 0 14px rgba(0,229,204,.35);}
+.dice-box.done{border-color:var(--amber);color:var(--amber);box-shadow:0 0 10px rgba(232,160,32,.2);}
+.dice-box.small{width:52px;height:52px;font-size:1.15em;}
+@keyframes dRoll{0%{transform:rotate(-4deg) scale(1.04);}50%{transform:rotate(4deg) scale(.97);}100%{transform:rotate(-4deg) scale(1.04);}}
+.comp-lbl{font-family:'Share Tech Mono',monospace;font-size:.67em;color:var(--text-dim);letter-spacing:.05em;margin-top:10px;}
+.comp-lbl span{color:var(--amber);font-size:1.1em;}
+.comp-sl{-webkit-appearance:none;appearance:none;width:90%;height:4px;background:var(--border);border-radius:2px;outline:none;margin-top:2px;}
+.comp-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 6px rgba(232,160,32,.5);}
+.comp-sl:disabled{opacity:.3;}
+.btn-sanc{position:absolute;top:6px;right:6px;background:var(--red-dim);border:1px solid var(--red);
+  color:var(--red);width:24px;height:24px;border-radius:50%;font-size:.68em;font-weight:bold;
+  cursor:pointer;line-height:1;transition:all .15s;}
+.btn-sanc:hover{background:var(--red);color:#fff;}
+.compute-btn{display:block;width:100%;max-width:300px;margin:16px auto 4px;padding:13px 20px;
+  background:linear-gradient(135deg,var(--green-dim),#007040);border:1px solid var(--green);color:#fff;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.98em;letter-spacing:.15em;
+  cursor:pointer;border-radius:4px;transition:all .2s;}
+.compute-btn:hover{box-shadow:0 0 18px rgba(0,209,108,.3);}
+.compute-btn:active{transform:scale(.97);}
+.alert-box{border:1px solid var(--red);background:rgba(255,59,59,.06);border-radius:6px;
+  padding:20px;text-align:center;color:var(--red);font-family:'Share Tech Mono',monospace;
+  font-size:.78em;letter-spacing:.04em;animation:pRed 2s infinite;}
+@keyframes pRed{0%,100%{box-shadow:0 0 0 rgba(255,59,59,0);}50%{box-shadow:0 0 18px rgba(255,59,59,.12);}}
+.end-banner{padding:10px;border-radius:4px;text-align:center;font-family:'Exo 2',sans-serif;
+  font-weight:900;font-size:.9em;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;}
+.end-v{background:rgba(0,209,108,.1);border:1px solid var(--green);color:var(--green);}
+.end-d{background:rgba(255,59,59,.1);border:1px solid var(--red);color:var(--red);}
+
+/* ══ FOOTER ══ */
+footer{background:linear-gradient(135deg,#080d12,#0c1520);border-top:1px solid rgba(232,160,32,.2);
+  padding:7px 13px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
+.f-brand{display:flex;align-items:center;gap:7px;}
+.f-hex{width:22px;height:22px;background:linear-gradient(135deg,var(--amber),#c47a10);
   clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;}
-.ft-links{display:flex;gap:6px}
-.ft-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:4px;
-  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.74em;letter-spacing:.08em;
-  text-decoration:none;transition:all .18s;text-transform:uppercase;border:1px solid;cursor:pointer;}
-.ft-wa{color:#25d366;border-color:rgba(37,211,102,.28);background:rgba(37,211,102,.05)}
-.ft-wa:hover{background:rgba(37,211,102,.13);border-color:#25d366;box-shadow:0 0 12px rgba(37,211,102,.2)}
-.ft-mail{color:var(--cyan);border-color:rgba(0,229,204,.22);background:rgba(0,229,204,.04)}
-.ft-mail:hover{background:rgba(0,229,204,.12);border-color:var(--cyan);box-shadow:0 0 12px rgba(0,229,204,.18)}
+.f-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.78em;color:var(--amber);letter-spacing:.08em;}
+.f-sub{font-family:'Share Tech Mono',monospace;font-size:.54em;color:var(--text-dim);letter-spacing:.06em;}
+.f-links{display:flex;gap:6px;}
+.f-btn{display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;
+  text-decoration:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.74em;
+  letter-spacing:.06em;transition:all .2s;border:1px solid;white-space:nowrap;}
+.f-wa{background:rgba(37,211,102,.1);border-color:rgba(37,211,102,.35);color:#25d166;}
+.f-wa:hover{background:rgba(37,211,102,.2);}
+.f-ml{background:rgba(232,160,32,.1);border-color:rgba(232,160,32,.3);color:var(--amber);}
+.f-ml:hover{background:rgba(232,160,32,.2);}
 
-/* FX */
-#confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:9000;display:none}
-#fxLayer{position:fixed;inset:0;pointer-events:none;z-index:8900;display:none}
-.fx-p{position:fixed;pointer-events:none;animation:flyOut 1.6s ease-out forwards;font-size:22px;line-height:1;transform-origin:center}
-@keyframes flyOut{
-  0%{transform:translate(0,0) scale(1.5) rotate(0deg);opacity:1}
-  100%{transform:translate(var(--ex,40px),var(--ey,-70px)) scale(.1) rotate(var(--er,180deg));opacity:0}
+/* ══ FX ══ */
+#fxc{position:fixed;inset:0;pointer-events:none;z-index:9998;display:none;}
+#fxf{position:fixed;inset:0;pointer-events:none;z-index:9997;overflow:hidden;}
+
+/* Sync toast */
+.sync-toast{
+  position:fixed;top:58px;left:50%;transform:translateX(-50%) translateY(-10px);
+  background:rgba(59,130,246,.92);color:#fff;border:1px solid var(--blue);
+  font-family:'Share Tech Mono',monospace;font-size:.72em;letter-spacing:.06em;
+  padding:8px 18px;border-radius:20px;z-index:10000;
+  opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;
 }
+.sync-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
+<canvas id="fxc"></canvas>
+<div id="fxf"></div>
+<div class="sync-toast" id="syncToast">📡 Sesión sincronizada</div>
 
+<!-- ══ NAV ══ -->
 <nav>
   <div class="nav-brand">
-    <div class="nav-hex">✦</div>
-    <div>
-      <div style="font-size:.95em;font-weight:bold;letter-spacing:.12em">FAC FLOTA</div>
-      <div class="nav-sub">SIMULADOR TÁCTICO v24.0</div>
-    </div>
+    <div class="logo-hex">⬡</div>
+    <div><div class="nav-title">FAC FLOTA</div><div class="nav-sub">v24.0 · SIM TÁCTICO</div></div>
+    <div class="conn-dot connecting" id="connDot" title="Conectando..."></div>
+  </div>
+  <div class="nav-center">
+    <div class="sync-badge" id="syncBadge">📡 SINCRONIZADO</div>
   </div>
   <div class="nav-links">
-    <button onclick="showTab('rules')" id="btn-rules">INSTRUCCIONES</button>
-    <button onclick="showTab('config')" id="btn-config" class="active">CONFIG</button>
-    <button onclick="showTab('game')" id="btn-game">HANGAR</button>
+    <button onclick="showTab('rules')" id="btn-rules">REGLAS</button>
+    <button onclick="showTab('config')" id="btn-config">CONFIG</button>
+    <button onclick="showTab('game')"  id="btn-game">HANGAR</button>
   </div>
 </nav>
 
-<div id="fleet-container" style="display:none">
-  <div id="fleet-status"></div>
+<!-- ══ STICKY HANGAR HEADER ══ -->
+<div id="game-sticky">
+  <div class="team-tabs" id="teamTabs"></div>
+  <div class="ac-bar-wrap">
+    <div class="ac-bar-tag">INTEGR.</div>
+    <div class="ac-bar" id="mainBar">
+      <div class="ab-base"  id="abBase" style="width:50%"></div>
+      <div class="ab-dpos"  id="abPos"></div>
+      <div class="ab-dneg"  id="abNeg"></div>
+      <div class="ab-label" id="abLabel">— · 50.0%</div>
+    </div>
+    <div class="ac-hours"  id="abHours">⏱ 0h</div>
+  </div>
   <div id="status-msg"></div>
 </div>
 
-<main>
-<div class="content-area" id="mainScroll">
+<main><div class="scroll-area" id="scrollArea">
 
-<!-- ══════════ INSTRUCCIONES ══════════ -->
+<!-- ─── STANDBY (receiver waiting) ─── -->
+<div id="standby">
+  <div class="standby-icon">📡</div>
+  <div class="standby-title">Esperando sesión</div>
+  <div class="standby-pulse"></div>
+  <div class="standby-sub">El instructor debe pulsar<br><strong style="color:var(--amber)">👥 JUGAR EN GRUPO</strong><br>desde su dispositivo para sincronizar.</div>
+</div>
+
+<!-- ─── REGLAS ─── -->
 <div id="rules" class="tab-content" style="display:none">
-  <div class="rules-hero">
-    <h2>📋 Manual Doctrinario</h2>
-    <p>FAC FLOTA v24.0 — Simulador de Mantenimiento Táctico Aeronáutico</p>
+  <div class="mascot-row">
+    <svg class="mascot-svg" viewBox="0 0 110 200" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="hg" cx="38%" cy="32%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.18)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.1)"/>
+      </radialGradient></defs>
+      <ellipse cx="55" cy="196" rx="26" ry="5" fill="rgba(0,0,0,.35)"/>
+      <rect x="29" y="163" width="22" height="18" rx="7" fill="#06090d"/>
+      <rect x="59" y="163" width="22" height="18" rx="7" fill="#06090d"/>
+      <rect x="30" y="164" width="11" height="5" rx="2" fill="rgba(255,255,255,.1)"/>
+      <rect x="60" y="164" width="11" height="5" rx="2" fill="rgba(255,255,255,.1)"/>
+      <rect x="32" y="126" width="19" height="42" rx="8" fill="#1a3260"/>
+      <rect x="59" y="126" width="19" height="42" rx="8" fill="#1a3260"/>
+      <rect x="22" y="86" width="66" height="50" rx="13" fill="#1c4480"/>
+      <line x1="55" y1="90" x2="55" y2="131" stroke="rgba(255,255,255,.06)" stroke-width="2"/>
+      <rect x="39" y="96" width="32" height="20" rx="4" fill="#e8a020"/>
+      <text x="55" y="106" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#000" font-weight="bold">FAC</text>
+      <text x="55" y="113" text-anchor="middle" font-family="monospace" font-size="5" fill="#000">ARIPAR</text>
+      <rect x="19" y="87" width="15" height="6" rx="2" fill="#e8a020"/>
+      <rect x="76" y="87" width="15" height="6" rx="2" fill="#e8a020"/>
+      <rect x="4"  y="90" width="20" height="38" rx="9" fill="#1c4480"/>
+      <rect x="86" y="90" width="20" height="38" rx="9" fill="#1c4480"/>
+      <circle cx="14" cy="131" r="7" fill="#d4a875"/>
+      <circle cx="96" cy="131" r="7" fill="#d4a875"/>
+      <g transform="translate(96,144) rotate(22)">
+        <rect x="-3" y="-30" width="6" height="34" rx="2.5" fill="#7a8898"/>
+        <rect x="-3" y="-30" width="6" height="11" rx="2" fill="#9aaabb"/>
+        <circle cx="0" cy="-34" r="9" fill="none" stroke="#7a8898" stroke-width="5"/>
+        <circle cx="0" cy="-34" r="4.5" fill="#06090d"/>
+      </g>
+      <rect x="48" y="79" width="14" height="13" rx="5" fill="#d4a875"/>
+      <circle cx="55" cy="56" r="30" fill="#e8c494"/>
+      <circle cx="55" cy="56" r="30" fill="url(#hg)"/>
+      <path d="M25,57 Q25,23 55,20 Q85,23 85,57 Z" fill="#1c4480"/>
+      <path d="M29,55 Q29,28 55,25 Q81,28 81,55 Z" fill="#2456a0"/>
+      <path d="M30,57 Q30,41 55,39 Q80,41 80,57 Z" fill="rgba(0,229,204,.38)"/>
+      <path d="M30,57 Q30,41 55,39 Q80,41 80,57 Z" fill="none" stroke="#00e5cc" stroke-width="1.5"/>
+      <path d="M35,48 Q41,42 56,41" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M25,57 Q25,52 28,49" fill="none" stroke="#e8a020" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M85,57 Q85,52 82,49" fill="none" stroke="#e8a020" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="44" cy="60" r="5.5" fill="#fff"/><circle cx="66" cy="60" r="5.5" fill="#fff"/>
+      <circle cx="45" cy="61" r="3.2" fill="#1a2a40"/><circle cx="67" cy="61" r="3.2" fill="#1a2a40"/>
+      <circle cx="46" cy="59.5" r="1.1" fill="#fff"/><circle cx="68" cy="59.5" r="1.1" fill="#fff"/>
+      <path d="M44,71 Q55,80 66,71" fill="none" stroke="#a07050" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="37" cy="68" r="5" fill="rgba(220,90,70,.18)"/>
+      <circle cx="73" cy="68" r="5" fill="rgba(220,90,70,.18)"/>
+      <path d="M27,60 Q25,80 36,84 Q45,88 55,88 Q65,88 74,84 Q85,80 83,60" fill="none" stroke="#1c4480" stroke-width="3"/>
+    </svg>
+    <div class="bubble">
+      <strong>¡Bienvenido al Simulador FAC FLOTA!</strong><br>
+      Soy el Técnico ARIPAR. Mantén el avión en vuelo mientras detectas a los infiltrados en tu equipo. ¡Liderazgo y trabajo en equipo son la clave!
+      <span class="tip" id="mascotTip">💡 Observa quién siempre tiene mala Pericia en el dado.</span>
+    </div>
   </div>
 
-  <div class="chars-row">
-    <div class="char-wrap">
-      <div class="char-anim bob" id="charGood"></div>
-      <div class="char-lbl good">🟢 Técnico Leal</div>
-    </div>
-    <div class="vs-div">VS</div>
-    <div class="char-wrap">
-      <div class="char-anim susp" id="charBad"></div>
-      <div class="char-lbl bad">🔴 Infiltrado</div>
-    </div>
+  <div class="hpanel">
+    <h4><span class="sn">01</span> Mecánica Central</h4>
+    <div class="formula">COMPROMISO  = Barra (0–10)    → Dedicación del técnico
+PERICIA     = Dado (−5 a +5) → Suerte / factores externos
+─────────────────────────────────────────────
+TÉCNICO LEAL:   Aporte = Compromiso × Pericia
+INFILTRADO:     Aporte = −1 × (|C × P| + 2) × 2.5
+─────────────────────────────────────────────
+DELTA RONDA:    Δ% = Σ(aportes) ÷ 8.0 × Velocidad
+VÁLVULA DAÑO:   Δ% mínimo = −20% × Velocidad</div>
   </div>
 
-  <div class="rule-sec">
-    <h4><span class="sec-n">01</span>Arquitectura Lógica de la Ronda</h4>
-    <p>El progreso de cada aeronave depende del <strong style="color:var(--amber)">empeño humano</strong> y el <strong style="color:var(--cyan)">azar técnico</strong>. No es lineal; cada turno es una operación táctica.</p>
-    <div class="formula">
-E  = Empeño (0–10)         →  Dedicación del técnico<br>
-D  = Dado técnico (-5 a +5)  →  Factores externos / suerte<br>
-──────────────────────────────────────────────────<br>
-TÉCNICO LEAL:    Aporte = E × D<br>
-INFILTRADO:      Aporte = −1 × (|E × D| + 2) × 2.5<br>
-──────────────────────────────────────────────────<br>
-TURNO TOTAL:     Δ% = Σ(aportes) ÷ 8.0<br>
-VÁLVULA DE DAÑO: Δ% mínimo = −20% por ronda
-    </div>
-  </div>
-
-  <div class="rule-sec">
-    <h4><span class="sec-n">02</span>Doctrina de Roles</h4>
+  <div class="hpanel">
+    <h4><span class="sn">02</span> Doctrina de Roles</h4>
     <table class="rtable">
       <thead><tr><th>Característica</th><th>🟢 Técnico Leal</th><th>🔴 Infiltrado</th></tr></thead>
       <tbody>
-        <tr><td>OBJETIVO</td><td>Alcanzar 100% de integridad</td><td>Llevar la integridad al 0%</td></tr>
-        <tr><td>ESTRATEGIA</td><td>Maximizar el empeño en cada turno</td><td>Camuflar el daño como "mala suerte"</td></tr>
-        <tr><td>VISIBILIDAD</td><td>Verde al revelar roles</td><td>Rojo al revelar roles</td></tr>
-        <tr><td>IMPACTO SANCIÓN</td><td>Si es expulsado, debilita la unidad</td><td>Si es expulsado, el avión vuela</td></tr>
+        <tr><td>OBJETIVO</td><td>Llevar integridad al 100%</td><td>Llevar integridad al 0%</td></tr>
+        <tr><td>ESTRATEGIA</td><td>Maximizar el Compromiso</td><td>Camuflar el daño como "mala Pericia"</td></tr>
+        <tr><td>AL REVELAR</td><td style="color:var(--green)">Verde — era leal ✓</td><td style="color:var(--red)">Rojo — era traidor ✗</td></tr>
+        <tr><td>SANCIÓN (✕)</td><td>Debilita la unidad</td><td>¡El avión puede volar!</td></tr>
       </tbody>
     </table>
   </div>
 
-  <div class="rule-sec">
-    <h4><span class="sec-n">03</span>Protocolos de Operación</h4>
+  <div class="hpanel">
+    <h4><span class="sn">03</span> Protocolos</h4>
     <ul>
-      <li><strong style="color:var(--amber)">Quórum:</strong> Mínimo <strong>2 técnicos activos</strong> para procesar cualquier turno.</li>
-      <li><strong style="color:var(--amber)">Consenso:</strong> Sin líder único. Las sanciones se deciden por debate grupal.</li>
-      <li><strong style="color:var(--amber)">Superioridad:</strong> Si infiltrados activos ≥ técnicos leales, el hangar se pierde automáticamente.</li>
-      <li><strong style="color:var(--amber)">Cuota:</strong> En modo automático, máximo <strong>33.9%</strong> de infiltrados. Siempre hay al menos uno.</li>
+      <li><strong style="color:var(--amber)">Quórum:</strong> Mínimo 2 técnicos con Compromiso &gt; 0 por turno.</li>
+      <li><strong style="color:var(--amber)">Pericia:</strong> Solo activa cuando Compromiso &gt; 0. Al lanzar, el Compromiso queda bloqueado.</li>
+      <li><strong style="color:var(--amber)">Superioridad:</strong> Infiltrados activos ≥ Leales activos → derrota automática.</li>
+      <li><strong style="color:var(--amber)">Cuota infiltrados:</strong> Modo auto asigna máx. 33.9%, mínimo 1.</li>
     </ul>
   </div>
 
-  <div class="rule-sec">
-    <h4><span class="sec-n">04</span>Modos de Ejecución (Pestaña CONFIG)</h4>
+  <div class="hpanel">
+    <h4><span class="sn">04</span> Broadcast (Sincronización)</h4>
     <ul>
-      <li><strong style="color:var(--blue)">Jugar en Grupo:</strong> Lee el textarea. Un <em>espacio al final del nombre</em> lo designa como infiltrado. El instructor controla quiénes son.</li>
-      <li><strong style="color:var(--green)">Jugar Solitario:</strong> El sistema asigna infiltrados aleatoriamente respetando la regla de proporcionalidad (≤33.9%).</li>
-      <li><strong style="color:var(--red)">Borrar Partida:</strong> Elimina la sesión guardada y regresa a los nombres por defecto.</li>
-      <li><strong style="color:var(--amber)">Dados del Instructor:</strong> D6, D20 y D100 para introducir eventos externos (clima, suministros, etc.).</li>
+      <li><strong style="color:var(--blue)">👥 JUGAR EN GRUPO:</strong> El instructor configura el personal, marca impostores con un espacio al final del nombre, y pulsa el botón. Todas las pantallas abiertas reciben la sesión automáticamente.</li>
+      <li><strong style="color:var(--green)">🎲 JUGAR SOLITARIO:</strong> El sistema asigna impostores al azar en el dispositivo local. Sin broadcast.</li>
+      <li><strong style="color:var(--amber)">📡 Punto verde en el logo:</strong> Indica conexión activa al servidor de sincronización.</li>
     </ul>
   </div>
 
-  <div class="rule-sec">
-    <h4><span class="sec-n">05</span>Condiciones de Cierre</h4>
+  <div class="hpanel">
+    <h4><span class="sn">05</span> Condiciones de Cierre</h4>
     <ul>
-      <li><span class="win">🏆 VICTORIA TÉCNICA:</span> Integridad al <strong>100%</strong>. "¡El avión está EN VUELO!"</li>
-      <li><span class="win">🏆 VICTORIA ESTRATÉGICA:</span> Se expulsan TODOS los infiltrados → el avión vuela al instante.</li>
-      <li><span class="lose">❌ DERROTA CATASTRÓFICA:</span> Integridad al <strong>0%</strong>. "¡El avión se cayó de los gatos!"</li>
-      <li><span class="lose">❌ DERROTA POR SUPERIORIDAD:</span> Infiltrados ≥ Leales. El hangar fue tomado.</li>
-    </ul>
-  </div>
-
-  <div class="rule-sec">
-    <h4><span class="sec-n">06</span>Válvulas de Seguridad del Sistema</h4>
-    <ul>
-      <li><strong style="color:var(--cyan)">Resiliencia:</strong> Daño máximo <strong>−20%</strong> por ronda. Ningún sabotaje destruye el avión de inmediato.</li>
-      <li><strong style="color:var(--cyan)">Factor de Escala:</strong> Resultado ÷ <strong>8.0</strong>. Curva de progresión suavizada.</li>
-      <li><strong style="color:var(--cyan)">Inicio Neutral:</strong> Cada aeronave comienza en <strong>50%</strong> de integridad.</li>
+      <li><span class="bw">🏆 VICTORIA TÉCNICA:</span> Integridad llega al 100%.</li>
+      <li><span class="bw">🏆 VICTORIA ESTRATÉGICA:</span> Todos los infiltrados expulsados → avión al 100%.</li>
+      <li><span class="bl">❌ DERROTA CATASTRÓFICA:</span> Integridad llega al 0%.</li>
+      <li><span class="bl">❌ DERROTA POR SUPERIORIDAD:</span> Infiltrados ≥ Leales activos.</li>
     </ul>
   </div>
 </div>
 
-<!-- ══════════ CONFIG ══════════ -->
-<div id="config" class="tab-content">
-  <div class="slbl">LISTA DE PERSONAL</div>
+<!-- ─── CONFIG ─── -->
+<div id="config" class="tab-content" style="display:none">
+  <div class="broadcast-info">
+    <strong>📡 Modo Broadcast activo</strong><br>
+    Al pulsar <strong>JUGAR EN GRUPO</strong> el sistema transmite el personal (con impostores) a todas las pantallas conectadas en tiempo real.<br>
+    Marca un impostor añadiendo un <strong>espacio invisible</strong> al final del nombre en la lista.
+  </div>
+  <div class="sec-lbl">LISTA DE PERSONAL</div>
   <textarea id="configText"></textarea>
   <div class="cfg-btns">
-    <button class="cfg-btn btn-g" onclick="parseConfig('manual')">▶ JUGAR EN GRUPO</button>
-    <button class="cfg-btn btn-s" onclick="parseConfig('solo')">🎲 JUGAR SOLITARIO</button>
-    <button class="cfg-btn btn-b" onclick="clearGame()">✕ BORRAR</button>
+    <button class="cbtn cbtn-g" onclick="parseConfig('group')"><span class="sync-icon">📡</span> JUGAR EN GRUPO</button>
+    <button class="cbtn cbtn-s" onclick="parseConfig('solo')">🎲 JUGAR SOLITARIO</button>
+    <button class="cbtn cbtn-r" onclick="resetGame()">🗑 BORRAR</button>
   </div>
-  <div class="slbl">DADOS DEL INSTRUCTOR</div>
-  <div class="instr-dice">
-    <div class="dice-itm">
-      <div class="dice-box dice-sm" onclick="rollGlobalDice(1,6,this)">?</div>
-      <small>D6 · 1–6</small>
+
+  <div class="sec-lbl">VELOCIDAD DE RONDA</div>
+  <div class="speed-wrap">
+    <div class="speed-head">
+      <span class="speed-lbl">⚡ Modificador de Impacto</span>
+      <span class="speed-val" id="speedVal">5 (×1.0 normal)</span>
     </div>
-    <div class="dice-itm">
-      <div class="dice-box dice-sm" onclick="rollGlobalDice(1,20,this)">?</div>
-      <small>D20 · 1–20</small>
+    <input type="range" min="1" max="10" value="5" id="speedSlider" oninput="updateSpeed(this.value)">
+    <div class="speed-marks"><span>1 Lento</span><span>5 Normal</span><span>10 Rápido</span></div>
+  </div>
+
+  <div class="sec-lbl">DADOS DEL INSTRUCTOR</div>
+  <div class="dice-panel">
+    <div class="dice-item">
+      <div class="dice-box small" onclick="rollGlobalDice(1,6,this)">?<div class="dlbl">D6</div></div>
+      <small>1–6</small>
     </div>
-    <div class="dice-itm">
-      <div class="dice-box dice-sm" onclick="rollGlobalDice(0,100,this)">?</div>
-      <small>D100 · 0–100</small>
+    <div class="dice-item">
+      <div class="dice-box small" onclick="rollGlobalDice(1,20,this)">?<div class="dlbl">D20</div></div>
+      <small>1–20</small>
+    </div>
+    <div class="dice-item">
+      <div class="dice-box small" onclick="rollGlobalDice(0,100,this)">?<div class="dlbl">D100</div></div>
+      <small>0–100</small>
     </div>
   </div>
 </div>
 
-<!-- ══════════ HANGAR ══════════ -->
+<!-- ─── HANGAR ─── -->
 <div id="game" class="tab-content" style="display:none">
-  <div class="team-sw" id="teamSw"></div>
   <div id="game-board" style="display:none">
-    <div id="banner-area"></div>
-    <div class="slbl">PERSONAL TÉCNICO ACTIVO</div>
+    <div class="sec-lbl">PERSONAL TÉCNICO ACTIVO</div>
     <div class="team-grid" id="playerGrid"></div>
     <button class="compute-btn" onclick="computeWork()">⚙ COMPUTAR TURNO</button>
   </div>
   <div id="infiltrator-alert" style="display:none">
-    <div class="alert-box">⚠ SEGURIDAD OPERACIONAL COMPROMETIDA<br><br>
-      <span style="color:var(--dim);font-size:.9em">Sin infiltrados designados.<br>Configure la misión en CONFIG.</span>
-    </div>
-  </div>
-  <div id="no-game-msg" style="text-align:center;padding:40px 20px;color:var(--dim)">
-    <div style="font-size:2.5em;margin-bottom:14px">✈</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:.75em;letter-spacing:.06em">
-      Sin misión activa.<br>Ve a CONFIG e inicia una partida.
+    <div class="alert-box">⚠ SEGURIDAD COMPROMETIDA<br><br>
+      <span style="color:var(--text-dim);font-size:.9em">No hay infiltrados en esta misión.<br>Configure primero en la pestaña CONFIG.</span>
     </div>
   </div>
 </div>
 
-</div><!-- /content-area -->
-</main>
+</div></main>
 
+<!-- ══ FOOTER ══ -->
 <footer>
-  <div class="ft-brand">
-    <div class="ft-hex"></div>
-    <span>INVERSIONES ARIPAR</span>
+  <div class="f-brand">
+    <div class="f-hex"></div>
+    <div><div class="f-name">INVERSIONES ARIPAR</div><div class="f-sub">FAC FLOTA v24.0 · Simulador Táctico</div></div>
   </div>
-  <div class="ft-links">
-    <a href="https://wa.me/573128816469" target="_blank" class="ft-btn ft-wa">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zM12 0C5.373 0 0 5.373 0 12c0 2.123.553 4.116 1.525 5.842L.057 23.5a.5.5 0 00.613.613l5.692-1.46A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.87 0-3.628-.487-5.154-1.341l-.369-.213-3.827.982.998-3.742-.23-.384A9.96 9.96 0 012 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
-      </svg>
+  <div class="f-links">
+    <a class="f-btn f-wa" href="https://wa.me/573128816469" target="_blank">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       WhatsApp
     </a>
-    <a href="mailto:alucard8@gmail.com" class="ft-btn ft-mail">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-      </svg>
+    <a class="f-btn f-ml" href="mailto:alucard8@gmail.com">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
       Correo
     </a>
   </div>
 </footer>
 
-<canvas id="confettiCanvas"></canvas>
-<div id="fxLayer"></div>
-
 <script>
-// ── STATE ──
-let fleetData={},selectedTeam=null,currentTab='config';
+// ══ SUPABASE ══
+const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
+const { createClient } = supabase;
+const _sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const DEFAULT_CONFIG=`#Equipo Alpha
-Carlos García 
-Ana Martínez
-Pedro López
-María Rodríguez 
-Juan Pérez
-Laura Gómez
+let realtimeCh = null;
+let isConnected = false;
 
-#Equipo Bravo
-Diego Torres 
-Sofía Vargas
-Andrés Morales
-Valentina Cruz
-Felipe Reyes 
-Camila Díaz`;
-
-const POS=[
-  '✓ Actuador instalado · Torque verificado según manual técnico.',
-  '✓ Prueba de estanqueidad superada · Sistemas nominales.',
-  '✓ Aviónica sincronizada · FOD removido · Área despejada.',
-  '✓ Reparación estructural certificada · Presión estable.',
-  '✓ Tren de aterrizaje ciclado · Combustible purgado.',
-  '✓ Baterías al 100% · Sistema eléctrico nominal.',
-  '✓ Instrumentos calibrados · Sin anomalías detectadas.',
-  '✓ Sistemas de control de vuelo operativos.',
-  '✓ Motor inspeccionado · Sin FOD detectado.',
-  '✓ Lista de chequeo pre-vuelo aprobada.'
-];
-const NEG=[
-  '⚠ Herramienta olvidada en controles · Inspección requerida.',
-  '⚠ Torque fuera de tolerancia · Fuga detectada.',
-  '⚠ Tornillo trasroscado · Número de parte incorrecto.',
-  '⚠ Corrosión detectada · Cortocircuito en arnés.',
-  '⚠ Sujetador suelto por vibración · Lista omitida.',
-  '⚠ FOD crítico en admisión · Área no despejada.',
-  '⚠ Falla hidráulica · Presión insuficiente.',
-  '⚠ Anomalía en actuador · Requiere inspección mayor.',
-  '⚠ Señal errática en sensor de temperatura.',
-  '⚠ Discrepancia en peso y balance · Misión en espera.'
-];
-
-// ── AMONG US SVG ──
-function makeAU(body,dark,glass,uid){
-  return `<svg viewBox="-8 0 116 148" xmlns="http://www.w3.org/2000/svg" width="88" height="114">
-    <defs>
-      <filter id="f_${uid}" x="-20%" y="-10%" width="140%" height="130%">
-        <feMorphology in="SourceAlpha" operator="dilate" radius="3.5" result="e"/>
-        <feFlood flood-color="#06090d" result="b"/>
-        <feComposite in="b" in2="e" operator="in" result="o"/>
-        <feComposite in="SourceGraphic" in2="o" operator="over"/>
-      </filter>
-    </defs>
-    <ellipse cx="52" cy="143" rx="28" ry="6" fill="rgba(0,0,0,0.16)"/>
-    <g filter="url(#f_${uid})">
-      <rect x="7" y="52" width="19" height="36" rx="10" fill="${dark}"/>
-      <ellipse cx="52" cy="70" rx="32" ry="56" fill="${body}"/>
-      <ellipse cx="52" cy="43" rx="25" ry="31" fill="${glass}"/>
-      <ellipse cx="64" cy="34" rx="10" ry="7" fill="rgba(255,255,255,0.56)" transform="rotate(-13 64 34)"/>
-      <ellipse cx="38" cy="53" rx="5" ry="4" fill="rgba(255,255,255,0.18)" transform="rotate(-13 38 53)"/>
-      <rect x="22" y="113" width="22" height="26" rx="11" fill="${dark}"/>
-      <rect x="58" y="113" width="22" height="26" rx="11" fill="${dark}"/>
-    </g>
-  </svg>`;
-}
-
-// ── CONFETTI ──
-function launchConfetti(){
-  const canvas=document.getElementById('confettiCanvas');
-  canvas.style.display='block';
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const ctx=canvas.getContext('2d');
-  const cols=['#e8a020','#00e5cc','#00d16c','#3b82f6','#ff6b35','#ffffff','#f0c040','#a78bfa','#fb7185'];
-  const sh=['rect','circ','tri'];
-  const pcs=Array.from({length:140},()=>({
-    x:Math.random()*canvas.width,y:-20-Math.random()*120,
-    w:7+Math.random()*9,h:4+Math.random()*7,
-    col:cols[Math.floor(Math.random()*cols.length)],
-    sh:sh[Math.floor(Math.random()*sh.length)],
-    rot:Math.random()*360,vx:(Math.random()-.5)*3.5,
-    vy:2.5+Math.random()*4,vr:(Math.random()-.5)*12,op:1
-  }));
-  let t=0;
-  function anim(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);t++;
-    let alive=false;
-    pcs.forEach(p=>{
-      p.x+=p.vx+Math.sin(t*.03+p.y*.01)*.6;
-      p.y+=p.vy;p.rot+=p.vr;p.vy=Math.min(p.vy+.08,8);
-      p.op=Math.max(0,1-p.y/canvas.height*1.35);
-      if(p.y<canvas.height+20)alive=true;
-      ctx.save();ctx.globalAlpha=p.op;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;
-      if(p.sh==='rect')ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-      else if(p.sh==='circ'){ctx.beginPath();ctx.arc(0,0,p.w/2,0,Math.PI*2);ctx.fill();}
-      else{ctx.beginPath();ctx.moveTo(0,-p.w/2);ctx.lineTo(p.w/2,p.w/2);ctx.lineTo(-p.w/2,p.w/2);ctx.closePath();ctx.fill();}
-      ctx.restore();
+function setupRealtime() {
+  try {
+    realtimeCh = _sb.channel('fac-flota-session', {
+      config: { broadcast: { self: false } }
     });
-    if(alive)requestAnimationFrame(anim);
-    else{canvas.style.display='none';ctx.clearRect(0,0,canvas.width,canvas.height);}
-  }
-  requestAnimationFrame(anim);
-}
-
-// ── EXPLOSION ──
-function launchExplosion(){
-  const layer=document.getElementById('fxLayer');
-  layer.innerHTML='';layer.style.display='block';
-  const cx=window.innerWidth/2,cy=window.innerHeight/2;
-  const tools=['🔧','🔨','💥','🔥','⚡','💨','🪛','⚠️','☠️','🛠️','🌪️','🔴'];
-  const n=20;
-  for(let i=0;i<n;i++){
-    const el=document.createElement('div');
-    el.className='fx-p';
-    const angle=(i/n)*Math.PI*2;
-    const dist=80+Math.random()*150;
-    el.style.left=cx+'px';el.style.top=cy+'px';
-    el.style.fontSize=(18+Math.random()*18)+'px';
-    el.style.animationDelay=(Math.random()*.3)+'s';
-    el.style.setProperty('--ex',(Math.cos(angle)*dist)+'px');
-    el.style.setProperty('--ey',(Math.sin(angle)*dist-50)+'px');
-    el.style.setProperty('--er',(Math.random()*720-360)+'deg');
-    el.textContent=tools[Math.floor(Math.random()*tools.length)];
-    layer.appendChild(el);
-  }
-  // shake screen
-  document.body.style.animation='none';
-  setTimeout(()=>{document.body.style.animation='';},50);
-  setTimeout(()=>{layer.innerHTML='';layer.style.display='none';},2600);
-}
-
-// ── STORAGE ──
-function save(){
-  try{localStorage.setItem('fac_flota_v24',JSON.stringify({fleetData,configRaw:document.getElementById('configText').value}));}catch(e){}
-}
-function load(){
-  // Render Among Us characters in rules
-  document.getElementById('charGood').innerHTML=makeAU('#2ecc71','#1a7a40','#5ae0b0','good');
-  document.getElementById('charBad').innerHTML=makeAU('#e83030','#8a1818','#7cc8dc','bad');
-  try{
-    const s=localStorage.getItem('fac_flota_v24');
-    if(s){
-      const p=JSON.parse(s);
-      fleetData=p.fleetData||{};
-      document.getElementById('configText').value=p.configRaw||DEFAULT_CONFIG;
-      if(Object.keys(fleetData).length>0){
-        renderFleet();updateTeamSw();
-        document.getElementById('no-game-msg').style.display='none';
-        selectedTeam=Object.keys(fleetData)[0];
-        showTab('game');selectTeam(selectedTeam);return;
-      }
-    }
-  }catch(e){}
-  document.getElementById('configText').value=DEFAULT_CONFIG;
-  showTab('config');
-}
-
-// ── PARSE CONFIG ──
-function parseConfig(mode){
-  const lines=document.getElementById('configText').value.split('\n');
-  fleetData={};let cur='';
-  lines.forEach(line=>{
-    const raw=line.replace(/\r/,'');
-    const isSab=(mode==='manual')?raw.endsWith(' '):false;
-    const clean=raw.trim();
-    if(clean.startsWith('#')){
-      cur=clean.substring(1).trim();
-      fleetData[cur]={progress:50,workHours:0,lastDelta:0,gameEnded:false,techs:[]};
-    }else if(clean!==''&&cur!==''){
-      fleetData[cur].techs.push({name:clean,isImpostor:isSab,lastLuck:0,hasRolled:false,selectedEmpeno:0,sanctioned:false});
-    }
-  });
-  if(mode==='solo'){
-    Object.keys(fleetData).forEach(name=>{
-      const team=fleetData[name];
-      team.techs.forEach(t=>t.isImpostor=false);
-      const maxSab=Math.floor(team.techs.length*.3399);
-      const target=Math.max(1,Math.floor(Math.random()*maxSab)+1);
-      const idxs=[...Array(team.techs.length).keys()].sort(()=>Math.random()-.5);
-      for(let i=0;i<target;i++)team.techs[idxs[i]].isImpostor=true;
-    });
-    let out='';
-    Object.keys(fleetData).forEach(name=>{
-      out+=`#${name}\n`;
-      fleetData[name].techs.forEach(t=>out+=t.name+(t.isImpostor?' ':'')+'\n');
-      out+='\n';
-    });
-    document.getElementById('configText').value=out.trim();
-  }
-  save();renderFleet();updateTeamSw();
-  document.getElementById('no-game-msg').style.display='none';
-  selectedTeam=null;showTab('game');
-  if(Object.keys(fleetData).length>0)selectTeam(Object.keys(fleetData)[0]);
-}
-
-function clearGame(){
-  if(!confirm('¿Eliminar la partida guardada y volver a los nombres por defecto?'))return;
-  try{localStorage.removeItem('fac_flota_v24');}catch(e){}
-  fleetData={};selectedTeam=null;
-  document.getElementById('configText').value=DEFAULT_CONFIG;
-  document.getElementById('fleet-status').innerHTML='';
-  document.getElementById('status-msg').innerText='';
-  document.getElementById('teamSw').innerHTML='';
-  document.getElementById('game-board').style.display='none';
-  document.getElementById('infiltrator-alert').style.display='none';
-  document.getElementById('no-game-msg').style.display='block';
-  document.getElementById('banner-area').innerHTML='';
-}
-
-// ── FLEET RENDER ──
-function renderFleet(){
-  const c=document.getElementById('fleet-status');c.innerHTML='';
-  Object.keys(fleetData).forEach(name=>{
-    const team=fleetData[name];
-    const pct=team.progress.toFixed(1);
-    const isSel=selectedTeam===name;
-    const wrap=document.createElement('div');
-    wrap.className='fleet-row'+(isSel?' is-selected':'');
-    wrap.innerHTML=`<div class="fleet-lbl">✈ ${name.toUpperCase().substring(0,9)}</div>
-      <div class="fleet-bar${isSel?' is-sel':''}" onclick="switchTeam('${name}')">
-        <div class="bar-fill${team.progress<40?' red':''}" style="width:${pct}%"></div>
-        <div class="bar-lbl">${pct}%</div>
-      </div>
-      <div class="fleet-hr">⏱${team.workHours}h</div>`;
-    c.appendChild(wrap);
-  });
-}
-
-function switchTeam(name){
-  selectedTeam=name;
-  document.getElementById('mainScroll').scrollTop=0;
-  renderFleet();updateTeamSw();showGameBoard();loadTechGrid();
-}
-
-// ── TEAM SWITCHER ──
-function updateTeamSw(){
-  const sw=document.getElementById('teamSw');sw.innerHTML='';
-  Object.keys(fleetData).forEach(name=>{
-    const btn=document.createElement('button');
-    btn.className='team-btn'+(selectedTeam===name?' active':'');
-    btn.textContent=name;btn.onclick=()=>switchTeam(name);
-    sw.appendChild(btn);
-  });
-}
-
-function selectTeam(name){
-  selectedTeam=name;renderFleet();updateTeamSw();showGameBoard();loadTechGrid();
-}
-
-function showGameBoard(){
-  const team=fleetData[selectedTeam];
-  if(!team)return;
-  document.getElementById('no-game-msg').style.display='none';
-  if(!team.techs.some(t=>t.isImpostor)){
-    document.getElementById('game-board').style.display='none';
-    document.getElementById('infiltrator-alert').style.display='block';
-  }else{
-    document.getElementById('infiltrator-alert').style.display='none';
-    document.getElementById('game-board').style.display='block';
+    realtimeCh
+      .on('broadcast', { event: 'game-sync' }, ({ payload }) => {
+        applyRemoteState(payload);
+      })
+      .subscribe((status) => {
+        isConnected = (status === 'SUBSCRIBED');
+        const dot = document.getElementById('connDot');
+        dot.className = 'conn-dot ' + (
+          status === 'SUBSCRIBED'   ? 'connected'   :
+          status === 'CHANNEL_ERROR'? 'error'        : 'connecting'
+        );
+        dot.title = status === 'SUBSCRIBED' ? 'Conectado · Broadcast activo' :
+                    status === 'CHANNEL_ERROR' ? 'Error de conexión' : 'Conectando...';
+      });
+  } catch(e) {
+    console.warn('Realtime setup error:', e);
+    document.getElementById('connDot').className = 'conn-dot error';
   }
 }
 
-// ── PLAYER GRID ──
-function loadTechGrid(){
-  const grid=document.getElementById('playerGrid');
-  const ba=document.getElementById('banner-area');
-  if(!selectedTeam)return;
-  grid.innerHTML='';ba.innerHTML='';
-  const team=fleetData[selectedTeam];if(!team)return;
-  if(team.gameEnded){
-    const won=team.progress>=100;
-    const b=document.createElement('div');
-    b.className='end-banner '+(won?'win':'lose');
-    b.textContent=won?'🏆 MISIÓN CUMPLIDA — EN VUELO':'❌ HANGAR PERDIDO — DERROTA';
-    ba.appendChild(b);
-  }
-  team.techs.forEach((p,i)=>{
-    p.selectedEmpeno=p.selectedEmpeno||0;p.hasRolled=false;
-    let cls=p.sanctioned?'sanctioned':'';
-    if(team.gameEnded)cls+=' '+(p.isImpostor?'reveal-bad':'reveal-good');
-    const card=document.createElement('div');
-    card.className='player-card '+cls;
-    const roleTag=team.gameEnded?`<div class="card-role ${p.isImpostor?'b':'g'}">${p.isImpostor?'🔴 INFILTRADO':'🟢 TÉCNICO LEAL'}</div>`:'';
-    const sanctBtn=(!team.gameEnded&&!p.sanctioned)?`<button class="btn-sanc" onclick="sanction(${i})">✕</button>`:'';
-    card.innerHTML=`${sanctBtn}
-      <div class="card-name">${p.name}</div>${roleTag}
-      <div class="dice-box" id="dice-${i}" onclick="startDiceRoll(${i},this)">?</div>
-      <div class="emp-lbl">EMPEÑO: <span id="val-${i}">${p.selectedEmpeno}</span></div>
-      <input type="range" min="0" max="10" value="${p.selectedEmpeno}" ${(p.sanctioned||team.gameEnded)?'disabled':''} oninput="updEmp(${i},this.value)">`;
-    grid.appendChild(card);
-  });
-}
-
-function updEmp(i,v){
-  document.getElementById('val-'+i).innerText=v;
-  fleetData[selectedTeam].techs[i].selectedEmpeno=parseInt(v);
-}
-
-// ── SANCTION ──
-function sanction(idx){
-  const team=fleetData[selectedTeam];const p=team.techs[idx];
-  if(!confirm(`¿Confirmar sanción a ${p.name}?`))return;
-  p.sanctioned=true;
-  if(p.isImpostor){
-    const rem=team.techs.filter(t=>t.isImpostor&&!t.sanctioned).length;
-    if(rem===0){
-      team.progress=100;team.gameEnded=true;
-      save();renderFleet();selectTeam(selectedTeam);launchConfetti();
-      setTimeout(()=>alert('🏆 VICTORIA ESTRATÉGICA\nTodos los infiltrados identificados.\n¡El avión está listo para volar!'),300);return;
-    }else alert(`✅ ÉXITO — ${p.name} era un INFILTRADO.\nQuedan ${rem} infiltrado(s) activo(s).`);
-  }else{
-    alert(`❌ ERROR — ${p.name} era un TÉCNICO LEAL.`);
-    const inf=team.techs.filter(t=>t.isImpostor&&!t.sanctioned).length;
-    const loy=team.techs.filter(t=>!t.isImpostor&&!t.sanctioned).length;
-    if(inf>=loy){
-      team.progress=0;team.gameEnded=true;
-      save();renderFleet();selectTeam(selectedTeam);launchExplosion();
-      setTimeout(()=>alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados controlan el hangar.'),300);return;
-    }
-  }
-  save();renderFleet();selectTeam(selectedTeam);
-}
-
-// ── DICE ROLL ──
-function startDiceRoll(idx,el){
-  const p=fleetData[selectedTeam].techs[idx];
-  if(p.hasRolled||p.sanctioned||fleetData[selectedTeam].gameEnded)return;
-  if(p.selectedEmpeno===0){el.style.animation='dRoll .1s 2';setTimeout(()=>el.style.animation='',300);return;}
-  p.hasRolled=true;el.classList.add('rolling');
-  let cnt=0;
-  const itv=setInterval(()=>{
-    el.innerText=Math.floor(Math.random()*11)-5;cnt+=100;
-    if(cnt>=2200){clearInterval(itv);p.lastLuck=parseInt(el.innerText);el.classList.remove('rolling');el.classList.add('done');save();}
-  },100);
-}
-
-// ── COMPUTE ──
-function computeWork(){
-  const team=fleetData[selectedTeam];
-  if(!team||team.gameEnded)return;
-  const actives=team.techs.filter(p=>p.selectedEmpeno>0&&!p.sanctioned);
-  if(actives.length<2){alert('⚠ QUÓRUM INSUFICIENTE\nMínimo 2 técnicos activos.');return;}
-  if(actives.some(p=>!p.hasRolled)){alert('⚠ Lance el dado de todos los técnicos activos.');return;}
-  const nInf=actives.filter(p=>p.isImpostor).length;
-  const nLoy=actives.length-nInf;
-  if(nInf>=nLoy){
-    team.progress=0;team.gameEnded=true;save();renderFleet();selectTeam(selectedTeam);launchExplosion();
-    setTimeout(()=>alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados dominan el turno.'),300);return;
-  }
-  let sum=0;
-  actives.forEach(p=>{let s=p.selectedEmpeno*p.lastLuck;if(p.isImpostor)s=-1*(Math.abs(s)+2)*2.5;sum+=s;});
-  let delta=sum/8.0;if(delta<-20)delta=-20;
-  team.progress=Math.max(0,Math.min(100,team.progress+delta));
-  team.lastDelta=delta;team.workHours++;
-  document.getElementById('status-msg').innerText=(sum>=0?POS:NEG)[Math.floor(Math.random()*10)];
-  if(team.progress<=0||team.progress>=100){
-    team.gameEnded=true;const won=team.progress>=100;
-    save();renderFleet();selectTeam(selectedTeam);
-    if(won){launchConfetti();setTimeout(()=>alert('🏆 VICTORIA\n¡El avión está EN VUELO!\nMisión completada.'),300);}
-    else{launchExplosion();setTimeout(()=>alert('❌ DERROTA CATASTRÓFICA\n¡El avión se cayó de los gatos!'),300);}
+function broadcastState() {
+  if (!realtimeCh || !isConnected) {
+    showToast('⚠ Sin conexión. El estado se cargó localmente.', '#ff6600');
     return;
   }
-  save();renderFleet();selectTeam(selectedTeam);
+  realtimeCh.send({
+    type: 'broadcast',
+    event: 'game-sync',
+    payload: { fleetData, speedMod, ts: Date.now() }
+  }).then(() => {
+    showToast('📡 Broadcast enviado a todas las pantallas', '#3b82f6');
+    document.getElementById('syncBadge').classList.add('show');
+    setTimeout(() => document.getElementById('syncBadge').classList.remove('show'), 3500);
+  }).catch(e => {
+    console.warn('Broadcast error:', e);
+    showToast('⚠ Error al enviar broadcast', '#ff3b3b');
+  });
 }
 
-// ── GLOBAL DICE ──
-function rollGlobalDice(min,max,el){
-  el.classList.remove('done');el.classList.add('rolling');let cnt=0;
-  const itv=setInterval(()=>{
-    el.innerText=Math.floor(Math.random()*(max-min+1))+min;cnt+=100;
-    if(cnt>=2000){clearInterval(itv);el.classList.remove('rolling');el.classList.add('done');}
-  },100);
+function applyRemoteState(payload) {
+  fleetData = payload.fleetData || {};
+  speedMod = payload.speedMod || 5;
+  document.getElementById('speedSlider').value = speedMod;
+  updateSpeed(speedMod, false);
+  // Rebuild clean config text (no impostor markers)
+  const clean = Object.keys(fleetData).map(nm =>
+    '#' + nm + '\n' + fleetData[nm].techs.map(t => t.name).join('\n')
+  ).join('\n\n');
+  document.getElementById('configText').value = clean;
+  save();
+  showToast('📡 Sesión recibida del instructor', '#3b82f6');
+  renderStickyHeader();
+  showTab('game');
+  const teams = Object.keys(fleetData);
+  if (teams.length > 0) selectTeam(teams[0]);
 }
 
-// ── TABS ──
-function showTab(id){
-  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
-  document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).style.display='block';
-  document.getElementById('btn-'+id).classList.add('active');
-  currentTab=id;
-  const fc=document.getElementById('fleet-container');
-  if(id==='rules'){fc.style.display='none';}
-  else{fc.style.display='block';fc.classList.remove('collapsed');}
-  if(id==='game'){
-    document.getElementById('mainScroll').scrollTop=0;
-    updateTeamSw();
-    if(!selectedTeam&&Object.keys(fleetData).length>0)selectTeam(Object.keys(fleetData)[0]);
-    if(Object.keys(fleetData).length===0){
-      document.getElementById('no-game-msg').style.display='block';
-      document.getElementById('game-board').style.display='none';
-      document.getElementById('infiltrator-alert').style.display='none';
-    }
+function showToast(msg, color) {
+  const t = document.getElementById('syncToast');
+  t.textContent = msg;
+  t.style.background = color + 'ee';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ══ DEFAULT CONFIG (1 equipo, 6 técnicos, 1 impostor marcado) ══
+const DEFAULT_CFG =
+`#Equipo A
+Técnico 1
+Técnico 2 
+Técnico 3
+Técnico 4
+Técnico 5
+Técnico 6`;
+
+const TIPS=[
+  "💡 Observa quién siempre tiene mala Pericia en el dado.",
+  "💡 El infiltrado evita Compromiso alto para no quedar expuesto.",
+  "💡 La victoria estratégica: la más rápida si identificas a todos.",
+  "💡 Mínimo 2 técnicos con Compromiso > 0 por turno (quórum).",
+  "💡 Una vez lanzada la Pericia, el Compromiso queda bloqueado.",
+  "💡 La franja al borde de la barra indica el impacto del último turno.",
+  "💡 En modo Solitario, ¡ni el instructor sabe quiénes son!",
+  "💡 Velocidad alta = partidas cortas. Velocidad baja = más análisis.",
+];
+const POS_MSGS=["✓ Actuador instalado · Torque verificado.","✓ Estanqueidad superada · Sistemas nominales.","✓ Aviónica sincronizada · FOD removido.","✓ Reparación certificada · Presión OK.","✓ Tren de aterrizaje ciclado · Combustible purgado.","✓ Baterías 100% · Eléctrico verificado ✈","✓ Panel calibrado · Sin anomalías.","✓ Sistemas de control de vuelo operativos.","✓ Motor inspeccionado · Sin FOD.","✓ Lista de verificación pre-vuelo aprobada."];
+const NEG_MSGS=["⚠ Herramienta olvidada en panel.","⚠ Torque fuera de tolerancia · Fuga hidráulica.","⚠ Tornillo trasroscado · Número de parte incorrecto.","⚠ Corrosión bajo recubrimiento · Cortocircuito.","⚠ Sujetador suelto por vibración.","⚠ FOD crítico en admisión · Detención.","⚠ Falla hidráulica · Presión insuficiente.","⚠ Anomalía en actuador de flap.","⚠ Sensor de temperatura errático.","⚠ Discrepancia peso/balance · Misión suspendida."];
+
+// ══ STATE ══
+let fleetData = {}, selectedTeam = null, speedMod = 5, currentTab = 'config';
+
+// ══ FX ══
+const fxC = document.getElementById('fxc'), fxCt = fxC.getContext('2d');
+let fxParts = [], fxAnim = null;
+function resizeFX() { fxC.width = innerWidth; fxC.height = innerHeight; }
+window.addEventListener('resize', resizeFX); resizeFX();
+function stopFX() { if (fxAnim) { cancelAnimationFrame(fxAnim); fxAnim = null; } fxC.style.display = 'none'; fxCt.clearRect(0, 0, fxC.width, fxC.height); }
+
+function launchToolConfetti() {
+  resizeFX(); stopFX(); fxC.style.display = 'block'; fxParts = [];
+  const tools = ['🔧','🔩','⚙️','🛠️','✅','⭐','🏗️','🔨','🪛','📐'];
+  for (let i = 0; i < 65; i++) fxParts.push({
+    type: 'tool', emoji: tools[Math.floor(Math.random() * tools.length)],
+    x: Math.random() * fxC.width, y: -20 - Math.random() * 200,
+    vx: (Math.random() - .5) * 3.5, vy: 1.8 + Math.random() * 4,
+    rot: Math.random() * Math.PI * 2, rv: (Math.random() - .5) * .18,
+    sz: 14 + Math.random() * 16, a: 1
+  });
+  const end = Date.now() + 5500;
+  (function loop() {
+    fxCt.clearRect(0, 0, fxC.width, fxC.height);
+    let alive = 0;
+    fxParts.forEach(p => {
+      if (p.a < .02) return;
+      p.x += p.vx; p.y += p.vy; p.vy += .05; p.vx *= .998; p.rot += p.rv;
+      if (p.y > fxC.height * .72) p.a *= .978;
+      if (p.y > fxC.height) p.a = 0;
+      fxCt.save(); fxCt.globalAlpha = p.a;
+      fxCt.translate(p.x, p.y); fxCt.rotate(p.rot);
+      fxCt.font = p.sz + 'px serif';
+      fxCt.textAlign = 'center'; fxCt.textBaseline = 'middle';
+      fxCt.fillText(p.emoji, 0, 0);
+      fxCt.restore(); alive++;
+    });
+    if (alive > 0 && Date.now() < end + 1500) fxAnim = requestAnimationFrame(loop);
+    else fxC.style.display = 'none';
+  })();
+}
+
+function launchExplosion() {
+  resizeFX(); stopFX(); fxC.style.display = 'block'; fxParts = [];
+  const cx = fxC.width / 2, cy = fxC.height * .42;
+  const cols = ['#ff3b3b','#ff6600','#ffd700','#ff4500','#dc143c','#ff8c00'];
+  [{ mr: 160, col: '#ff6600', a: .75, g: 9 }, { mr: 110, col: '#ffd700', a: .6, g: 13 }, { mr: 55, col: '#fff', a: .45, g: 19 }]
+    .forEach(r => fxParts.push({ type: 'ring', x: cx, y: cy, r: 5, ...r }));
+  const ee = ['💥','🔥','⚠️','❌'];
+  for (let i = 0; i < 60; i++) {
+    const a = Math.random() * Math.PI * 2, s = 1.5 + Math.random() * 10;
+    fxParts.push({ type: 'ember', x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1.5, sz: 2 + Math.random() * 11, col: cols[Math.floor(Math.random() * cols.length)], a: 1, dec: .948 + Math.random() * .025 });
+  }
+  for (let i = 0; i < 12; i++) {
+    const a = Math.random() * Math.PI * 2, s = 3 + Math.random() * 6;
+    fxParts.push({ type: 'emoji', emoji: ee[Math.floor(Math.random() * ee.length)], x: cx, y: cy, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 2, sz: 16 + Math.random() * 14, a: 1, dec: .94, rot: Math.random() * Math.PI * 2, rv: (Math.random() - .5) * .2 });
+  }
+  (function loop() {
+    fxCt.clearRect(0, 0, fxC.width, fxC.height); let alive = 0;
+    fxParts.forEach(p => {
+      if (p.a < .01) return;
+      if (p.type === 'ring') {
+        if (p.r >= p.mr) { p.a = 0; return; }
+        p.r += p.g; p.a *= .87;
+        fxCt.save(); fxCt.globalAlpha = p.a; fxCt.strokeStyle = p.col;
+        fxCt.lineWidth = 4; fxCt.shadowColor = p.col; fxCt.shadowBlur = 22;
+        fxCt.beginPath(); fxCt.arc(p.x, p.y, p.r, 0, Math.PI * 2); fxCt.stroke();
+        fxCt.restore(); alive++;
+      } else if (p.type === 'ember') {
+        p.x += p.vx; p.y += p.vy; p.vy += .12; p.vx *= .97; p.a *= p.dec; p.sz *= .985;
+        fxCt.save(); fxCt.globalAlpha = p.a; fxCt.fillStyle = p.col;
+        fxCt.shadowColor = p.col; fxCt.shadowBlur = p.sz * 2.5;
+        fxCt.beginPath(); fxCt.arc(p.x, p.y, Math.max(.1, p.sz / 2), 0, Math.PI * 2); fxCt.fill();
+        fxCt.restore(); alive++;
+      } else {
+        p.x += p.vx; p.y += p.vy; p.vy += .1; p.vx *= .97; p.a *= p.dec; p.rot += p.rv;
+        fxCt.save(); fxCt.globalAlpha = p.a; fxCt.translate(p.x, p.y); fxCt.rotate(p.rot);
+        fxCt.font = p.sz + 'px serif'; fxCt.textAlign = 'center'; fxCt.textBaseline = 'middle';
+        fxCt.fillText(p.emoji, 0, 0); fxCt.restore(); alive++;
+      }
+    });
+    if (alive > 0) fxAnim = requestAnimationFrame(loop); else fxC.style.display = 'none';
+  })();
+}
+
+// ══ TIPS ══
+let tipIdx = 0;
+setInterval(() => {
+  tipIdx = (tipIdx + 1) % TIPS.length;
+  const el = document.getElementById('mascotTip');
+  if (el) { el.style.opacity = 0; setTimeout(() => { el.textContent = TIPS[tipIdx]; el.style.opacity = 1; }, 400); }
+}, 4500);
+
+// ══ SPEED ══
+function updateSpeed(v, doSave = true) {
+  speedMod = parseInt(v);
+  const m = (speedMod / 5).toFixed(1);
+  const lbl = speedMod === 5 ? '×1.0 normal' : speedMod < 5 ? `×${m} lento` : `×${m} rápido`;
+  document.getElementById('speedVal').textContent = `${speedMod} (${lbl})`;
+  if (doSave) save();
+}
+
+// ══ SCROLL → BLINK ══
+document.getElementById('scrollArea').addEventListener('scroll', function () {
+  const bar = document.getElementById('mainBar');
+  if (currentTab === 'game' && this.scrollTop > 50) bar.classList.add('blinking');
+  else bar.classList.remove('blinking');
+});
+
+// ══ PERSIST ══
+function save() {
+  localStorage.setItem('fac_v24', JSON.stringify({
+    fleetData, configRaw: document.getElementById('configText').value, speedMod
+  }));
+}
+
+function load() {
+  const raw = localStorage.getItem('fac_v24');
+  if (raw) {
+    try {
+      const p = JSON.parse(raw);
+      fleetData = p.fleetData || {};
+      document.getElementById('configText').value = p.configRaw || DEFAULT_CFG;
+      if (p.speedMod) { speedMod = p.speedMod; document.getElementById('speedSlider').value = speedMod; updateSpeed(speedMod, false); }
+      const teams = Object.keys(fleetData);
+      if (teams.length > 0) { renderStickyHeader(); showTab('game'); selectTeam(teams[0]); }
+      else { document.getElementById('configText').value = DEFAULT_CFG; showStandby(); }
+    } catch { document.getElementById('configText').value = DEFAULT_CFG; showStandby(); }
+  } else {
+    document.getElementById('configText').value = DEFAULT_CFG;
+    showStandby();
   }
 }
 
-// ── SCROLL COLLAPSE ──
-document.getElementById('mainScroll').addEventListener('scroll',function(){
-  if(currentTab!=='game')return;
-  document.getElementById('fleet-container').classList.toggle('collapsed',this.scrollTop>35);
-});
+function showStandby() {
+  // Show standby + config option
+  document.getElementById('standby').style.display = 'flex';
+  document.getElementById('rules').style.display = 'none';
+  document.getElementById('config').style.display = 'none';
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('game-sticky').style.display = 'none';
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+}
 
-window.onload=load;
+function resetGame() {
+  if (!confirm('¿Borrar la partida guardada y volver a los valores por defecto?')) return;
+  localStorage.removeItem('fac_v24');
+  fleetData = {}; selectedTeam = null; speedMod = 5;
+  document.getElementById('speedSlider').value = 5; updateSpeed(5, false);
+  document.getElementById('configText').value = DEFAULT_CFG;
+  renderStickyHeader(); showStandby();
+}
+
+// ══ PARSE CONFIG ══
+function parseConfig(mode) {
+  const lines = document.getElementById('configText').value.split('\n');
+  fleetData = {}; let cur = '';
+  lines.forEach(rawLine => {
+    const line = rawLine.replace(/\r/g, '');
+    const val = line.trim();
+    if (val.startsWith('#')) {
+      cur = val.slice(1).trim();
+      fleetData[cur] = { progress: 50, workHours: 0, lastDelta: 0, gameEnded: false, techs: [] };
+    } else if (val !== '' && cur !== '') {
+      const isSab = (mode === 'group') ? (line.endsWith(' ') || line.endsWith('\t')) : false;
+      fleetData[cur].techs.push({ name: val, isImpostor: isSab, lastPericia: 0, hasRolled: false, compromiso: 0, sanctioned: false });
+    }
+  });
+  if (mode === 'solo') {
+    Object.keys(fleetData).forEach(nm => {
+      const t = fleetData[nm].techs;
+      const max = Math.floor(t.length * .3399);
+      const target = Math.max(1, Math.floor(Math.random() * max) + 1);
+      const idx = [...Array(t.length).keys()].sort(() => Math.random() - .5);
+      for (let i = 0; i < target; i++) t[idx[i]].isImpostor = true;
+    });
+  }
+  // Clean textarea (strip trailing spaces from display)
+  const clean = Object.keys(fleetData).map(nm =>
+    '#' + nm + '\n' + fleetData[nm].techs.map(t => t.name).join('\n')
+  ).join('\n\n');
+  document.getElementById('configText').value = clean;
+
+  // Broadcast on group mode
+  if (mode === 'group') broadcastState();
+
+  save(); renderStickyHeader(); showTab('game');
+  const teams = Object.keys(fleetData);
+  if (teams.length > 0) selectTeam(teams[0]);
+}
+
+// ══ STICKY BAR ══
+function renderStickyHeader() {
+  const tabs = document.getElementById('teamTabs');
+  tabs.innerHTML = '';
+  Object.keys(fleetData).forEach(nm => {
+    const b = document.createElement('button');
+    b.className = 'team-tab' + (selectedTeam === nm ? ' active' : '');
+    b.textContent = '✈ ' + nm; b.onclick = () => selectTeam(nm);
+    tabs.appendChild(b);
+  });
+  updateBar();
+}
+
+function updateBar() {
+  if (!selectedTeam || !fleetData[selectedTeam]) return;
+  const t = fleetData[selectedTeam];
+  const pct = Math.max(0, Math.min(100, t.progress));
+  const d = t.lastDelta;
+  const abBase = document.getElementById('abBase');
+  const abPos  = document.getElementById('abPos');
+  const abNeg  = document.getElementById('abNeg');
+
+  if (d > 0) {
+    const baseW = Math.max(0, pct - Math.abs(d));
+    const strW  = Math.min(Math.abs(d), pct);
+    abBase.style.width = baseW + '%';
+    abPos.style.display = 'block'; abPos.style.left = baseW + '%'; abPos.style.width = strW + '%';
+    abNeg.style.display = 'none';
+  } else if (d < 0) {
+    abBase.style.width = pct + '%';
+    abNeg.style.display = 'block'; abNeg.style.left = pct + '%';
+    abNeg.style.width = Math.min(Math.abs(d), 100 - pct) + '%';
+    abPos.style.display = 'none';
+  } else {
+    abBase.style.width = pct + '%';
+    abPos.style.display = 'none'; abNeg.style.display = 'none';
+  }
+  document.getElementById('abLabel').textContent = selectedTeam + ' · ' + pct.toFixed(1) + '%';
+  document.getElementById('abHours').textContent = '⏱ ' + t.workHours + 'h';
+}
+
+// ══ SELECT TEAM ══
+function selectTeam(nm) {
+  selectedTeam = nm; renderStickyHeader();
+  document.getElementById('scrollArea').scrollTop = 0;
+  document.getElementById('mainBar').classList.remove('blinking');
+  const team = fleetData[nm];
+  const hasSab = team.techs.some(t => t.isImpostor);
+  document.getElementById('game-board').style.display = hasSab ? 'block' : 'none';
+  document.getElementById('infiltrator-alert').style.display = hasSab ? 'none' : 'block';
+  if (hasSab) loadTechGrid();
+}
+
+// ══ TECH GRID ══
+function loadTechGrid() {
+  const grid = document.getElementById('playerGrid');
+  grid.innerHTML = '';
+  const old = document.getElementById('endBanner');
+  if (old) old.remove();
+  const team = fleetData[selectedTeam];
+  if (team.gameEnded) {
+    const won = team.progress >= 100;
+    const b = document.createElement('div');
+    b.id = 'endBanner'; b.className = 'end-banner ' + (won ? 'end-v' : 'end-d');
+    b.textContent = won ? '🏆 MISIÓN CUMPLIDA — AERONAVE EN VUELO' : '❌ HANGAR PERDIDO — MISIÓN FALLIDA';
+    grid.parentElement.insertBefore(b, grid);
+  }
+  team.techs.forEach((p, i) => {
+    p.compromiso = 0; p.hasRolled = false;
+    let cls = p.sanctioned ? 'sanctioned' : '';
+    if (team.gameEnded) cls += (p.isImpostor ? ' reveal-r' : ' reveal-g');
+    const roleTag = team.gameEnded
+      ? `<div class="role-tag" style="color:${p.isImpostor ? 'var(--red)' : 'var(--green)'}">${p.isImpostor ? '🔴 INFILTRADO' : '🟢 LEAL'}</div>` : '';
+    const sanctBtn = (!team.gameEnded && !p.sanctioned)
+      ? `<button class="btn-sanc" onclick="sanction(${i})">✕</button>` : '';
+    grid.innerHTML += `
+    <div class="pcard ${cls}">
+      ${sanctBtn}
+      <div class="pname">${p.name}</div>
+      ${roleTag}
+      <div class="dice-box inactive" id="dice-${i}" onclick="startPericia(${i},this)">
+        <span id="dval-${i}">?</span>
+        <div class="dlbl">PERICIA</div>
+      </div>
+      <div class="comp-lbl" style="margin-top:10px">COMPROMISO: <span id="cv-${i}">0</span></div>
+      <input class="comp-sl" type="range" min="0" max="10" value="0"
+        ${p.sanctioned ? 'disabled' : ''}
+        id="cs-${i}"
+        oninput="updateCompromiso(${i}, this.value)">
+    </div>`;
+  });
+}
+
+function updateCompromiso(idx, val) {
+  const p = fleetData[selectedTeam].techs[idx];
+  if (p.hasRolled) return;
+  p.compromiso = parseInt(val);
+  document.getElementById('cv-' + idx).innerText = val;
+  const db = document.getElementById('dice-' + idx);
+  if (p.compromiso > 0) db.classList.remove('inactive');
+  else db.classList.add('inactive');
+}
+
+function startPericia(idx, el) {
+  const p = fleetData[selectedTeam].techs[idx];
+  if (p.hasRolled || p.sanctioned) return;
+  if (p.compromiso === 0) { el.style.transform = 'scale(.82)'; setTimeout(() => el.style.transform = '', 180); return; }
+  p.hasRolled = true;
+  document.getElementById('cs-' + idx).disabled = true;
+  el.classList.add('rolling'); el.classList.remove('inactive');
+  const numEl = document.getElementById('dval-' + idx);
+  let c = 0;
+  const itv = setInterval(() => {
+    numEl.textContent = Math.floor(Math.random() * 11) - 5;
+    c += 100;
+    if (c >= 2400) {
+      clearInterval(itv);
+      p.lastPericia = parseInt(numEl.textContent);
+      el.classList.remove('rolling'); el.classList.add('done');
+      save();
+    }
+  }, 100);
+}
+
+function sanction(idx) {
+  const team = fleetData[selectedTeam];
+  const p = team.techs[idx];
+  if (!confirm(`¿Confirmar sanción a ${p.name}?\nEsta acción es irreversible.`)) return;
+  p.sanctioned = true;
+  if (p.isImpostor) {
+    const rem = team.techs.filter(t => t.isImpostor && !t.sanctioned).length;
+    if (rem === 0) {
+      team.progress = 100; team.lastDelta = 50; team.gameEnded = true;
+      save(); renderStickyHeader(); selectTeam(selectedTeam);
+      setTimeout(() => { launchToolConfetti(); alert('🏆 VICTORIA ESTRATÉGICA\nTodos los infiltrados identificados.\n¡La aeronave está lista para volar!'); }, 80);
+      return;
+    }
+    alert(`✅ ÉXITO: ${p.name} era un INFILTRADO.\nQuedan ${rem} infiltrado(s) activo(s).`);
+  } else {
+    alert(`❌ ERROR: ${p.name} era un TÉCNICO LEAL.\n¡Has debilitado la unidad!`);
+    const inf = team.techs.filter(t => t.isImpostor && !t.sanctioned).length;
+    const loy = team.techs.filter(t => !t.isImpostor && !t.sanctioned).length;
+    if (inf >= loy) {
+      team.progress = 0; team.lastDelta = -50; team.gameEnded = true;
+      save(); renderStickyHeader(); selectTeam(selectedTeam);
+      setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados controlan el hangar.'); }, 80);
+      return;
+    }
+  }
+  save(); renderStickyHeader(); selectTeam(selectedTeam);
+}
+
+function computeWork() {
+  const team = fleetData[selectedTeam];
+  if (team.gameEnded) return;
+  const act = team.techs.filter(p => p.compromiso > 0 && !p.sanctioned);
+  if (act.length < 2) { alert('⚠ QUÓRUM INSUFICIENTE\nMínimo 2 técnicos con Compromiso > 0.'); return; }
+  if (act.some(p => !p.hasRolled)) { alert('⚠ Lance la Pericia de todos los técnicos activos antes de computar.'); return; }
+  const nI = act.filter(p => p.isImpostor).length;
+  if (nI >= act.length - nI) {
+    team.progress = 0; team.lastDelta = -50; team.gameEnded = true;
+    save(); updateBar(); selectTeam(selectedTeam);
+    setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados dominan el turno.'); }, 80);
+    return;
+  }
+  let sum = 0;
+  act.forEach(p => {
+    let s = p.compromiso * p.lastPericia;
+    if (p.isImpostor) s = -1 * (Math.abs(s) + 2) * 2.5;
+    sum += s;
+  });
+  const mult = speedMod / 5;
+  let delta = (sum / 8) * mult;
+  const cap = -20 * mult;
+  if (delta < cap) delta = cap;
+  team.lastDelta = delta;
+  team.progress = Math.max(0, Math.min(100, team.progress + delta));
+  team.workHours++;
+
+  const msgEl = document.getElementById('status-msg');
+  const msgs = sum >= 0 ? POS_MSGS : NEG_MSGS;
+  msgEl.style.opacity = 0;
+  setTimeout(() => { msgEl.textContent = msgs[Math.floor(Math.random() * msgs.length)]; msgEl.style.opacity = 1; }, 80);
+
+  if (sum >= 0) launchToolConfetti(); else launchExplosion();
+
+  if (team.progress <= 0 || team.progress >= 100) {
+    team.gameEnded = true;
+    save(); updateBar(); loadTechGrid();
+    setTimeout(() => {
+      if (team.progress >= 100) alert('🏆 VICTORIA TÉCNICA\n¡La aeronave está EN VUELO!\nMisión completada con éxito.');
+      else alert('❌ DERROTA CATASTRÓFICA\n¡El avión se cayó de los gatos!\nMisión fallida.');
+    }, 220);
+  } else {
+    save(); updateBar(); loadTechGrid();
+  }
+}
+
+function rollGlobalDice(min, max, el) {
+  el.classList.remove('done'); el.classList.add('rolling');
+  const numEl = el.querySelector('span') || el;
+  let c = 0;
+  const itv = setInterval(() => {
+    numEl.textContent = Math.floor(Math.random() * (max - min + 1)) + min;
+    c += 100;
+    if (c >= 2000) { clearInterval(itv); el.classList.remove('rolling'); el.classList.add('done'); }
+  }, 100);
+}
+
+function showTab(id) {
+  document.getElementById('standby').style.display = 'none';
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).style.display = 'block';
+  document.getElementById('btn-' + id).classList.add('active');
+  const sticky = document.getElementById('game-sticky');
+  sticky.style.display = id === 'game' ? 'block' : 'none';
+  if (id !== 'game') document.getElementById('mainBar').classList.remove('blinking');
+  currentTab = id;
+  document.getElementById('scrollArea').scrollTop = 0;
+}
+
+window.onload = () => { setupRealtime(); load(); };
 </script>
 </body>
 </html>
