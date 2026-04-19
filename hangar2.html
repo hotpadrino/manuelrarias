@@ -316,7 +316,7 @@
             const totalJugadores = nombres.length;
             if (totalJugadores < 3) return alert("Quórum insuficiente. Se requieren mínimo 3 técnicos.");
 
-            const numInfiltrados = Math.max(1, Math.floor(totalJugadores * 0.33));
+            const numInfiltrados = Math.max(1, Math.floor(totalJugadores / 3));
             const barajados = nombres.sort(() => 0.5 - Math.random());
             listaInfiltrados = barajados.slice(0, numInfiltrados);
             listaLeales = barajados.slice(numInfiltrados);
@@ -327,7 +327,7 @@
             document.getElementById('panel-avion').classList.remove('hidden');
 
             canal.send({ type: 'broadcast', event: 'asignar_roles', payload: { infiltrados: listaInfiltrados } });
-            alert("MISIÓN INICIADA. Roles asignados de forma clasificada.");
+            alert("MISIÓN INICIADA. Roles asignados de forma secreta.");
         }
 
         function procesarJugada(data) {
