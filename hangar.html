@@ -966,7 +966,7 @@ function computeWork() {
   if (nI >= act.length - nI) {
     team.progress = 0; team.lastDelta = -50; team.gameEnded = true;
     save(); updateBar(); selectTeam(selectedTeam);
-    setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados dominan el turno.'); }, 80);
+    setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SABOTAJE\nLos infiltrados dominan el turno.'); }, 80);
     return;
   }
   let sum = 0;
@@ -977,8 +977,8 @@ function computeWork() {
   });
   const mult = speedMod / 5;
   let delta = (sum / 8) * mult;
-  const cap = -20 * mult;
-  if (delta < cap) delta = cap;
+  // REGLA DE INERCIA v30: Blindaje estricto ±20
+  delta = Math.max(-20, Math.min(20, delta));
   team.lastDelta = delta;
   team.progress = Math.max(0, Math.min(100, team.progress + delta));
   team.workHours++;
@@ -994,7 +994,7 @@ function computeWork() {
     team.gameEnded = true;
     save(); updateBar(); loadTechGrid();
     setTimeout(() => {
-      if (team.progress >= 100) alert('🏆 VICTORIA TÉCNICA\n¡La aeronave está EN VUELO!\nMisión completada con éxito.');
+      if (team.progress >= 100) alert('🏆 VICTORIA TÉCNICA\n¡La aeronave está LISTA PARA VUELO!\nMisión completada con éxito.');
       else alert('❌ DERROTA CATASTRÓFICA\n¡El avión se cayó de los gatos!\nMisión fallida.');
     }, 220);
   } else {
