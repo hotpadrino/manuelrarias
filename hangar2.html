@@ -24,7 +24,7 @@
             
             <div class="space-y-4">
                 <input id="input-room" type="text" placeholder="ID del Hangar (ej: ALFA)" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500 uppercase">
-                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500">
+                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded bg-slate-700 border border-slate-600 focus:outline-none focus:border-blue-500 uppercase">
                 
                 <div class="flex gap-4 pt-4">
                     <button onclick="conectar('alumno')" class="flex-1 bg-blue-600 hover:bg-blue-700 p-3 rounded font-bold transition shadow-lg">Ingresar</button>
@@ -49,14 +49,15 @@
             <div id="panel-avion" class="hidden bg-slate-900 p-6 rounded-xl border border-slate-700 mb-6 shadow-inner">
                 <div class="flex items-center gap-4 mb-2">
                     <span class="text-2xl font-bold">✈️ Integridad</span>
-                    <span id="texto-progreso" class="text-3xl font-black text-blue-400">50%</span>
+                    <span id="texto-progreso" class="text-3xl font-black text-green-400">50%</span>
                     <div id="cuadro-variacion" class="hidden px-2 py-1 rounded text-sm font-bold animate-bounce text-white shadow-md">
                         <span id="valor-variacion"></span>
                     </div>
                 </div>
                 
-                <div class="w-full bg-slate-800 rounded-full h-6 border border-slate-600 overflow-hidden mb-6">
-                    <div id="barra-progreso" class="bg-blue-500 h-6 rounded-full transition-all duration-500" style="width: 50%"></div>
+                <div class="w-full bg-slate-800 rounded-full h-6 border border-slate-600 relative overflow-hidden mb-6">
+                    <div id="barra-base" class="bg-green-500 h-6 absolute top-0 left-0 rounded-full transition-all duration-500" style="width: 50%"></div>
+                    <div id="barra-delta" class="h-6 absolute top-0 rounded-full transition-all duration-500" style="width: 0%; left: 50%;"></div>
                 </div>
                 
                 <div class="flex gap-4 items-end">
@@ -172,17 +173,13 @@
         async function cerrarHangarDefinitivo() {
             if (!confirm("⚠️ ¿Confirmas la clausura total del hangar? La sala y los registros de los técnicos serán eliminados permanentemente.")) return;
 
-            // 1. Avisar a todos ANTES de borrar
             canal.send({
                 type: 'broadcast',
                 event: 'hangar_clausurado',
                 payload: { motivo: 'Misión finalizada por el instructor' }
             });
 
-            // 2. Borrar jugadores
             await _supabase.from('jugadores').delete().eq('sala_id', miSala);
-            
-            // 3. Borrar la sala
             await _supabase.from('salas').delete().eq('id_sala', miSala);
 
             if(canal) await canal.unsubscribe();
@@ -193,7 +190,11 @@
         // 2. CONEXIÓN REALTIME
         async function conectar(rol, esReconexion = false) {
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
-            miNombre = document.getElementById('input-name').value.trim();
+            miNombre = document.getElementById('input-name').value.trim().toUpperCase();
+
+            if (rol === 'instructor') {
+                miNombre = 'INSTRUCTOR';
+            }
 
             if (!miSala || (!miNombre && rol === 'alumno')) return;
 
@@ -201,7 +202,7 @@
 
             if (rol === 'instructor') {
                 if (!esReconexion) await _supabase.from('salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
-                guardarSesionLocal('instructor', miSala, 'Instructor');
+                guardarSesionLocal('instructor', miSala, miNombre);
                 iniciarConexionRealtime('instructor');
             } else {
                 if (errSala || !sala || !sala.activa) return alert("El hangar no existe o se encuentra inactivo.");
@@ -274,7 +275,8 @@
         // --- LÓGICA DEL INSTRUCTOR ---
         function actualizarFichasLobby(estado) {
             const contenedor = document.getElementById('fichas-ronda');
-            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n !== "Instructor");
+            // Filtrar explícitamente al instructor para que no aparezca en las fichas
+            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n && n !== "INSTRUCTOR" && n.toUpperCase() !== "INSTRUCTOR");
             
             nombresConectados.forEach(nombre => {
                 let ficha = document.getElementById(`ficha-${nombre}`);
@@ -300,7 +302,7 @@
 
         async function iniciarJuego() {
             const state = canal.presenceState();
-            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n !== "Instructor");
+            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n && n !== "INSTRUCTOR" && n.toUpperCase() !== "INSTRUCTOR");
             
             const totalJugadores = nombres.length;
             if (totalJugadores < 4) return alert("Quórum insuficiente. Se requieren mínimo 4 técnicos.");
@@ -363,9 +365,8 @@
             if (delta < -20) delta = -20;
 
             mostrarVariacion(delta);
-            actualizarProgreso(progresoAvion + delta);
+            actualizarProgreso(progresoAvion + delta, delta);
 
-            // Bloquear Computar, Activar Liberar
             document.getElementById('btn-computar').disabled = true;
             document.getElementById('btn-computar').classList.add('opacity-50', 'cursor-not-allowed');
             
@@ -373,10 +374,32 @@
             document.getElementById('btn-liberar').classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        function actualizarProgreso(nuevoValor) {
+        function actualizarProgreso(nuevoValor, delta) {
+            let oldProgreso = progresoAvion;
             progresoAvion = Math.max(0, Math.min(100, nuevoValor));
-            document.getElementById('barra-progreso').style.width = `${progresoAvion}%`;
+            
             document.getElementById('texto-progreso').innerText = `${Math.round(progresoAvion)}%`;
+
+            // LÓGICA DE BARRA DUAL (Delta Visual)
+            const barraBase = document.getElementById('barra-base');
+            const barraDelta = document.getElementById('barra-delta');
+
+            if (delta > 0) {
+                // Avance: Base se queda en lo viejo, el delta dibuja lo nuevo en verde oscuro
+                barraBase.style.width = `${oldProgreso}%`;
+                barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-green-700 opacity-90";
+                barraDelta.style.left = `${oldProgreso}%`;
+                barraDelta.style.width = `${progresoAvion - oldProgreso}%`;
+            } else if (delta < 0) {
+                // Retroceso: Base se encoge a lo nuevo, el delta dibuja el vacío en rojo
+                barraBase.style.width = `${progresoAvion}%`;
+                barraDelta.className = "h-6 absolute top-0 rounded-full transition-all duration-500 bg-red-600 opacity-90";
+                barraDelta.style.left = `${progresoAvion}%`;
+                barraDelta.style.width = `${oldProgreso - progresoAvion}%`;
+            } else {
+                barraBase.style.width = `${progresoAvion}%`;
+                barraDelta.style.width = `0%`;
+            }
 
             if (progresoAvion >= 100) alert("🏆 VICTORIA: Certificación completada al 100%. El hangar ha triunfado.");
             if (progresoAvion <= 0) alert("💥 DERROTA: La integridad de los sistemas llegó a 0%.");
@@ -388,7 +411,10 @@
         function nuevaRonda() {
             canal.send({ type: 'broadcast', event: 'reset_ronda' });
             
-            // Bloquear Liberar, Activar Computar
+            // Sincronizar y limpiar el delta visual para la nueva ronda
+            document.getElementById('barra-base').style.width = `${progresoAvion}%`;
+            document.getElementById('barra-delta').style.width = `0%`;
+            
             document.getElementById('btn-liberar').disabled = true;
             document.getElementById('btn-liberar').classList.add('opacity-50', 'cursor-not-allowed');
             
@@ -423,7 +449,8 @@
             if (infActivos === 0) {
                 alert("🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido erradicados.");
             } else if (infActivos >= leaActivos) {
-                actualizarProgreso(0);
+                // Sanción letal: delta equivalente a toda la barra
+                actualizarProgreso(0, -progresoAvion);
                 alert("🚨 SABOTAJE: Superioridad numérica infiltrada confirmada. Hemos perdido el hangar.");
             }
         }
