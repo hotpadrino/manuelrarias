@@ -127,9 +127,22 @@
             </div>
 
             <div id="espera-alumno" class="hidden w-full text-center mt-2 p-6 bg-slate-900 rounded-xl border border-slate-700 shadow-inner">
-                <p class="text-blue-400 font-bold text-xl mb-2 flex items-center justify-center gap-2">
+                <p class="text-blue-400 font-bold text-xl mb-4 flex items-center justify-center gap-2">
                     <span class="animate-pulse">📡</span> Datos Transmitidos
                 </p>
+                
+                <div class="flex justify-center gap-6 bg-slate-800 p-4 rounded-lg border border-slate-700 mb-6 shadow-md">
+                    <div class="text-center">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-widest block mb-1">Pericia</span>
+                        <span id="res-pericia" class="text-3xl font-black text-yellow-400 font-mono">0</span>
+                    </div>
+                    <div class="w-px bg-slate-600"></div>
+                    <div class="text-center">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-widest block mb-1">Compromiso</span>
+                        <span id="res-compromiso" class="text-3xl font-black text-blue-400 font-mono">0</span>
+                    </div>
+                </div>
+
                 <p class="text-slate-500 text-sm font-mono mt-4">Esperando instrucciones...</p>
             </div>
         </div>
@@ -511,10 +524,32 @@
 
             setTimeout(() => {
                 clearInterval(intervaloRuleta);
-                display.innerText = Math.floor(Math.random() * 21) - 10;
                 
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
+                const dadoFinal = Math.floor(Math.random() * 21) - 10;
+                displayPericia.innerText = dadoFinal;
+
+                setTimeout(() => {
+                    // --- NUEVO: Inyectar datos en la pantalla de espera ---
+                    document.getElementById('res-pericia').innerText = dadoFinal;
+                    document.getElementById('res-compromiso').innerText = compromiso;
+                    // ------------------------------------------------------
+
+                    if (esFaseJuegoLocal) {
+                        document.getElementById('controles-alumno').classList.add('hidden');
+                        document.getElementById('espera-alumno').classList.remove('hidden');
+
+                        canal.send({
+                            type: 'broadcast',
+                            event: 'nuevo_resultado',
+                            payload: { nombre: miNombre, valor_dado: dadoFinal, valor_compromiso: compromiso }
+                        });
+                    } else {
+                        console.log(`[Modo Entrenamiento] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
+                    }
+                }, 1000);
+
             }, 3000);
         }
 
