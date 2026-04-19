@@ -144,6 +144,7 @@
         let miRol = "Técnico"; 
         let esFaseJuegoLocal = false; 
 
+        // 1. GESTIÓN DE SESIÓN
         window.onload = () => {
             const salaGuardada = localStorage.getItem('mi_sala');
             const nombreGuardado = localStorage.getItem('mi_nombre');
@@ -169,21 +170,27 @@
         }
 
         async function cerrarHangarDefinitivo() {
-            if (!confirm("⚠️ ¿Confirmas la clausura del hangar? Todos los datos de los técnicos serán eliminados.")) return;
-            await _supabase.from('jugadores').delete().eq('sala_id', miSala);
-            await _supabase.from('salas').update({ activa: false, fase: 'lobby' }).eq('id_sala', miSala);
+            if (!confirm("⚠️ ¿Confirmas la clausura total del hangar? La sala y los registros de los técnicos serán eliminados permanentemente.")) return;
 
+            // 1. Avisar a todos ANTES de borrar
             canal.send({
                 type: 'broadcast',
                 event: 'hangar_clausurado',
                 payload: { motivo: 'Misión finalizada por el instructor' }
             });
 
+            // 2. Borrar jugadores
+            await _supabase.from('jugadores').delete().eq('sala_id', miSala);
+            
+            // 3. Borrar la sala
+            await _supabase.from('salas').delete().eq('id_sala', miSala);
+
             if(canal) await canal.unsubscribe();
             localStorage.clear();
             window.location.reload();
         }
 
+        // 2. CONEXIÓN REALTIME
         async function conectar(rol, esReconexion = false) {
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
             miNombre = document.getElementById('input-name').value.trim();
@@ -358,7 +365,7 @@
             mostrarVariacion(delta);
             actualizarProgreso(progresoAvion + delta);
 
-            // GESTIÓN DE BOTONES (Bloqueo Computar / Activar Liberar)
+            // Bloquear Computar, Activar Liberar
             document.getElementById('btn-computar').disabled = true;
             document.getElementById('btn-computar').classList.add('opacity-50', 'cursor-not-allowed');
             
@@ -381,7 +388,7 @@
         function nuevaRonda() {
             canal.send({ type: 'broadcast', event: 'reset_ronda' });
             
-            // GESTIÓN DE BOTONES (Bloqueo Liberar / Activar Computar)
+            // Bloquear Liberar, Activar Computar
             document.getElementById('btn-liberar').disabled = true;
             document.getElementById('btn-liberar').classList.add('opacity-50', 'cursor-not-allowed');
             
@@ -474,25 +481,19 @@
             const displayPericia = document.getElementById('display-pericia');
             const compromiso = document.getElementById('input-compromiso').value;
 
-            // Bloquear botón inmediatamente para evitar doble pulsación
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
 
-            // 1. Iniciar Animación de Ruleta (cambio cada 100ms)
             let intervaloRuleta = setInterval(() => {
-                // Rango aleatorio entre -10 y 10
                 displayPericia.innerText = Math.floor(Math.random() * 21) - 10; 
             }, 100);
 
-            // 2. Detener tras 3 segundos (3000 ms)
             setTimeout(() => {
                 clearInterval(intervaloRuleta);
                 
-                // Determinar valor final
                 const dadoFinal = Math.floor(Math.random() * 21) - 10;
                 displayPericia.innerText = dadoFinal;
 
-                // 3. Esperar 1 segundo para que el usuario vea su resultado final y luego enviar
                 setTimeout(() => {
                     if (esFaseJuegoLocal) {
                         document.getElementById('controles-alumno').classList.add('hidden');
@@ -504,8 +505,7 @@
                             payload: { nombre: miNombre, valor_dado: dadoFinal, valor_compromiso: compromiso }
                         });
                     } else {
-                        // En modo práctica, permitimos volver a lanzar
-                        console.log(`[Modo Práctica] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
+                        console.log(`[Modo Entrenamiento] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
                         btn.disabled = false;
                         btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
                     }
@@ -518,7 +518,6 @@
             document.getElementById('controles-alumno').classList.remove('hidden');
             document.getElementById('espera-alumno').classList.add('hidden');
             
-            // Restablecer panel de Pericia para la nueva ronda
             document.getElementById('display-pericia').innerText = "0";
             const btn = document.getElementById('btn-lanzar');
             btn.disabled = false;
