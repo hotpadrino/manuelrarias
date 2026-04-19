@@ -410,7 +410,7 @@ VÁLVULA DAÑO:   Δ% mínimo = −20% × Velocidad</div>
     <ul>
       <li><strong style="color:var(--amber)">Quórum:</strong> Mínimo 2 técnicos con Compromiso &gt; 0 por turno.</li>
       <li><strong style="color:var(--amber)">Pericia:</strong> Solo activa cuando Compromiso &gt; 0. Al lanzar, el Compromiso queda bloqueado.</li>
-      <li><strong style="color:var(--amber)">Superioridad:</strong> Infiltrados activos ≥ Leales activos → derrota automática.</li>
+      <li><strong style="color:var(--amber)">Sabotaje:</strong> Infiltrados activos ≥ Leales activos → derrota automática.</li>
       <li><strong style="color:var(--amber)">Cuota infiltrados:</strong> Modo auto asigna máx. 34%, mínimo 1.</li>
     </ul>
   </div>
@@ -430,7 +430,7 @@ VÁLVULA DAÑO:   Δ% mínimo = −20% × Velocidad</div>
       <li><span class="bw">🏆 VICTORIA TÉCNICA:</span> Integridad llega al 100%.</li>
       <li><span class="bw">🏆 VICTORIA ESTRATÉGICA:</span> Todos los infiltrados expulsados → avión al 100%.</li>
       <li><span class="bl">❌ DERROTA CATASTRÓFICA:</span> Integridad llega al 0%.</li>
-      <li><span class="bl">❌ DERROTA POR SUPERIORIDAD:</span> Infiltrados ≥ Leales activos.</li>
+      <li><span class="bl">❌ DERROTA POR SABOTAJE:</span> Infiltrados ≥ Leales activos.</li>
     </ul>
   </div>
 </div>
@@ -949,7 +949,7 @@ function sanction(idx) {
     if (inf >= loy) {
       team.progress = 0; team.lastDelta = -50; team.gameEnded = true;
       save(); renderStickyHeader(); selectTeam(selectedTeam);
-      setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SUPERIORIDAD\nLos infiltrados controlan el hangar.'); }, 80);
+      setTimeout(() => { launchExplosion(); alert('❌ DERROTA POR SABOTAJE\nLos infiltrados controlan el hangar.'); }, 80);
       return;
     }
   }
