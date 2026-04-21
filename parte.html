@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Parte SECAE - Aripar Mobile</title>
+    <style>
+        :root { --primary: #1a2a3a; --accent: #2980b9; --success: #27ae60; --bg: #f8f9fa; --danger: #e74c3c; }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; color: #333; }
+        
+        .container { width: 100%; max-width: 600px; margin: auto; padding: 15px; }
+        
+        .header-unit { text-align: center; padding: 10px 0; border-bottom: 2px solid var(--accent); margin-bottom: 15px; background: white; border-radius: 8px; }
+        .header-unit h1 { margin: 5px; font-size: 1.2rem; color: var(--primary); text-transform: uppercase; }
+
+        /* Navegación por pestañas optimizada para dedos */
+        .tabs { display: flex; background: #ddd; border-radius: 10px; padding: 4px; margin-bottom: 15px; }
+        .tab-btn { flex: 1; padding: 12px 5px; cursor: pointer; border: none; background: none; font-weight: bold; color: #666; border-radius: 8px; font-size: 0.85rem; transition: 0.2s; }
+        .tab-btn.active { background: white; color: var(--accent); shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .content { display: none; }
+        .content.active { display: block; }
+
+        /* Modo Mobile: Convertir Tabla en Tarjetas */
+        .person-card { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .person-name { font-weight: bold; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .person-cat { font-size: 0.75rem; color: #7f8c8d; background: #e9ecef; padding: 2px 8px; border-radius: 5px; }
+        
+        .form-group { margin-top: 10px; }
+        .form-group label { display: block; font-size: 0.75rem; color: #999; margin-bottom: 4px; }
+        
+        select, input, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; background: #fff; appearance: none; }
+        
+        /* Reporte */
+        #report-preview { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 10px; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.85rem; margin-top: 15px; }
+        
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: white; font-size: 0.95rem; }
+        .btn-copy { background: #5a6268; }
+        .btn-wa { background: var(--success); }
+        .btn-del { background: var(--danger); padding: 8px; font-size: 0.75rem; width: auto; }
+
+        .hist-card { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #ddd; }
+
+        /* Footer Sticky Refinado */
+        footer { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #ddd; padding: 10px; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        .footer-content { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .footer-brand { font-size: 0.7rem; color: #999; letter-spacing: 1px; }
+        .footer-links { display: flex; gap: 10px; }
+        .footer-btn { padding: 6px 12px; background: #f0f2f5; border-radius: 20px; font-size: 0.75rem; text-decoration: none; color: #333; border: 1px solid #ddd; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-unit">
+        <h1 id="ui-titulo-oficina">PARTE SECAE</h1>
+    </div>
+
+    <div class="tabs">
+        <div class="tab-btn active" onclick="showTab('parte')">📋 PARTE</div>
+        <div class="tab-btn" onclick="showTab('historial')">🕒 HISTORIAL</div>
+        <div class="tab-btn" onclick="showTab('config')">⚙️ CONFIG</div>
+    </div>
+
+    <div id="parte" class="content active">
+        <div id="lista-personal-mobile"></div>
+        
+        <div id="report-preview"></div>
+        <div class="actions">
+            <button class="btn-copy" onclick="exportData('copy')">📋 Copiar</button>
+            <button class="btn-wa" onclick="exportData('wa')">📱 WhatsApp</button>
+        </div>
+    </div>
+
+    <div id="historial" class="content">
+        <div id="historial-lista"></div>
+    </div>
+
+    <div id="config" class="content">
+        <p style="font-size: 0.8rem;"><b>Estructura:</b> ##Título, #Categoría, Nombres...</p>
+        <textarea id="config-personal" style="height: 200px; margin-bottom:15px;"></textarea>
+        <textarea id="config-novedades" style="height: 80px;"></textarea>
+        <button style="background: var(--accent); width:100%; margin-top:10px;" onclick="saveConfig()">Guardar Todo</button>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">INVERSIONES ARIPAR</div>
+        <div class="footer-links">
+            <a href="https://wa.me/573128816469" class="footer-btn">WhatsApp</a>
+            <a href="mailto:alucard8@gmail.com" class="footer-btn">Correo</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    let state = {
+        dataRaw: `##Sección Certificación SECAE\n#Oficiales\nGrado Oficial 1\n#Suboficiales\nTS Gustavo Flores\nGrado Suboficial 1\n#Civiles\n Ingeniero`,
+        novedades: ["FILA", "SERVICIO", "DISPONIBLE DE VUELO", "COMPENSANDO", "PERMISO ESPECIAL", "EXCUSA MEDICA", "TURNO DESCANSO", "CURSO", "COMISIÓN/ESTUDIO", "OTRA"],
+        asignaciones: {}, 
+        tituloOficina: "",
+        historial: []
+    };
+
+    function init() {
+        const saved = localStorage.getItem('parte_v6_mobile');
+        if (saved) state = JSON.parse(saved);
+        document.getElementById('config-personal').value = state.dataRaw;
+        document.getElementById('config-novedades').value = state.novedades.join('\n');
+        processData();
+        renderParte();
+    }
+
+    function processData() {
+        const lines = state.dataRaw.split('\n').filter(l => l.trim() !== "");
+        let currentCat = "Otros";
+        const newAsignaciones = {};
+        lines.forEach(line => {
+            if (line.startsWith('##')) {
+                state.tituloOficina = line.replace('##', '').trim();
+                document.getElementById('ui-titulo-oficina').innerText = state.tituloOficina;
+            } else if (line.startsWith('#')) {
+                currentCat = line.replace('#', '').trim();
+            } else {
+                const nombre = line.trim();
+                newAsignaciones[nombre] = state.asignaciones[nombre] || { tipo: "FILA", obs: "" };
+                newAsignaciones[nombre].cat = currentCat;
+            }
+        });
+        state.asignaciones = newAsignaciones;
+    }
+
+    function renderParte() {
+        const container = document.getElementById('lista-personal-mobile');
+        container.innerHTML = "";
+        Object.keys(state.asignaciones).forEach(nombre => {
+            const d = state.asignaciones[nombre];
+            const div = document.createElement('div');
+            div.className = 'person-card';
+            
+            let options = state.novedades.map(n => `<option value="${n}" ${d.tipo === n ? 'selected' : ''}>${n}</option>`).join('');
+            
+            div.innerHTML = `
+                <div class="person-name">
+                    ${nombre} <span class="person-cat">${d.cat}</span>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Novedad</label>
+                    <select onchange="updateVal('${nombre}', 'tipo', this.value)">${options}</select>
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <input type="text" value="${d.obs}" placeholder="Sin novedad..." oninput="updateVal('${nombre}', 'obs', this.value)">
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        generateReport();
+    }
+
+    function updateVal(nombre, campo, valor) {
+        state.asignaciones[nombre][campo] = valor;
+        saveToLocal();
+        generateReport();
+    }
+
+    function generateReport() {
+        const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+        const hoy = new Date();
+        const f = `${String(hoy.getDate()).padStart(2,'0')}-${meses[hoy.getMonth()]}-${hoy.getFullYear()}`;
+        let total = [0, 0, 0], fila = [0, 0, 0], detalles = "";
+
+        Object.keys(state.asignaciones).forEach(nombre => {
+            const d = state.asignaciones[nombre];
+            const c = d.cat.toLowerCase();
+            let i = 2; 
+            if (c.includes("oficial") && !c.includes("suboficial")) i = 0;
+            else if (c.includes("suboficial")) i = 1;
+            total[i]++;
+            if (d.tipo === "FILA") fila[i]++;
+            else detalles += `${nombre}: ${d.tipo} ${d.obs ? '(' + d.obs + ')' : ''}\n`;
+        });
+
+        const n = [total[0]-fila[0], total[1]-fila[1], total[2]-fila[2]];
+        const fmt = (a) => a.map(v => String(v).padStart(2, '0')).join('-');
+        const report = `✅ ${state.tituloOficina} del día \n${f}\n\n*Parte Oficina:* ${fmt(total)}\n*Fila* ${fmt(fila)}\n*Novedades* ${fmt(n)} \n\n${detalles}`;
+        document.getElementById('report-preview').innerText = report;
+        return report;
+    }
+
+    function exportData(type) {
+        const report = generateReport();
+        const hoy = new Date().toLocaleString();
+        if (state.historial.length === 0 || state.historial[0].content !== report) {
+            state.historial.unshift({ fecha: hoy, content: report });
+            if (state.historial.length > 15) state.historial.pop();
+            saveToLocal();
+        }
+        if (type === 'copy') {
+            navigator.clipboard.writeText(report);
+            alert("¡Copiado y guardado!");
+        } else {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(report)}`);
+        }
+    }
+
+    function deleteHistory(index) {
+        if(confirm("¿Eliminar registro?")) {
+            state.historial.splice(index, 1);
+            saveToLocal();
+            renderHistorial();
+        }
+    }
+
+    function renderHistorial() {
+        const container = document.getElementById('historial-lista');
+        if (state.historial.length === 0) {
+            container.innerHTML = "<p style='text-align:center;'>Sin registros previos.</p>";
+            return;
+        }
+        container.innerHTML = state.historial.map((h, i) => `
+            <div class="hist-card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-weight:bold; font-size:0.8rem; color:var(--accent);">${h.fecha}</span>
+                    <button class="btn-del" onclick="deleteHistory(${i})">X</button>
+                </div>
+                <pre style="margin:0; font-size:0.75rem; white-space:pre-wrap;">${h.content}</pre>
+            </div>
+        `).join('');
+    }
+
+    function saveConfig() {
+        state.dataRaw = document.getElementById('config-personal').value;
+        state.novedades = document.getElementById('config-novedades').value.split('\n').filter(l => l.trim() !== "");
+        processData();
+        saveToLocal();
+        renderParte();
+        showTab('parte');
+    }
+
+    function saveToLocal() { localStorage.setItem('parte_v6_mobile', JSON.stringify(state)); }
+    
+    function showTab(id) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(id === 'historial') renderHistorial();
+    }
+
+    init();
+</script>
+</body>
+</html>
