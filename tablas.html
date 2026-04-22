@@ -576,7 +576,7 @@ function closeInput() {
   document.getElementById('input-overlay').classList.remove('show');
   if(activeCell){const p=activeCell;activeCell=null;renderCell(p.r,p.c);}
 }
-function closeInputIfOutside(e){if(e.target.id==='input-overlay')closeInput();}
+function closeInputIfOutside(e){if(e.target.id==='input-overlay')submitAnswer();}
 
 function updateFillStats() {
   let cnt=0;
