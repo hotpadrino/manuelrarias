@@ -6,531 +6,342 @@
 <title>🌟 Tablas de Multiplicar</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0f0e17;
-    --surface: #1a1830;
-    --card: #231f3a;
-    --accent1: #ff6b6b;
-    --accent2: #ffd93d;
-    --accent3: #6bcb77;
-    --accent4: #4d96ff;
-    --accent5: #ff9de2;
-    --text: #fffffe;
-    --muted: #a7a9be;
-    --correct: #6bcb77;
-    --wrong: #ff6b6b;
-    --empty: #2e2b4a;
-    --header-row: #2a1f5a;
-    --header-col: #1f2a5a;
-    --glow1: rgba(255,107,107,0.3);
-    --glow2: rgba(255,217,61,0.3);
-    --glow3: rgba(107,203,119,0.3);
-    --glow4: rgba(77,150,255,0.3);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    padding-bottom: 40px;
-  }
-
-  /* Stars background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
-      radial-gradient(1px 1px at 30% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
-      radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
-      radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
-      radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
-      radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,0.5) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px 16px;
-  }
-
-  /* HEADER */
-  header {
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .title {
-    font-family: 'Fredoka One', cursive;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent5));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 20px var(--glow2));
-    animation: titleFloat 3s ease-in-out infinite;
-  }
-
-  @keyframes titleFloat {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 1rem;
-    font-weight: 600;
-    margin-top: 6px;
-    letter-spacing: 0.5px;
-  }
-
-  /* STATS BAR */
-  .stats-bar {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-
-  .stat-badge {
-    background: var(--card);
-    border: 2px solid transparent;
-    border-radius: 20px;
-    padding: 8px 18px;
-    font-weight: 800;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .stat-badge.correct { border-color: var(--correct); color: var(--correct); box-shadow: 0 0 12px var(--glow3); }
-  .stat-badge.streak  { border-color: var(--accent2); color: var(--accent2); box-shadow: 0 0 12px var(--glow2); }
-  .stat-badge.total   { border-color: var(--accent4); color: var(--accent4); box-shadow: 0 0 12px var(--glow4); }
-
-  .stat-badge.streak.on-fire {
-    animation: firePulse 0.5s ease-in-out infinite alternate;
-  }
-
-  @keyframes firePulse {
-    from { box-shadow: 0 0 10px var(--glow2); transform: scale(1); }
-    to   { box-shadow: 0 0 25px rgba(255,217,61,0.7); transform: scale(1.05); }
-  }
-
-  /* PROGRESS BAR */
-  .progress-wrap {
-    background: var(--card);
-    border-radius: 20px;
-    height: 16px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent4), var(--accent3));
-    border-radius: 20px;
-    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 12px var(--glow3);
-    min-width: 0%;
-  }
-
-  /* TABLE WRAPPER */
-  .table-wrapper {
-    overflow-x: auto;
-    border-radius: 16px;
-    background: var(--surface);
-    border: 1px solid rgba(255,255,255,0.07);
-    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    margin-bottom: 24px;
-  }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    min-width: 540px;
-  }
-
-  th, td {
-    width: 60px;
-    height: 52px;
-    text-align: center;
-    vertical-align: middle;
-    border: 1px solid rgba(255,255,255,0.05);
-    position: relative;
-  }
-
-  /* Corner cell */
-  th.corner {
-    background: var(--bg);
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.4rem;
-    color: var(--accent2);
-  }
-
-  /* Header rows/cols */
-  th.col-header {
-    background: var(--header-col);
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.1rem;
-    color: var(--accent4);
-    padding: 0 4px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  td.row-header {
-    background: var(--header-row);
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.1rem;
-    color: var(--accent5);
-    position: sticky;
-    left: 0;
-    z-index: 5;
-  }
-
-  /* Answer cells */
-  td.answer-cell {
-    background: var(--empty);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  td.answer-cell:hover { background: #3a3560; }
-
-  td.answer-cell.correct-cell {
-    background: rgba(107, 203, 119, 0.18);
-    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  td.answer-cell.wrong-cell {
-    background: rgba(255, 107, 107, 0.18);
-    animation: shake 0.4s ease;
-  }
-
-  td.answer-cell.active-cell {
-    background: rgba(77,150,255,0.2);
-    outline: 2px solid var(--accent4);
-    outline-offset: -2px;
-  }
-
-  @keyframes popIn {
-    0% { transform: scale(0.5); opacity: 0.5; }
-    80% { transform: scale(1.15); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-5px); }
-    40% { transform: translateX(5px); }
-    60% { transform: translateX(-3px); }
-    80% { transform: translateX(3px); }
-  }
-
-  .answer-num {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.05rem;
-    font-weight: 900;
-    color: var(--correct);
-  }
-
-  /* INPUT OVERLAY */
-  .input-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.2s ease;
-  }
-
-  .input-overlay.show { display: flex; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .input-box {
-    background: var(--card);
-    border-radius: 24px;
-    padding: 32px 40px;
-    text-align: center;
-    border: 2px solid var(--accent4);
-    box-shadow: 0 0 40px var(--glow4);
-    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    min-width: 260px;
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(30px) scale(0.9); opacity: 0; }
-    to   { transform: translateY(0) scale(1); opacity: 1; }
-  }
-
-  .input-question {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.8rem;
-    color: var(--accent2);
-    margin-bottom: 16px;
-  }
-
-  .input-field {
-    background: var(--empty);
-    border: 2px solid var(--accent4);
-    border-radius: 12px;
-    color: var(--text);
-    font-family: 'Fredoka One', cursive;
-    font-size: 2rem;
-    width: 100px;
-    text-align: center;
-    padding: 8px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-
-  .input-field:focus {
-    border-color: var(--accent2);
-    box-shadow: 0 0 16px var(--glow2);
-  }
-
-  .input-hint {
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin-top: 10px;
-  }
-
-  /* BUTTONS */
-  .btn-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-
-  .btn {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 24px;
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .btn:hover  { transform: translateY(-2px); }
-  .btn:active { transform: scale(0.96); }
-
-  .btn-clear {
-    background: linear-gradient(135deg, #ff6b6b, #d63031);
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(255,107,107,0.35);
-  }
-
-  .btn-show {
-    background: linear-gradient(135deg, var(--accent4), #7048e8);
-    color: #fff;
-    box-shadow: 0 4px 16px var(--glow4);
-  }
-
-  /* MODAL CONFIRM */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 200;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .modal-overlay.show { display: flex; }
-
-  .modal-box {
-    background: var(--card);
-    border: 2px solid var(--accent1);
-    border-radius: 24px;
-    padding: 36px 44px;
-    text-align: center;
-    box-shadow: 0 0 50px var(--glow1);
-    max-width: 340px;
-    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .modal-icon { font-size: 3rem; margin-bottom: 12px; }
-
-  .modal-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.5rem;
-    color: var(--accent1);
-    margin-bottom: 8px;
-  }
-
-  .modal-text {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin-bottom: 24px;
-    line-height: 1.5;
-  }
-
-  .modal-btns { display: flex; gap: 12px; justify-content: center; }
-
-  .btn-confirm {
-    background: linear-gradient(135deg, var(--accent1), #c0392b);
-    color: #fff;
-    box-shadow: 0 4px 14px var(--glow1);
-  }
-
-  .btn-cancel {
-    background: var(--surface);
-    color: var(--muted);
-    border: 2px solid rgba(255,255,255,0.1);
-  }
-
-  /* CELEBRATION */
-  .celebration {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 300;
-    pointer-events: none;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .celebration.show { display: flex; }
-
-  .celebration-card {
-    background: var(--card);
-    border-radius: 28px;
-    padding: 28px 44px;
-    text-align: center;
-    border: 3px solid var(--accent2);
-    box-shadow: 0 0 60px var(--glow2);
-    animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    pointer-events: none;
-  }
-
-  @keyframes bounceIn {
-    0%   { transform: scale(0.3) rotate(-10deg); opacity: 0; }
-    60%  { transform: scale(1.1) rotate(3deg); }
-    100% { transform: scale(1) rotate(0deg); opacity: 1; }
-  }
-
-  .celebration-emoji { font-size: 3rem; display: block; margin-bottom: 4px; }
-
-  .celebration-text {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.6rem;
-    background: linear-gradient(135deg, var(--accent2), var(--accent5));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .celebration-sub {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-top: 4px;
-  }
-
-  /* CONFETTI canvas */
-  #confetti-canvas {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 299;
-    display: none;
-  }
-
-  #confetti-canvas.show { display: block; }
-
-  /* COMPLETE BANNER */
-  .complete-banner {
-    display: none;
-    background: linear-gradient(135deg, #2a1f5a, #1f3a2a);
-    border: 2px solid var(--correct);
-    border-radius: 20px;
-    padding: 20px 28px;
-    text-align: center;
-    margin-bottom: 20px;
-    animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 30px var(--glow3);
-  }
-
-  .complete-banner.show { display: block; }
-
-  .complete-title {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.8rem;
-    color: var(--correct);
-    margin-bottom: 4px;
-  }
-
-  .complete-sub { color: var(--muted); font-size: 0.95rem; }
-
-  /* Diagonal label on correct full table */
-  .col-header span.num { display: block; font-size: 1.1rem; }
-  .col-header span.label { font-size: 0.6rem; color: var(--muted); font-family: 'Nunito', sans-serif; font-weight: 600; text-transform: uppercase; }
-
-  @media (max-width: 600px) {
-    th, td { width: 44px; height: 42px; }
-    .input-box { padding: 24px 20px; }
-    .modal-box { padding: 28px 24px; margin: 16px; }
-  }
+:root {
+  --bg: #0f0e17;
+  --surface: #1a1830;
+  --card: #231f3a;
+  --accent1: #ff6b6b;
+  --accent2: #ffd93d;
+  --accent3: #6bcb77;
+  --accent4: #4d96ff;
+  --accent5: #ff9de2;
+  --text: #fffffe;
+  --muted: #a7a9be;
+  --correct: #6bcb77;
+  --wrong: #ff6b6b;
+  --empty: #2e2b4a;
+  --header-row: #2a1f5a;
+  --header-col: #1f2a5a;
+  --glow1: rgba(255,107,107,0.35);
+  --glow2: rgba(255,217,61,0.35);
+  --glow3: rgba(107,203,119,0.35);
+  --glow4: rgba(77,150,255,0.35);
+  --glow5: rgba(255,157,226,0.35);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 50px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 20% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,0.5) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+.container { position: relative; z-index: 1; max-width: 920px; margin: 0 auto; padding: 20px 16px; }
+
+/* HEADER */
+header { text-align: center; margin-bottom: 20px; }
+.title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.8rem, 6vw, 3.2rem);
+  background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent5));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 20px var(--glow2));
+  animation: titleFloat 3s ease-in-out infinite;
+}
+@keyframes titleFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+/* MODE TABS */
+.mode-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+.mode-tab {
+  font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  border: 2px solid rgba(255,255,255,0.1); border-radius: 16px;
+  padding: 10px 18px; cursor: pointer; background: var(--card); color: var(--muted);
+  transition: all 0.22s; display: flex; align-items: center; gap: 6px;
+}
+.mode-tab:hover { transform: translateY(-2px); }
+.mode-tab.active-tab { color: var(--bg); border-color: transparent; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+.mode-tab[data-mode="fill"].active-tab  { background: linear-gradient(135deg, var(--accent4), #7048e8); box-shadow: 0 6px 20px var(--glow4); }
+.mode-tab[data-mode="flash"].active-tab { background: linear-gradient(135deg, var(--accent5), #d63384); box-shadow: 0 6px 20px var(--glow5); }
+.mode-tab[data-mode="hunt"].active-tab  { background: linear-gradient(135deg, var(--accent2), var(--accent1)); box-shadow: 0 6px 20px var(--glow2); }
+
+.mode-desc { text-align: center; color: var(--muted); font-size: 0.88rem; font-weight: 600; margin-bottom: 16px; min-height: 20px; }
+
+/* STATS BAR */
+.stats-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+.stat-badge {
+  background: var(--card); border: 2px solid transparent; border-radius: 20px;
+  padding: 7px 15px; font-weight: 800; font-size: 0.85rem;
+  display: flex; align-items: center; gap: 5px; transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-badge.correct { border-color: var(--correct); color: var(--correct); box-shadow: 0 0 10px var(--glow3); }
+.stat-badge.streak  { border-color: var(--accent2);  color: var(--accent2);  box-shadow: 0 0 10px var(--glow2); }
+.stat-badge.total   { border-color: var(--accent4);  color: var(--accent4);  box-shadow: 0 0 10px var(--glow4); }
+.stat-badge.streak.on-fire { animation: firePulse 0.5s ease-in-out infinite alternate; }
+@keyframes firePulse {
+  from { box-shadow: 0 0 10px var(--glow2); transform: scale(1); }
+  to   { box-shadow: 0 0 25px rgba(255,217,61,0.7); transform: scale(1.06); }
+}
+
+/* PROGRESS */
+.progress-wrap {
+  background: var(--card); border-radius: 20px; height: 13px; overflow: hidden;
+  margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.07);
+}
+.progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--accent4), var(--accent3));
+  border-radius: 20px; transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 0 10px var(--glow3);
+}
+
+/* HUNT PANEL */
+.hunt-panel {
+  display: none;
+  background: linear-gradient(135deg, #1a1030, #101a30);
+  border: 2px solid var(--accent2); border-radius: 20px;
+  padding: 18px 22px; margin-bottom: 16px; text-align: center;
+  box-shadow: 0 0 30px var(--glow2);
+}
+.hunt-panel.show { display: block; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.hunt-target-label { color: var(--muted); font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.hunt-target {
+  font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 7vw, 3.4rem);
+  background: linear-gradient(135deg, var(--accent2), var(--accent1));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 14px var(--glow2)); animation: targetPulse 1.2s ease-in-out infinite;
+}
+@keyframes targetPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+.hunt-sub { color: var(--muted); font-size: 0.85rem; margin-top: 5px; }
+.hunt-score-row { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+.hunt-badge {
+  font-family: 'Fredoka One', cursive; font-size: 0.88rem;
+  padding: 5px 14px; border-radius: 12px; background: var(--card);
+  border: 1.5px solid rgba(255,255,255,0.1);
+}
+.hunt-badge.h-cor { border-color: var(--correct); color: var(--correct); }
+.hunt-badge.h-err { border-color: var(--wrong); color: var(--wrong); }
+.hunt-badge.h-str { border-color: var(--accent2); color: var(--accent2); }
+.btn-next {
+  font-family: 'Fredoka One', cursive;
+  background: linear-gradient(135deg, var(--accent2), var(--accent1));
+  color: var(--bg); border: none; border-radius: 14px;
+  padding: 9px 22px; font-size: 1rem; cursor: pointer;
+  margin-top: 12px; transition: transform 0.15s; box-shadow: 0 4px 14px var(--glow2);
+  display: none;
+}
+.btn-next:hover  { transform: translateY(-2px) scale(1.04); }
+.btn-next:active { transform: scale(0.96); }
+
+/* COMPLETE BANNER */
+.complete-banner {
+  display: none; background: linear-gradient(135deg, #1f3a2a, #2a1f5a);
+  border: 2px solid var(--correct); border-radius: 18px;
+  padding: 16px 22px; text-align: center; margin-bottom: 14px;
+  box-shadow: 0 0 28px var(--glow3);
+}
+.complete-banner.show { display: block; animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.complete-title { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: var(--correct); margin-bottom: 4px; }
+.complete-sub { color: var(--muted); font-size: 0.88rem; }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+.btn {
+  font-family: 'Fredoka One', cursive; font-size: 0.92rem;
+  border: none; border-radius: 14px; padding: 10px 20px; cursor: pointer;
+  transition: transform 0.15s; display: flex; align-items: center; gap: 6px;
+}
+.btn:hover  { transform: translateY(-2px); }
+.btn:active { transform: scale(0.96); }
+.btn-clear { background: linear-gradient(135deg, #ff6b6b, #c0392b); color: #fff; box-shadow: 0 4px 14px var(--glow1); }
+.btn-show  { background: linear-gradient(135deg, var(--accent4), #7048e8); color: #fff; box-shadow: 0 4px 14px var(--glow4); }
+
+/* TABLE */
+.table-wrapper {
+  overflow-x: auto; border-radius: 16px; background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  margin-bottom: 20px;
+}
+table { border-collapse: collapse; width: 100%; min-width: 510px; }
+th, td { width: 56px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+th.corner { background: var(--bg); font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--accent2); }
+th.col-header { background: var(--header-col); font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--accent4); position: sticky; top: 0; z-index: 10; }
+td.row-header { background: var(--header-row); font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: var(--accent5); position: sticky; left: 0; z-index: 5; }
+
+td.answer-cell {
+  background: var(--empty); cursor: pointer;
+  transition: background 0.2s, transform 0.1s; user-select: none;
+}
+td.answer-cell:hover  { background: #3a3560; }
+td.answer-cell:active { transform: scale(0.88); }
+
+/* fill states */
+td.correct-cell { background: rgba(107,203,119,0.18) !important; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+td.wrong-cell   { background: rgba(255,107,107,0.18) !important; animation: shake 0.4s ease; }
+td.active-cell  { background: rgba(77,150,255,0.2) !important; outline: 2px solid var(--accent4); outline-offset: -2px; }
+
+/* flash state */
+td.flash-show { background: rgba(255,157,226,0.28) !important; outline: 2px solid var(--accent5); outline-offset: -2px; animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* hunt states */
+td.hunt-correct  { background: rgba(107,203,119,0.32) !important; outline: 3px solid var(--correct); outline-offset: -3px; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+td.hunt-wrong    { background: rgba(255,107,107,0.32) !important; outline: 3px solid var(--wrong); outline-offset: -3px; animation: shake 0.4s ease; }
+td.hunt-reveal   { background: rgba(107,203,119,0.15) !important; outline: 2px dashed var(--correct); outline-offset: -2px; }
+td.hunt-candidate { background: rgba(255,217,61,0.07) !important; outline: 1.5px dashed rgba(255,217,61,0.35); outline-offset: -2px; }
+td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
+
+.answer-num { font-family: 'Fredoka One', cursive; font-size: 1rem; }
+
+/* flash tooltip */
+.flash-tooltip {
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  background: var(--card); border: 2px solid var(--accent5); border-radius: 10px;
+  padding: 4px 10px; font-family: 'Fredoka One', cursive; font-size: 1.1rem;
+  color: var(--accent5); white-space: nowrap; pointer-events: none; z-index: 20;
+  opacity: 0; transition: opacity 0.15s, transform 0.2s;
+  box-shadow: 0 4px 14px var(--glow5);
+}
+.flash-tooltip.visible { opacity: 1; transform: translateX(-50%) scale(1); }
+
+@keyframes popIn  { 0%{transform:scale(0.5);opacity:0.5} 80%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+@keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
+@keyframes slideUp { from{transform:translateY(22px) scale(0.95);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
+@keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+@keyframes bounceIn { 0%{transform:scale(0.3) rotate(-10deg);opacity:0} 60%{transform:scale(1.1) rotate(3deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+
+/* INPUT OVERLAY */
+.input-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(6px);
+  z-index: 100; justify-content: center; align-items: center;
+  animation: fadeIn 0.2s ease;
+}
+.input-overlay.show { display: flex; }
+.input-box {
+  background: var(--card); border-radius: 24px; padding: 28px 36px;
+  text-align: center; border: 2px solid var(--accent4);
+  box-shadow: 0 0 40px var(--glow4);
+  animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1); min-width: 230px;
+}
+.input-question { font-family: 'Fredoka One', cursive; font-size: 1.65rem; color: var(--accent2); margin-bottom: 14px; }
+.input-field {
+  background: var(--empty); border: 2px solid var(--accent4); border-radius: 12px;
+  color: var(--text); font-family: 'Fredoka One', cursive; font-size: 2rem;
+  width: 94px; text-align: center; padding: 8px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-field:focus { border-color: var(--accent2); box-shadow: 0 0 14px var(--glow2); }
+.input-hint { color: var(--muted); font-size: 0.76rem; margin-top: 10px; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
+  z-index: 200; justify-content: center; align-items: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--card); border: 2px solid var(--accent1); border-radius: 22px;
+  padding: 30px 38px; text-align: center; box-shadow: 0 0 50px var(--glow1);
+  max-width: 310px; animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.modal-icon  { font-size: 2.6rem; margin-bottom: 10px; }
+.modal-title { font-family: 'Fredoka One', cursive; font-size: 1.35rem; color: var(--accent1); margin-bottom: 8px; }
+.modal-text  { color: var(--muted); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.5; }
+.modal-btns  { display: flex; gap: 10px; justify-content: center; }
+.btn-confirm { background: linear-gradient(135deg, var(--accent1), #c0392b); color: #fff; box-shadow: 0 4px 14px var(--glow1); }
+.btn-cancel  { background: var(--surface); color: var(--muted); border: 2px solid rgba(255,255,255,0.1); }
+
+/* CELEBRATION */
+.celebration { display: none; position: fixed; inset: 0; z-index: 300; pointer-events: none; justify-content: center; align-items: center; }
+.celebration.show { display: flex; }
+.celebration-card {
+  background: var(--card); border-radius: 26px; padding: 22px 38px; text-align: center;
+  border: 3px solid var(--accent2); box-shadow: 0 0 60px var(--glow2);
+  animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; pointer-events: none;
+}
+.celebration-emoji { font-size: 2.6rem; display: block; margin-bottom: 4px; }
+.celebration-text {
+  font-family: 'Fredoka One', cursive; font-size: 1.45rem;
+  background: linear-gradient(135deg, var(--accent2), var(--accent5));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.celebration-sub { color: var(--muted); font-size: 0.86rem; margin-top: 4px; }
+
+/* CONFETTI */
+#confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 299; display: none; }
+#confetti-canvas.show { display: block; }
+
+@media (max-width: 580px) {
+  th, td { width: 38px; height: 40px; }
+  .answer-num { font-size: 0.78rem; }
+  th.col-header, td.row-header { font-size: 0.82rem; }
+  .input-box { padding: 20px 16px; }
+  .modal-box { padding: 22px 16px; margin: 12px; }
+}
 </style>
 </head>
 <body>
-
 <canvas id="confetti-canvas"></canvas>
-
 <div class="container">
   <header>
     <div class="title">🌟 Tablas de Multiplicar</div>
-    <div class="subtitle">¡Haz clic en una celda y escribe el resultado!</div>
   </header>
 
-  <div class="stats-bar">
+  <div class="mode-tabs">
+    <button class="mode-tab active-tab" data-mode="fill"  onclick="switchMode('fill')">✏️ Llenar</button>
+    <button class="mode-tab"            data-mode="flash" onclick="switchMode('flash')">👁️ Repaso</button>
+    <button class="mode-tab"            data-mode="hunt"  onclick="switchMode('hunt')">🎯 Caza</button>
+  </div>
+  <div class="mode-desc" id="mode-desc">Toca una celda y escribe el resultado. Tu progreso se guarda automáticamente.</div>
+
+  <!-- FILL STATS -->
+  <div class="stats-bar" id="fill-stats">
     <div class="stat-badge correct">✅ <span id="stat-correct">0</span> correctas</div>
     <div class="stat-badge streak" id="streak-badge">🔥 Racha: <span id="stat-streak">0</span></div>
     <div class="stat-badge total">📊 <span id="stat-pct">0</span>% completo</div>
   </div>
-
-  <div class="progress-wrap">
+  <div class="progress-wrap" id="fill-progress">
     <div class="progress-bar" id="progress-bar" style="width:0%"></div>
   </div>
 
-  <div class="complete-banner" id="complete-banner">
-    <div class="complete-title">🏆 ¡TABLA COMPLETA! 🏆</div>
-    <div class="complete-sub">¡Eres un campeón de las matemáticas! Llenaste las 100 celdas correctamente.</div>
+  <!-- HUNT PANEL -->
+  <div class="hunt-panel" id="hunt-panel">
+    <div class="hunt-target-label">¿Cuál casilla da como resultado…?</div>
+    <div class="hunt-target" id="hunt-target">—</div>
+    <div class="hunt-sub" id="hunt-sub">Selecciona en la tabla</div>
+    <div class="hunt-score-row">
+      <div class="hunt-badge h-cor">✅ <span id="hunt-correct">0</span></div>
+      <div class="hunt-badge h-err">❌ <span id="hunt-errors">0</span></div>
+      <div class="hunt-badge h-str">🔥 Racha: <span id="hunt-streak">0</span></div>
+    </div>
+    <button class="btn-next" id="hunt-next-btn" onclick="nextHunt()">➡️ Siguiente pregunta</button>
   </div>
 
-  <div class="btn-row">
+  <!-- COMPLETE BANNER -->
+  <div class="complete-banner" id="complete-banner">
+    <div class="complete-title">🏆 ¡TABLA COMPLETA! 🏆</div>
+    <div class="complete-sub">¡Eres un campeón de las matemáticas! Llenaste las 100 celdas.</div>
+  </div>
+
+  <!-- FILL BUTTONS -->
+  <div class="btn-row" id="fill-btns">
     <button class="btn btn-clear" onclick="confirmClear()">🗑️ Limpiar todo</button>
-    <button class="btn btn-show" onclick="toggleAnswers()">👁️ <span id="toggle-label">Ver respuestas</span></button>
+    <button class="btn btn-show"  onclick="toggleAnswers()">👁️ <span id="toggle-label">Ver respuestas</span></button>
   </div>
 
   <div class="table-wrapper">
@@ -540,14 +351,14 @@
 
 <!-- Input overlay -->
 <div class="input-overlay" id="input-overlay" onclick="closeInputIfOutside(event)">
-  <div class="input-box" id="input-box">
+  <div class="input-box">
     <div class="input-question" id="input-question">2 × 3 = ?</div>
     <input class="input-field" id="input-field" type="number" min="0" max="999" autocomplete="off" inputmode="numeric">
-    <div class="input-hint">Presiona Enter para confirmar · Esc para cancelar</div>
+    <div class="input-hint">Enter para confirmar · Esc para cancelar · ↑↓←→ navegar</div>
   </div>
 </div>
 
-<!-- Confirm clear modal -->
+<!-- Confirm modal -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-box">
     <div class="modal-icon">🗑️</div>
@@ -555,7 +366,7 @@
     <div class="modal-text">¿Estás seguro que quieres borrar todas tus respuestas? ¡No se puede deshacer!</div>
     <div class="modal-btns">
       <button class="btn btn-confirm" onclick="doClear()">Sí, borrar</button>
-      <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-cancel"  onclick="closeModal()">Cancelar</button>
     </div>
   </div>
 </div>
@@ -564,334 +375,415 @@
 <div class="celebration" id="celebration">
   <div class="celebration-card">
     <span class="celebration-emoji" id="cel-emoji">🎉</span>
-    <div class="celebration-text" id="cel-text">¡Increíble!</div>
-    <div class="celebration-sub" id="cel-sub">¡Racha de 5!</div>
+    <div class="celebration-text"  id="cel-text">¡Increíble!</div>
+    <div class="celebration-sub"   id="cel-sub">¡Racha de 5!</div>
   </div>
 </div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'tablas_v2';
-let answers   = {};   // "r_c": number (user answer)
-let streak    = 0;
-let maxStreak = 0;
-let showingAnswers = false;
-let activeCell = null; // {r, c}
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const STORAGE_KEY = 'tablas_v3';
+let answers = {}, streak = 0, maxStreak = 0;
+let showingAnswers = false, activeCell = null;
+let currentMode = 'fill';
 
-// Celebrations config
-const STREAK_MILESTONES = {
-  5:   { emoji:'🌟', text:'¡Racha de 5!',   sub:'¡Estás en llamas!' },
-  10:  { emoji:'🔥', text:'¡10 seguidas!',  sub:'¡Imparable!' },
-  15:  { emoji:'🚀', text:'¡15 correctas!', sub:'¡Eres un cohete!' },
-  20:  { emoji:'🏆', text:'¡20 seguidas!',  sub:'¡Campeón total!' },
-  25:  { emoji:'💫', text:'¡25 en racha!',  sub:'¡Fuera de este mundo!' },
-  30:  { emoji:'👑', text:'¡30 seguidas!',  sub:'¡Eres el rey/reina!' },
-  50:  { emoji:'🦄', text:'¡50 en racha!',  sub:'¡Unicornio matemático!' },
+// Flash
+let flashTimer = null;
+
+// Hunt
+let huntQ        = null;   // { value, pairs:[{r,c}], found, wrongTaps }
+let huntAnswered = false;
+let huntCorrect  = 0, huntErrors = 0, huntStreak = 0;
+let huntUsed     = new Set();
+
+const STREAKS = {
+  5:  {emoji:'🌟', text:'¡5 seguidas!',   sub:'¡Estás en llamas!'},
+  10: {emoji:'🔥', text:'¡10 seguidas!',  sub:'¡Imparable!'},
+  15: {emoji:'🚀', text:'¡15 correctas!', sub:'¡Eres un cohete!'},
+  20: {emoji:'🏆', text:'¡20 seguidas!',  sub:'¡Campeón total!'},
+  25: {emoji:'💫', text:'¡25 en racha!',  sub:'¡Fuera de este mundo!'},
+  30: {emoji:'👑', text:'¡30 seguidas!',  sub:'¡Eres el rey/reina!'},
+  50: {emoji:'🦄', text:'¡50 en racha!',  sub:'¡Unicornio matemático!'},
 };
 
-// ─── LOAD / SAVE ─────────────────────────────────────────────────────────────
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, streak, maxStreak }));
-}
+const MODE_DESCS = {
+  fill:  'Toca una celda y escribe el resultado. Tu progreso se guarda automáticamente.',
+  flash: 'Toca cualquier celda para ver su resultado 2 segundos. Sin escribir — puro repaso.',
+  hunt:  'Te damos un número: toca TODAS las casillas cuya multiplicación da ese resultado.',
+};
 
+// Build product map once
+const PRODUCT_MAP = (() => {
+  const m = {};
+  for (let r=1;r<=10;r++) for (let c=1;c<=10;c++) {
+    const v=r*c; if(!m[v]) m[v]=[]; m[v].push({r,c});
+  }
+  return m;
+})();
+const ALL_VALUES = Object.keys(PRODUCT_MAP).map(Number);
+
+// ══════════════════════════════════════════
+// PERSIST
+// ══════════════════════════════════════════
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({answers,streak,maxStreak}));
+}
 function loadState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    answers   = data.answers   || {};
-    streak    = data.streak    || 0;
-    maxStreak = data.maxStreak || 0;
-  } catch(e) { answers = {}; streak = 0; maxStreak = 0; }
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+    answers=d.answers||{}; streak=d.streak||0; maxStreak=d.maxStreak||0;
+  } catch(e) {}
 }
 
-// ─── BUILD TABLE ──────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════
+// BUILD TABLE
+// ══════════════════════════════════════════
 function buildTable() {
   const table = document.getElementById('mult-table');
   table.innerHTML = '';
-
-  // Header row
-  const thead = document.createElement('thead');
-  const hr = document.createElement('tr');
-  const cornerTh = document.createElement('th');
-  cornerTh.className = 'corner';
-  cornerTh.textContent = '×';
-  hr.appendChild(cornerTh);
-
-  for (let c = 1; c <= 10; c++) {
-    const th = document.createElement('th');
-    th.className = 'col-header';
-    th.innerHTML = `<span class="num">${c}</span>`;
-    hr.appendChild(th);
-  }
-  thead.appendChild(hr);
-  table.appendChild(thead);
-
-  // Body rows
-  const tbody = document.createElement('tbody');
-  for (let r = 1; r <= 10; r++) {
-    const tr = document.createElement('tr');
-    const rowTh = document.createElement('td');
-    rowTh.className = 'row-header';
-    rowTh.textContent = r;
-    tr.appendChild(rowTh);
-
-    for (let c = 1; c <= 10; c++) {
-      const td = document.createElement('td');
-      td.className = 'answer-cell';
-      td.dataset.r = r;
-      td.dataset.c = c;
-      td.onclick = () => openInput(r, c);
+  // header
+  const thead=document.createElement('thead'), hr=document.createElement('tr');
+  const ctd=document.createElement('th'); ctd.className='corner'; ctd.textContent='×'; hr.appendChild(ctd);
+  for(let c=1;c<=10;c++){ const th=document.createElement('th'); th.className='col-header'; th.textContent=c; hr.appendChild(th); }
+  thead.appendChild(hr); table.appendChild(thead);
+  // body
+  const tbody=document.createElement('tbody');
+  for(let r=1;r<=10;r++){
+    const tr=document.createElement('tr');
+    const rh=document.createElement('td'); rh.className='row-header'; rh.textContent=r; tr.appendChild(rh);
+    for(let c=1;c<=10;c++){
+      const td=document.createElement('td'); td.className='answer-cell';
+      td.dataset.r=r; td.dataset.c=c;
+      td.onclick=()=>cellClick(r,c);
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);
-
-  renderAllCells();
+  renderAll();
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-function renderAllCells() {
-  for (let r = 1; r <= 10; r++) {
-    for (let c = 1; c <= 10; c++) {
-      renderCell(r, c);
-    }
-  }
-  updateStats();
+// ══════════════════════════════════════════
+// DISPATCH
+// ══════════════════════════════════════════
+function cellClick(r,c) {
+  if      (currentMode==='fill')  openInput(r,c);
+  else if (currentMode==='flash') flashCell(r,c);
+  else if (currentMode==='hunt')  huntClick(r,c);
 }
 
-function renderCell(r, c) {
-  const td = document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
-  if (!td) return;
-  const key   = `${r}_${c}`;
-  const val   = answers[key];
-  const correct = r * c;
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function renderAll() {
+  for(let r=1;r<=10;r++) for(let c=1;c<=10;c++) renderCell(r,c);
+  if(currentMode==='fill') updateFillStats();
+}
 
-  td.classList.remove('correct-cell','wrong-cell','active-cell');
-  td.innerHTML = '';
+function renderCell(r,c) {
+  const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+  if(!td) return;
+  td.classList.remove('correct-cell','wrong-cell','active-cell','flash-show','hunt-correct','hunt-wrong','hunt-reveal','hunt-candidate','hunt-disabled');
+  td.innerHTML='';
 
-  if (showingAnswers) {
-    const span = document.createElement('span');
-    span.className = 'answer-num';
-    span.style.color = 'var(--accent2)';
-    span.textContent = correct;
-    td.appendChild(span);
-    return;
+  if(currentMode==='flash'||currentMode==='hunt') return; // managed separately
+
+  // fill mode
+  if(showingAnswers){
+    const sp=document.createElement('span'); sp.className='answer-num';
+    sp.style.color='var(--accent2)'; sp.textContent=r*c; td.appendChild(sp); return;
   }
-
-  if (val !== undefined) {
-    const span = document.createElement('span');
-    span.className = 'answer-num';
-    if (val === correct) {
-      span.style.color = 'var(--correct)';
-      td.classList.add('correct-cell');
-    } else {
-      span.style.color = 'var(--wrong)';
-      td.classList.add('wrong-cell');
-    }
-    span.textContent = val;
-    td.appendChild(span);
+  const key=r+'_'+c, val=answers[key];
+  if(val!==undefined){
+    const sp=document.createElement('span'); sp.className='answer-num';
+    const ok=val===r*c;
+    sp.style.color=ok?'var(--correct)':'var(--wrong)';
+    td.classList.add(ok?'correct-cell':'wrong-cell');
+    sp.textContent=val; td.appendChild(sp);
   }
+  if(activeCell&&activeCell.r===r&&activeCell.c===c) td.classList.add('active-cell');
+}
 
-  if (activeCell && activeCell.r === r && activeCell.c === c) {
-    td.classList.add('active-cell');
+// ══════════════════════════════════════════
+// MODE SWITCHER
+// ══════════════════════════════════════════
+function switchMode(mode) {
+  if(currentMode==='flash') clearFlash();
+  if(currentMode==='hunt')  cleanHuntCells();
+  currentMode=mode;
+
+  document.querySelectorAll('.mode-tab').forEach(b=>b.classList.toggle('active-tab',b.dataset.mode===mode));
+  document.getElementById('mode-desc').textContent=MODE_DESCS[mode];
+
+  const isFill=mode==='fill', isHunt=mode==='hunt';
+  document.getElementById('fill-stats').style.display   =isFill?'flex':'none';
+  document.getElementById('fill-progress').style.display=isFill?'block':'none';
+  document.getElementById('fill-btns').style.display    =isFill?'flex':'none';
+  document.getElementById('complete-banner').style.display='none';
+  document.getElementById('hunt-panel').classList.toggle('show',isHunt);
+
+  if(!isFill){ showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas'; }
+
+  renderAll();
+
+  if(isHunt){
+    huntCorrect=0; huntErrors=0; huntStreak=0; huntUsed.clear();
+    updateHuntUI(); nextHunt();
   }
 }
 
-// ─── INPUT ────────────────────────────────────────────────────────────────────
-function openInput(r, c) {
-  if (showingAnswers) return;
-  activeCell = { r, c };
-  renderCell(r, c);
-
-  document.getElementById('input-question').textContent = `${r} × ${c} = ?`;
-  const key = `${r}_${c}`;
-  const field = document.getElementById('input-field');
-  field.value = answers[key] !== undefined ? answers[key] : '';
+// ══════════════════════════════════════════
+// FILL MODE
+// ══════════════════════════════════════════
+function openInput(r,c) {
+  if(showingAnswers) return;
+  activeCell={r,c}; renderCell(r,c);
+  document.getElementById('input-question').textContent=`${r} × ${c} = ?`;
+  const f=document.getElementById('input-field');
+  f.value=answers[r+'_'+c]!==undefined?answers[r+'_'+c]:'';
   document.getElementById('input-overlay').classList.add('show');
-  setTimeout(() => { field.focus(); field.select(); }, 50);
+  setTimeout(()=>{f.focus();f.select();},50);
 }
 
-document.getElementById('input-field').addEventListener('keydown', e => {
-  if (e.key === 'Enter') submitAnswer();
-  if (e.key === 'Escape') closeInput();
-  // Arrow navigation
-  const nav = { ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0] };
-  if (nav[e.key] && activeCell) {
-    e.preventDefault();
-    submitAnswer(false); // save without showing feedback first
-    const [dr, dc] = nav[e.key];
-    let nr = activeCell.r + dr, nc = activeCell.c + dc;
-    if (nr < 1) nr = 10; if (nr > 10) nr = 1;
-    if (nc < 1) nc = 10; if (nc > 10) nc = 1;
-    openInput(nr, nc);
+document.getElementById('input-field').addEventListener('keydown',e=>{
+  if(e.key==='Enter') submitAnswer();
+  if(e.key==='Escape') closeInput();
+  const nav={ArrowRight:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0]};
+  if(nav[e.key]&&activeCell){
+    e.preventDefault(); submitAnswer(false);
+    const [dr,dc]=nav[e.key];
+    let nr=activeCell.r+dr,nc=activeCell.c+dc;
+    if(nr<1)nr=10;if(nr>10)nr=1;if(nc<1)nc=10;if(nc>10)nc=1;
+    openInput(nr,nc);
   }
 });
 
-function submitAnswer(close = true) {
-  const field = document.getElementById('input-field');
-  const val   = field.value.trim();
-  if (val === '' || isNaN(val)) { if (close) closeInput(); return; }
-
-  const num = parseInt(val, 10);
-  const { r, c } = activeCell;
-  const key = r + '_' + c;
-  const correct = r * c;
-  const wasCorrect = answers[key] === correct;
-  answers[key] = num;
-
-  if (num === correct && !wasCorrect) {
-    streak++;
-    if (streak > maxStreak) maxStreak = streak;
-    checkStreak();
-  } else if (num !== correct) {
-    streak = 0;
-  }
-
-  saveState();
-  renderCell(r, c);
-  updateStats();
-
-  if (close) closeInput();
+function submitAnswer(close=true) {
+  const f=document.getElementById('input-field'), val=f.value.trim();
+  if(val===''||isNaN(val)){if(close)closeInput();return;}
+  const num=parseInt(val,10), {r,c}=activeCell, key=r+'_'+c, correct=r*c;
+  const wasOk=answers[key]===correct;
+  answers[key]=num;
+  if(num===correct&&!wasOk){ streak++; if(streak>maxStreak)maxStreak=streak; celebrate(streak); }
+  else if(num!==correct) streak=0;
+  saveState(); renderCell(r,c); updateFillStats();
+  if(close) closeInput();
 }
 
 function closeInput() {
   document.getElementById('input-overlay').classList.remove('show');
-  if (activeCell) {
-    const prev = activeCell;
-    activeCell = null;
-    renderCell(prev.r, prev.c);
-  }
+  if(activeCell){const p=activeCell;activeCell=null;renderCell(p.r,p.c);}
 }
+function closeInputIfOutside(e){if(e.target.id==='input-overlay')closeInput();}
 
-function closeInputIfOutside(e) {
-  if (e.target.id === 'input-overlay') closeInput();
-}
-
-// ─── STATS ────────────────────────────────────────────────────────────────────
-function updateStats() {
-  let correctCount = 0;
-  for (let r = 1; r <= 10; r++) {
-    for (let c = 1; c <= 10; c++) {
-      if (answers[r+'_'+c] === r*c) correctCount++;
-    }
-  }
-
-  document.getElementById('stat-correct').textContent = correctCount;
-  document.getElementById('stat-streak').textContent  = streak;
-
-  const pct = Math.round(correctCount / 100 * 100);
-  document.getElementById('stat-pct').textContent = pct;
-  document.getElementById('progress-bar').style.width = pct + '%';
-
-  const badge = document.getElementById('streak-badge');
-  badge.classList.toggle('on-fire', streak >= 5);
-
-  if (correctCount === 100) {
+function updateFillStats() {
+  let cnt=0;
+  for(let r=1;r<=10;r++) for(let c=1;c<=10;c++) if(answers[r+'_'+c]===r*c) cnt++;
+  document.getElementById('stat-correct').textContent=cnt;
+  document.getElementById('stat-streak').textContent=streak;
+  document.getElementById('stat-pct').textContent=cnt;
+  document.getElementById('progress-bar').style.width=cnt+'%';
+  document.getElementById('streak-badge').classList.toggle('on-fire',streak>=5);
+  if(cnt===100&&currentMode==='fill'){
     document.getElementById('complete-banner').classList.add('show');
     launchConfetti(5000);
   }
 }
 
-// ─── CELEBRATIONS ────────────────────────────────────────────────────────────
-function checkStreak() {
-  if (STREAK_MILESTONES[streak]) {
-    const { emoji, text, sub } = STREAK_MILESTONES[streak];
-    showCelebration(emoji, text, `¡${text} ${sub}`);
-    launchConfetti(2000);
-  } else if (streak > 0 && streak % 5 === 0) {
-    showCelebration('🎊', `¡${streak} seguidas!`, '¡Sigue así!');
-    launchConfetti(1500);
+// ══════════════════════════════════════════
+// FLASH MODE
+// ══════════════════════════════════════════
+function flashCell(r,c) {
+  const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+  if(!td) return;
+  clearFlash();
+  td.classList.add('flash-show');
+  let tip=document.createElement('div');
+  tip.className='flash-tooltip'; tip.textContent=r*c; td.appendChild(tip);
+  requestAnimationFrame(()=>tip.classList.add('visible'));
+  flashTimer=setTimeout(()=>{
+    tip.classList.remove('visible');
+    setTimeout(()=>{ td.classList.remove('flash-show'); if(tip.parentNode) tip.parentNode.removeChild(tip); },200);
+  },2000);
+}
+function clearFlash() {
+  if(flashTimer){clearTimeout(flashTimer);flashTimer=null;}
+  document.querySelectorAll('.flash-show').forEach(td=>{
+    td.classList.remove('flash-show');
+    const tip=td.querySelector('.flash-tooltip'); if(tip) td.removeChild(tip);
+  });
+}
+
+// ══════════════════════════════════════════
+// HUNT MODE
+// ══════════════════════════════════════════
+function nextHunt() {
+  cleanHuntCells();
+  document.getElementById('hunt-next-btn').style.display='none';
+  huntAnswered=false;
+
+  let pool=ALL_VALUES.filter(v=>!huntUsed.has(v));
+  if(!pool.length){huntUsed.clear();pool=ALL_VALUES.slice();}
+  const value=pool[Math.floor(Math.random()*pool.length)];
+  huntUsed.add(value);
+  const pairs=PRODUCT_MAP[value];
+  huntQ={value,pairs,found:0,wrongTaps:0};
+
+  const n=pairs.length;
+  document.getElementById('hunt-target').textContent=value;
+  document.getElementById('hunt-sub').textContent=
+    `Toca ${n===1?'la casilla':'las '+n+' casillas'} cuya multiplicación da ${value}`;
+
+  // paint all cells as candidates
+  for(let r=1;r<=10;r++) for(let c=1;c<=10;c++){
+    const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+    if(td){ td.className='answer-cell hunt-candidate'; td.innerHTML=''; }
   }
 }
 
-function showCelebration(emoji, text, sub) {
-  document.getElementById('cel-emoji').textContent = emoji;
-  document.getElementById('cel-text').textContent  = text;
-  document.getElementById('cel-sub').textContent   = sub;
-  const cel = document.getElementById('celebration');
-  cel.classList.add('show');
-  setTimeout(() => cel.classList.remove('show'), 2200);
+function huntClick(r,c) {
+  if(!huntQ||huntAnswered) return;
+  const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+  if(!td||!td.classList.contains('hunt-candidate')) return;
+
+  const isOk=huntQ.pairs.some(p=>p.r===r&&p.c===c);
+  td.classList.remove('hunt-candidate');
+
+  const sp=document.createElement('span'); sp.className='answer-num';
+  sp.textContent=r*c; td.innerHTML=''; td.appendChild(sp);
+
+  if(isOk){
+    sp.style.color='var(--correct)'; td.classList.add('hunt-correct','hunt-disabled');
+    huntQ.found++;
+    if(huntQ.found===huntQ.pairs.length){
+      // round won
+      huntCorrect++; huntStreak++;
+      revealHuntResult(true);
+      celebrate(huntStreak, true);
+      if(huntStreak>=3) launchConfetti(huntStreak>=10?3000:1600);
+      huntAnswered=true; updateHuntUI();
+      document.getElementById('hunt-next-btn').style.display='inline-flex';
+    }
+  } else {
+    sp.style.color='var(--wrong)'; td.classList.add('hunt-wrong');
+    huntQ.wrongTaps++; huntErrors++; huntStreak=0; updateHuntUI();
+    setTimeout(()=>td.classList.add('hunt-disabled'),400);
+    // after 2 wrong taps, reveal
+    if(huntQ.wrongTaps>=2||(huntQ.pairs.length===1&&huntQ.wrongTaps>=1)){
+      setTimeout(()=>{
+        revealHuntResult(false);
+        huntAnswered=true;
+        document.getElementById('hunt-next-btn').style.display='inline-flex';
+      },700);
+    }
+  }
 }
 
-// ─── CONFETTI ─────────────────────────────────────────────────────────────────
-function launchConfetti(duration) {
-  const canvas = document.getElementById('confetti-canvas');
-  canvas.classList.add('show');
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const ctx = canvas.getContext('2d');
-  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9de2','#fff'];
-  const pieces = Array.from({length: 80}, () => ({
-    x: Math.random() * canvas.width,
-    y: -20 - Math.random() * 100,
-    r: 4 + Math.random() * 6,
-    d: 2 + Math.random() * 3,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    vx: (Math.random() - 0.5) * 3,
-    angle: Math.random() * Math.PI * 2,
-    spin: (Math.random() - 0.5) * 0.2,
-    shape: Math.random() > 0.5 ? 'circle' : 'rect',
-  }));
+function revealHuntResult(won) {
+  // reveal unfound correct cells
+  huntQ.pairs.forEach(({r,c})=>{
+    const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+    if(!td||td.classList.contains('hunt-correct')) return;
+    td.classList.remove('hunt-candidate','hunt-disabled');
+    td.classList.add('hunt-reveal','hunt-disabled');
+    const sp=document.createElement('span'); sp.className='answer-num';
+    sp.style.color='var(--correct)'; sp.textContent=r*c; td.innerHTML=''; td.appendChild(sp);
+  });
+  // dim remaining candidates
+  document.querySelectorAll('td.hunt-candidate').forEach(td=>{
+    td.classList.remove('hunt-candidate'); td.classList.add('hunt-disabled');
+    const r=+td.dataset.r, c=+td.dataset.c;
+    const sp=document.createElement('span'); sp.className='answer-num';
+    sp.style.color='var(--muted)'; sp.textContent=r*c; td.innerHTML=''; td.appendChild(sp);
+  });
+}
 
-  const start = performance.now();
-  function frame(now) {
-    const elapsed = now - start;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach(p => {
-      p.y    += p.d;
-      p.x    += p.vx;
-      p.angle += p.spin;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
-      ctx.fillStyle = p.color;
-      ctx.globalAlpha = Math.max(0, 1 - elapsed / duration);
-      if (p.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
-      }
+function cleanHuntCells() {
+  for(let r=1;r<=10;r++) for(let c=1;c<=10;c++){
+    const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
+    if(td){ td.className='answer-cell'; td.innerHTML=''; }
+  }
+}
+
+function updateHuntUI() {
+  document.getElementById('hunt-correct').textContent=huntCorrect;
+  document.getElementById('hunt-errors').textContent=huntErrors;
+  document.getElementById('hunt-streak').textContent=huntStreak;
+}
+
+// ══════════════════════════════════════════
+// CELEBRATIONS
+// ══════════════════════════════════════════
+function celebrate(s, isHunt=false) {
+  if(STREAKS[s]){
+    const {emoji,text,sub}=STREAKS[s];
+    showCelebration(emoji,text,sub); launchConfetti(2000);
+  } else if(s>0&&s%5===0){
+    showCelebration('🎊',`¡${s} seguidas!`,'¡Sigue así!'); launchConfetti(1500);
+  }
+}
+function showCelebration(emoji,text,sub){
+  document.getElementById('cel-emoji').textContent=emoji;
+  document.getElementById('cel-text').textContent=text;
+  document.getElementById('cel-sub').textContent=sub;
+  const c=document.getElementById('celebration');
+  c.classList.add('show'); setTimeout(()=>c.classList.remove('show'),2400);
+}
+
+// ══════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════
+function launchConfetti(duration){
+  const cv=document.getElementById('confetti-canvas');
+  cv.classList.add('show'); cv.width=innerWidth; cv.height=innerHeight;
+  const ctx=cv.getContext('2d');
+  const colors=['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9de2','#fff','#c77dff'];
+  const ps=Array.from({length:90},()=>({
+    x:Math.random()*cv.width, y:-20-Math.random()*100,
+    r:4+Math.random()*6, d:2+Math.random()*3,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    vx:(Math.random()-0.5)*3, angle:Math.random()*Math.PI*2,
+    spin:(Math.random()-0.5)*0.2, shape:Math.random()>.5?'circle':'rect',
+  }));
+  const start=performance.now();
+  (function frame(now){
+    const e=now-start; ctx.clearRect(0,0,cv.width,cv.height);
+    ps.forEach(p=>{
+      p.y+=p.d; p.x+=p.vx; p.angle+=p.spin;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle);
+      ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,1-e/duration);
+      if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      else ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
       ctx.restore();
     });
-    if (elapsed < duration) requestAnimationFrame(frame);
-    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.classList.remove('show'); }
-  }
-  requestAnimationFrame(frame);
+    if(e<duration) requestAnimationFrame(frame);
+    else{ctx.clearRect(0,0,cv.width,cv.height);cv.classList.remove('show');}
+  })(performance.now());
 }
 
-// ─── TOGGLE ANSWERS ───────────────────────────────────────────────────────────
-function toggleAnswers() {
-  showingAnswers = !showingAnswers;
-  document.getElementById('toggle-label').textContent = showingAnswers ? 'Ocultar respuestas' : 'Ver respuestas';
-  renderAllCells();
+// ══════════════════════════════════════════
+// FILL CONTROLS
+// ══════════════════════════════════════════
+function toggleAnswers(){
+  showingAnswers=!showingAnswers;
+  document.getElementById('toggle-label').textContent=showingAnswers?'Ocultar respuestas':'Ver respuestas';
+  renderAll();
 }
-
-// ─── CLEAR ────────────────────────────────────────────────────────────────────
-function confirmClear() {
-  document.getElementById('modal-overlay').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('show');
-}
-
-function doClear() {
-  answers = {}; streak = 0; maxStreak = 0;
-  saveState();
-  showingAnswers = false;
-  document.getElementById('toggle-label').textContent = 'Ver respuestas';
+function confirmClear(){ document.getElementById('modal-overlay').classList.add('show'); }
+function closeModal()  { document.getElementById('modal-overlay').classList.remove('show'); }
+function doClear(){
+  answers={}; streak=0; maxStreak=0; saveState();
+  showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas';
   document.getElementById('complete-banner').classList.remove('show');
-  renderAllCells();
-  closeModal();
+  renderAll(); closeModal();
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-loadState();
-buildTable();
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+loadState(); buildTable(); updateFillStats();
 </script>
 </body>
 </html>
