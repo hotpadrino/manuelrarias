@@ -29,6 +29,8 @@
   --glow5: rgba(255,157,226,0.35);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+*::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; -ms-overflow-style: none; }
 body {
   font-family: 'Nunito', sans-serif;
   background: var(--bg);
@@ -171,10 +173,11 @@ header { text-align: center; margin-bottom: 20px; }
 
 /* TABLE */
 .table-wrapper {
-  overflow-x: auto; border-radius: 16px; background: var(--surface);
+  overflow: hidden; border-radius: 16px; background: var(--surface);
   border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 8px 40px rgba(0,0,0,0.5);
   margin-bottom: 20px;
 }
+.table-scroll { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; min-width: 510px; }
 th, td { width: 56px; height: 50px; text-align: center; vertical-align: middle; border: 1px solid rgba(255,255,255,0.05); position: relative; }
 th.corner { background: var(--bg); font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--accent2); }
@@ -223,7 +226,7 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 }
 .flash-tooltip.visible { opacity: 1; transform: translateX(-50%) scale(1); }
 
-@keyframes popIn  { 0%{transform:scale(0.5);opacity:0.5} 80%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+@keyframes popIn  { 0%{transform:scale(0.6);opacity:0.4} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
 @keyframes slideUp { from{transform:translateY(22px) scale(0.95);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
 @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
@@ -351,7 +354,9 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
   </div>
 
   <div class="table-wrapper">
-    <table id="mult-table"></table>
+    <div class="table-scroll">
+      <table id="mult-table"></table>
+    </div>
   </div>
 </div>
 
