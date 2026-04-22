@@ -183,10 +183,16 @@ td.row-header { background: var(--header-row); font-family: 'Fredoka One', cursi
 
 td.answer-cell {
   background: var(--empty); cursor: pointer;
-  transition: background 0.2s, transform 0.1s; user-select: none;
+  transition: background 0.15s, transform 0.1s; user-select: none;
 }
-td.answer-cell:hover  { background: #3a3560; }
 td.answer-cell:active { transform: scale(0.88); }
+
+/* cross-highlight */
+td.answer-cell.row-lit   { background: rgba(77,150,255,0.10); }
+td.answer-cell.col-lit   { background: rgba(77,150,255,0.10); }
+td.answer-cell.cross-lit { background: rgba(77,150,255,0.24) !important; }
+th.col-header.col-lit    { background: rgba(77,150,255,0.30); color: #fff; transition: background 0.15s; }
+td.row-header.row-lit    { background: rgba(77,150,255,0.30); color: #fff; transition: background 0.15s; }
 
 /* fill states */
 td.correct-cell { background: rgba(107,203,119,0.18) !important; animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1); }
@@ -446,17 +452,19 @@ function buildTable() {
   // header
   const thead=document.createElement('thead'), hr=document.createElement('tr');
   const ctd=document.createElement('th'); ctd.className='corner'; ctd.textContent='×'; hr.appendChild(ctd);
-  for(let c=1;c<=10;c++){ const th=document.createElement('th'); th.className='col-header'; th.textContent=c; hr.appendChild(th); }
+  for(let c=1;c<=10;c++){ const th=document.createElement('th'); th.className='col-header'; th.dataset.c=c; th.textContent=c; hr.appendChild(th); }
   thead.appendChild(hr); table.appendChild(thead);
   // body
   const tbody=document.createElement('tbody');
   for(let r=1;r<=10;r++){
     const tr=document.createElement('tr');
-    const rh=document.createElement('td'); rh.className='row-header'; rh.textContent=r; tr.appendChild(rh);
+    const rh=document.createElement('td'); rh.className='row-header'; rh.dataset.r=r; rh.textContent=r; tr.appendChild(rh);
     for(let c=1;c<=10;c++){
       const td=document.createElement('td'); td.className='answer-cell';
       td.dataset.r=r; td.dataset.c=c;
       td.onclick=()=>cellClick(r,c);
+      td.addEventListener('mouseenter',()=>highlightCross(r,c));
+      td.addEventListener('mouseleave',()=>clearHighlight());
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
@@ -780,6 +788,37 @@ function doClear(){
   showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas';
   document.getElementById('complete-banner').classList.remove('show');
   renderAll(); closeModal();
+}
+
+// ══════════════════════════════════════════
+// CROSS HIGHLIGHT (row + col)
+// ══════════════════════════════════════════
+let litR = 0, litC = 0;
+function highlightCross(r, c) {
+  if (litR === r && litC === c) return;
+  clearHighlight();
+  litR = r; litC = c;
+  // highlight entire row
+  for (let cc = 1; cc <= 10; cc++) {
+    const td = document.querySelector(`td[data-r="${r}"][data-c="${cc}"]`);
+    if (td) td.classList.add(cc === c ? 'cross-lit' : 'row-lit');
+  }
+  // highlight entire col
+  for (let rr = 1; rr <= 10; rr++) {
+    const td = document.querySelector(`td[data-r="${rr}"][data-c="${c}"]`);
+    if (td) td.classList.add(rr === r ? 'cross-lit' : 'col-lit');
+  }
+  // header cells
+  const colH = document.querySelector(`th.col-header[data-c="${c}"]`);
+  if (colH) colH.classList.add('col-lit');
+  const rowH = document.querySelector(`td.row-header[data-r="${r}"]`);
+  if (rowH) rowH.classList.add('row-lit');
+}
+function clearHighlight() {
+  document.querySelectorAll('.row-lit,.col-lit,.cross-lit').forEach(el => {
+    el.classList.remove('row-lit','col-lit','cross-lit');
+  });
+  litR = 0; litC = 0;
 }
 
 // ══════════════════════════════════════════
