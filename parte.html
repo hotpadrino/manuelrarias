@@ -188,7 +188,7 @@
     // Lógica idéntica a la V8, actualizada para asegurar compatibilidad con V9
     let state = {
         dataRaw: `##Sección Certificación SECAE\n#Oficiales\nNombre Oficial 1\nNombre Oficial 2\n\n#Suboficiales\nNombre Técnico\n\n#Civiles\nNombre Ingeniero`,
-        novedades: ["FILA", "SERVICIO", "DISPONIBLE DE VUELO", "COMPENSANDO", "PERMISO ESPECIAL", "EXCUSA MEDICA", "TURNO DESCANSO", "CURSO", "COMISIÓN/ESTUDIO", "OTRA"],
+        novedades: ["FILA", "SERVICIO", "DISPONIBLE DE VUELO", "COMPENSANDO", "PERMISO ESPECIAL", "EXCUSA MEDICA", "TURNO DESCANSO", "VACACIONES", "CURSO", "COMISIÓN/ESTUDIO", "OTRA"],
         asignaciones: {}, 
         tituloOficina: "",
         historial: []
@@ -269,7 +269,7 @@
             else if (c.includes("suboficial")) i = 1;
             total[i]++;
             if (d.tipo === "FILA") fila[i]++;
-            else detalles += `${nombre}: ${d.tipo} ${d.obs ? '(' + d.obs + ')' : ''}\n`;
+            else detalles += `- ${nombre}: ${d.tipo} ${d.obs ? '(' + d.obs + ')' : ''}\n`;
         });
 
         const report = `✅ ${state.tituloOficina} del día \n${f}\n\n*Parte Oficina:* ${total.map(v=>String(v).padStart(2,'0')).join('-')}\n*Fila* ${fila.map(v=>String(v).padStart(2,'0')).join('-')}\n*Novedades* ${total.map((v,idx)=>String(v-fila[idx]).padStart(2,'0')).join('-')} \n\n${detalles}`;
