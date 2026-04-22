@@ -600,19 +600,21 @@ function flashCell(r,c) {
   if(!td) return;
   clearFlash();
   td.classList.add('flash-show');
-  let tip=document.createElement('div');
-  tip.className='flash-tooltip'; tip.textContent=r*c; td.appendChild(tip);
-  requestAnimationFrame(()=>tip.classList.add('visible'));
+  const sp=document.createElement('span');
+  sp.className='answer-num flash-inner';
+  sp.style.color='var(--accent5)';
+  sp.textContent=r*c;
+  td.innerHTML=''; td.appendChild(sp);
   flashTimer=setTimeout(()=>{
-    tip.classList.remove('visible');
-    setTimeout(()=>{ td.classList.remove('flash-show'); if(tip.parentNode) tip.parentNode.removeChild(tip); },200);
+    td.classList.remove('flash-show');
+    td.innerHTML='';
   },2000);
 }
 function clearFlash() {
   if(flashTimer){clearTimeout(flashTimer);flashTimer=null;}
   document.querySelectorAll('.flash-show').forEach(td=>{
     td.classList.remove('flash-show');
-    const tip=td.querySelector('.flash-tooltip'); if(tip) td.removeChild(tip);
+    td.innerHTML='';
   });
 }
 
