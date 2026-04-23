@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
 
-    <meta property="og:title" content="Gantt Enterprise Pro - Control de Cronogramas">
-    <meta property="og:description" content="Plataforma avanzada para la gestión de proyectos y control de estructuras WBS.">
-    <meta property="og:image" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
-    <meta property="og:image:secure_url" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
-    <meta property="og:image:type" content="image/jpeg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://hotpadrino.github.io/manuelrarias/gantt2.html">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Gantt Enterprise Pro - Control de Cronogramas">
-    <meta name="twitter:description" content="Plataforma avanzada para la gestión de proyectos y control de estructuras WBS.">
-    <meta name="twitter:image" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
+<meta property="og:title" content="Gantt Enterprise Pro - Control de Cronogramas">
+<meta property="og:description" content="Plataforma avanzada para la gestión de proyectos y control de estructuras WBS.">
+<meta property="og:image" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
+<meta property="og:image:secure_url" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hotpadrino.github.io/manuelrarias/gantt2.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Gantt Enterprise Pro - Control de Cronogramas">
+<meta name="twitter:description" content="Plataforma avanzada para la gestión de proyectos y control de estructuras WBS.">
+<meta name="twitter:image" content="https://hotpadrino.github.io/manuelrarias/aripar.jpg">
   
-<title>Gantt Pro</title>
+<title>Gantt Pro - Aripar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -289,6 +289,7 @@ input[type=date].modal-input{color-scheme:dark}
         <button onclick="setViewMode('days')" id="btn-days" class="active">Días</button>
         <button onclick="setViewMode('weeks')" id="btn-weeks">Semanas</button>
         <button onclick="setViewMode('months')" id="btn-months">Meses</button>
+        <button onclick="setViewMode('years')" id="btn-years">Años</button>
       </div>
       <div class="dropdown-wrap">
         <button class="icon-btn" onclick="toggleDropdown()"><i class="fas fa-database"></i> Datos</button>
@@ -606,7 +607,7 @@ function scrollToMatch(idx){
   var id=searchMatches[idx];if(!id)return;
   var t=tasks.filter(function(x){return x.id===id;})[0];if(!t||!t.validDates)return;
   var vp=document.getElementById('timeline-viewport');
-  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:30.4);
+  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:viewMode==='months'?30.4:365.25);
   vp.scrollTo({left:Math.max(0,diffDays(parseDate(t.start),lastRenderStart||projectStart)*sf-vp.offsetWidth/3),behavior:'smooth'});
 }
 
@@ -671,7 +672,7 @@ function render(){
   var DAYS=Math.max(30,diffDays(renderEnd,renderStart));
   lastRenderStart=renderStart;lastRenderEnd=renderEnd;
 
-  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:30.4);
+  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:viewMode==='months'?30.4:365.25);
   var totW=DAYS*sf;
 
   // Header
@@ -706,7 +707,7 @@ function render(){
       mb.style.width=(parseFloat(mb.style.width)+columnWidth)+'px';
       var wuc=document.createElement('div');wuc.className='unit-cell';wuc.style.width=columnWidth+'px';wuc.style.height='32px';wuc.innerText='S'+(wi+1);unitHdr.appendChild(wuc);
     }
-  } else {
+  } else if(viewMode==='months'){
         monthHdr.style.display='none';
         var monthCount=Math.ceil(DAYS/30)+1;
         for(var mi=0;mi<monthCount;mi++){
@@ -722,6 +723,20 @@ function render(){
                 //muc.innerText = md.toLocaleDateString('es-ES',{month:'long'}).toUpperCase();
             }
             unitHdr.appendChild(muc);
+    }
+  } else {
+    // viewMode === 'years'
+    monthHdr.style.display='none';
+    var startYear=renderStart.getFullYear();
+    var endYear=renderEnd.getFullYear()+1;
+    var thisYear=new Date().getFullYear();
+    for(var yi=0;yi<endYear-startYear;yi++){
+      var curYear=startYear+yi;
+      var isThisYear=curYear===thisYear;
+      var yuc=document.createElement('div');yuc.className='unit-cell'+(isThisYear?' today-col':'');
+      yuc.style.cssText='width:'+columnWidth+'px;height:62px;font-size:13px;font-weight:700;border-right:1px solid var(--border);'+(isThisYear?'background:rgba(79,142,247,.07);':'');
+      yuc.innerText=String(curYear);
+      unitHdr.appendChild(yuc);
     }
   }
 
@@ -768,10 +783,16 @@ function render(){
     bRow.className='bar-row'+(hidden?' hidden':'');
     bRow.style.width=totW+'px';
 
-    if(viewMode!=='months'){
+    if(viewMode==='days'||viewMode==='weeks'){
       var step=viewMode==='days'?7:1,u2=viewMode==='days'?DAYS:Math.ceil(DAYS/7);
       for(var gi=0;gi<u2;gi+=step){
         var gl=document.createElement('div');gl.className='grid-line';gl.style.left=(gi*columnWidth)+'px';bRow.appendChild(gl);
+      }
+    } else if(viewMode==='years'){
+      var gStartY=renderStart.getFullYear(),gEndY=renderEnd.getFullYear()+1;
+      for(var gyi=0;gyi<gEndY-gStartY;gyi++){
+        var gyD=diffDays(new Date(gStartY+gyi,0,1),renderStart);
+        if(gyD>=0){var gyl=document.createElement('div');gyl.className='grid-line';gyl.style.left=(gyD*sf)+'px';bRow.appendChild(gyl);}
       }
     }
 
@@ -816,8 +837,8 @@ function render(){
 
 /* ══ CONTROLS ══ */
 function setViewMode(m){
-  viewMode=m;columnWidth=m==='days'?45:m==='weeks'?80:140;
-  ['days','weeks','months'].forEach(function(x){document.getElementById('btn-'+x).className=m===x?'active':'';});
+  viewMode=m;columnWidth=m==='days'?45:m==='weeks'?80:m==='months'?140:120;
+  ['days','weeks','months','years'].forEach(function(x){document.getElementById('btn-'+x).className=m===x?'active':'';});
   document.getElementById('timeline-viewport').scrollTop=0;
   render();setTimeout(scrollToToday,80);
 }
@@ -826,7 +847,7 @@ function focusOnTask(id,silent){
   if(!silent)activeTaskId=id;
   var t=tasks.filter(function(x){return x.id===id;})[0];if(!t||!t.validDates)return;
   var vp=document.getElementById('timeline-viewport');
-  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:30.4);
+  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:viewMode==='months'?30.4:365.25);
   vp.scrollTo({left:Math.max(0,diffDays(parseDate(t.start),lastRenderStart||projectStart)*sf-vp.offsetWidth/3),behavior:'smooth'});
   if(!silent)render();
 }
@@ -980,7 +1001,7 @@ function handleFile(input){
 /* ══ TODAY ══ */
 function scrollToToday(){
   var vp=document.getElementById('timeline-viewport');
-  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:30.4);
+  var sf=columnWidth/(viewMode==='days'?1:viewMode==='weeks'?7:viewMode==='months'?30.4:365.25);
   vp.scrollTo({left:Math.max(0,diffDays(new Date(),lastRenderStart||projectStart)*sf-vp.offsetWidth/2),behavior:'smooth'});
 }
 
