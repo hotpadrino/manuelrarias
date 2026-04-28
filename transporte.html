@@ -30,8 +30,10 @@
     <meta name="apple-mobile-web-app-title" content="Aripar Transport Pro">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
 
-    <title>🛸 ARIPAR Transport Pro v15</title>
+    <title>🛸 ARIPAR Transport Pro v16</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -117,6 +119,13 @@
         max-width: 860px;
     }
 
+    /* Leaflet attribution discreto */
+    .leaflet-control-attribution {
+        font-size: 7px !important; opacity: 0.4;
+        background: transparent !important; color: var(--text-muted) !important;
+    }
+    .leaflet-control-attribution a { color: var(--text-muted) !important; }
+
     /* ═══════════════════ MINI MAP (dentro de pestaña Calcular) ═══════════════════ */
     .mini-map-wrap {
         width: 100%; border-radius: 12px; overflow: hidden;
@@ -145,13 +154,9 @@
 
     #leaflet-map-inline {
         height: 150px;
-        filter: grayscale(1) brightness(0.72) contrast(1.15);
     }
     @media (min-width: 640px) {
         #leaflet-map-inline { height: 200px; }
-    }
-    [data-theme="light"] #leaflet-map-inline {
-        filter: grayscale(1) brightness(0.9) contrast(1.05);
     }
     .mini-map-bar {
         padding: 6px 12px;
@@ -482,10 +487,11 @@
 
     /* KPI cards row */
     .kpi-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+    .charts-grid { display:flex; flex-direction:column; gap:12px; margin-bottom:12px; }
+    .charts-grid .chart-block { margin-bottom:0; }
     @media (min-width: 640px) {
         .kpi-row { grid-template-columns: repeat(4, 1fr); }
-        .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-        .charts-grid .chart-block { margin-bottom:0; }
+        .charts-grid { display:grid; grid-template-columns:1fr 1fr; }
     }
     .kpi-card {
         background:var(--panel2); border:1px solid var(--border);
@@ -575,7 +581,7 @@
 
 <canvas id="stars-canvas"></canvas>
 
-<!-- APP WRAPPER (side-by-side with map on large screens) -->
+<!-- APP WRAPPER -->
 <div id="app-wrapper">
 
 <!-- HEADER -->
@@ -929,9 +935,9 @@ function updateTimeDiff() {
     calc();
 }
 function updateKmDiff() {
-    const k1 = parseFloat(document.getElementById('km-start').value);
-    const k2 = parseFloat(document.getElementById('km-end').value);
-    if(!isNaN(k1)&&!isNaN(k2))
+    const k1 = parseFloat(document.getElementById('km-start').value) || 0;
+    const k2 = parseFloat(document.getElementById('km-end').value)   || 0;
+    if(!isNaN(k1) && !isNaN(k2))
         document.getElementById('km-in').value = Math.abs(k2-k1).toFixed(2);
     calc();
 }
@@ -1245,6 +1251,7 @@ function changeFilter(range, btn) {
     btn.classList.add('active');
     const d = processData(range);
     updateKPIs(d);
+    if (!cInc || !cAct || !cPieTrips || !cPieKm) { initCharts(); return; }
     cInc.data.labels = d.labels; cInc.data.datasets[0].data = d.inc; cInc.update();
     cAct.data.labels = d.labels; cAct.data.datasets[0].data = d.km; cAct.data.datasets[1].data = d.min; cAct.update();
     cPieTrips.data.datasets[0].data = [d.v_trips,d.m_trips,d.p_trips]; cPieTrips.update();
@@ -1298,6 +1305,13 @@ function generateTestData() {
 loadCfgUI();
 renderHist();
 calc();
+// Pedir permiso GPS al cargar la página
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        () => {},   // éxito: permiso concedido, el GPS real lo maneja el IIFE
+        () => {}    // error: el usuario negó, se maneja silenciosamente
+    );
+}
 
 /* ═══════════════════════════════════════════
    GPS MAP
@@ -1318,7 +1332,7 @@ calc();
     function initMap() {
         if (!window.L || map) return;
         const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        map = L.map('leaflet-map-inline', { zoomControl:false, attributionControl:false }).setView(BOGOTA, 13);
+        map = L.map('leaflet-map-inline', { zoomControl:true, attributionControl:true, touchZoom:true, scrollWheelZoom:false }).setView(BOGOTA, 13);
         L.tileLayer(tiles, { maxZoom:19 }).addTo(map);
         routeLayer = L.polyline([], { color:'#00ffe7', weight:3, opacity:0.85 }).addTo(map);
         applyFilter();
@@ -1370,19 +1384,29 @@ calc();
     }
 
     function onPosition(pos) {
-        const {latitude:lat, longitude:lon} = pos.coords;
+        const {latitude:lat, longitude:lon, accuracy} = pos.coords;
         const ts = pos.timestamp;
+        // Ignorar lecturas con precisión mayor a 30m (GPS errático)
+        if (accuracy > 30) return;
         initMap();
         const latlng = [lat,lon];
-        trackPoints.push(latlng);
         if (lastPos) {
             const dist = haversine(lastPos[0],lastPos[1],lat,lon);
+            // Ignorar movimientos menores a 5m (ruido GPS en reposo)
+            if (dist < 0.005) {
+                currentSpeed = 0;
+                updateUI(totalKm, 0);
+                return;
+            }
             totalKm += dist;
             if (lastTimestamp) {
                 const dt = (ts-lastTimestamp)/3600000;
-                currentSpeed = dt>0 ? dist/dt : currentSpeed;
+                const rawSpeed = dt>0 ? dist/dt : 0;
+                // Ignorar velocidades imposibles (>150 km/h en taxi urbano)
+                if (rawSpeed < 150) currentSpeed = rawSpeed;
             }
         }
+        trackPoints.push(latlng);
         lastPos = latlng; lastTimestamp = ts;
         if (routeLayer) routeLayer.setLatLngs(trackPoints);
         const icon = makeIcon();
@@ -1419,12 +1443,33 @@ calc();
     window.startTrip = function() { resetGPS(); startGPS(); if(origStart) origStart(); };
 
     const origStop = window.stopTrip;
-    window.stopTrip = function() { stopGPS(); if(origStop) origStop(); };
+    window.stopTrip = function() {
+        // Antes de detener, fijar km-end y km-in con el total GPS acumulado
+        if (totalKm > 0) {
+            const kmStart = parseFloat(document.getElementById('km-start').value) || 0;
+            document.getElementById('km-end').value = (kmStart + totalKm).toFixed(2);
+            document.getElementById('km-in').value  = totalKm.toFixed(2);
+        }
+        stopGPS();
+        if (origStop) origStop();
+        // Recalcular tarifa con los km finales
+        calc();
+    };
 
     const origTheme = window.setTheme;
     window.setTheme = function(t) { if(origTheme) origTheme(t); applyFilter(); };
 
-    setTimeout(initMap, 600);
+    // Solicitar posición inicial para mostrar ubicación real en el mapa
+    setTimeout(() => {
+        initMap();
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => onPosition(pos),
+                () => {},
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+            );
+        }
+    }, 600);
 })();
 </script>
 </body>
