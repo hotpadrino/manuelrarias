@@ -1402,8 +1402,8 @@ if (navigator.geolocation) {
             if (lastTimestamp) {
                 const dt = (ts-lastTimestamp)/3600000;
                 const rawSpeed = dt>0 ? dist/dt : 0;
-                // Ignorar velocidades imposibles (>150 km/h en taxi urbano)
-                if (rawSpeed < 150) currentSpeed = rawSpeed;
+                // Ignorar velocidades imposibles (>200 km/h en taxi urbano)
+                if (rawSpeed < 200) currentSpeed = rawSpeed;
             }
         }
         trackPoints.push(latlng);
