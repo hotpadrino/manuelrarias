@@ -980,34 +980,37 @@ function startTrip() {
 }
 
 function stopTrip() {
+    // Si no se presionó INICIAR, poner hora de fin ahora y calcular con lo que haya
+    const now = new Date();
     if (!tripStart) {
-        // Sin INICIAR: construye hora fin/inicio con lo que haya
+        // Hora fin = ahora si no tiene
         if (!document.getElementById('t-end').value)
             document.getElementById('t-end').value = now.toTimeString().slice(0,5);
-        if (!document.getElementById('t-start').value)
-            document.getElementById('t-start').value = document.getElementById('t-end').value;
+        // Hora inicio: restar minutos si están puestos; si no, igual a fin (0 min)
+        if (!document.getElementById('t-start').value) {
+            const mins = parseInt(document.getElementById('min-in').value) || 0;
+            const startTime = new Date(now.getTime() - mins * 60000);
+            document.getElementById('t-start').value = startTime.toTimeString().slice(0,5);
+        }
         updateTimeDiff();
     } else {
-        // Con INICIAR: comportamiento normal
         clearInterval(timerInterval);
         document.getElementById('t-end').value = now.toTimeString().slice(0,5);
         updateTimeDiff();
     }
-
-    clearInterval(timerInterval);
-    document.getElementById('t-end').value = new Date().toTimeString().slice(0,5);
     document.getElementById('trip-indicator').classList.remove('active');
     document.getElementById('idle-bar').style.display = 'flex';
     document.getElementById('pulse-dot').classList.remove('live');
     document.getElementById('idle-text').textContent = 'SISTEMA EN ESPERA';
-    updateTimeDiff();
     const t = calc();
-    if(t <= 0) return;
+    if(t <= 0) { tripStart = null; return; }
     const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    const tEnd = document.getElementById('t-end').value || now.toTimeString().slice(0,5);
     hist.unshift({
         id: Date.now(),
-        date: new Date().toLocaleDateString('es-CO'),
-        fullDate: new Date().toISOString(),
+        date: now.toLocaleDateString('es-CO'),
+        timeEnd: tEnd,
+        fullDate: now.toISOString(),
         km:  document.getElementById('km-in').value  || 0,
         min: document.getElementById('min-in').value || 0,
         val: t,
@@ -1051,7 +1054,7 @@ function renderHist() {
     }
     list.innerHTML = hist.map(i => `
         <div class="history-item">
-            <div class="h-date">📅 ${i.date}</div>
+            <div class="h-date">📅 ${i.date}${i.timeEnd ? ' &nbsp;🕐 ' + i.timeEnd : ''}</div>
             <div class="h-row">
                 <span class="h-badge">🗺️ ${i.km} km</span>
                 <span class="h-badge">⏱️ ${i.min} min</span>
@@ -1415,8 +1418,8 @@ if (navigator.geolocation) {
             if (lastTimestamp) {
                 const dt = (ts-lastTimestamp)/3600000;
                 const rawSpeed = dt>0 ? dist/dt : 0;
-                // Ignorar velocidades imposibles (>200 km/h en taxi urbano)
-                if (rawSpeed < 200) currentSpeed = rawSpeed;
+                // Ignorar velocidades imposibles (>150 km/h en taxi urbano)
+                if (rawSpeed < 150) currentSpeed = rawSpeed;
             }
         }
         trackPoints.push(latlng);
@@ -1457,16 +1460,14 @@ if (navigator.geolocation) {
 
     const origStop = window.stopTrip;
     window.stopTrip = function() {
-        // Antes de detener, fijar km-end y km-in con el total GPS acumulado
+        // Fijar km-end y km-in con el total GPS ANTES de llamar a stopTrip
         if (totalKm > 0) {
             const kmStart = parseFloat(document.getElementById('km-start').value) || 0;
             document.getElementById('km-end').value = (kmStart + totalKm).toFixed(2);
             document.getElementById('km-in').value  = totalKm.toFixed(2);
         }
         stopGPS();
-        if (origStop) origStop();
-        // Recalcular tarifa con los km finales
-        calc();
+        if (origStop) origStop(); // stopTrip() original: calcula, guarda y renderiza
     };
 
     const origTheme = window.setTheme;
