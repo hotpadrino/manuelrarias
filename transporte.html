@@ -31,10 +31,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
 
-    
     <title>🛸 ARIPAR Transport Pro v15</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
     /* ═══════════════════════════════════════════
        VARIABLES — OSCURO (default)
@@ -106,6 +107,68 @@
         padding: 10px 10px 88px;
         transition: background .4s, color .4s;
         position: relative; overflow-x: hidden;
+    }
+
+    /* ═══════════════════ APP WRAPPER ═══════════════════ */
+    #app-wrapper {
+        display: flex; flex-direction: column; align-items: center;
+        width: 100%; max-width: 500px;
+    }
+
+    /* ═══════════════════ MINI MAP (dentro de pestaña Calcular) ═══════════════════ */
+    .mini-map-wrap {
+        width: 100%; border-radius: 12px; overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--panel2);
+        margin-bottom: 12px;
+    }
+    .mini-map-header {
+        padding: 7px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .mini-map-title {
+        font-family: 'Orbitron', monospace; font-size: 8px; font-weight: 700;
+        letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent);
+        text-shadow: 0 0 6px var(--accent);
+    }
+    .mini-map-status {
+        font-family: 'Orbitron', monospace; font-size: 7.5px; letter-spacing: 1px;
+        color: var(--text-muted); display: flex; align-items: center; gap: 5px;
+    }
+    .map-dot {
+        width: 6px; height: 6px; border-radius: 50%; background: #3a6080; flex-shrink:0;
+    }
+    .map-dot.active { background: #00c470; box-shadow: 0 0 6px #00c470; animation: pdot 2s infinite; }
+
+    #leaflet-map-inline {
+        height: 150px;
+        filter: grayscale(1) brightness(0.72) contrast(1.15);
+    }
+    [data-theme="light"] #leaflet-map-inline {
+        filter: grayscale(1) brightness(0.9) contrast(1.05);
+    }
+    .mini-map-bar {
+        padding: 6px 12px;
+        border-top: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .mini-map-km-lbl {
+        font-family: 'Orbitron', monospace; font-size: 7.5px;
+        letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase;
+    }
+    .mini-map-km-val {
+        font-family: 'Orbitron', monospace; font-size: 15px; font-weight: 700;
+        color: var(--accent); text-shadow: 0 0 8px var(--accent); letter-spacing: 1px;
+    }
+    .mini-map-km-unit { font-size: 8px; color: var(--text-muted); }
+    .mini-map-speed {
+        font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 600;
+        color: var(--accent2); letter-spacing: 1px; text-align: right;
+    }
+    .mini-map-speed-lbl {
+        font-family: 'Orbitron', monospace; font-size: 7.5px;
+        letter-spacing: 1.5px; color: var(--text-muted); text-transform: uppercase; text-align: right;
     }
 
     #stars-canvas {
@@ -498,6 +561,9 @@
 
 <canvas id="stars-canvas"></canvas>
 
+<!-- APP WRAPPER (side-by-side with map on large screens) -->
+<div id="app-wrapper">
+
 <!-- HEADER -->
 <div class="header">
     <div class="header-eyebrow">⬡ Inversiones Aripar ⬡</div>
@@ -516,6 +582,28 @@
 
     <!-- ══════════════ CALCULADORA ══════════════ -->
     <div id="view-calc" class="view active">
+
+        <!-- MINI GPS MAP -->
+        <div class="mini-map-wrap">
+            <div class="mini-map-header">
+                <span class="mini-map-title">🗺️ GPS — Posición</span>
+                <span class="mini-map-status">
+                    <span class="map-dot" id="mmap-dot"></span>
+                    <span id="mmap-status">SIN GPS</span>
+                </span>
+            </div>
+            <div id="leaflet-map-inline"></div>
+            <div class="mini-map-bar">
+                <div>
+                    <div class="mini-map-km-lbl">Recorrido</div>
+                    <div class="mini-map-km-val"><span id="mmap-km">0.00</span><span class="mini-map-km-unit"> km</span></div>
+                </div>
+                <div>
+                    <div class="mini-map-speed-lbl">Velocidad</div>
+                    <div class="mini-map-speed"><span id="mmap-speed">0</span> km/h</div>
+                </div>
+            </div>
+        </div>
 
         <!-- Timer / Status -->
         <div id="trip-indicator" class="trip-status-bar">
@@ -700,6 +788,7 @@
     <a href="https://wa.me/573128816469" target="_blank">📲 WhatsApp</a>
     <a href="mailto:alucard8@gmail.com">📧 Correo</a>
 </footer>
+</div><!-- /#app-wrapper -->
 
 <script>
 /* ═══════════════════════════════════════════
@@ -902,7 +991,8 @@ function stopTrip() {
 const horarioLabel = { valle:'🌙 Valle', medio:'⚡ Medio', pico:'🔥 Pico' };
 
 function renderHist() {
-    const hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    let hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
+    hist.sort((a,b) => new Date(b.fullDate) - new Date(a.fullDate));
     document.getElementById('count-hist').textContent = hist.length;
 
     // Today stats
@@ -1153,8 +1243,21 @@ function changeFilter(range, btn) {
 function generateTestData() {
     let hist = JSON.parse(localStorage.getItem('aripar_hist_v15')) || [];
     const types = ['valle','medio','pico'];
-    for(let i=1; i<=50; i++) {
-        const d = new Date(); d.setDate(d.getDate()-i);
+
+    // Find the oldest existing record date; new records go further into the past
+    let baseDate;
+    if (hist.length > 0) {
+        const oldest = hist.reduce((min, r) => new Date(r.fullDate) < new Date(min.fullDate) ? r : min, hist[0]);
+        baseDate = new Date(oldest.fullDate);
+        baseDate.setDate(baseDate.getDate() - 1); // start 1 day before oldest
+    } else {
+        baseDate = new Date();
+        baseDate.setDate(baseDate.getDate() - 1);
+    }
+
+    for(let i=0; i<50; i++) {
+        const d = new Date(baseDate);
+        d.setDate(d.getDate() - i);
         const km = (Math.random()*12+1).toFixed(1);
         const m  = Math.floor(Math.random()*30+5);
         const h  = types[Math.floor(Math.random()*3)];
@@ -1166,8 +1269,12 @@ function generateTestData() {
             fullDate:d.toISOString(), km, min:m, val:Math.round(val), h
         });
     }
+
+    // Always keep sorted: most recent first
+    hist.sort((a,b) => new Date(b.fullDate) - new Date(a.fullDate));
+
     localStorage.setItem('aripar_hist_v15', JSON.stringify(hist));
-    alert('🧬 +50 viajes generados. ¡Ve a Gráficas para verlos!');
+    alert('🧬 +50 viajes generados hacia el pasado. ¡Ve a Gráficas para verlos!');
     renderHist();
 }
 
@@ -1177,6 +1284,134 @@ function generateTestData() {
 loadCfgUI();
 renderHist();
 calc();
+
+/* ═══════════════════════════════════════════
+   GPS MAP
+═══════════════════════════════════════════ */
+(function() {
+    let map = null;
+    let routeLayer = null;
+    let marker = null;
+    let trackPoints = [];
+    let totalKm = 0;
+    let lastPos = null;
+    let watchId = null;
+    let lastTimestamp = null;
+    let currentSpeed = 0;
+
+    const BOGOTA = [4.7110, -74.0721];
+
+    function initMap() {
+        if (!window.L || map) return;
+        const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        map = L.map('leaflet-map-inline', { zoomControl:false, attributionControl:false }).setView(BOGOTA, 13);
+        L.tileLayer(tiles, { maxZoom:19 }).addTo(map);
+        routeLayer = L.polyline([], { color:'#00ffe7', weight:3, opacity:0.85 }).addTo(map);
+        applyFilter();
+    }
+
+    function applyFilter() {
+        const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+        const el = document.getElementById('leaflet-map-inline');
+        if (el) el.style.filter = dark
+            ? 'grayscale(1) brightness(0.72) contrast(1.15)'
+            : 'grayscale(1) brightness(0.9) contrast(1.05)';
+    }
+
+    function makeIcon() {
+        const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+        const col = dark ? '#00ffe7' : '#0044cc';
+        return L.divIcon({
+            html: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="8" fill="${col}" fill-opacity="0.2" stroke="${col}" stroke-width="2"/>
+                <circle cx="12" cy="12" r="3.5" fill="${col}"/>
+            </svg>`,
+            className: '', iconSize:[22,22], iconAnchor:[11,11]
+        });
+    }
+
+    function haversine(lat1,lon1,lat2,lon2) {
+        const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+        const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+        return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    }
+
+    function updateUI(km, speed) {
+        const ekm = document.getElementById('mmap-km');
+        const esp = document.getElementById('mmap-speed');
+        if (ekm) ekm.textContent = km.toFixed(2);
+        if (esp) esp.textContent = Math.round(speed);
+        if (document.getElementById('trip-indicator')?.classList.contains('active')) {
+            const kmStart = parseFloat(document.getElementById('km-start').value) || 0;
+            document.getElementById('km-end').value = (kmStart + km).toFixed(2);
+            updateKmDiff();
+        }
+    }
+
+    function setStatus(active) {
+        const dot = document.getElementById('mmap-dot');
+        const lbl = document.getElementById('mmap-status');
+        if (dot) dot.classList.toggle('active', active);
+        if (lbl) lbl.textContent = active ? 'GPS ACTIVO' : 'SIN GPS';
+    }
+
+    function onPosition(pos) {
+        const {latitude:lat, longitude:lon} = pos.coords;
+        const ts = pos.timestamp;
+        initMap();
+        const latlng = [lat,lon];
+        trackPoints.push(latlng);
+        if (lastPos) {
+            const dist = haversine(lastPos[0],lastPos[1],lat,lon);
+            totalKm += dist;
+            if (lastTimestamp) {
+                const dt = (ts-lastTimestamp)/3600000;
+                currentSpeed = dt>0 ? dist/dt : currentSpeed;
+            }
+        }
+        lastPos = latlng; lastTimestamp = ts;
+        if (routeLayer) routeLayer.setLatLngs(trackPoints);
+        const icon = makeIcon();
+        if (!marker) { marker = L.marker(latlng,{icon}).addTo(map); }
+        else { marker.setLatLng(latlng).setIcon(icon); }
+        map.setView(latlng, map.getZoom()<15?15:map.getZoom());
+        setStatus(true);
+        updateUI(totalKm, currentSpeed);
+    }
+
+    function onError(err) { setStatus(false); console.warn('GPS:',err.message); }
+
+    function startGPS() {
+        if (!navigator.geolocation) { setStatus(false); return; }
+        if (watchId!==null) return;
+        watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+            enableHighAccuracy:true, maximumAge:5000, timeout:15000
+        });
+    }
+
+    function stopGPS() {
+        if (watchId!==null) { navigator.geolocation.clearWatch(watchId); watchId=null; }
+        setStatus(false);
+    }
+
+    function resetGPS() {
+        trackPoints=[]; totalKm=0; lastPos=null; lastTimestamp=null; currentSpeed=0;
+        if (routeLayer) routeLayer.setLatLngs([]);
+        if (marker) { marker.remove(); marker=null; }
+        updateUI(0,0);
+    }
+
+    const origStart = window.startTrip;
+    window.startTrip = function() { resetGPS(); startGPS(); if(origStart) origStart(); };
+
+    const origStop = window.stopTrip;
+    window.stopTrip = function() { stopGPS(); if(origStop) origStop(); };
+
+    const origTheme = window.setTheme;
+    window.setTheme = function(t) { if(origTheme) origTheme(t); applyFilter(); };
+
+    setTimeout(initMap, 600);
+})();
 </script>
 </body>
 </html>
