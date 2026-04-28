@@ -980,7 +980,20 @@ function startTrip() {
 }
 
 function stopTrip() {
-    if(!tripStart) return;
+    if (!tripStart) {
+        // Sin INICIAR: construye hora fin/inicio con lo que haya
+        if (!document.getElementById('t-end').value)
+            document.getElementById('t-end').value = now.toTimeString().slice(0,5);
+        if (!document.getElementById('t-start').value)
+            document.getElementById('t-start').value = document.getElementById('t-end').value;
+        updateTimeDiff();
+    } else {
+        // Con INICIAR: comportamiento normal
+        clearInterval(timerInterval);
+        document.getElementById('t-end').value = now.toTimeString().slice(0,5);
+        updateTimeDiff();
+    }
+
     clearInterval(timerInterval);
     document.getElementById('t-end').value = new Date().toTimeString().slice(0,5);
     document.getElementById('trip-indicator').classList.remove('active');
