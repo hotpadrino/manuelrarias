@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Simulador de Jarras</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#05101f;
+  --surf:#0c1a2e;
+  --surf2:#112038;
+  --glass:rgba(255,255,255,0.04);
+  --glass-b:rgba(255,255,255,0.11);
+  --text:#dde6f0;
+  --muted:#5a7490;
+  --dim:#334455;
+  --accent:#38bdf8;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --radius:14px;
+}
+
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding:20px 16px 40px;
+}
+
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 70% 45% at 15% 5%, rgba(14,165,233,.09) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 85% 90%, rgba(6,182,212,.07) 0%, transparent 55%);
+  pointer-events:none;z-index:0;
+}
+
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto}
+
+/* HEADER */
+.hdr{text-align:center;margin-bottom:24px}
+.hdr h1{font-size:clamp(1.3em,4vw,1.9em);font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.hdr p{color:var(--muted);font-size:.82em;margin-top:4px}
+
+/* CONFIG */
+.cfg{
+  background:var(--surf);border:1px solid var(--glass-b);border-radius:var(--radius);
+  padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+  margin-bottom:18px;
+}
+.cfg-item{display:flex;align-items:center;gap:7px}
+.cfg-item label{font-size:.78em;color:var(--muted);white-space:nowrap}
+.cfg-item input{
+  background:var(--glass);border:1px solid var(--glass-b);color:var(--text);
+  border-radius:8px;padding:6px 9px;font-family:'JetBrains Mono',monospace;
+  font-size:.82em;width:78px;text-align:center;transition:.15s;
+}
+.cfg-item input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(56,189,248,.14)}
+
+.btn{
+  padding:7px 15px;border-radius:8px;border:1px solid rgba(56,189,248,.3);
+  background:rgba(56,189,248,.08);color:var(--accent);font-family:'Outfit',sans-serif;
+  font-size:.82em;font-weight:500;cursor:pointer;transition:.18s;white-space:nowrap;
+}
+.btn:hover{background:rgba(56,189,248,.18);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-undo{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.07);color:#f87171}
+.btn-undo:hover{background:rgba(239,68,68,.16)}
+
+/* STATS */
+.stats{display:flex;gap:10px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
+.chip{
+  background:var(--surf);border:1px solid var(--glass-b);border-radius:20px;
+  padding:5px 14px;font-size:.8em;display:flex;gap:6px;align-items:center;
+}
+.chip .lbl{color:var(--muted)}
+.chip .val{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent)}
+.chip .val.goal{color:var(--amber)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr 250px;gap:18px;align-items:start}
+@media(max-width:680px){.layout{grid-template-columns:1fr}}
+
+/* GAME BOARD */
+.board{
+  background:var(--surf);border:1px solid var(--glass-b);border-radius:18px;
+  padding:20px 16px;
+}
+.jars-row{
+  display:flex;gap:14px;justify-content:center;align-items:flex-end;
+  flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px;
+  scrollbar-width:thin;scrollbar-color:var(--surf2) transparent;
+  min-height:260px;
+}
+.jars-row::-webkit-scrollbar{height:3px}
+.jars-row::-webkit-scrollbar-track{background:transparent}
+.jars-row::-webkit-scrollbar-thumb{background:var(--surf2);border-radius:2px}
+
+/* JAR UNIT */
+.jar-unit{display:flex;flex-direction:column;align-items:center;gap:7px;flex:0 0 auto}
+.jar-lbl{font-size:.72em;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* GLASS */
+.jar-glass{
+  width:68px;position:relative;
+  border:2px solid rgba(255,255,255,.14);border-top:none;
+  border-radius:0 0 7px 7px;
+  background:rgba(255,255,255,.025);
+  overflow:hidden;
+}
+.jar-glass::before{
+  content:'';position:absolute;left:7px;top:0;width:5px;height:100%;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02));
+  border-radius:3px;z-index:5;pointer-events:none;
+}
+.jar-glass::after{
+  content:'';position:absolute;right:5px;top:15%;width:3px;height:30%;
+  background:rgba(255,255,255,.06);border-radius:2px;z-index:5;pointer-events:none;
+}
+
+/* WATER */
+.water-wrap{
+  position:absolute;bottom:0;left:0;right:0;
+  transition:height .5s cubic-bezier(.4,0,.2,1);overflow:hidden;
+}
+.water-body{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,#38bdf8 0%,#0369a1 100%);
+}
+.water-wave{
+  position:absolute;top:-7px;left:-50%;width:200%;height:14px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 14'%3E%3Cpath d='M0 7 Q12.5 0 25 7 Q37.5 14 50 7 Q62.5 0 75 7 Q87.5 14 100 7 L100 14 L0 14 Z' fill='%2338bdf8'/%3E%3C/svg%3E") repeat-x;
+  background-size:50% 100%;animation:wave 2s linear infinite;z-index:2;
+}
+@keyframes wave{0%{transform:translateX(0)}100%{transform:translateX(50%)}}
+.water-wrap::after{
+  content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);
+  animation:shim 3.5s ease-in-out infinite;
+}
+@keyframes shim{0%{transform:translateX(0);opacity:.4}50%{opacity:.9}100%{transform:translateX(300%);opacity:.4}}
+
+/* TARGET MARKER */
+.target-line{
+  position:absolute;right:-2px;width:calc(100% + 4px);height:2px;
+  background:var(--amber);z-index:10;
+}
+.target-line::after{
+  content:'obj';position:absolute;right:3px;top:-9px;
+  font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--amber);
+}
+
+/* SUCCESS GLASS */
+.jar-glass.ok{border-color:rgba(16,185,129,.5);box-shadow:0 0 22px rgba(16,185,129,.15)}
+.jar-glass.ok .water-body{background:linear-gradient(180deg,#34d399 0%,#059669 100%)}
+.jar-glass.ok .water-wave{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 14'%3E%3Cpath d='M0 7 Q12.5 0 25 7 Q37.5 14 50 7 Q62.5 0 75 7 Q87.5 14 100 7 L100 14 L0 14 Z' fill='%2334d399'/%3E%3C/svg%3E")}
+
+/* SPLASH */
+@keyframes splash{0%{transform:scale(1)}35%{transform:scale(1.045)}65%{transform:scale(.97)}100%{transform:scale(1)}}
+.jar-glass.splash{animation:splash .38s ease}
+
+/* JAR READING */
+.jar-reading{font-family:'JetBrains Mono',monospace;font-size:.78em;color:var(--muted)}
+.jar-reading em{font-style:normal;color:var(--text);font-weight:600}
+
+/* ACTIONS */
+.jar-acts{display:flex;flex-direction:column;gap:4px;width:86px}
+.act{
+  padding:5px 7px;border-radius:6px;border:1px solid var(--glass-b);
+  background:var(--glass);color:var(--text);font-size:.72em;
+  font-family:'Outfit',sans-serif;cursor:pointer;transition:.16s;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.act:not(:disabled):hover{transform:translateY(-1px)}
+.act:disabled{opacity:.22;cursor:not-allowed;transform:none !important}
+.act.fill:not(:disabled){border-color:rgba(16,185,129,.35);color:#4ade80}
+.act.fill:not(:disabled):hover{background:rgba(16,185,129,.14)}
+.act.empty:not(:disabled){border-color:rgba(239,68,68,.3);color:#f87171}
+.act.empty:not(:disabled):hover{background:rgba(239,68,68,.13)}
+.act.pour:not(:disabled){border-color:rgba(56,189,248,.28);color:#7dd3fc}
+.act.pour:not(:disabled):hover{background:rgba(56,189,248,.13)}
+
+/* Tooltip on disabled */
+.act[title]{position:relative}
+
+/* LOG */
+.log-panel{
+  background:var(--surf);border:1px solid var(--glass-b);border-radius:18px;
+  overflow:hidden;display:flex;flex-direction:column;max-height:460px;
+}
+.log-hdr{
+  padding:12px 16px;border-bottom:1px solid var(--glass-b);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.log-hdr span{font-size:.72em;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.log-badge{background:rgba(56,189,248,.12);color:var(--accent);border-radius:10px;padding:2px 8px;font-size:.85em;font-family:'JetBrains Mono',monospace}
+.log-body{overflow-y:auto;flex:1;padding:8px 10px;list-style:none;scrollbar-width:thin;scrollbar-color:var(--surf2) transparent}
+.log-body::-webkit-scrollbar{width:3px}
+.log-body::-webkit-scrollbar-track{background:transparent}
+.log-body::-webkit-scrollbar-thumb{background:var(--surf2);border-radius:2px}
+.log-item{
+  display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:7px;
+  margin-bottom:3px;font-size:.78em;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.log-item:nth-child(odd){background:var(--glass)}
+.log-n{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:600;min-width:20px;font-size:.9em}
+.log-t{color:var(--muted);line-height:1.4}
+.log-empty{color:var(--dim);font-size:.78em;text-align:center;padding:18px 8px}
+
+/* WIN OVERLAY */
+.win-ov{
+  display:none;position:fixed;inset:0;z-index:100;
+  background:rgba(5,16,31,.88);align-items:center;justify-content:center;
+  padding:20px;
+}
+.win-ov.on{display:flex}
+.win-card{
+  background:var(--surf);border:1px solid rgba(16,185,129,.35);border-radius:22px;
+  padding:36px 42px;text-align:center;max-width:340px;width:100%;
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}
+.win-icon{font-size:2.8em;margin-bottom:10px}
+.win-title{font-size:1.5em;font-weight:600;color:var(--green);margin-bottom:6px}
+.win-sub{color:var(--muted);font-size:.85em;margin-bottom:20px}
+.win-nums{display:flex;gap:24px;justify-content:center;margin-bottom:24px}
+.win-n .big{font-family:'JetBrains Mono',monospace;font-size:2.2em;font-weight:600;color:var(--accent)}
+.win-n .lbl{font-size:.7em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(12px);
+  background:var(--surf2);border:1px solid var(--glass-b);border-radius:10px;
+  padding:9px 18px;font-size:.82em;color:var(--muted);
+  opacity:0;transition:all .25s;z-index:200;pointer-events:none;white-space:nowrap;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* CONFETTI canvas */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
+
+@media(max-width:500px){
+  .jar-glass{width:58px}
+  .jar-acts{width:74px}
+  .jars-row{gap:10px}
+  .act{font-size:.68em;padding:5px 5px}
+  .win-card{padding:28px 24px}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+
+  <div class="hdr">
+    <h1>💧 Simulador de Jarras</h1>
+    <p>Alcanza el objetivo usando la menor cantidad de movimientos</p>
+  </div>
+
+  <div class="cfg">
+    <div class="cfg-item">
+      <label>Capacidades (coma):</label>
+      <input type="text" id="caps" value="3,5">
+    </div>
+    <div class="cfg-item">
+      <label>Objetivo (L):</label>
+      <input type="number" id="target" value="4" min="1">
+    </div>
+    <button class="btn" onclick="initGame()">↺ Reiniciar</button>
+    <button class="btn btn-undo" onclick="deshacer()">↩ Deshacer</button>
+  </div>
+
+  <div class="stats">
+    <div class="chip"><span class="lbl">Movimientos</span><span class="val" id="ctr">0</span></div>
+    <div class="chip"><span class="lbl">Récord</span><span class="val" id="rec">—</span></div>
+    <div class="chip"><span class="lbl">Objetivo</span><span class="val goal" id="goalLbl">4 L</span></div>
+  </div>
+
+  <div class="layout">
+    <div class="board">
+      <div id="jarsRow" class="jars-row"></div>
+    </div>
+    <div class="log-panel">
+      <div class="log-hdr">
+        <span>Registro</span>
+        <span class="log-badge" id="logBadge">0</span>
+      </div>
+      <ul id="logBody" class="log-body"></ul>
+    </div>
+  </div>
+
+</div>
+
+<!-- WIN -->
+<div class="win-ov" id="winOv">
+  <div class="win-card">
+    <div class="win-icon">🏆</div>
+    <div class="win-title">¡Objetivo alcanzado!</div>
+    <div class="win-sub" id="winSub"></div>
+    <div class="win-nums">
+      <div class="win-n"><div class="big" id="winMov">0</div><div class="lbl">Movimientos</div></div>
+      <div class="win-n"><div class="big" id="winRec">—</div><div class="lbl">Récord</div></div>
+    </div>
+    <button class="btn" style="width:100%" onclick="closeWin()">Jugar de nuevo ↺</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let jarras=[], objetivo=4, movs=0, hist=[], logs=[];
+let audioCtx=null;
+const splashTimers={};
+
+/* ── AUDIO ─────────────────────────────────── */
+function ac(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function beep(type){
+  try{
+    const ctx=ac(), now=ctx.currentTime;
+    if(type==='fill'){
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(320,now);
+      o.frequency.linearRampToValueAtTime(660,now+.3);
+      g.gain.setValueAtTime(.14,now);g.gain.linearRampToValueAtTime(0,now+.35);
+      o.start(now);o.stop(now+.35);
+    } else if(type==='empty'){
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(520,now);
+      o.frequency.linearRampToValueAtTime(180,now+.38);
+      g.gain.setValueAtTime(.12,now);g.gain.linearRampToValueAtTime(0,now+.38);
+      o.start(now);o.stop(now+.38);
+    } else if(type==='pour'){
+      const sz=ctx.sampleRate*.28;
+      const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*.28;
+      const src=ctx.createBufferSource();src.buffer=buf;
+      const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=900;flt.Q.value=.6;
+      const g=ctx.createGain();
+      g.gain.setValueAtTime(.22,now);g.gain.linearRampToValueAtTime(0,now+.28);
+      src.connect(flt);flt.connect(g);g.connect(ctx.destination);
+      src.start();src.stop(now+.28);
+    } else if(type==='win'){
+      [261.63,329.63,392.00,523.25].forEach((f,i)=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.type='triangle';o.frequency.value=f;
+        const t=now+i*.13;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.17,t+.05);
+        g.gain.linearRampToValueAtTime(0,t+.55);
+        o.start(t);o.stop(t+.6);
+      });
+    } else if(type==='error'){
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='square';o.frequency.value=110;
+      g.gain.setValueAtTime(.07,now);g.gain.linearRampToValueAtTime(0,now+.18);
+      o.start(now);o.stop(now+.18);
+    }
+  }catch(e){}
+}
+
+/* ── CONFETTI ────────────────────────────────*/
+function launchConfetti(){
+  const cv=document.getElementById('confetti');
+  cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const cx=cv.getContext('2d');
+  const pieces=[];
+  const colors=['#38bdf8','#10b981','#f59e0b','#f472b6','#a78bfa','#34d399'];
+  for(let i=0;i<120;i++) pieces.push({
+    x:Math.random()*cv.width, y:Math.random()*cv.height-cv.height,
+    w:Math.random()*9+4, h:Math.random()*5+3,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    r:Math.random()*Math.PI*2, rv:Math.random()*.15-.075,
+    vy:Math.random()*3+2, vx:Math.random()*2-1, alpha:1
+  });
+  let frame;
+  function draw(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    pieces.forEach(p=>{
+      p.y+=p.vy;p.x+=p.vx;p.r+=p.rv;
+      if(p.y>cv.height) p.y=-10;
+      p.alpha=Math.max(0,p.alpha-.004);
+      cx.save();cx.globalAlpha=p.alpha;
+      cx.translate(p.x,p.y);cx.rotate(p.r);
+      cx.fillStyle=p.color;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      cx.restore();
+    });
+    if(pieces.some(p=>p.alpha>0)) frame=requestAnimationFrame(draw);
+    else cx.clearRect(0,0,cv.width,cv.height);
+  }
+  draw();
+  setTimeout(()=>cancelAnimationFrame(frame),4000);
+}
+
+/* ── TOAST ───────────────────────────────────*/
+let toastTimer;
+function toast(msg,ms=1800){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('on'),ms);
+}
+
+/* ── HELPERS ─────────────────────────────────*/
+const letter=i=>String.fromCharCode(65+i);
+const storKey=()=>`jarsim_${document.getElementById('caps').value}_${objetivo}`;
+
+/* ── LEGAL MOVES ─────────────────────────────*/
+function legal(action,i,j){
+  if(action==='fill')  return jarras[i].a < jarras[i].c;
+  if(action==='empty') return jarras[i].a > 0;
+  if(action==='pour')  return jarras[i].a > 0 && jarras[j].a < jarras[j].c;
+  return false;
+}
+function whyIllegal(action,i,j){
+  if(action==='fill')  return 'La jarra ya está llena';
+  if(action==='empty') return 'La jarra ya está vacía';
+  if(action==='pour'){
+    if(jarras[i].a===0) return `Jarra ${letter(i)} está vacía`;
+    return `Jarra ${letter(j)} está llena`;
+  }
+}
+
+/* ── GAME ────────────────────────────────────*/
+function initGame(){
+  const caps=document.getElementById('caps').value.split(',').map(Number).filter(n=>!isNaN(n)&&n>0);
+  objetivo=parseInt(document.getElementById('target').value)||4;
+  if(!caps.length) return;
+  jarras=caps.map(c=>({c,a:0}));
+  movs=0;hist=[];logs=[];
+  document.getElementById('goalLbl').textContent=objetivo+' L';
+  document.getElementById('winOv').classList.remove('on');
+  render();
+}
+
+function saveState(){hist.push({jarras:JSON.parse(JSON.stringify(jarras)),logs:[...logs],movs})}
+
+function deshacer(){
+  if(!hist.length){beep('error');toast('Sin movimientos que deshacer');return}
+  const p=hist.pop();jarras=p.jarras;logs=p.logs;movs=p.movs;
+  render();toast('Movimiento deshecho ↩');
+}
+
+function llenar(i){
+  if(!legal('fill',i)){beep('error');toast(whyIllegal('fill',i));return}
+  saveState();jarras[i].a=jarras[i].c;movs++;
+  logs.push(`Llenó Jarra ${letter(i)} → ${jarras[i].c}L`);
+  beep('fill');splash(i);render();checkWin();
+}
+function vaciar(i){
+  if(!legal('empty',i)){beep('error');toast(whyIllegal('empty',i));return}
+  saveState();jarras[i].a=0;movs++;
+  logs.push(`Vació Jarra ${letter(i)}`);
+  beep('empty');splash(i);render();checkWin();
+}
+function verter(f,t){
+  if(!legal('pour',f,t)){beep('error');toast(whyIllegal('pour',f,t));return}
+  saveState();
+  const sp=jarras[t].c-jarras[t].a, cant=Math.min(jarras[f].a,sp);
+  jarras[f].a-=cant;jarras[t].a+=cant;movs++;
+  logs.push(`${cant}L: Jarra ${letter(f)} → Jarra ${letter(t)}`);
+  beep('pour');splash(f);splash(t);render();checkWin();
+}
+
+function splash(i){
+  const el=document.getElementById('jg'+i);if(!el)return;
+  el.classList.remove('splash');clearTimeout(splashTimers[i]);
+  void el.offsetWidth;el.classList.add('splash');
+  splashTimers[i]=setTimeout(()=>el.classList.remove('splash'),400);
+}
+
+function checkWin(){
+  if(!jarras.some(j=>j.a===objetivo)) return;
+  const key=storKey();
+  const old=localStorage.getItem(key);
+  const isNew=!old||movs<parseInt(old);
+  if(isNew) localStorage.setItem(key,movs);
+  jarras.forEach((j,i)=>{
+    if(j.a===objetivo){const el=document.getElementById('jg'+i);if(el)el.classList.add('ok')}
+  });
+  setTimeout(()=>{
+    beep('win');launchConfetti();
+    document.getElementById('winMov').textContent=movs;
+    document.getElementById('winRec').textContent=isNew?movs+' 🆕':(old||'—');
+    document.getElementById('winSub').textContent=isNew?'¡Nuevo récord personal! 🎉':`Récord actual: ${old} movimientos`;
+    document.getElementById('winOv').classList.add('on');
+  },500);
+}
+
+function closeWin(){
+  document.getElementById('winOv').classList.remove('on');
+  initGame();
+}
+
+/* ── RENDER ──────────────────────────────────*/
+function render(){
+  document.getElementById('ctr').textContent=movs;
+  const r=localStorage.getItem(storKey());
+  document.getElementById('rec').textContent=r||'—';
+  renderJars();renderLog();
+}
+
+function renderJars(){
+  const row=document.getElementById('jarsRow');
+  const maxCap=Math.max(...jarras.map(j=>j.c));
+  const MAX_H=220;
+  let html='';
+  jarras.forEach((j,i)=>{
+    const hpx=Math.round((j.c/maxCap)*MAX_H);
+    const wpct=j.c>0?(j.a/j.c)*100:0;
+    const isOk=j.a===objetivo;
+    const tpct=objetivo<=j.c?(objetivo/j.c)*100:-1;
+    const tLine=tpct>=0&&tpct<100?`<div class="target-line" style="bottom:${tpct}%"></div>`:'';
+
+    // Buttons
+    let btns=`
+      <button class="act fill" onclick="llenar(${i})"
+        ${!legal('fill',i)?`disabled title="${whyIllegal('fill',i)}"`:''}>
+        ▲ Llenar
+      </button>
+      <button class="act empty" onclick="vaciar(${i})"
+        ${!legal('empty',i)?`disabled title="${whyIllegal('empty',i)}"`:''}>
+        ▽ Vaciar
+      </button>`;
+    jarras.forEach((_,k)=>{
+      if(k===i) return;
+      const ok=legal('pour',i,k);
+      btns+=`<button class="act pour" onclick="verter(${i},${k})"
+        ${!ok?`disabled title="${whyIllegal('pour',i,k)}"`:''}>
+        ${letter(i)}→${letter(k)}
+      </button>`;
+    });
+
+    html+=`
+      <div class="jar-unit">
+        <div class="jar-lbl">Jarra ${letter(i)}</div>
+        <div class="jar-glass${isOk?' ok':''}" id="jg${i}" style="height:${hpx}px">
+          <div class="water-wrap" style="height:${wpct}%">
+            <div class="water-body"></div>
+            <div class="water-wave"></div>
+          </div>
+          ${tLine}
+        </div>
+        <div class="jar-reading"><em>${j.a}</em>/${j.c}L</div>
+        <div class="jar-acts">${btns}</div>
+      </div>`;
+  });
+  row.innerHTML=html;
+}
+
+function renderLog(){
+  const ul=document.getElementById('logBody');
+  document.getElementById('logBadge').textContent=logs.length;
+  if(!logs.length){ul.innerHTML='<li class="log-empty">Sin movimientos todavía</li>';return}
+  ul.innerHTML=logs.map((m,i)=>
+    `<li class="log-item"><span class="log-n">${i+1}</span><span class="log-t">${m}</span></li>`
+  ).join('');
+  ul.scrollTop=ul.scrollHeight;
+}
+
+/* ── INIT ────────────────────────────────────*/
+document.getElementById('caps').addEventListener('change',initGame);
+document.getElementById('target').addEventListener('change',initGame);
+initGame();
+</script>
+</body>
+<footer style="
+  position:fixed; bottom:0; left:0; right:0; z-index:50;
+  background:rgba(15,14,23,0.93);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,217,61,0.15);
+  padding:6px 18px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+  box-shadow:0 -4px 28px rgba(0,0,0,0.45);
+">
+  <p style="
+    font-family:'Fredoka One',cursive; font-size:0.76rem; margin:0; white-space:nowrap;
+    background:linear-gradient(90deg,#ffd93d,#ff9de2,#4d96ff);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  ">🚀 © 2026 · INVERSIONES ARIPAR · ¡Aprendiendo Juntos!</p>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="https://wa.me/573128816469" target="_blank" style="
+      font-family:'Fredoka One',cursive; font-size:0.73rem; color:#6bcb77;
+      text-decoration:none; display:flex; align-items:center; gap:4px;
+      background:rgba(107,203,119,0.12); border:1px solid rgba(107,203,119,0.28);
+      border-radius:9px; padding:3px 10px;
+      transition:background 0.18s,transform 0.15s;
+    " onmouseover="this.style.background='rgba(107,203,119,0.24)';this.style.transform='translateY(-1px)'"
+       onmouseout="this.style.background='rgba(107,203,119,0.12)';this.style.transform='none'">
+      📱 WhatsApp
+    </a>
+    <a href="mailto:alucard8@gmail.com" style="
+      font-family:'Fredoka One',cursive; font-size:0.73rem; color:#4d96ff;
+      text-decoration:none; display:flex; align-items:center; gap:4px;
+      background:rgba(77,150,255,0.12); border:1px solid rgba(77,150,255,0.28);
+      border-radius:9px; padding:3px 10px;
+      transition:background 0.18s,transform 0.15s;
+    " onmouseover="this.style.background='rgba(77,150,255,0.24)';this.style.transform='translateY(-1px)'"
+       onmouseout="this.style.background='rgba(77,150,255,0.12)';this.style.transform='none'">
+      📧 Email
+    </a>
+  </div>
+</footer>
+</html>
