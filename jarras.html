@@ -29,7 +29,7 @@ body{
   background:var(--bg);
   color:var(--text);
   min-height:100vh;
-  padding:20px 16px 40px;
+  padding:20px 16px 80px;
 }
 
 body::before{
@@ -72,6 +72,8 @@ body::before{
 .btn:active{transform:translateY(0)}
 .btn-undo{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.07);color:#f87171}
 .btn-undo:hover{background:rgba(239,68,68,.16)}
+.btn-help{border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.08);color:#c4b5fd}
+.btn-help:hover{background:rgba(167,139,250,.18)}
 
 /* STATS */
 .stats{display:flex;gap:10px;justify-content:center;margin-bottom:22px;flex-wrap:wrap}
@@ -127,7 +129,8 @@ body::before{
 /* WATER */
 .water-wrap{
   position:absolute;bottom:0;left:0;right:0;
-  transition:height .5s cubic-bezier(.4,0,.2,1);overflow:hidden;
+  /* Transición de 1.5s para velocidad intermedia */
+  transition:height 1.5s cubic-bezier(.4,0,.2,1);overflow:hidden;
 }
 .water-body{
   position:absolute;inset:0;
@@ -186,9 +189,6 @@ body::before{
 .act.pour:not(:disabled){border-color:rgba(56,189,248,.28);color:#7dd3fc}
 .act.pour:not(:disabled):hover{background:rgba(56,189,248,.13)}
 
-/* Tooltip on disabled */
-.act[title]{position:relative}
-
 /* LOG */
 .log-panel{
   background:var(--surf);border:1px solid var(--glass-b);border-radius:18px;
@@ -200,7 +200,7 @@ body::before{
 }
 .log-hdr span{font-size:.72em;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .log-badge{background:rgba(56,189,248,.12);color:var(--accent);border-radius:10px;padding:2px 8px;font-size:.85em;font-family:'JetBrains Mono',monospace}
-.log-body{overflow-y:auto;flex:1;padding:8px 10px;list-style:none;scrollbar-width:thin;scrollbar-color:var(--surf2) transparent}
+.log-body{overflow-y:auto;flex:1;padding:8px 10px;list-style:none;scrollbar-width:thin;scrollbar-color:var(--surf2) transparent; scroll-behavior:smooth;}
 .log-body::-webkit-scrollbar{width:3px}
 .log-body::-webkit-scrollbar-track{background:transparent}
 .log-body::-webkit-scrollbar-thumb{background:var(--surf2);border-radius:2px}
@@ -219,7 +219,7 @@ body::before{
 .win-ov{
   display:none;position:fixed;inset:0;z-index:100;
   background:rgba(5,16,31,.88);align-items:center;justify-content:center;
-  padding:20px;
+  padding:20px;backdrop-filter:blur(5px);
 }
 .win-ov.on{display:flex}
 .win-card{
@@ -235,25 +235,71 @@ body::before{
 .win-n .big{font-family:'JetBrains Mono',monospace;font-size:2.2em;font-weight:600;color:var(--accent)}
 .win-n .lbl{font-size:.7em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
 
+/* CHALLENGES MODAL (RETOS) */
+.modal-ov {
+  display:none; position:fixed; inset:0; z-index:150;
+  background:rgba(5,16,31,.88); align-items:center; justify-content:center;
+  padding:20px; backdrop-filter:blur(5px);
+}
+.modal-ov.on { display:flex; }
+.modal-card {
+  background:var(--surf); border:1px solid var(--glass-b); border-radius:22px;
+  padding:24px; width:100%; max-width:600px; max-height:85vh;
+  display:flex; flex-direction:column; animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-hdr {
+  display:flex; justify-content:space-between; align-items:center;
+  border-bottom:1px solid var(--glass-b); padding-bottom:12px; margin-bottom:16px;
+}
+.modal-hdr h2 { font-size:1.3em; color:var(--text); font-weight:600; margin:0; }
+.modal-close {
+  background:none; border:none; color:var(--muted); font-size:1.8em;
+  cursor:pointer; line-height:1; transition:color 0.2s;
+}
+.modal-close:hover { color:var(--red); }
+.chal-list {
+  overflow-y:auto; padding-right:8px; display:flex; flex-direction:column; gap:12px;
+  scrollbar-width:thin; scrollbar-color:var(--surf2) transparent;
+}
+.chal-list::-webkit-scrollbar{width:4px}
+.chal-list::-webkit-scrollbar-thumb{background:var(--surf2);border-radius:2px}
+
+.chal-card {
+  background:rgba(255,255,255,.02); border:1px solid var(--glass-b);
+  border-radius:14px; padding:16px; display:flex; justify-content:space-between;
+  align-items:center; gap:16px; transition:.2s;
+}
+.chal-card:hover { background:rgba(255,255,255,.05); border-color:rgba(56,189,248,.3); }
+.chal-info { flex:1; }
+.chal-info h4 { color:var(--text); font-size:1.05em; margin-bottom:6px; font-weight:500; }
+.chal-info p { color:var(--muted); font-size:.85em; line-height:1.4; margin-bottom:10px; }
+.chal-badge {
+  display:inline-block; font-family:'JetBrains Mono',monospace; font-size:.78em;
+  color:var(--accent); background:rgba(56,189,248,.1); padding:4px 8px; border-radius:6px;
+}
+
 /* TOAST */
 .toast{
   position:fixed;bottom:24px;left:50%;
   transform:translateX(-50%) translateY(12px);
   background:var(--surf2);border:1px solid var(--glass-b);border-radius:10px;
-  padding:9px 18px;font-size:.82em;color:var(--muted);
+  padding:9px 18px;font-size:.82em;color:var(--text);
   opacity:0;transition:all .25s;z-index:200;pointer-events:none;white-space:nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* CONFETTI canvas */
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
 
-@media(max-width:500px){
+@media(max-width:550px){
   .jar-glass{width:58px}
   .jar-acts{width:74px}
   .jars-row{gap:10px}
   .act{font-size:.68em;padding:5px 5px}
   .win-card{padding:28px 24px}
+  .chal-card { flex-direction:column; align-items:stretch; text-align:center; }
+  .btn-load { width:100%; margin-top:8px;}
 }
 </style>
 </head>
@@ -277,6 +323,7 @@ body::before{
     </div>
     <button class="btn" onclick="initGame()">↺ Reiniciar</button>
     <button class="btn btn-undo" onclick="deshacer()">↩ Deshacer</button>
+    <button class="btn btn-help" onclick="abrirModalRetos()">🌟 Retos</button>
   </div>
 
   <div class="stats">
@@ -300,7 +347,6 @@ body::before{
 
 </div>
 
-<!-- WIN -->
 <div class="win-ov" id="winOv">
   <div class="win-card">
     <div class="win-icon">🏆</div>
@@ -314,6 +360,17 @@ body::before{
   </div>
 </div>
 
+<div class="modal-ov" id="retosModal">
+  <div class="modal-card">
+    <div class="modal-hdr">
+      <h2>Retos Predefinidos</h2>
+      <button class="modal-close" onclick="cerrarModalRetos()">&times;</button>
+    </div>
+    <div class="chal-list" id="challengesList">
+      </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -321,7 +378,41 @@ let jarras=[], objetivo=4, movs=0, hist=[], logs=[];
 let audioCtx=null;
 const splashTimers={};
 
-/* ── AUDIO ─────────────────────────────────── */
+/* ── BASE DE RETOS ─────────────────────────── */
+const retos = [
+    { nombre: "Clásico Inicial", caps: "3,5", obj: 4, desc: "El reto estándar. Perfecto para entender la mecánica de trasvase." },
+    { nombre: "Rompecabezas de Poisson", caps: "8,5,3", obj: 4, desc: "Tip: Empieza llenando la jarra de 8L y usa las otras dos para aislar el volumen." },
+    { nombre: "Prueba de Paciencia", caps: "7,11", obj: 6, desc: "Números coprimos grandes. Prepárate para una cadena larga de trasvases." },
+    { nombre: "Escenario Imposible", caps: "4,6", obj: 3, desc: "Trata de resolverlo. Es matemáticamente imposible por el Máximo Común Divisor." },
+    { nombre: "Salto de Escala", caps: "9,4", obj: 6, desc: "Requiere llevar una cuenta exacta en tu cabeza de los remanentes." },
+    { nombre: "Alta Complejidad", caps: "12,8,5,3", obj: 7, desc: "Con cuatro variables, las combinaciones se multiplican drásticamente." }
+];
+
+function renderizarRetos() {
+    const contenedor = document.getElementById('challengesList');
+    contenedor.innerHTML = retos.map(reto => `
+        <div class="chal-card">
+            <div class="chal-info">
+                <h4>${reto.nombre}</h4>
+                <p>${reto.desc}</p>
+                <div class="chal-badge">Jarras: [${reto.caps}] ➔ Objetivo: ${reto.obj}L</div>
+            </div>
+            <button class="btn btn-load" onclick="cargarReto('${reto.caps}', ${reto.obj})">Cargar Reto</button>
+        </div>
+    `).join('');
+}
+
+function abrirModalRetos() { document.getElementById('retosModal').classList.add('on'); }
+function cerrarModalRetos() { document.getElementById('retosModal').classList.remove('on'); }
+
+function cargarReto(caps, obj) {
+    document.getElementById('caps').value = caps;
+    document.getElementById('target').value = obj;
+    cerrarModalRetos();
+    initGame();
+}
+
+/* ── AUDIO SÍNTESIS (API WEB AUDIO) ────────── */
 function ac(){
   if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==='suspended') audioCtx.resume();
@@ -335,28 +426,45 @@ function beep(type){
       o.connect(g);g.connect(ctx.destination);
       o.type='sine';
       o.frequency.setValueAtTime(320,now);
-      o.frequency.linearRampToValueAtTime(660,now+.3);
-      g.gain.setValueAtTime(.14,now);g.gain.linearRampToValueAtTime(0,now+.35);
-      o.start(now);o.stop(now+.35);
+      o.frequency.linearRampToValueAtTime(660,now+1.4);
+      g.gain.setValueAtTime(.14,now);g.gain.linearRampToValueAtTime(0,now+1.5);
+      o.start(now);o.stop(now+1.5);
     } else if(type==='empty'){
       const o=ctx.createOscillator(),g=ctx.createGain();
       o.connect(g);g.connect(ctx.destination);
       o.type='sine';
       o.frequency.setValueAtTime(520,now);
-      o.frequency.linearRampToValueAtTime(180,now+.38);
-      g.gain.setValueAtTime(.12,now);g.gain.linearRampToValueAtTime(0,now+.38);
-      o.start(now);o.stop(now+.38);
+      o.frequency.linearRampToValueAtTime(180,now+1.4);
+      g.gain.setValueAtTime(.12,now);g.gain.linearRampToValueAtTime(0,now+1.5);
+      o.start(now);o.stop(now+1.5);
     } else if(type==='pour'){
-      const sz=ctx.sampleRate*.28;
-      const buf=ctx.createBuffer(1,sz,ctx.sampleRate);
-      const d=buf.getChannelData(0);
-      for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*.28;
-      const src=ctx.createBufferSource();src.buffer=buf;
-      const flt=ctx.createBiquadFilter();flt.type='bandpass';flt.frequency.value=900;flt.Q.value=.6;
-      const g=ctx.createGain();
-      g.gain.setValueAtTime(.22,now);g.gain.linearRampToValueAtTime(0,now+.28);
-      src.connect(flt);flt.connect(g);g.connect(ctx.destination);
-      src.start();src.stop(now+.28);
+      const duration = 1.5; 
+      const bufferSize = ctx.sampleRate * duration;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      
+      const lowpass = ctx.createBiquadFilter();
+      lowpass.type = 'lowpass';
+      lowpass.frequency.setValueAtTime(600, now);
+      lowpass.frequency.linearRampToValueAtTime(1200, now + (duration * 0.5));
+      lowpass.frequency.linearRampToValueAtTime(600, now + duration);
+
+      const highpass = ctx.createBiquadFilter();
+      highpass.type = 'highpass';
+      highpass.frequency.value = 150;
+
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(.18, now + 0.1);
+      g.gain.setValueAtTime(.18, now + duration - 0.1);
+      g.gain.linearRampToValueAtTime(0, now + duration);
+
+      noise.connect(lowpass); lowpass.connect(highpass); highpass.connect(g); g.connect(ctx.destination);
+      noise.start(now); noise.stop(now + duration);
     } else if(type==='win'){
       [261.63,329.63,392.00,523.25].forEach((f,i)=>{
         const o=ctx.createOscillator(),g=ctx.createGain();
@@ -419,11 +527,10 @@ function toast(msg,ms=1800){
   toastTimer=setTimeout(()=>el.classList.remove('on'),ms);
 }
 
-/* ── HELPERS ─────────────────────────────────*/
+/* ── HELPERS & LÓGICA ────────────────────────*/
 const letter=i=>String.fromCharCode(65+i);
 const storKey=()=>`jarsim_${document.getElementById('caps').value}_${objetivo}`;
 
-/* ── LEGAL MOVES ─────────────────────────────*/
 function legal(action,i,j){
   if(action==='fill')  return jarras[i].a < jarras[i].c;
   if(action==='empty') return jarras[i].a > 0;
@@ -439,6 +546,96 @@ function whyIllegal(action,i,j){
   }
 }
 
+/* ── GAME BUILDER (Crea el DOM una sola vez) ─*/
+function buildJarsDOM() {
+  const row=document.getElementById('jarsRow');
+  const maxCap=Math.max(...jarras.map(j=>j.c));
+  const MAX_H=220;
+  let html='';
+  jarras.forEach((j,i)=>{
+    const hpx=Math.round((j.c/maxCap)*MAX_H);
+    const tpct=objetivo<=j.c?(objetivo/j.c)*100:-1;
+    const tLine=tpct>=0&&tpct<100?`<div class="target-line" style="bottom:${tpct}%"></div>`:'';
+
+    let btns=`
+      <button id="btn-fill-${i}" class="act fill" onclick="llenar(${i})">
+        ▲ Llenar
+      </button>
+      <button id="btn-empty-${i}" class="act empty" onclick="vaciar(${i})">
+        ▽ Vaciar
+      </button>`;
+    jarras.forEach((_,k)=>{
+      if(k===i) return;
+      btns+=`<button id="btn-pour-${i}-${k}" class="act pour" onclick="verter(${i},${k})">
+        ${letter(i)}→${letter(k)}
+      </button>`;
+    });
+
+    html+=`
+      <div class="jar-unit">
+        <div class="jar-lbl">Jarra ${letter(i)}</div>
+        <div class="jar-glass" id="jg${i}" style="height:${hpx}px">
+          <div class="water-wrap" id="ww${i}" style="height:0%">
+            <div class="water-body"></div>
+            <div class="water-wave"></div>
+          </div>
+          ${tLine}
+        </div>
+        <div class="jar-reading" id="jr${i}"><em>0</em>/${j.c}L</div>
+        <div class="jar-acts">${btns}</div>
+      </div>`;
+  });
+  row.innerHTML=html;
+}
+
+/* ── ACTUALIZADOR VISUAL (Mantiene el DOM intacto) ─*/
+function updateVisuals() {
+  document.getElementById('ctr').textContent=movs;
+  const r=localStorage.getItem(storKey());
+  document.getElementById('rec').textContent=r||'—';
+
+  jarras.forEach((j,i)=>{
+    const wpct=j.c>0?(j.a/j.c)*100:0;
+    const isOk=j.a===objetivo;
+
+    const ww=document.getElementById('ww'+i);
+    if(ww) ww.style.height=wpct+'%';
+
+    const jr=document.getElementById('jr'+i);
+    if(jr) jr.innerHTML=`<em>${j.a}</em>/${j.c}L`;
+
+    const jg=document.getElementById('jg'+i);
+    if(jg){
+      if(isOk) jg.classList.add('ok');
+      else jg.classList.remove('ok');
+    }
+
+    const bFill=document.getElementById(`btn-fill-${i}`);
+    if(bFill){
+        const ok = legal('fill',i);
+        bFill.disabled = !ok;
+        bFill.title = ok ? '' : whyIllegal('fill',i);
+    }
+    const bEmp=document.getElementById(`btn-empty-${i}`);
+    if(bEmp){
+        const ok = legal('empty',i);
+        bEmp.disabled = !ok;
+        bEmp.title = ok ? '' : whyIllegal('empty',i);
+    }
+    jarras.forEach((_,k)=>{
+      if(k===i) return;
+      const bPour=document.getElementById(`btn-pour-${i}-${k}`);
+      if(bPour){
+          const ok = legal('pour',i,k);
+          bPour.disabled = !ok;
+          bPour.title = ok ? '' : whyIllegal('pour',i,k);
+      }
+    });
+  });
+  
+  renderLog();
+}
+
 /* ── GAME ────────────────────────────────────*/
 function initGame(){
   const caps=document.getElementById('caps').value.split(',').map(Number).filter(n=>!isNaN(n)&&n>0);
@@ -448,7 +645,9 @@ function initGame(){
   movs=0;hist=[];logs=[];
   document.getElementById('goalLbl').textContent=objetivo+' L';
   document.getElementById('winOv').classList.remove('on');
-  render();
+  
+  buildJarsDOM(); 
+  updateVisuals(); 
 }
 
 function saveState(){hist.push({jarras:JSON.parse(JSON.stringify(jarras)),logs:[...logs],movs})}
@@ -456,20 +655,20 @@ function saveState(){hist.push({jarras:JSON.parse(JSON.stringify(jarras)),logs:[
 function deshacer(){
   if(!hist.length){beep('error');toast('Sin movimientos que deshacer');return}
   const p=hist.pop();jarras=p.jarras;logs=p.logs;movs=p.movs;
-  render();toast('Movimiento deshecho ↩');
+  updateVisuals(); toast('Movimiento deshecho ↩');
 }
 
 function llenar(i){
   if(!legal('fill',i)){beep('error');toast(whyIllegal('fill',i));return}
   saveState();jarras[i].a=jarras[i].c;movs++;
   logs.push(`Llenó Jarra ${letter(i)} → ${jarras[i].c}L`);
-  beep('fill');splash(i);render();checkWin();
+  beep('fill');splash(i);updateVisuals();checkWin();
 }
 function vaciar(i){
   if(!legal('empty',i)){beep('error');toast(whyIllegal('empty',i));return}
   saveState();jarras[i].a=0;movs++;
   logs.push(`Vació Jarra ${letter(i)}`);
-  beep('empty');splash(i);render();checkWin();
+  beep('empty');splash(i);updateVisuals();checkWin();
 }
 function verter(f,t){
   if(!legal('pour',f,t)){beep('error');toast(whyIllegal('pour',f,t));return}
@@ -477,7 +676,7 @@ function verter(f,t){
   const sp=jarras[t].c-jarras[t].a, cant=Math.min(jarras[f].a,sp);
   jarras[f].a-=cant;jarras[t].a+=cant;movs++;
   logs.push(`${cant}L: Jarra ${letter(f)} → Jarra ${letter(t)}`);
-  beep('pour');splash(f);splash(t);render();checkWin();
+  beep('pour');splash(f);splash(t);updateVisuals();checkWin();
 }
 
 function splash(i){
@@ -493,77 +692,20 @@ function checkWin(){
   const old=localStorage.getItem(key);
   const isNew=!old||movs<parseInt(old);
   if(isNew) localStorage.setItem(key,movs);
-  jarras.forEach((j,i)=>{
-    if(j.a===objetivo){const el=document.getElementById('jg'+i);if(el)el.classList.add('ok')}
-  });
+  
+  /* Retardo sincronizado a 1.5s (1500ms) */
   setTimeout(()=>{
     beep('win');launchConfetti();
     document.getElementById('winMov').textContent=movs;
     document.getElementById('winRec').textContent=isNew?movs+' 🆕':(old||'—');
     document.getElementById('winSub').textContent=isNew?'¡Nuevo récord personal! 🎉':`Récord actual: ${old} movimientos`;
     document.getElementById('winOv').classList.add('on');
-  },500);
+  },1500);
 }
 
 function closeWin(){
   document.getElementById('winOv').classList.remove('on');
   initGame();
-}
-
-/* ── RENDER ──────────────────────────────────*/
-function render(){
-  document.getElementById('ctr').textContent=movs;
-  const r=localStorage.getItem(storKey());
-  document.getElementById('rec').textContent=r||'—';
-  renderJars();renderLog();
-}
-
-function renderJars(){
-  const row=document.getElementById('jarsRow');
-  const maxCap=Math.max(...jarras.map(j=>j.c));
-  const MAX_H=220;
-  let html='';
-  jarras.forEach((j,i)=>{
-    const hpx=Math.round((j.c/maxCap)*MAX_H);
-    const wpct=j.c>0?(j.a/j.c)*100:0;
-    const isOk=j.a===objetivo;
-    const tpct=objetivo<=j.c?(objetivo/j.c)*100:-1;
-    const tLine=tpct>=0&&tpct<100?`<div class="target-line" style="bottom:${tpct}%"></div>`:'';
-
-    // Buttons
-    let btns=`
-      <button class="act fill" onclick="llenar(${i})"
-        ${!legal('fill',i)?`disabled title="${whyIllegal('fill',i)}"`:''}>
-        ▲ Llenar
-      </button>
-      <button class="act empty" onclick="vaciar(${i})"
-        ${!legal('empty',i)?`disabled title="${whyIllegal('empty',i)}"`:''}>
-        ▽ Vaciar
-      </button>`;
-    jarras.forEach((_,k)=>{
-      if(k===i) return;
-      const ok=legal('pour',i,k);
-      btns+=`<button class="act pour" onclick="verter(${i},${k})"
-        ${!ok?`disabled title="${whyIllegal('pour',i,k)}"`:''}>
-        ${letter(i)}→${letter(k)}
-      </button>`;
-    });
-
-    html+=`
-      <div class="jar-unit">
-        <div class="jar-lbl">Jarra ${letter(i)}</div>
-        <div class="jar-glass${isOk?' ok':''}" id="jg${i}" style="height:${hpx}px">
-          <div class="water-wrap" style="height:${wpct}%">
-            <div class="water-body"></div>
-            <div class="water-wave"></div>
-          </div>
-          ${tLine}
-        </div>
-        <div class="jar-reading"><em>${j.a}</em>/${j.c}L</div>
-        <div class="jar-acts">${btns}</div>
-      </div>`;
-  });
-  row.innerHTML=html;
 }
 
 function renderLog(){
@@ -576,9 +718,10 @@ function renderLog(){
   ul.scrollTop=ul.scrollHeight;
 }
 
-/* ── INIT ────────────────────────────────────*/
+/* ── INIT EVENTOS ────────────────────────────*/
 document.getElementById('caps').addEventListener('change',initGame);
 document.getElementById('target').addEventListener('change',initGame);
+renderizarRetos();
 initGame();
 </script>
 </body>
