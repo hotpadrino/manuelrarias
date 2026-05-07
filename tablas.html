@@ -326,6 +326,150 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
   .input-box { padding: 20px 16px; }
   .modal-box { padding: 22px 16px; margin: 12px; }
 }
+
+/* ══ PRO MODE ══ */
+.mode-tab[data-mode="pro"].active-tab {
+  background: linear-gradient(135deg, #c77dff, #7048e8);
+  box-shadow: 0 6px 20px rgba(199,125,255,0.4);
+}
+
+.pro-panel {
+  display: none;
+  animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pro-panel.show { display: block; }
+
+.pro-controls {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px;
+}
+.btn-pro {
+  font-family: 'Fredoka One', cursive; font-size: 0.95rem;
+  border: none; border-radius: 14px; padding: 10px 20px;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-pro:hover  { transform: translateY(-2px); }
+.btn-pro:active { transform: scale(0.96); }
+.btn-pro-random { background: linear-gradient(135deg, #c77dff, #7048e8); color: #fff; box-shadow: 0 4px 14px rgba(199,125,255,0.4); }
+.btn-pro-manual { background: linear-gradient(135deg, var(--accent2), #f39c12); color: var(--bg); box-shadow: 0 4px 14px var(--glow2); }
+
+.pro-workspace {
+  display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;
+  background: var(--surface); border-radius: 20px; padding: 28px 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  margin-bottom: 20px;
+}
+
+/* Math board grid */
+.math-board {
+  display: grid;
+  grid-template-columns: repeat(7, 46px);
+  grid-template-rows: repeat(10, 46px);
+  gap: 5px;
+  align-items: center;
+  justify-items: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+}
+
+.math-board .cell-text {
+  display: flex; justify-content: center; align-items: center;
+  width: 100%; height: 100%;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  color: var(--text);
+  font-family: 'Fredoka One', cursive; font-size: 1.4rem;
+}
+
+.math-board input {
+  width: 100%; height: 100%;
+  text-align: center; font-size: 1.4rem;
+  font-family: 'Fredoka One', cursive;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 10px; outline: none;
+  background: var(--empty); color: var(--text);
+  transition: all 0.2s;
+  -moz-appearance: textfield;
+}
+.math-board input::-webkit-outer-spin-button,
+.math-board input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.math-board input:disabled { background: rgba(255,255,255,0.04); color: var(--muted); border-color: rgba(255,255,255,0.06); }
+
+.math-board input.active-input {
+  border-color: var(--accent4) !important;
+  box-shadow: 0 0 14px var(--glow4);
+  background: rgba(77,150,255,0.15) !important;
+}
+.math-board input.pro-correct {
+  background: rgba(107,203,119,0.25) !important;
+  color: var(--correct) !important;
+  border-color: var(--correct) !important;
+}
+.math-board input.pro-wrong {
+  background: rgba(255,107,107,0.25) !important;
+  color: var(--wrong) !important;
+  border-color: var(--wrong) !important;
+  animation: shake 0.35s ease;
+}
+
+.carry-input {
+  border-radius: 50% !important;
+  background: rgba(255,217,61,0.15) !important;
+  border-color: var(--accent2) !important;
+  font-size: 1rem !important;
+  width: 36px !important; height: 36px !important;
+}
+.carry-sum {
+  background: rgba(77,150,255,0.1) !important;
+  border-color: rgba(77,150,255,0.3) !important;
+}
+
+.math-line {
+  grid-column: 2 / 8; width: 100%; height: 3px;
+  background: rgba(255,255,255,0.25); border-radius: 2px;
+}
+
+.active-multiplier {
+  background: rgba(255,217,61,0.3) !important;
+  color: var(--accent2) !important;
+  box-shadow: 0 0 12px var(--glow2);
+  transform: scale(1.2);
+}
+
+/* Help panel */
+.pro-help {
+  background: var(--card); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px; padding: 18px 16px;
+  min-width: 170px; max-width: 200px;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.pro-help h3 {
+  font-family: 'Fredoka One', cursive; font-size: 1rem;
+  color: var(--accent4); margin-bottom: 10px; text-align: center;
+}
+.pro-help-table { font-family: 'Fredoka One', cursive; font-size: 1rem; line-height: 2; color: var(--muted); text-align: center; }
+.pro-highlight-row {
+  background: rgba(255,217,61,0.2); padding: 0 10px;
+  border-radius: 8px; color: var(--accent2);
+}
+
+/* Pro complete banner */
+.pro-complete {
+  display: none; text-align: center;
+  background: linear-gradient(135deg, #1a0a30, #0a1a30);
+  border: 2px solid #c77dff; border-radius: 18px;
+  padding: 18px 24px; margin-bottom: 16px;
+  box-shadow: 0 0 30px rgba(199,125,255,0.4);
+}
+.pro-complete.show { display: block; animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.pro-complete-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem;
+  background: linear-gradient(135deg, #c77dff, var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 4px;
+}
+.pro-complete-sub { color: var(--muted); font-size: 0.88rem; }
 </style>
 </head>
 <body>
@@ -339,6 +483,7 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
     <button class="mode-tab active-tab" data-mode="fill"  onclick="switchMode('fill')">✏️ Llenar</button>
     <button class="mode-tab"            data-mode="flash" onclick="switchMode('flash')">👁️ Repaso</button>
     <button class="mode-tab"            data-mode="hunt"  onclick="switchMode('hunt')">🎯 Caza</button>
+    <button class="mode-tab"            data-mode="pro"   onclick="switchMode('pro')">🚀 Multi Pro</button>
   </div>
   <div class="mode-desc" id="mode-desc">Toca una celda y escribe el resultado. Tu progreso se guarda automáticamente.</div>
 
@@ -382,6 +527,26 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
       <table id="mult-table"></table>
     </div>
   </div>
+
+  <!-- PRO MULTIPLICATION PANEL -->
+  <div class="pro-panel" id="pro-panel">
+    <div class="pro-complete" id="pro-complete">
+      <div class="pro-complete-title">🏆 ¡Reto Superado! 🎉</div>
+      <div class="pro-complete-sub">¡Excelente trabajo! ¿Intentas otro?</div>
+    </div>
+    <div class="pro-controls">
+      <button class="btn-pro btn-pro-random" onclick="proIniciar()">🎲 Nuevo reto aleatorio</button>
+      <button class="btn-pro btn-pro-manual" onclick="proManual()">✍️ Poner mis números</button>
+    </div>
+    <div class="pro-workspace">
+      <div class="math-board" id="pro-board"></div>
+      <div class="pro-help">
+        <h3>📖 Ayuda</h3>
+        <div class="pro-help-table" id="pro-help-table">Toca "Nuevo reto" para comenzar.</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Input overlay -->
@@ -447,6 +612,7 @@ const MODE_DESCS = {
   fill:  'Toca una celda y escribe el resultado. Tu progreso se guarda automáticamente.',
   flash: 'Toca cualquier celda para ver su resultado 2 segundos. Sin escribir — puro repaso.',
   hunt:  'Te damos un número: toca TODAS las casillas cuya multiplicación da ese resultado.',
+  pro:   'Multiplica números de 3 cifras paso a paso, con acarreos guiados y tabla de ayuda.',
 };
 
 // Build product map once
@@ -554,12 +720,16 @@ function switchMode(mode) {
   document.querySelectorAll('.mode-tab').forEach(b=>b.classList.toggle('active-tab',b.dataset.mode===mode));
   document.getElementById('mode-desc').textContent=MODE_DESCS[mode];
 
-  const isFill=mode==='fill', isHunt=mode==='hunt';
+  const isFill=mode==='fill', isHunt=mode==='hunt', isPro=mode==='pro';
   document.getElementById('fill-stats').style.display   =isFill?'flex':'none';
   document.getElementById('fill-progress').style.display=isFill?'block':'none';
   document.getElementById('fill-btns').style.display    =isFill?'flex':'none';
   document.getElementById('complete-banner').style.display='none';
   document.getElementById('hunt-panel').classList.toggle('show',isHunt);
+  document.getElementById('pro-panel').classList.toggle('show',isPro);
+
+  // table wrapper: hide for pro
+  document.querySelector('.table-wrapper').style.display = isPro ? 'none' : '';
 
   if(!isFill){ showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas'; }
 
@@ -569,6 +739,7 @@ function switchMode(mode) {
     huntCorrect=0; huntErrors=0; huntStreak=0; huntUsed.clear();
     updateHuntUI(); nextHunt();
   }
+  if(isPro) { document.getElementById('pro-complete').classList.remove('show'); }
 }
 
 // ══════════════════════════════════════════
@@ -817,6 +988,220 @@ function doClear(){
   showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas';
   document.getElementById('complete-banner').classList.remove('show');
   renderAll(); closeModal();
+}
+
+// ══════════════════════════════════════════
+// PRO MULTIPLICATION MODE (3 × 3 digits)
+// ══════════════════════════════════════════
+let proA='', proB='', proSecuencia=[], proPaso=0, proPps=[[],[],[]];
+
+function proIniciar(a, b) {
+  document.getElementById('pro-complete').classList.remove('show');
+  proA = (a || (Math.floor(Math.random()*899)+100)).toString();
+  proB = (b || (Math.floor(Math.random()*899)+100)).toString();
+  proConstruirTablero();
+  proCalcularSecuencia();
+  proPaso = 0;
+  proActivarSiguiente();
+}
+
+function proManual() {
+  const a = prompt('Escribe el número de arriba (hasta 3 cifras):', '345');
+  const b = prompt('Escribe el número de abajo (hasta 3 cifras):', '126');
+  if (a && b && a.length <= 3 && b.length <= 3) {
+    proIniciar(a.padStart(3,'0'), b.padStart(3,'0'));
+  } else if (a !== null && b !== null) {
+    alert('Por favor, ingresa números de hasta 3 cifras.');
+  }
+}
+
+function proCrearTexto(padre, fila, col, texto, id=null) {
+  let div = document.createElement('div');
+  div.className = 'cell-text';
+  div.style.gridRow = fila;
+  div.style.gridColumn = col;
+  div.textContent = texto;
+  if (id) div.id = id;
+  padre.appendChild(div);
+}
+
+function proCrearCelda(padre, fila, col, id, claseExtra='') {
+  let wrap = document.createElement('div');
+  wrap.style.gridRow = fila;
+  wrap.style.gridColumn = col;
+  let inp = document.createElement('input');
+  inp.type = 'number';
+  inp.id = id;
+  inp.disabled = true;
+  if (claseExtra) claseExtra.split(' ').forEach(c => { if(c) inp.classList.add(c); });
+  inp.oninput = e => proValidar(e);
+  wrap.appendChild(inp);
+  padre.appendChild(wrap);
+}
+
+function proConstruirTablero() {
+  const board = document.getElementById('pro-board');
+  board.innerHTML = '';
+
+  // Row 1: carry inputs for first product
+  proCrearCelda(board, 1, 5, 'c_2', 'carry-input');
+  proCrearCelda(board, 1, 6, 'c_1', 'carry-input');
+
+  // Row 2: factor A
+  proCrearTexto(board, 2, 5, proA[0]);
+  proCrearTexto(board, 2, 6, proA[1]);
+  proCrearTexto(board, 2, 7, proA[2]);
+
+  // Row 3: × and factor B with IDs for highlight
+  proCrearTexto(board, 3, 4, '×');
+  proCrearTexto(board, 3, 5, proB[0], 'mb_0');
+  proCrearTexto(board, 3, 6, proB[1], 'mb_1');
+  proCrearTexto(board, 3, 7, proB[2], 'mb_2');
+
+  // Line 1
+  const l1 = document.createElement('div');
+  l1.className = 'math-line'; l1.style.gridRow = '4'; board.appendChild(l1);
+
+  // Row 5: carry sum inputs
+  for (let i=1; i<=5; i++) proCrearCelda(board, 5, 7-i, `cs_${i}`, 'carry-input carry-sum');
+
+  // Rows 6-8: partial products
+  proCrearCelda(board,6,4,'p0_3'); proCrearCelda(board,6,5,'p0_2'); proCrearCelda(board,6,6,'p0_1'); proCrearCelda(board,6,7,'p0_0');
+  proCrearCelda(board,7,3,'p1_4'); proCrearCelda(board,7,4,'p1_3'); proCrearCelda(board,7,5,'p1_2'); proCrearCelda(board,7,6,'p1_1');
+  proCrearCelda(board,8,2,'p2_5'); proCrearCelda(board,8,3,'p2_4'); proCrearCelda(board,8,4,'p2_3'); proCrearCelda(board,8,5,'p2_2');
+
+  // Row 9: + and line
+  proCrearTexto(board, 9, 1, '+');
+  const l2 = document.createElement('div');
+  l2.className = 'math-line'; l2.style.gridRow = '9'; board.appendChild(l2);
+
+  // Row 10: result
+  for (let i=6; i>=1; i--) proCrearCelda(board, 10, 8-i, `r_${i-1}`);
+}
+
+function proCalcularSecuencia() {
+  proSecuencia = [];
+  proPps = [[],[],[]];
+
+  for (let j=0; j<3; j++) {
+    let digitoB = parseInt(proB[2-j]);
+    let idMult = `mb_${2-j}`;
+    let acarreo = 0;
+    proSecuencia.push({ accion:'limpiar_acarreos', ayuda:digitoB, idMult });
+
+    for (let i=0; i<3; i++) {
+      let digitoA = parseInt(proA[2-i]);
+      let producto = (digitoA * digitoB) + acarreo;
+      let digitoEscribir = producto % 10;
+      acarreo = Math.floor(producto / 10);
+      let colIndex = i + j;
+      proPps[j][colIndex] = digitoEscribir;
+      proSecuencia.push({ id:`p${j}_${colIndex}`, valor:digitoEscribir, ayuda:digitoB, multFila:digitoA, idMult });
+
+      if (i < 2) {
+        proSecuencia.push({ id:`c_${i+1}`, valor:acarreo, ayuda:digitoB, esAcarreo:true, idMult });
+      } else if (acarreo > 0) {
+        proPps[j][colIndex+1] = acarreo;
+        proSecuencia.push({ id:`p${j}_${colIndex+1}`, valor:acarreo, ayuda:digitoB, idMult });
+      }
+    }
+  }
+
+  let acarreoSuma = 0;
+  for (let col=0; col<=5; col++) {
+    let sumaCol = acarreoSuma;
+    if (proPps[0][col] !== undefined) sumaCol += proPps[0][col];
+    if (proPps[1][col] !== undefined) sumaCol += proPps[1][col];
+    if (proPps[2][col] !== undefined) sumaCol += proPps[2][col];
+    if (sumaCol > 0 || col < 3) {
+      let digitoSuma = sumaCol % 10;
+      acarreoSuma = Math.floor(sumaCol / 10);
+      proSecuencia.push({ id:`r_${col}`, valor:digitoSuma, ayuda:'suma' });
+      if (acarreoSuma > 0 && col < 5) {
+        proSecuencia.push({ id:`cs_${col+1}`, valor:acarreoSuma, ayuda:'suma', esAcarreoSuma:true });
+      }
+    }
+  }
+}
+
+function proActivarSiguiente() {
+  document.querySelectorAll('#pro-board input').forEach(inp => {
+    inp.classList.remove('active-input');
+    if (!inp.classList.contains('pro-correct')) inp.disabled = true;
+  });
+  document.querySelectorAll('#mb_0,#mb_1,#mb_2').forEach(el => {
+    if (el) el.classList.remove('active-multiplier');
+  });
+
+  if (proPaso >= proSecuencia.length) {
+    document.getElementById('pro-help-table').innerHTML = '<b style="color:var(--correct)">¡Reto Superado! 🎉</b>';
+    document.getElementById('pro-complete').classList.add('show');
+    launchConfetti(4000);
+    showCelebration('🏆','¡Multiplicación Pro!','¡Completaste el reto!');
+    return;
+  }
+
+  let paso = proSecuencia[proPaso];
+
+  if (paso.idMult) {
+    const elMult = document.getElementById(paso.idMult);
+    if (elMult) elMult.classList.add('active-multiplier');
+  }
+
+  if (paso.accion === 'limpiar_acarreos') {
+    const c1=document.getElementById('c_1'), c2=document.getElementById('c_2');
+    if(c1){c1.value='';c1.classList.remove('pro-correct');}
+    if(c2){c2.value='';c2.classList.remove('pro-correct');}
+    proActualizarAyuda(paso.ayuda);
+    proPaso++;
+    proActivarSiguiente();
+    return;
+  }
+
+  if (paso.ayuda !== 'suma') {
+    proActualizarAyuda(paso.ayuda, paso.multFila);
+  } else {
+    const msg = paso.esAcarreoSuma ? '¿Cuánto llevas?' : 'Suma la columna ⬇️';
+    document.getElementById('pro-help-table').innerHTML =
+      `<div style="color:var(--accent4);margin-bottom:8px;">¡Hora de Sumar! ➕</div><span style="color:var(--accent2);">${msg}</span>`;
+  }
+
+  const inputActivo = document.getElementById(paso.id);
+  if (inputActivo) {
+    inputActivo.disabled = false;
+    inputActivo.classList.add('active-input');
+    if (paso.esAcarreo && paso.valor === 0) { proPaso++; proActivarSiguiente(); return; }
+    inputActivo.focus();
+  }
+}
+
+function proValidar(e) {
+  const inp = e.target;
+  const paso = proSecuencia[proPaso];
+  if (inp.value.length > 1) inp.value = inp.value.slice(-1);
+  const val = parseInt(inp.value);
+  if (isNaN(val)) return;
+
+  if (val === paso.valor) {
+    inp.classList.remove('pro-wrong','active-input');
+    inp.classList.add('pro-correct');
+    inp.disabled = true;
+    proPaso++;
+    proActivarSiguiente();
+  } else if (inp.value !== '') {
+    inp.classList.add('pro-wrong');
+    setTimeout(() => { inp.classList.remove('pro-wrong'); inp.value=''; }, 400);
+  }
+}
+
+function proActualizarAyuda(digitoBase, resaltado) {
+  const panel = document.getElementById('pro-help-table');
+  let html = `<div style="color:var(--accent4);margin-bottom:8px;">Tabla del ${digitoBase}</div>`;
+  for (let i=1; i<=9; i++) {
+    const cls = (i===resaltado) ? 'pro-highlight-row' : '';
+    html += `<div class="${cls}">${digitoBase} × ${i} = ${digitoBase*i}</div>`;
+  }
+  panel.innerHTML = html;
 }
 
 // ══════════════════════════════════════════
