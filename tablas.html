@@ -332,6 +332,10 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
   background: linear-gradient(135deg, #c77dff, #7048e8);
   box-shadow: 0 6px 20px rgba(199,125,255,0.4);
 }
+.mode-tab[data-mode="free"].active-tab {
+  background: linear-gradient(135deg, #6bcb77, #1e8449);
+  box-shadow: 0 6px 20px rgba(107,203,119,0.4);
+}
 
 .pro-panel {
   display: none;
@@ -365,7 +369,7 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 .math-board {
   display: grid;
   grid-template-columns: repeat(7, 46px);
-  grid-template-rows: repeat(10, 46px);
+  grid-template-rows: repeat(12, 46px);
   gap: 5px;
   align-items: center;
   justify-items: center;
@@ -470,6 +474,96 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
   margin-bottom: 4px;
 }
 .pro-complete-sub { color: var(--muted); font-size: 0.88rem; }
+
+/* ══ FREE MODE ══ */
+.free-panel { display: none; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.free-panel.show { display: block; }
+
+.free-workspace {
+  background: var(--surface); border-radius: 20px;
+  padding: 28px 20px; border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4); margin-bottom: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+
+.free-factors-row {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;
+}
+.free-factor-input {
+  font-family: 'Fredoka One', cursive; font-size: 1.8rem;
+  background: var(--empty); color: var(--text);
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 14px;
+  width: 110px; text-align: center; padding: 8px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+}
+.free-factor-input::-webkit-outer-spin-button,
+.free-factor-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.free-factor-input:focus { border-color: var(--correct); box-shadow: 0 0 14px var(--glow3); }
+.free-times { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent2); }
+
+.free-board-wrap { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+/* Free board uses same math-board grid but all inputs open */
+.free-board {
+  display: grid;
+  grid-template-columns: repeat(7, 46px);
+  grid-template-rows: repeat(10, 46px);
+  gap: 5px; align-items: center; justify-items: center;
+  font-family: 'Fredoka One', cursive; font-size: 1.4rem;
+}
+.free-board .cell-text {
+  display: flex; justify-content: center; align-items: center;
+  width: 100%; height: 100%; border-radius: 10px;
+  color: var(--text); font-family: 'Fredoka One', cursive; font-size: 1.4rem;
+}
+.free-board input {
+  width: 100%; height: 100%; text-align: center; font-size: 1.3rem;
+  font-family: 'Fredoka One', cursive;
+  border: 2px solid rgba(255,255,255,0.12); border-radius: 10px;
+  outline: none; background: var(--empty); color: var(--text);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  -moz-appearance: textfield; cursor: pointer;
+}
+.free-board input::-webkit-outer-spin-button,
+.free-board input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.free-board input:focus { border-color: var(--accent4); box-shadow: 0 0 10px var(--glow4); background: rgba(77,150,255,0.12); }
+.free-board input.free-ok,   #pro-board input.free-ok   { background: rgba(107,203,119,0.22) !important; border-color: var(--correct) !important; color: var(--correct) !important; animation: popIn 0.35s ease; }
+.free-board input.free-bad,  #pro-board input.free-bad  { background: rgba(255,107,107,0.22) !important; border-color: var(--wrong) !important;   color: var(--wrong) !important;   animation: shake 0.35s ease; }
+.free-board input.free-empty, #pro-board input.free-empty { border-color: rgba(255,217,61,0.5) !important; box-shadow: 0 0 8px var(--glow2); }
+#pro-board input.free-ok:disabled  { background: rgba(107,203,119,0.22) !important; border-color: var(--correct) !important; color: var(--correct) !important; }
+#pro-board input.free-bad:disabled { background: rgba(255,107,107,0.22) !important; border-color: var(--wrong) !important;   color: var(--wrong) !important; }
+.free-board .carry-input { border-radius: 50% !important; background: rgba(255,217,61,0.12) !important; border-color: rgba(255,217,61,0.3) !important; font-size: 1rem !important; width: 36px !important; height: 36px !important; }
+.free-board .carry-sum   { background: rgba(77,150,255,0.08) !important; border-color: rgba(77,150,255,0.2) !important; }
+.free-board .math-line   { grid-column: 2/8; width:100%; height:3px; background:rgba(255,255,255,0.22); border-radius:2px; }
+
+.free-result-banner {
+  display: none; width: 100%; border-radius: 16px; padding: 16px 20px; text-align: center;
+  font-family: 'Fredoka One', cursive;
+}
+.free-result-banner.show { display: block; animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.free-result-banner.perfect { background: rgba(107,203,119,0.18); border: 2px solid var(--correct); color: var(--correct); }
+.free-result-banner.partial { background: rgba(255,217,61,0.12); border: 2px solid var(--accent2); color: var(--accent2); }
+.free-result-banner.bad     { background: rgba(255,107,107,0.12); border: 2px solid var(--wrong); color: var(--wrong); }
+.free-result-title { font-size: 1.4rem; margin-bottom: 4px; }
+.free-result-sub   { font-size: 0.85rem; opacity: 0.85; }
+
+.btn-pro-verify {
+  background: linear-gradient(135deg, var(--correct), #1e8449);
+  color: #fff; box-shadow: 0 4px 14px var(--glow3);
+}
+.btn-pro-reset {
+  background: linear-gradient(135deg, var(--accent1), #c0392b);
+  color: #fff; box-shadow: 0 4px 14px var(--glow1);
+}
+.btn-pro-free {
+  background: linear-gradient(135deg, #6bcb77, #1e8449);
+  color: #fff; box-shadow: 0 4px 14px rgba(107,203,119,0.4);
+}
+.btn-pro-free.active {
+  background: linear-gradient(135deg, #c0392b, var(--accent1));
+  box-shadow: 0 4px 14px var(--glow1);
+}
 </style>
 </head>
 <body>
@@ -537,13 +631,23 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
     <div class="pro-controls">
       <button class="btn-pro btn-pro-random" onclick="proIniciar()">🎲 Nuevo reto aleatorio</button>
       <button class="btn-pro btn-pro-manual" onclick="proManual()">✍️ Poner mis números</button>
+      <button class="btn-pro btn-pro-free"   onclick="proToggleFree()">🧠 <span id="free-toggle-label">Sin ayuda</span></button>
     </div>
     <div class="pro-workspace">
       <div class="math-board" id="pro-board"></div>
-      <div class="pro-help">
+      <div class="pro-help" id="pro-help-panel">
         <h3>📖 Ayuda</h3>
         <div class="pro-help-table" id="pro-help-table">Toca "Nuevo reto" para comenzar.</div>
       </div>
+    </div>
+    <!-- Free submode controls and result (hidden by default) -->
+    <div id="free-controls" style="display:none; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:4px; margin-bottom:16px;">
+      <button class="btn-pro btn-pro-verify" id="free-verify-btn" onclick="freeVerificar()">✅ Verificar</button>
+      <button class="btn-pro btn-pro-reset"  id="free-reset-btn"  onclick="freeReset()" style="display:none">🔄 Reintentar</button>
+    </div>
+    <div class="free-result-banner" id="free-result-banner">
+      <div class="free-result-title" id="free-result-title"></div>
+      <div class="free-result-sub"   id="free-result-sub"></div>
     </div>
   </div>
 
@@ -612,7 +716,7 @@ const MODE_DESCS = {
   fill:  'Toca una celda y escribe el resultado. Tu progreso se guarda automáticamente.',
   flash: 'Toca cualquier celda para ver su resultado 2 segundos. Sin escribir — puro repaso.',
   hunt:  'Te damos un número: toca TODAS las casillas cuya multiplicación da ese resultado.',
-  pro:   'Multiplica números de 3 cifras paso a paso, con acarreos guiados y tabla de ayuda.',
+  pro:   'Multiplica de 3 cifras paso a paso. Activa "Sin ayuda" para el reto sin guía.',
 };
 
 // Build product map once
@@ -727,19 +831,14 @@ function switchMode(mode) {
   document.getElementById('complete-banner').style.display='none';
   document.getElementById('hunt-panel').classList.toggle('show',isHunt);
   document.getElementById('pro-panel').classList.toggle('show',isPro);
-
-  // table wrapper: hide for pro
   document.querySelector('.table-wrapper').style.display = isPro ? 'none' : '';
 
   if(!isFill){ showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas'; }
 
   renderAll();
 
-  if(isHunt){
-    huntCorrect=0; huntErrors=0; huntStreak=0; huntUsed.clear();
-    updateHuntUI(); nextHunt();
-  }
-  if(isPro) { document.getElementById('pro-complete').classList.remove('show'); }
+  if(isHunt){ huntCorrect=0; huntErrors=0; huntStreak=0; huntUsed.clear(); updateHuntUI(); nextHunt(); }
+  if(isPro)  { document.getElementById('pro-complete').classList.remove('show'); }
 }
 
 // ══════════════════════════════════════════
@@ -997,8 +1096,10 @@ let proA='', proB='', proSecuencia=[], proPaso=0, proPps=[[],[],[]];
 
 function proIniciar(a, b) {
   document.getElementById('pro-complete').classList.remove('show');
+  document.getElementById('free-result-banner').classList.remove('show');
   proA = (a || (Math.floor(Math.random()*899)+100)).toString();
   proB = (b || (Math.floor(Math.random()*899)+100)).toString();
+  if (proFreeMode) { freeIniciar(proA, proB); return; }
   proConstruirTablero();
   proCalcularSecuencia();
   proPaso = 0;
@@ -1043,40 +1144,43 @@ function proConstruirTablero() {
   const board = document.getElementById('pro-board');
   board.innerHTML = '';
 
-  // Row 1: carry inputs for first product
-  proCrearCelda(board, 1, 5, 'c_2', 'carry-input');
-  proCrearCelda(board, 1, 6, 'c_1', 'carry-input');
+  // Rows 1-3: carry rows aligned over A's hundreds(col5) and tens(col6)
+  // _1 = carry into tens position (above col6), _2 = carry into hundreds (above col5)
+  // Row 1 = hundreds digit of B (top), Row 2 = tens, Row 3 = units (bottom, closest to A)
+  proCrearCelda(board, 1, 5, 'c_2_2', 'carry-input'); proCrearCelda(board, 1, 6, 'c_2_1', 'carry-input');
+  proCrearCelda(board, 2, 5, 'c_1_2', 'carry-input'); proCrearCelda(board, 2, 6, 'c_1_1', 'carry-input');
+  proCrearCelda(board, 3, 5, 'c_0_2', 'carry-input'); proCrearCelda(board, 3, 6, 'c_0_1', 'carry-input');
 
-  // Row 2: factor A
-  proCrearTexto(board, 2, 5, proA[0]);
-  proCrearTexto(board, 2, 6, proA[1]);
-  proCrearTexto(board, 2, 7, proA[2]);
+  // Row 4: factor A
+  proCrearTexto(board, 4, 5, proA[0]);
+  proCrearTexto(board, 4, 6, proA[1]);
+  proCrearTexto(board, 4, 7, proA[2]);
 
-  // Row 3: × and factor B with IDs for highlight
-  proCrearTexto(board, 3, 4, '×');
-  proCrearTexto(board, 3, 5, proB[0], 'mb_0');
-  proCrearTexto(board, 3, 6, proB[1], 'mb_1');
-  proCrearTexto(board, 3, 7, proB[2], 'mb_2');
+  // Row 5: × and factor B with IDs for highlight
+  proCrearTexto(board, 5, 4, '×');
+  proCrearTexto(board, 5, 5, proB[0], 'mb_0');
+  proCrearTexto(board, 5, 6, proB[1], 'mb_1');
+  proCrearTexto(board, 5, 7, proB[2], 'mb_2');
 
-  // Line 1
+  // Line after factors
   const l1 = document.createElement('div');
-  l1.className = 'math-line'; l1.style.gridRow = '4'; board.appendChild(l1);
+  l1.className = 'math-line'; l1.style.gridRow = '6'; board.appendChild(l1);
 
-  // Row 5: carry sum inputs
-  for (let i=1; i<=5; i++) proCrearCelda(board, 5, 7-i, `cs_${i}`, 'carry-input carry-sum');
+  // Row 7: carry sum inputs
+  for (let i=1; i<=5; i++) proCrearCelda(board, 7, 7-i, `cs_${i}`, 'carry-input carry-sum');
 
-  // Rows 6-8: partial products
-  proCrearCelda(board,6,4,'p0_3'); proCrearCelda(board,6,5,'p0_2'); proCrearCelda(board,6,6,'p0_1'); proCrearCelda(board,6,7,'p0_0');
-  proCrearCelda(board,7,3,'p1_4'); proCrearCelda(board,7,4,'p1_3'); proCrearCelda(board,7,5,'p1_2'); proCrearCelda(board,7,6,'p1_1');
-  proCrearCelda(board,8,2,'p2_5'); proCrearCelda(board,8,3,'p2_4'); proCrearCelda(board,8,4,'p2_3'); proCrearCelda(board,8,5,'p2_2');
+  // Rows 8-10: partial products
+  proCrearCelda(board,8,4,'p0_3'); proCrearCelda(board,8,5,'p0_2'); proCrearCelda(board,8,6,'p0_1'); proCrearCelda(board,8,7,'p0_0');
+  proCrearCelda(board,9,3,'p1_4'); proCrearCelda(board,9,4,'p1_3'); proCrearCelda(board,9,5,'p1_2'); proCrearCelda(board,9,6,'p1_1');
+  proCrearCelda(board,10,2,'p2_5'); proCrearCelda(board,10,3,'p2_4'); proCrearCelda(board,10,4,'p2_3'); proCrearCelda(board,10,5,'p2_2');
 
-  // Row 9: + and line
-  proCrearTexto(board, 9, 1, '+');
+  // Row 11: + and line
+  proCrearTexto(board, 11, 1, '+');
   const l2 = document.createElement('div');
-  l2.className = 'math-line'; l2.style.gridRow = '9'; board.appendChild(l2);
+  l2.className = 'math-line'; l2.style.gridRow = '11'; board.appendChild(l2);
 
-  // Row 10: result
-  for (let i=6; i>=1; i--) proCrearCelda(board, 10, 8-i, `r_${i-1}`);
+  // Row 12: result
+  for (let i=6; i>=1; i--) proCrearCelda(board, 12, 8-i, `r_${i-1}`);
 }
 
 function proCalcularSecuencia() {
@@ -1087,7 +1191,7 @@ function proCalcularSecuencia() {
     let digitoB = parseInt(proB[2-j]);
     let idMult = `mb_${2-j}`;
     let acarreo = 0;
-    proSecuencia.push({ accion:'limpiar_acarreos', ayuda:digitoB, idMult });
+    proSecuencia.push({ accion:'limpiar_acarreos', ayuda:digitoB, idMult, digitoJ:j });
 
     for (let i=0; i<3; i++) {
       let digitoA = parseInt(proA[2-i]);
@@ -1099,7 +1203,7 @@ function proCalcularSecuencia() {
       proSecuencia.push({ id:`p${j}_${colIndex}`, valor:digitoEscribir, ayuda:digitoB, multFila:digitoA, idMult });
 
       if (i < 2) {
-        proSecuencia.push({ id:`c_${i+1}`, valor:acarreo, ayuda:digitoB, esAcarreo:true, idMult });
+        proSecuencia.push({ id:`c_${j}_${i+1}`, valor:acarreo, ayuda:digitoB, esAcarreo:true, idMult });
       } else if (acarreo > 0) {
         proPps[j][colIndex+1] = acarreo;
         proSecuencia.push({ id:`p${j}_${colIndex+1}`, valor:acarreo, ayuda:digitoB, idMult });
@@ -1149,7 +1253,9 @@ function proActivarSiguiente() {
   }
 
   if (paso.accion === 'limpiar_acarreos') {
-    const c1=document.getElementById('c_1'), c2=document.getElementById('c_2');
+    // clear only the carry row for this digit (j)
+    const j = paso.digitoJ;
+    const c1=document.getElementById(`c_${j}_1`), c2=document.getElementById(`c_${j}_2`);
     if(c1){c1.value='';c1.classList.remove('pro-correct');}
     if(c2){c2.value='';c2.classList.remove('pro-correct');}
     proActualizarAyuda(paso.ayuda);
@@ -1202,6 +1308,198 @@ function proActualizarAyuda(digitoBase, resaltado) {
     html += `<div class="${cls}">${digitoBase} × ${i} = ${digitoBase*i}</div>`;
   }
   panel.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// FREE MODE — sin ayuda, verificación final
+// ══════════════════════════════════════════
+let freeA='', freeB='', freeVerified=false;
+
+// Re-use proCalcularSecuencia's answer map: build expected values for every cell ID
+function freeCalcularEsperados(a, b) {
+  // Run the same logic as pro but just collect {id: expectedValue}
+  const expected = {};
+  const A=a, B=b;
+  const pps=[[],[],[]];
+
+  for (let j=0;j<3;j++) {
+    let dB=parseInt(B[2-j]), acarreo=0;
+    for (let i=0;i<3;i++) {
+      let dA=parseInt(A[2-i]);
+      let prod=(dA*dB)+acarreo;
+      let dig=prod%10; acarreo=Math.floor(prod/10);
+      let col=i+j;
+      pps[j][col]=dig;
+      expected[`f_p${j}_${col}`]=dig;
+      if (i<2) { if(acarreo>0) expected[`f_c_${j}_${i+1}`]=acarreo; }
+      else if (acarreo>0) { pps[j][col+1]=acarreo; expected[`f_p${j}_${col+1}`]=acarreo; }
+    }
+  }
+  let acarreoSuma=0;
+  for (let col=0;col<=5;col++) {
+    let sum=acarreoSuma;
+    if(pps[0][col]!==undefined) sum+=pps[0][col];
+    if(pps[1][col]!==undefined) sum+=pps[1][col];
+    if(pps[2][col]!==undefined) sum+=pps[2][col];
+    if(sum>0||col<3){
+      let dig=sum%10; acarreoSuma=Math.floor(sum/10);
+      expected[`f_r_${col}`]=dig;
+      if(acarreoSuma>0&&col<5) expected[`f_cs_${col+1}`]=acarreoSuma;
+    }
+  }
+  return expected;
+}
+
+function freeConstruirTablero(a, b) {
+  const board = document.getElementById('pro-board');
+  board.innerHTML = '';
+
+  function txt(fila, col, texto) {
+    const d=document.createElement('div');
+    d.className='cell-text'; d.style.gridRow=fila; d.style.gridColumn=col; d.textContent=texto;
+    board.appendChild(d);
+  }
+  function inp(fila, col, id, claseExtra='') {
+    const wrap=document.createElement('div');
+    wrap.style.gridRow=fila; wrap.style.gridColumn=col;
+    const i=document.createElement('input');
+    i.type='number'; i.id=id; i.autocomplete='off'; i.inputMode='numeric';
+    if(claseExtra) claseExtra.split(' ').forEach(c=>{if(c)i.classList.add(c);});
+    i.addEventListener('input', e=>{
+      if(e.target.value.length>1) e.target.value=e.target.value.slice(-1);
+      e.target.classList.remove('free-bad'); // clear red when student corrects
+      const hasAny=[...document.querySelectorAll('#pro-board input')].some(x=>x.value!=='');
+      document.getElementById('free-verify-btn').style.display=hasAny&&!freeVerified?'flex':'none';
+    });
+    wrap.appendChild(i); board.appendChild(wrap);
+  }
+  function line(fila) {
+    const d=document.createElement('div');
+    d.className='math-line'; d.style.gridRow=fila; board.appendChild(d);
+  }
+
+  // Rows 1-3: carry rows aligned over A's hundreds(col5) and tens(col6)
+  // _2 = carry into hundreds (col5), _1 = carry into tens (col6)
+  // Row 1 = hundreds digit of B (top), Row 2 = tens, Row 3 = units (bottom, closest to A)
+  inp(1,5,'f_c_2_2','carry-input'); inp(1,6,'f_c_2_1','carry-input');
+  inp(2,5,'f_c_1_2','carry-input'); inp(2,6,'f_c_1_1','carry-input');
+  inp(3,5,'f_c_0_2','carry-input'); inp(3,6,'f_c_0_1','carry-input');
+
+  // Row 4: factor A
+  txt(4,5,a[0]); txt(4,6,a[1]); txt(4,7,a[2]);
+  // Row 5: × and factor B
+  txt(5,4,'×'); txt(5,5,b[0]); txt(5,6,b[1]); txt(5,7,b[2]);
+  line(6);
+  // Row 7: carry-sum inputs
+  for(let i=1;i<=5;i++) inp(7,7-i,`f_cs_${i}`,'carry-input carry-sum');
+  // Rows 8-10: partial products (all open)
+  inp(8,4,'f_p0_3'); inp(8,5,'f_p0_2'); inp(8,6,'f_p0_1'); inp(8,7,'f_p0_0');
+  inp(9,3,'f_p1_4'); inp(9,4,'f_p1_3'); inp(9,5,'f_p1_2'); inp(9,6,'f_p1_1');
+  inp(10,2,'f_p2_5'); inp(10,3,'f_p2_4'); inp(10,4,'f_p2_3'); inp(10,5,'f_p2_2');
+  txt(11,1,'+'); line(11);
+  // Row 12: result
+  for(let i=6;i>=1;i--) inp(12,8-i,`f_r_${i-1}`);
+}
+
+let proFreeMode = false;
+
+function proToggleFree() {
+  proFreeMode = !proFreeMode;
+  const btn = document.querySelector('.btn-pro-free');
+  const label = document.getElementById('free-toggle-label');
+  const helpPanel = document.getElementById('pro-help-panel');
+  const freeControls = document.getElementById('free-controls');
+  btn.classList.toggle('active', proFreeMode);
+  label.textContent = proFreeMode ? 'Con ayuda' : 'Sin ayuda';
+  helpPanel.style.display = proFreeMode ? 'none' : '';
+  freeControls.style.display = proFreeMode ? 'flex' : 'none';
+  document.getElementById('free-result-banner').classList.remove('show');
+  if (proFreeMode) {
+    freeIniciar(proA, proB);
+  } else {
+    if (proA && proB) proIniciar(proA, proB);
+  }
+}
+
+function freeIniciar(a, b) {
+  freeVerified = false;
+  freeA = (a || (Math.floor(Math.random()*899)+100)).toString();
+  freeB = (b || (Math.floor(Math.random()*899)+100)).toString();
+  // keep proA/proB in sync so "Con ayuda" returns to same numbers
+  proA = freeA; proB = freeB;
+  freeConstruirTablero(freeA, freeB);
+  document.getElementById('free-result-banner').classList.remove('show');
+  document.getElementById('free-verify-btn').style.display = 'none';
+  document.getElementById('free-reset-btn').style.display = 'none';
+}
+
+function freeManual() {
+  const a = prompt('Número de arriba (hasta 3 cifras):', '345');
+  const b = prompt('Número de abajo (hasta 3 cifras):', '126');
+  if (a && b && a.length <= 3 && b.length <= 3) freeIniciar(a.padStart(3,'0'), b.padStart(3,'0'));
+  else if (a !== null && b !== null) alert('Por favor ingresa números de hasta 3 cifras.');
+}
+
+function freeReset() {
+  freeIniciar(freeA, freeB);
+}
+
+function freeVerificar() {
+  if(!freeA||!freeB) return;
+  const expected=freeCalcularEsperados(freeA,freeB);
+  const inputs=document.querySelectorAll('#pro-board input');
+  let total=0, correct=0, filled=0;
+
+  inputs.forEach(inp=>{
+    const id=inp.id;
+    if(!(id in expected)) return;
+    total++;
+    if(inp.value==='') return;
+    filled++;
+    const val=parseInt(inp.value), exp=expected[id];
+    inp.classList.remove('free-ok','free-bad');
+    if(val===exp) { inp.classList.add('free-ok'); correct++; }
+    else          { inp.classList.add('free-bad'); }
+  });
+
+  // Lock correct cells; wrong cells stay editable so student can fix them
+  inputs.forEach(inp => {
+    if (inp.classList.contains('free-ok')) {
+      inp.disabled = true;
+    } else {
+      inp.disabled = false;
+      inp.classList.remove('free-ok'); // safety clean
+    }
+  });
+
+  const banner=document.getElementById('free-result-banner');
+  const title=document.getElementById('free-result-title');
+  const sub=document.getElementById('free-result-sub');
+  banner.classList.remove('perfect','partial','bad','show');
+
+  if(filled===0) {
+    title.textContent='✏️ ¡Empieza a llenar el tablero!';
+    sub.textContent='Completa al menos una celda y vuelve a verificar.';
+    banner.classList.add('partial');
+  } else if(correct===total) {
+    freeVerified=true;
+    title.textContent='🏆 ¡Todo correcto!';
+    sub.textContent=`${freeA} × ${freeB} = ${parseInt(freeA)*parseInt(freeB)} — ¡Eres un genio!`;
+    banner.classList.add('perfect');
+    document.getElementById('free-verify-btn').style.display='none';
+    document.getElementById('free-reset-btn').style.display='flex';
+    launchConfetti(4000); showCelebration('🧠','¡Modo Libre Superado!','¡Sin ayuda! ¡Impresionante!');
+  } else if(correct===filled) {
+    title.textContent=`✅ ${correct}/${total} correctas — ¡Sigue así!`;
+    sub.textContent='Todo lo que llenaste está bien. ¡Continúa con el resto!';
+    banner.classList.add('perfect');
+  } else {
+    const wrong=filled-correct;
+    title.textContent=`⚠️ ${correct} bien · ${wrong} mal · ${total-filled} sin llenar`;
+    sub.textContent='Los casilleros en rojo están incorrectos — corrígelos y vuelve a verificar.';
+    banner.classList.add(correct>=filled/2?'partial':'bad');
+  }
+  banner.classList.add('show');
 }
 
 // ══════════════════════════════════════════
