@@ -513,11 +513,13 @@ function getValue(obj, nombre){
 }
 
 function formatearFecha(val){
-  if(!val || val === "" || val === "N/A" || val === "#N/A") return null;   // null = no aplica
+  if(!val || val === "" || val === "N/A" || val === "#N/A") return null;
   if(val === "SIN CURSO") return "SIN CURSO";
   const d = new Date(val);
-  if(isNaN(d)) return val;          // devuelve el texto tal cual si no es fecha
-  return d;                          // devuelve objeto Date para evaluación
+  if(isNaN(d)) return val;           // texto libre
+  // Google Sheets exporta celdas vacías con formato fecha como 1899-12-30 o 1901-12-30
+  if(d.getFullYear() < 1950) return null;
+  return d;
 }
 
 /* ══════════════════════════════════════════════════════════
