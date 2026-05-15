@@ -631,17 +631,17 @@ function consultar(){
     for(let key in p){
       const ck = key.trim().toUpperCase();
       if(!ck || SKIP.has(ck)) continue;
-      // Detectar campos de perfil personal (texto/entero, no fechas)
-      const isPerfilExtra = [...PERFIL_EXTRAS].some(x => ck.includes(x));
-      if(isPerfilExtra){
-        keyPerfil.push({ key, ck });
+      // Cursos y próximos tienen prioridad absoluta
+      if(ck.includes('CURSO') || ck.includes('PROXIMO')){
+        keyCursos.push({ key, ck });
       } else if(ck.includes('SAP') || ck.includes('INVENTARIO') || ck.includes('COMBUSTIBLE') ||
          ck.includes('LIDERAZGO') || ck.includes('AUDITOR')){
         keyAbast.push({ key, ck });
-      } else if(ck.includes('CURSO') || ck.includes('PROXIMO')){
-        keyCursos.push({ key, ck });
       } else {
-        keyOtros.push({ key, ck });
+        // Campos de perfil personal (texto/entero, no fechas)
+        const isPerfilExtra = [...PERFIL_EXTRAS].some(x => ck.includes(x));
+        if(isPerfilExtra) keyPerfil.push({ key, ck });
+        else keyOtros.push({ key, ck });
       }
     }
 
