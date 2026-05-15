@@ -437,13 +437,9 @@ body {
     </div>
     <div class="search-bar">
       <span class="search-bar-icon"><i class="bi bi-person-badge"></i></span>
-      <input 
-  type="text" 
-  id="cedula" 
-  placeholder="Digite su número de cédula…" 
-  inputmode="numeric" 
-  maxlength="11" 
-  oninput="this.value = this.value.replace(/[^0-9]/g, '')" >
+      <input type="text" id="cedula" placeholder="Digite su número de cédula…"
+             inputmode="numeric" maxlength="11"
+             oninput="this.value=this.value.replace(/\D/g,'').slice(0,11)">
       <button class="search-btn" onclick="consultar()">CONSULTAR</button>
     </div>
   </div>
@@ -526,47 +522,35 @@ function formatearFecha(val){
 
 /* ══════════════════════════════════════════════════════════
    LÓGICA DE ESTADO
-   Devuelve { chipClass, chipIcon, chipText, rowClass, displayText }
+   Solo verde (CON CURSO) o rojo (SIN CURSO / N/A)
+   La fecha se muestra siempre que exista, en dd/mmm/aa
 ══════════════════════════════════════════════════════════ */
 function evalEstado(val){
   const parsed = formatearFecha(val);
 
-  // Sin curso
+  // Sin curso explícito
   if(parsed === "SIN CURSO"){
-    return { chipClass:'chip-bad', chipIcon:'bi-x-octagon-fill',
-             chipText:'SIN CURSO', rowClass:'row-bad',
-             displayText:'Sin curso' };
+    return { chipClass:'chip-bad', chipIcon:'bi-x-circle-fill',
+             chipText:'SIN CURSO', rowClass:'row-bad', displayText:'' };
   }
 
-  // No aplica / vacío
+  // Vacío / N/A → sin dato, rojo
   if(parsed === null){
-    return { chipClass:'chip-na', chipIcon:'bi-dash-circle',
-             chipText:'N/A', rowClass:'',
-             displayText:'No aplica' };
+    return { chipClass:'chip-bad', chipIcon:'bi-x-circle-fill',
+             chipText:'SIN CURSO', rowClass:'row-bad', displayText:'' };
   }
 
-  const hoy   = new Date();
-  const limite = new Date(); limite.setDate(hoy.getDate() + 90);
-
-  // Es un Date válido
+  // Fecha válida → siempre verde, muestra fecha corta
   if(parsed instanceof Date){
-    const display = parsed.toLocaleDateString('es-CO', { day:'2-digit', month:'short', year:'numeric' });
-    if(parsed < hoy){
-      return { chipClass:'chip-bad', chipIcon:'bi-x-octagon-fill',
-               chipText:'VENCIDO', rowClass:'row-bad', displayText: display };
-    }
-    if(parsed <= limite){
-      return { chipClass:'chip-warn', chipIcon:'bi-exclamation-triangle-fill',
-               chipText:'< 3 MESES', rowClass:'row-warn', displayText: display };
-    }
+    const mes = parsed.toLocaleDateString('es-CO', { month:'short' }).replace('.','');
+    const display = `${String(parsed.getDate()).padStart(2,'0')}/${mes}/${parsed.getFullYear()}`;
     return { chipClass:'chip-ok', chipIcon:'bi-check-circle-fill',
-             chipText:'VIGENTE', rowClass:'', displayText: display };
+             chipText:'CON CURSO', rowClass:'', displayText: display };
   }
 
-  // Texto libre
-  return { chipClass:'chip-na', chipIcon:'bi-info-circle',
-           chipText:'INFO', rowClass:'',
-           displayText: parsed };
+  // Texto libre → verde con el texto como fecha
+  return { chipClass:'chip-ok', chipIcon:'bi-check-circle-fill',
+           chipText:'CON CURSO', rowClass:'', displayText: parsed };
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -578,12 +562,10 @@ function renderRow(label, val, showChip = true){
   const e = evalEstado(val);
   let content;
   if(showChip){
-    // Fecha (si existe y no es N/A ni SIN CURSO)
-    const hasDate = e.displayText && e.chipText !== 'N/A' && e.chipText !== 'SIN CURSO';
-    const dateSpan = hasDate
-      ? `<span style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-2);margin-right:8px">${e.displayText}</span>`
+    const dateSpan = e.displayText
+      ? `<span style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-2)">${e.displayText}</span>`
       : '';
-    content = `<span style="display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px">
+    content = `<span style="display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px">
       ${dateSpan}<span class="status-chip ${e.chipClass}"><i class="bi ${e.chipIcon}"></i>${e.chipText}</span>
     </span>`;
   } else {
