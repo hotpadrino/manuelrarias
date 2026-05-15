@@ -437,7 +437,13 @@ body {
     </div>
     <div class="search-bar">
       <span class="search-bar-icon"><i class="bi bi-person-badge"></i></span>
-      <input type="text" id="cedula" placeholder="Digite su número de cédula…" inputmode="numeric">
+      <input 
+  type="text" 
+  id="cedula" 
+  placeholder="Digite su número de cédula…" 
+  inputmode="numeric" 
+  maxlength="11" 
+  oninput="this.value = this.value.replace(/[^0-9]/g, '')" >
       <button class="search-btn" onclick="consultar()">CONSULTAR</button>
     </div>
   </div>
@@ -470,7 +476,7 @@ body {
       <a href="https://wa.me/573128816469" target="_blank" class="footer-link">
         <i class="bi bi-whatsapp fl-wa"></i> SOPORTE WHATSAPP
       </a>
-      <a href="/cdn-cgi/l/email-protection#a0c1ccd5c3c1d2c498e0c7cdc1c9cc8ec3cfcd" class="footer-link">
+      <a href="mailto:alucard8@gmail.com" class="footer-link">
         <i class="bi bi-envelope-at fl-em"></i> CANAL OFICIAL EMAIL
       </a>
     </div>
@@ -565,16 +571,28 @@ function evalEstado(val){
 
 /* ══════════════════════════════════════════════════════════
    RENDER DE FILA
+   showChip=true  → fecha visible + chip de estado
+   showChip=false → texto plano (campos no-fecha)
 ══════════════════════════════════════════════════════════ */
 function renderRow(label, val, showChip = true){
   const e = evalEstado(val);
-  const chip = showChip
-    ? `<span class="status-chip ${e.chipClass}"><i class="bi ${e.chipIcon}"></i>${e.chipText}</span>`
-    : `<span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--text-2)">${e.displayText}</span>`;
+  let content;
+  if(showChip){
+    // Fecha (si existe y no es N/A ni SIN CURSO)
+    const hasDate = e.displayText && e.chipText !== 'N/A' && e.chipText !== 'SIN CURSO';
+    const dateSpan = hasDate
+      ? `<span style="font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--text-2);margin-right:8px">${e.displayText}</span>`
+      : '';
+    content = `<span style="display:inline-flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px">
+      ${dateSpan}<span class="status-chip ${e.chipClass}"><i class="bi ${e.chipIcon}"></i>${e.chipText}</span>
+    </span>`;
+  } else {
+    content = `<span style="font-family:'Share Tech Mono',monospace;font-size:.78rem;color:var(--text-2)">${e.displayText}</span>`;
+  }
   return `
     <div class="data-row ${e.rowClass}">
       <span class="data-key">${label}</span>
-      ${chip}
+      ${content}
     </div>`;
 }
 
@@ -618,14 +636,22 @@ function consultar(){
     const taller   = getValue(p, "TALLER");
     const ced      = getValue(p, "CEDULA");
 
+    // ── Campos extra de perfil (texto, no fechas) ─────
+    const PERFIL_EXTRAS = new Set(['ITEM','INSPECTOR','JEFE DE GRUPO','NIVEL DE INGLES','NIVEL INGLES',
+      'NIVEL DE PERICIA','NIVEL PERICIA','CARGO','INSPECTOR / JEFE DE GRUPO']);
+
     // ── Separar claves por categoría ─────────────────
     const SKIP = new Set(['NOMBRE','GRADO','DEPENDENCIA','CALLSIGN','TALLER','CEDULA']);
-    const keyCursos = [], keyAbast = [], keyOtros = [];
+    const keyCursos = [], keyAbast = [], keyOtros = [], keyPerfil = [];
 
     for(let key in p){
       const ck = key.trim().toUpperCase();
       if(!ck || SKIP.has(ck)) continue;
-      if(ck.includes('SAP') || ck.includes('INVENTARIO') || ck.includes('COMBUSTIBLE') ||
+      // Detectar campos de perfil personal (texto/entero, no fechas)
+      const isPerfilExtra = [...PERFIL_EXTRAS].some(x => ck.includes(x));
+      if(isPerfilExtra){
+        keyPerfil.push({ key, ck });
+      } else if(ck.includes('SAP') || ck.includes('INVENTARIO') || ck.includes('COMBUSTIBLE') ||
          ck.includes('LIDERAZGO') || ck.includes('AUDITOR')){
         keyAbast.push({ key, ck });
       } else if(ck.includes('CURSO') || ck.includes('PROXIMO')){
@@ -638,7 +664,17 @@ function consultar(){
     // ── Construir HTML ────────────────────────────────
     let html = '';
 
-    // Ficha
+    // Helper: valor plano sin intentar parsear como fecha
+    function plainVal(v){
+      if(!v || v === '' || v === 'N/A' || v === '#N/A') return '—';
+      return v;
+    }
+
+    // Ficha — incluye campos de perfil extra debajo de las fichas base
+    const extraPfHtml = keyPerfil.map(({key, ck}) =>
+      `<div class="pf-item"><div class="pf-label">${ck}</div><div class="pf-value">${plainVal(p[key])}</div></div>`
+    ).join('');
+
     html += `
       <div class="profile-card">
         <div class="profile-inner">
@@ -652,6 +688,7 @@ function consultar(){
               <div class="pf-item"><div class="pf-label">Dependencia</div><div class="pf-value">${dep || '—'}</div></div>
               <div class="pf-item"><div class="pf-label">Callsign</div><div class="pf-value">${callsign || '—'}</div></div>
               <div class="pf-item"><div class="pf-label">Taller</div><div class="pf-value">${taller || '—'}</div></div>
+              ${extraPfHtml}
             </div>
           </div>
         </div>
@@ -697,13 +734,13 @@ function consultar(){
       html += `</div>`;
     }
 
-    // ── Tarjeta 3: Otros campos (si los hay)
+    // ── Tarjeta 3: Otros (campos no clasificados, si quedara alguno)
     if(keyOtros.length){
       html += `
         <div class="res-card">
           <div class="res-card-header">
             <i class="bi bi-list-check res-card-icon"></i>
-            <span class="res-card-title">Información Adicional</span>
+            <span class="res-card-title">Otros registros</span>
           </div>`;
       keyOtros.forEach(({key, ck}) => {
         html += renderRow(ck, p[key], false);
