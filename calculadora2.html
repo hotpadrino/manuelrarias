@@ -71,8 +71,8 @@ button{cursor:pointer;background:none;border:none}
 .btn-icon:hover{background:var(--surface-off2);color:var(--text)}
 
 /* === TABS === */
-.tabs-wrapper{position:sticky;top:0;z-index:100;background:var(--bg);padding:.75rem 0;border-bottom:1px solid var(--divider)}
-.tabs{display:flex;gap:.25rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs-wrapper{position:sticky;top:0;z-index:100;background:var(--bg);padding:.75rem 0;border-bottom:1px solid var(--divider)}.tabs-nav{display:flex;align-items:center;gap:.25rem}.tab-arrow{flex-shrink:0;width:30px;height:30px;border-radius:var(--r-full);background:var(--surface-off);border:1px solid var(--border);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition);user-select:none}.tab-arrow:hover{background:var(--primary);color:var(--text-inv);border-color:var(--primary)}.tab-arrow.hidden{opacity:0;pointer-events:none}
+.tabs{display:flex;gap:.25rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;scroll-behavior:smooth}
 .tabs::-webkit-scrollbar{display:none}
 .tab-btn{flex-shrink:0;padding:.5rem 1.1rem;border-radius:var(--r-full);font-size:.85rem;font-weight:600;color:var(--text-muted);background:none;border:1px solid transparent;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;gap:.4rem}
 .tab-btn:hover{background:var(--surface-off);color:var(--text)}
@@ -158,7 +158,7 @@ tbody tr:last-child{border-bottom:none}
 .extra-section-title{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
 .extra-section-desc{font-size:.78rem;color:var(--text-muted);margin-bottom:1rem}
 .payment-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:.85rem;margin-bottom:.75rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end}
-.payment-item .form-group{min-width:130px;flex:1}
+.payment-item .form-group{min-width:130px;flex:1 1 130px}
 .payment-label{font-size:.75rem;font-weight:600;color:var(--text-muted);margin-bottom:.25rem;display:block}
 .payment-item input,.payment-item select{width:100%;padding:.5rem .65rem;background:var(--surface-off);border:1px solid var(--border);border-radius:var(--r-md);font-size:.83rem;color:var(--text);transition:border-color var(--transition)}
 .payment-item input:focus,.payment-item select:focus{outline:none;border-color:var(--primary)}
@@ -209,6 +209,8 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .form-grid{grid-template-columns:1fr}
   .payment-item{flex-direction:column}
+  .payment-item .form-group{width:100%;min-width:unset;flex:unset}
+  .payment-item .description-input{width:100%;min-width:unset;flex:unset}
   .tabs{gap:.15rem}
   .tab-btn{padding:.45rem .85rem;font-size:.78rem}
 }
@@ -235,7 +237,7 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
       </div>
       <div>
         <h1>Simulador Financiero</h1>
-        <p>Créditos · Inversiones · Comparador — @manuelrarias</p>
+        <p>Créditos · Inversiones · Vehículos — @inversiones_aripar</p>
       </div>
     </div>
     <div class="header-actions">
@@ -247,11 +249,20 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
 
   <!-- TABS -->
   <nav class="tabs-wrapper">
-    <div class="tabs" role="tablist">
-      <button class="tab-btn active" onclick="showPanel(0)" role="tab"><span class="tab-icon">🏦</span>Crédito</button>
-      <button class="tab-btn" onclick="showPanel(1)" role="tab"><span class="tab-icon">⚡</span>Cuotas Extra</button>
-      <button class="tab-btn" onclick="showPanel(2)" role="tab"><span class="tab-icon">📈</span>Inversión</button>
-      <button class="tab-btn" onclick="showPanel(3)" role="tab"><span class="tab-icon">⚖️</span>Comparador</button>
+    <div class="tabs-nav">
+      <button class="tab-arrow" id="tab-arrow-left" onclick="tabsScroll(-1)" aria-label="Anterior">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="tabs" role="tablist" id="tabs-list">
+        <button class="tab-btn active" onclick="showPanel(0)" role="tab"><span class="tab-icon">🏦</span>Crédito</button>
+        <button class="tab-btn" onclick="showPanel(1)" role="tab"><span class="tab-icon">⚡</span>Cuotas Extra</button>
+        <button class="tab-btn" onclick="showPanel(2)" role="tab"><span class="tab-icon">📈</span>Inversión</button>
+        <button class="tab-btn" onclick="showPanel(3)" role="tab"><span class="tab-icon">⚖️</span>Comparador</button>
+        <button class="tab-btn" onclick="showPanel(4)" role="tab"><span class="tab-icon">🚗</span>Vehículo</button>
+      </div>
+      <button class="tab-arrow" id="tab-arrow-right" onclick="tabsScroll(1)" aria-label="Siguiente">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
   </nav>
 
@@ -265,7 +276,7 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
           <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">El capital inicial que solicitas al banco o entidad financiera.</span></span>
         </label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="loanAmount" class="form-input" value="174000000" min="1000" step="1000">
+          <input type="text" inputmode="numeric" id="loanAmount" class="form-input" oninput="fmtMoneyInput(this)" value="174.000.000" min="1000" step="1000">
         </div>
       </div>
       <div class="form-group">
@@ -361,7 +372,7 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
       <div class="form-group">
         <label class="form-label">Monto del préstamo</label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="loanAmount2" class="form-input" value="174000000" min="1000" step="1000">
+          <input type="text" inputmode="numeric" id="loanAmount2" class="form-input" oninput="fmtMoneyInput(this)" value="174.000.000" min="1000" step="1000">
         </div>
       </div>
       <div class="form-group">
@@ -461,13 +472,13 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
       <div class="form-group">
         <label class="form-label">Aporte inicial</label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="initInv" class="form-input" value="0" min="0" step="1000">
+          <input type="text" inputmode="numeric" id="initInv" class="form-input" oninput="fmtMoneyInput(this)" value="0" min="0" step="1000">
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Aporte mensual</label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="monthlyInv" class="form-input" value="500000" min="0" step="1000">
+          <input type="text" inputmode="numeric" id="monthlyInv" class="form-input" oninput="fmtMoneyInput(this)" value="500.000" min="0" step="1000">
         </div>
       </div>
       <div class="form-group">
@@ -583,7 +594,7 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
       <div class="form-group">
         <label class="form-label">Saldo actual del crédito</label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="cmpDebt" class="form-input" value="174000000" min="1000" step="1000">
+          <input type="text" inputmode="numeric" id="cmpDebt" class="form-input" oninput="fmtMoneyInput(this)" value="174.000.000" min="1000" step="1000">
         </div>
       </div>
       <div class="form-group">
@@ -620,7 +631,7 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
           <span class="tooltip-trigger"><span class="tip-icon">?</span><span class="tooltip-box">Dinero adicional que tienes cada mes, más allá de la cuota mínima del crédito. Este es el monto que decidirás entre pagar al crédito o invertir.</span></span>
         </label>
         <div class="input-wrap"><span class="prefix">$</span>
-          <input type="number" id="cmpExtra" class="form-input" value="500000" min="1000" step="1000">
+          <input type="text" inputmode="numeric" id="cmpExtra" class="form-input" oninput="fmtMoneyInput(this)" value="500.000" min="1000" step="1000">
         </div>
       </div>
     </div>
@@ -681,11 +692,138 @@ footer a{color:var(--primary);text-decoration:none;font-weight:600}
     </div>
   </section>
 
+  <!-- ===== PANEL 4: VEHÍCULO ===== -->
+  <section class="panel" id="panel-4" role="tabpanel">
+    <h2 class="panel-title"><span class="icon">🚗</span>Simulador Vehículo 5-20-30</h2>
+
+    <div class="info-box">
+      <strong>Regla 5-20-30:</strong> Plazo máx. 5 años · Cuota inicial mín. 20% · La cuota no supera el 30% de tus ingresos. Ajusta los parámetros según tu realidad.
+    </div>
+
+    <!-- Parámetros de la Regla -->
+    <div class="panel-section-title" style="font-size:.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Parámetros de la Regla</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Plazo Máximo</label>
+        <input type="number" id="veh-anos" class="form-input" value="5" min="1" max="20" step="1"
+               oninput="vehUpdatePlazo()">
+        <span class="hint" id="veh-anos-hint"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cuota Inicial Mínima</label>
+        <div class="rate-row">
+          <input type="number" id="veh-inicialPorc" class="form-input" value="20" min="0" max="100" step="1"
+                 oninput="vehCalc()">
+          <span style="display:flex;align-items:center;padding:0 .5rem;font-size:.8rem;color:var(--text-muted)">%</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Límite de Ingresos</label>
+        <div class="rate-row">
+          <input type="number" id="veh-ingresoPorc" class="form-input" value="30" min="1" max="100" step="1"
+                 oninput="vehCalc()">
+          <span style="display:flex;align-items:center;padding:0 .5rem;font-size:.8rem;color:var(--text-muted)">%</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tasa de Interés</label>
+        <div class="rate-row">
+          <input type="number" id="veh-tasa" class="form-input" value="1.21" min="0.001" step="0.01"
+                 oninput="vehUpdateTasa()">
+          <select id="veh-tasaType" class="rate-type-select form-select" onchange="vehUpdateTasa()">
+            <option value="monthly">% Mens.</option>
+            <option value="ea">% EA</option>
+            <option value="nominal">% NA</option>
+          </select>
+        </div>
+        <span class="hint" id="veh-tasa-hint"></span>
+      </div>
+    </div>
+
+    <!-- Datos Base -->
+    <div class="panel-section-title" style="font-size:.82rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">Datos Base</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Calcular a partir de:</label>
+        <select id="veh-modo" class="form-input form-select" onchange="vehModoChange()">
+          <option value="precio">Precio del Vehículo</option>
+          <option value="ingreso">Mis Ingresos Mensuales</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="veh-labelValor">Valor del Vehículo ($)</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="text" id="veh-valorEntrada" class="form-input" inputmode="numeric" value="50.000.000"
+                 oninput="vehFormatInput(this); vehCalc()">
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Results -->
+    <div class="kpi-grid" id="veh-kpis">
+      <div class="kpi-card accent-primary">
+        <div class="kpi-label">Precio Total Vehículo</div>
+        <div class="kpi-value" id="veh-resPrecio">$0</div>
+      </div>
+      <div class="kpi-card accent-gold">
+        <div class="kpi-label" id="veh-lblIngreso">Ingreso Mensual Necesario</div>
+        <div class="kpi-value" id="veh-resIngreso">$0</div>
+      </div>
+      <div class="kpi-card accent-warn">
+        <div class="kpi-label">Cuota Inicial Aportada</div>
+        <div class="kpi-value" id="veh-resInicial">$0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Monto a Financiar</div>
+        <div class="kpi-value" id="veh-resPrestamo">$0</div>
+      </div>
+      <div class="kpi-card accent-success">
+        <div class="kpi-label">Cuota Mensual (Fija)</div>
+        <div class="kpi-value" id="veh-resCuota">$0</div>
+      </div>
+      <div class="kpi-card accent-error">
+        <div class="kpi-label" id="veh-lblTotal">Total Intereses</div>
+        <div class="kpi-value" id="veh-resTotal">$0</div>
+      </div>
+    </div>
+
+    <hr class="section-sep">
+
+    <!-- Resumen educativo -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem">
+      <div class="extra-section">
+        <div class="extra-section-title">⚠️ Riesgos Financieros</div>
+        <ol style="padding-left:1.1rem;margin-top:.5rem;display:flex;flex-direction:column;gap:.5rem;font-size:.82rem;color:var(--text-muted)">
+          <li><strong style="color:var(--text)">Costo inflado y depreciación:</strong> Los intereses y seguros encarecen el auto, mientras este pierde valor comercial año tras año.</li>
+          <li><strong style="color:var(--text)">Pérdida de libertad:</strong> Atas tu dinero durante 5 a 7 años, priorizando una deuda por encima de tus metas de ahorro o inversión.</li>
+          <li><strong style="color:var(--text)">Gastos invisibles:</strong> La cuota es solo el comienzo; suma SOAT, mantenimiento, gasolina, impuestos y parqueadero.</li>
+          <li><strong style="color:var(--text)">Riesgo ante imprevistos:</strong> La deuda no se pausa. Si tus ingresos fallan, la cuota sigue exigiendo pago inmediato.</li>
+          <li><strong style="color:var(--text)">Patrimonio negativo:</strong> Por la rápida depreciación, puedes terminar debiéndole al banco más de lo que cuesta el vehículo en el mercado.</li>
+          <li><strong style="color:var(--text)">Trampa de estatus:</strong> Endeudarse por apariencia compromete tu tranquilidad económica y salud mental.</li>
+          <li><strong style="color:var(--text)">Freno de oportunidades:</strong> Una cuota alta te quita capacidad crediticia y liquidez para invertir, educarte o comprar vivienda.</li>
+        </ol>
+      </div>
+      <div class="extra-section" style="background:var(--success-hl);border-color:var(--success)">
+        <div class="extra-section-title" style="color:var(--success)">✅ Cuándo es Responsable Financiar</div>
+        <ol style="padding-left:1.1rem;margin-top:.5rem;display:flex;flex-direction:column;gap:.5rem;font-size:.82rem;color:var(--text-muted)">
+          <li><strong style="color:var(--text)">Es un activo productivo:</strong> El vehículo te genera ingresos medibles (ventas, transporte, logística).</li>
+          <li><strong style="color:var(--text)">Capacidad de pago holgada:</strong> Sumando cuota y mantenimiento, aún te sobra capital suficiente para ahorrar e invertir mensualmente.</li>
+          <li><strong style="color:var(--text)">Respaldo garantizado:</strong> Ya cuentas con un fondo de emergencias estructurado.</li>
+          <li><strong style="color:var(--text)">Aporte inicial alto:</strong> Entregar una suma fuerte al inicio reduce drásticamente los intereses y el riesgo.</li>
+          <li><strong style="color:var(--text)">Decisión racional:</strong> Eliges confiabilidad mecánica y economía de repuestos por encima del lujo innecesario.</li>
+          <li><strong style="color:var(--text)">Costo del dinero a favor:</strong> Logras una tasa de interés altamente competitiva en el mercado.</li>
+          <li><strong style="color:var(--text)">Coherencia financiera:</strong> El auto refleja tu capacidad económica real de sostenimiento, no una aspiración insostenible.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+
 </div><!-- /container -->
 
 <footer>
   <div class="container">
-    <p>© 2026 Simulador Financiero Personal ·
+    <p>© 2026 Simulador Financiero de Inversiones Aripar ·
       <a href="https://wa.me/573128816469" target="_blank" rel="noopener">WhatsApp</a> ·
       <a href="mailto:alucard8@gmail.com">Correo</a>
     </p>
@@ -780,6 +918,15 @@ function formatCOP(n){
 }
 
 function formatNum(n){return isNaN(n)?'0':Math.round(n).toLocaleString('es-CO');}
+function fmtMoneyInput(el){
+  const raw = el.value.replace(/\D/g,'');
+  el.value = raw ? parseInt(raw,10).toLocaleString('es-CO') : '';
+}
+function getMoneyVal(id){
+  const el = document.getElementById(id);
+  return parseFloat((el.value||'').replace(/\D/g,'')) || 0;
+}
+
 
 function fmtDate(d){
   return d.toLocaleDateString('es-CO',{year:'numeric',month:'short'});
@@ -860,7 +1007,7 @@ function setLoanChartType(type,btn){
 }
 
 function calculateLoan(){
-  const principal=parseFloat(document.getElementById('loanAmount').value);
+  const principal=getMoneyVal('loanAmount');
   const terms=parseInt(document.getElementById('loanTerms').value);
   const monthlyRate=getMonthlyRate('interestRate','rateType1');
   const startDate=document.getElementById('startDate').value;
@@ -947,7 +1094,7 @@ function addExtraPayment(amount=null,frequency='',startMonth=null,customFreq=nul
   div.className='payment-item';
   div.innerHTML=`
     <div class="form-group"><label class="payment-label">Monto ($)</label>
-      <input type="number" placeholder="Ej: 500000" min="0" step="1000" value="${amount||''}">
+      <input type="text" inputmode="numeric" placeholder="Ej: 500.000" value="${amount ? parseInt(amount).toLocaleString('es-CO') : ''}" oninput="fmtMoneyInput(this)">
     </div>
     <div class="form-group"><label class="payment-label">Frecuencia</label>
       <select onchange="handleFreqChange(this)">
@@ -993,7 +1140,7 @@ function addOneTime(month=null,amount=null){
       <input type="number" placeholder="Ej: 12" min="1" max="480" value="${month||''}">
     </div>
     <div class="form-group"><label class="payment-label">Monto ($)</label>
-      <input type="number" placeholder="Ej: 10000000" min="0" step="1000" value="${amount||''}">
+      <input type="text" inputmode="numeric" placeholder="Ej: 10.000.000" value="${amount ? parseInt(amount).toLocaleString('es-CO') : ''}" oninput="fmtMoneyInput(this)">
     </div>
     <div class="form-group description-input"><label class="payment-label">Descripción</label>
       <input type="text" placeholder="Liquidación, herencia...">
@@ -1026,7 +1173,7 @@ function getRecurringPaymentsForMonth(payments,month){
 }
 
 function calculateWithExtra(){
-  const principal=parseFloat(document.getElementById('loanAmount2').value);
+  const principal=getMoneyVal('loanAmount2');
   const terms=parseInt(document.getElementById('loanTerms2').value);
   const monthlyRate=getMonthlyRate('interestRate2','rateType2');
   const startDate=document.getElementById('startDate2').value;
@@ -1040,7 +1187,7 @@ function calculateWithExtra(){
     const inputs=item.querySelectorAll('input');
     const sel=item.querySelector('select');
     recurringPayments.push({
-      amount:inputs[0].value,frequency:sel.value,
+      amount:(inputs[0].value||'').replace(/\D/g,''),frequency:sel.value,
       startMonth:item.querySelector('.start-month')?.value,
       customFreq:item.querySelector('.custom-freq')?.value
     });
@@ -1051,7 +1198,7 @@ function calculateWithExtra(){
   document.querySelectorAll('#onetimeList .payment-item').forEach(item=>{
     const inputs=item.querySelectorAll('input');
     const m=parseInt(inputs[0].value);
-    const a=parseFloat(inputs[1].value)||0;
+    const a=parseFloat((inputs[1].value||'').replace(/\D/g,''))||0;
     if(m&&a)oneTimePayments[m]=(oneTimePayments[m]||0)+a;
   });
 
@@ -1147,8 +1294,8 @@ function renderExtraTable(schedule){
 // PANEL 2 — INVERSIÓN
 // =====================================================
 function calculateInvestment(){
-  let initInv=parseFloat(document.getElementById('initInv').value)||0;
-  let monthly=parseFloat(document.getElementById('monthlyInv').value)||0;
+  let initInv=getMoneyVal('initInv');
+  let monthly=getMoneyVal('monthlyInv');
   const monthlyRate=getMonthlyRate('invRate','invRateType');
   const inflation=parseFloat(document.getElementById('inflationRate').value)||0;
   const periodType=document.getElementById('invPeriodType').value;
@@ -1233,11 +1380,11 @@ function renderInvTable(schedule){
 // PANEL 3 — COMPARADOR
 // =====================================================
 function calculateComparator(){
-  const debt=parseFloat(document.getElementById('cmpDebt').value);
+  const debt=getMoneyVal('cmpDebt');
   const terms=parseInt(document.getElementById('cmpTerms').value);
   const debtRate=getMonthlyRate('cmpDebtRate','cmpDebtRateType');
   const invRate=getMonthlyRate('cmpInvRate','cmpInvRateType');
-  const extra=parseFloat(document.getElementById('cmpExtra').value);
+  const extra=getMoneyVal('cmpExtra');
 
   if(!debt||!terms||isNaN(debtRate)||isNaN(invRate)||!extra){alert('Completa todos los campos');return;}
 
@@ -1372,6 +1519,29 @@ function exportCSV(tableId,filename){
 // =====================================================
 // INIT
 // =====================================================
+
+// =====================================================
+// TAB ARROWS (global scope — called from onclick)
+// =====================================================
+function updateTabArrows(){
+  const tabsEl = document.getElementById('tabs-list');
+  const arrowL = document.getElementById('tab-arrow-left');
+  const arrowR = document.getElementById('tab-arrow-right');
+  if(!tabsEl) return;
+  const scrollable = tabsEl.scrollWidth > tabsEl.clientWidth + 4;
+  const atStart = tabsEl.scrollLeft <= 4;
+  const atEnd = tabsEl.scrollLeft + tabsEl.clientWidth >= tabsEl.scrollWidth - 4;
+  if(arrowL) arrowL.classList.toggle('hidden', !scrollable || atStart);
+  if(arrowR) arrowR.classList.toggle('hidden', !scrollable || atEnd);
+}
+
+function tabsScroll(dir){
+  const tabsEl = document.getElementById('tabs-list');
+  if(!tabsEl) return;
+  tabsEl.scrollBy({left: dir * 160, behavior: 'smooth'});
+  setTimeout(updateTabArrows, 300);
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
   const today=new Date().toISOString().split('T')[0];
   ['startDate','startDate2','invStartDate'].forEach(id=>{
@@ -1390,7 +1560,123 @@ document.addEventListener('DOMContentLoaded',()=>{
   addExtraPayment(500000,'monthly',null,null);
   addExtraPayment(3000000,'semiannual',7,null);
   addExtraPayment(6000000,'annual',12,null);
+  vehUpdatePlazo();
+  vehUpdateTasa();
+  // Tab arrows scroll — init listeners
+  const _tabsEl = document.getElementById('tabs-list');
+  if(_tabsEl){
+    _tabsEl.addEventListener('scroll', updateTabArrows);
+    _tabsEl.addEventListener('wheel', e => {
+      if(e.deltaY !== 0){ e.preventDefault(); _tabsEl.scrollLeft += e.deltaY * 1.5; setTimeout(updateTabArrows,100); }
+    }, {passive: false});
+    setTimeout(updateTabArrows, 200);
+  }
+
 });
+
+
+// =====================================================
+// PANEL 4 — VEHÍCULO
+// =====================================================
+function vehGetMonthlyRate(){
+  const v = parseFloat(document.getElementById('veh-tasa').value) / 100;
+  const t = document.getElementById('veh-tasaType').value;
+  if(t === 'ea') return Math.pow(1 + v, 1/12) - 1;
+  if(t === 'nominal') return v / 12;
+  return v;
+}
+
+function vehUpdateTasa(){
+  const raw = parseFloat(document.getElementById('veh-tasa').value);
+  const t = document.getElementById('veh-tasaType').value;
+  const hint = document.getElementById('veh-tasa-hint');
+  if(isNaN(raw)){ hint.textContent = ''; vehCalc(); return; }
+  const v = raw / 100;
+  if(t === 'monthly'){
+    const ea = (Math.pow(1 + v, 12) - 1) * 100;
+    hint.textContent = '≈ ' + ea.toFixed(2) + '% EA';
+  } else if(t === 'ea'){
+    const m = (Math.pow(1 + v, 1/12) - 1) * 100;
+    hint.textContent = '≈ ' + m.toFixed(4) + '% mensual';
+  } else {
+    const m = v / 12 * 100;
+    hint.textContent = '≈ ' + m.toFixed(4) + '% mensual';
+  }
+  vehCalc();
+}
+
+function vehUpdatePlazo(){
+  const v = parseInt(document.getElementById('veh-anos').value);
+  const hint = document.getElementById('veh-anos-hint');
+  if(isNaN(v) || v <= 0){ hint.textContent = ''; vehCalc(); return; }
+  hint.textContent = '= ' + (v * 12) + ' meses';
+  vehCalc();
+}
+
+function vehFormatInput(el){
+  const num = el.value.replace(/\D/g, '');
+  if(num !== '') el.value = new Intl.NumberFormat('es-CO').format(parseInt(num, 10));
+  else el.value = '';
+}
+
+function vehModoChange(){
+  const modo = document.getElementById('veh-modo').value;
+  const lbl = document.getElementById('veh-labelValor');
+  const lblIng = document.getElementById('veh-lblIngreso');
+  if(modo === 'precio'){
+    lbl.textContent = 'Valor del Vehículo ($)';
+    lblIng.textContent = 'Ingreso Mensual Necesario';
+  } else {
+    lbl.textContent = 'Mis Ingresos Mensuales ($)';
+    lblIng.textContent = 'Tu Ingreso Mensual';
+  }
+  vehCalc();
+}
+
+function vehCalc(){
+  const modo = document.getElementById('veh-modo').value;
+  const raw = document.getElementById('veh-valorEntrada').value.replace(/\D/g, '');
+  const valor = parseFloat(raw) || 0;
+  const anos = parseFloat(document.getElementById('veh-anos').value) || 0;
+  const inicialPorc = parseFloat(document.getElementById('veh-inicialPorc').value) || 0;
+  const ingresoPorc = parseFloat(document.getElementById('veh-ingresoPorc').value) || 0;
+  const tasaMensual = vehGetMonthlyRate();
+  const meses = anos * 12;
+
+  let precioVehiculo = 0, ingreso = 0, cuotaInicial = 0, prestamo = 0, cuotaMensual = 0, totalIntereses = 0;
+
+  const factor = tasaMensual > 0
+    ? (tasaMensual * Math.pow(1 + tasaMensual, meses)) / (Math.pow(1 + tasaMensual, meses) - 1)
+    : (meses > 0 ? 1 / meses : 0);
+
+  if(modo === 'precio'){
+    precioVehiculo = valor;
+    cuotaInicial = precioVehiculo * (inicialPorc / 100);
+    prestamo = precioVehiculo - cuotaInicial;
+    cuotaMensual = prestamo * factor;
+    ingreso = ingresoPorc > 0 ? cuotaMensual / (ingresoPorc / 100) : 0;
+  } else {
+    ingreso = valor;
+    cuotaMensual = ingreso * (ingresoPorc / 100);
+    prestamo = tasaMensual > 0
+      ? cuotaMensual * ((Math.pow(1 + tasaMensual, meses) - 1) / (tasaMensual * Math.pow(1 + tasaMensual, meses)))
+      : cuotaMensual * meses;
+    precioVehiculo = (1 - inicialPorc / 100) > 0 ? prestamo / (1 - inicialPorc / 100) : prestamo;
+    cuotaInicial = precioVehiculo - prestamo;
+  }
+
+  totalIntereses = (cuotaMensual * meses) - prestamo;
+
+  const fmt = v => formatCOP(v);
+  document.getElementById('veh-resPrecio').textContent = fmt(precioVehiculo);
+  document.getElementById('veh-resIngreso').textContent = fmt(ingreso);
+  document.getElementById('veh-resInicial').textContent = fmt(cuotaInicial);
+  document.getElementById('veh-resPrestamo').textContent = fmt(prestamo);
+  document.getElementById('veh-resCuota').textContent = fmt(cuotaMensual);
+  document.getElementById('veh-lblTotal').textContent = 'Total Intereses (' + Math.round(meses) + ' cuotas)';
+  document.getElementById('veh-resTotal').textContent = fmt(totalIntereses);
+}
+
 </script>
 </body>
 </html>
