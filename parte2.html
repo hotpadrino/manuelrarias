@@ -930,7 +930,7 @@
         });
 
         const report = `✅ ${state.tituloOficina} del día \n${f}\n\n*Parte Oficina:* ${total.map(v=>String(v).padStart(2,'0')).join('-')}\n*Fila* ${fila.map(v=>String(v).padStart(2,'0')).join('-')}\n*Novedades* ${total.map((v,idx)=>String(v-fila[idx]).padStart(2,'0')).join('-')} \n\n${detalles}`;
-        document.getElementById('report-editable').value = report;
+        document.getElementById('report-editable').value = report.trim();
         return report;
     }
 
