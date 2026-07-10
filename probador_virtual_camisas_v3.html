@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Probador Virtual — Catálogo</title>
+<style>
+  :root{
+    --bg:#0b0b0c;
+    --bg-radial-1:#1a1a1c;
+    --bg-radial-2:#0b0b0c;
+    --panel:#141416;
+    --panel-2:#1b1b1e;
+    --gold:#c9a24b;
+    --gold-soft:#e6c877;
+    --line:#2a2a2d;
+    --text:#f2ede0;
+    --text-dim:#9a9690;
+    --shadow:rgba(0,0,0,0.45);
+    --preview-bg:#1e1e20;
+    --preview-border:#262628;
+  }
+  body.theme-light{
+    --bg:#f7f4ee;
+    --bg-radial-1:#ffffff;
+    --bg-radial-2:#efe9dc;
+    --panel:#ffffff;
+    --panel-2:#f2ede2;
+    --gold:#a9822f;
+    --gold-soft:#8a651f;
+    --line:#e2dac8;
+    --text:#241f14;
+    --text-dim:#6b6252;
+    --shadow:rgba(120,105,70,0.18);
+    --preview-bg:#eae4d6;
+    --preview-border:#ddd3ba;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 600px at 50% -10%, var(--bg-radial-1) 0%, var(--bg-radial-2) 60%);
+    color:var(--text);
+    font-family:'Georgia', 'Times New Roman', serif;
+    padding:36px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    min-height:100vh;
+    transition:background .25s, color .25s;
+  }
+  .brand{
+    text-align:center;
+    margin-bottom:6px;
+  }
+  .brand .eyebrow{
+    letter-spacing:.35em;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:11px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+  }
+  h1{
+    font-size:32px;
+    letter-spacing:.06em;
+    margin:6px 0 4px;
+    color:var(--gold-soft);
+    text-transform:uppercase;
+    font-weight:600;
+  }
+  p.sub{
+    color:var(--text-dim);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:14px;
+    margin:0 0 28px;
+  }
+  .divider{
+    width:120px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    margin:0 0 30px;
+  }
+
+  .container{
+    display:flex;
+    flex-wrap:wrap;
+    gap:26px;
+    justify-content:center;
+    max-width:1180px;
+    width:100%;
+  }
+
+  .canvas-area{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:20px;
+    border-radius:4px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    box-shadow:0 20px 50px var(--shadow);
+    transition:background .25s, border-color .25s;
+  }
+  .preview-box{
+    position:relative;
+    width:520px;
+    max-width:80vw;
+    height:660px;
+    background:var(--preview-bg);
+    border-radius:2px;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border:1px solid var(--preview-border);
+    transition:background .25s, border-color .25s;
+  }
+  #placeholder-text{
+    position:absolute;z-index:1;color:var(--text-dim);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:13px;letter-spacing:.05em;
+    text-align:center;
+    padding:0 30px;
+  }
+  .preview-box img#user-photo{
+    width:100%;height:100%;object-fit:cover;
+    position:absolute;top:0;left:0;z-index:1;
+    display:none;
+  }
+  .shirt-overlay{
+    position:absolute;
+    z-index:3;
+    width:260px;
+    left:130px;
+    top:340px;
+    pointer-events:none;
+    transform-origin:50% 15%;
+  }
+  .frame-tag{
+    position:absolute;
+    top:10px;left:10px;
+    background:rgba(0,0,0,0.55);
+    border:1px solid var(--gold);
+    color:var(--gold-soft);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:11px;
+    letter-spacing:.1em;
+    padding:4px 9px;
+    z-index:5;
+    border-radius:2px;
+  }
+
+  /* Crop overlay */
+  .crop-box{
+    position:absolute;
+    border:2px dashed var(--gold-soft);
+    background:rgba(201,162,75,0.08);
+    z-index:10;
+    cursor:move;
+    display:none;
+  }
+  .crop-handle{
+    position:absolute;
+    width:14px;height:14px;
+    background:var(--gold-soft);
+    border:1px solid #000;
+    z-index:11;
+  }
+  .crop-handle.nw{top:-7px;left:-7px;cursor:nwse-resize;}
+  .crop-handle.ne{top:-7px;right:-7px;cursor:nesw-resize;}
+  .crop-handle.sw{bottom:-7px;left:-7px;cursor:nesw-resize;}
+  .crop-handle.se{bottom:-7px;right:-7px;cursor:nwse-resize;}
+
+  .control-panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    padding:26px 26px 30px;
+    border-radius:4px;
+    flex:1;
+    min-width:300px;
+    max-width:420px;
+    box-shadow:0 20px 50px var(--shadow);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    transition:background .25s, border-color .25s;
+  }
+  .step-label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:11px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    margin-bottom:12px;
+    font-weight:600;
+  }
+  .step-label .num{
+    width:20px;height:20px;
+    border:1px solid var(--gold);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;
+    color:var(--gold-soft);
+  }
+  .control-group{
+    margin-bottom:24px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .control-group:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+
+  input[type="file"]{
+    width:100%;
+    padding:12px;
+    background:var(--panel-2);
+    border-radius:3px;
+    border:1px dashed #444;
+    color:var(--text-dim);
+    font-size:12px;
+    cursor:pointer;
+  }
+  .btn-row{display:flex;gap:8px;margin-top:10px;}
+  button.ghost{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold-soft);
+    padding:9px 6px;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    border-radius:2px;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  button.ghost:hover{background:var(--gold);color:#0b0b0c;}
+  button.ghost:disabled{opacity:.35;cursor:not-allowed;}
+  button.ghost:disabled:hover{background:transparent;color:var(--gold-soft);}
+
+  label.mini{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--text-dim);
+    margin:12px 0 4px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+  label.mini span.val{color:var(--gold-soft);}
+  input[type="range"]{
+    width:100%;
+    -webkit-appearance:none;
+    height:2px;
+    background:#3a3a3d;
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:13px;height:13px;
+    border-radius:50%;
+    background:var(--gold-soft);
+    cursor:pointer;
+    border:2px solid #0b0b0c;
+  }
+
+  .color-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+  }
+  .color-btn{
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    padding:10px 4px 8px;
+    border-radius:2px;
+    cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    transition:all .15s;
+    position:relative;
+  }
+  .color-btn:hover{border-color:var(--gold);}
+  .color-btn.active{
+    border-color:var(--gold);
+    box-shadow:0 0 0 1px var(--gold) inset;
+    background:#22201a;
+  }
+  .color-btn .num{
+    position:absolute;top:3px;right:5px;
+    font-size:9px;color:var(--text-dim);
+  }
+  .color-preview{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.2);
+    box-shadow:inset 0 -3px 4px rgba(0,0,0,0.35), inset 0 2px 3px rgba(255,255,255,0.25);
+  }
+  .color-btn span.name{
+    font-size:9.5px;
+    color:var(--text-dim);
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    text-align:center;
+  }
+  .color-btn.active span.name{color:var(--gold-soft);}
+
+  body{ padding-bottom:76px; }
+
+  .site-footer{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    z-index:100;
+    background:var(--panel);
+    border-top:1px solid var(--gold);
+    padding:12px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    flex-wrap:wrap;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    box-shadow:0 -10px 30px var(--shadow);
+    transition:background .25s, border-color .25s;
+  }
+  .site-footer .brand-name{
+    font-family:'Georgia', serif;
+    letter-spacing:.08em;
+    color:var(--gold-soft);
+    font-size:14px;
+    text-transform:uppercase;
+  }
+  .site-footer .sep{
+    width:1px;height:14px;
+    background:var(--line);
+  }
+  .site-footer a{
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:12.5px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:color .15s;
+  }
+  .site-footer a:hover{ color:var(--gold-soft); }
+  .site-footer a svg{ width:14px;height:14px;fill:currentColor; }
+
+  @media (max-width:520px){
+    .site-footer{ gap:14px; padding:10px 12px; }
+    .site-footer .brand-name{ font-size:12px; }
+    .site-footer a{ font-size:11px; }
+  }
+
+  .theme-toggle{
+    position:fixed;
+    top:20px;right:20px;
+    z-index:101;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--panel);
+    border:1px solid var(--gold);
+    border-radius:20px;
+    padding:6px 14px 6px 6px;
+    cursor:pointer;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    box-shadow:0 6px 18px var(--shadow);
+    transition:background .25s, border-color .25s;
+  }
+  .theme-toggle .icon{
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    color:#0b0b0c;
+    font-size:14px;
+    transition:transform .3s;
+  }
+  .theme-toggle:hover .icon{ transform:rotate(20deg); }
+
+  @media (max-width:520px){
+    .theme-toggle{ top:12px; right:12px; padding:5px 10px 5px 5px; }
+    .theme-toggle .label{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeToggle" type="button">
+    <span class="icon" id="themeIcon">☾</span>
+    <span class="label" id="themeLabel">Modo oscuro</span>
+  </button>
+
+  <div class="brand">
+    <div class="eyebrow">Colección Camisas</div>
+  </div>
+  <h1>Probador Virtual</h1>
+  <p class="sub">Sube tu foto, ajusta la prenda a tu cuerpo y descubre tu color.</p>
+  <div class="divider"></div>
+
+  <div class="container">
+    <!-- Visualizador -->
+    <div class="canvas-area">
+      <div class="preview-box" id="previewBox">
+        <span class="frame-tag" id="colorTag" style="display:none;">VINOTINTO</span>
+        <p id="placeholder-text">Sube una foto para comenzar<br>tu prueba de estilo</p>
+        <img id="user-photo" src="" alt="">
+
+        <div class="crop-box" id="cropBox">
+          <div class="crop-handle nw"></div>
+          <div class="crop-handle ne"></div>
+          <div class="crop-handle sw"></div>
+          <div class="crop-handle se"></div>
+        </div>
+
+        <svg id="shirt" class="shirt-overlay" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+          <defs>
+            <linearGradient id="lightSheen" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.55"/>
+              <stop offset="28%" stop-color="#ffffff" stop-opacity="0.12"/>
+              <stop offset="55%" stop-color="#ffffff" stop-opacity="0"/>
+              <stop offset="80%" stop-color="#000000" stop-opacity="0.18"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity="0.38"/>
+            </linearGradient>
+            <linearGradient id="foldShade" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+              <stop offset="46%" stop-color="#000000" stop-opacity="0"/>
+              <stop offset="50%" stop-color="#000000" stop-opacity="0.10"/>
+              <stop offset="54%" stop-color="#000000" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="collarInner" cx="50%" cy="0%" r="80%">
+              <stop offset="0%" stop-color="#000000" stop-opacity="0.45"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- Cuerpo base de la camisa -->
+          <g id="shirtBody" fill="#6B1724">
+            <!-- Manga izquierda -->
+            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 Z"/>
+            <!-- Manga derecha -->
+            <path d="M 205,55 L 255,60 L 285,110 L 292,175 L 265,185 L 245,130 L 222,95 Z"/>
+            <!-- Torso -->
+            <path d="M 95,55 L 78,95 L 68,180 L 60,340 L 75,395 L 225,395 L 240,340 L 232,180 L 222,95 L 205,55 L 150,90 Z"/>
+          </g>
+
+          <!-- Costuras / pliegues sutiles -->
+          <g stroke="rgba(0,0,0,0.22)" stroke-width="1.4" fill="none">
+            <path d="M 95,55 L 78,95 L 68,180 L 60,340"/>
+            <path d="M 205,55 L 222,95 L 232,180 L 240,340"/>
+            <path d="M 78,95 L 55,130"/>
+            <path d="M 222,95 L 245,130"/>
+          </g>
+
+          <!-- Solapas del cuello -->
+          <path d="M 95,55 L 128,88 L 150,90 L 150,58 Z" fill="rgba(0,0,0,0.20)"/>
+          <path d="M 205,55 L 172,88 L 150,90 L 150,58 Z" fill="rgba(0,0,0,0.20)"/>
+          <path d="M 100,55 L 130,84 L 150,86 L 150,60 Z" fill="rgba(255,255,255,0.08)"/>
+
+          <!-- Sombra bajo el cuello -->
+          <path d="M 95,55 L 150,90 L 205,55 L 150,72 Z" fill="url(#collarInner)"/>
+
+          <!-- Bolsillo -->
+          <path d="M 88,140 L 118,140 L 116,168 L 90,168 Z" fill="rgba(0,0,0,0.14)" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
+
+          <!-- Botonadura -->
+          <line x1="150" y1="92" x2="150" y2="392" stroke="rgba(0,0,0,0.25)" stroke-width="1.5"/>
+          <circle cx="150" cy="125" r="3" fill="rgba(0,0,0,0.3)"/>
+          <circle cx="150" cy="170" r="3" fill="rgba(0,0,0,0.3)"/>
+          <circle cx="150" cy="215" r="3" fill="rgba(0,0,0,0.3)"/>
+          <circle cx="150" cy="260" r="3" fill="rgba(0,0,0,0.3)"/>
+          <circle cx="150" cy="305" r="3" fill="rgba(0,0,0,0.3)"/>
+          <circle cx="150" cy="350" r="3" fill="rgba(0,0,0,0.3)"/>
+
+          <!-- Pliegues horizontales sutiles (tela) -->
+          <path d="M 65,220 Q 150,232 235,220 L 235,226 Q 150,238 65,226 Z" fill="url(#foldShade)"/>
+          <path d="M 62,300 Q 150,312 238,300 L 238,306 Q 150,318 62,306 Z" fill="url(#foldShade)"/>
+
+          <!-- Luz natural: capa de brillo superior-izquierdo a sombra inferior-derecho -->
+          <g style="mix-blend-mode:soft-light;">
+            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 Z" fill="url(#lightSheen)"/>
+            <path d="M 205,55 L 255,60 L 285,110 L 292,175 L 265,185 L 245,130 L 222,95 Z" fill="url(#lightSheen)"/>
+            <path d="M 95,55 L 78,95 L 68,180 L 60,340 L 75,395 L 225,395 L 240,340 L 232,180 L 222,95 L 205,55 L 150,90 Z" fill="url(#lightSheen)"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="control-panel">
+
+      <div class="control-group">
+        <div class="step-label"><span class="num">1</span> Carga tu foto</div>
+        <input type="file" id="upload" accept="image/*">
+        <div class="btn-row">
+          <button class="ghost" id="startCropBtn" disabled>Recortar foto</button>
+          <button class="ghost" id="applyCropBtn" disabled style="display:none;">Aplicar recorte</button>
+          <button class="ghost" id="cancelCropBtn" disabled style="display:none;">Cancelar</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="step-label"><span class="num">2</span> Ajusta la camisa</div>
+
+        <label class="mini">Tamaño <span class="val" id="scaleVal">260</span></label>
+        <input type="range" id="scale" min="120" max="500" value="260">
+
+        <label class="mini">Mover lateral (X) <span class="val" id="moveXVal">130</span></label>
+        <input type="range" id="moveX" min="-100" max="400" value="130">
+
+        <label class="mini">Mover vertical (Y) <span class="val" id="moveYVal">340</span></label>
+        <input type="range" id="moveY" min="0" max="550" value="340">
+
+        <label class="mini">Rotación <span class="val" id="rotateVal">0°</span></label>
+        <input type="range" id="rotate" min="-25" max="25" value="0">
+
+        <label class="mini">Perspectiva (inclinación) <span class="val" id="skewVal">0°</span></label>
+        <input type="range" id="skew" min="-20" max="20" value="0">
+      </div>
+
+      <div class="control-group">
+        <div class="step-label"><span class="num">3</span> Elige tu color</div>
+        <div class="color-grid" id="colorGrid"></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  const catalogColors = [
+    { id: 1, name: "Arena", hex: "#EADCC3" },
+    { id: 2, name: "Lila", hex: "#9477C1" },
+    { id: 3, name: "Vinotinto", hex: "#6C1D2A" },
+    { id: 4, name: "Cobre", hex: "#A68D77" },
+    { id: 5, name: "Palo de Rosa", hex: "#E2939E" },
+    { id: 6, name: "Blanco", hex: "#FFFFFF" },
+    { id: 7, name: "Beige", hex: "#D6C3AF" },
+    { id: 8, name: "Azul Oscuro", hex: "#1A283C" },
+    { id: 9, name: "Rosado", hex: "#F3BCC4" },
+    { id: 10, name: "Azul Celeste", hex: "#A9C4E2" },
+    { id: 11, name: "Negro", hex: "#1C1C1C" },
+    { id: 12, name: "Azul Rey", hex: "#1047A1" },
+    { id: 13, name: "Rojo", hex: "#D31424" }
+  ];
+
+  const uploadInput = document.getElementById('upload');
+  const userPhoto = document.getElementById('user-photo');
+  const shirtSvg = document.getElementById('shirt');
+  const shirtBody = document.getElementById('shirtBody');
+  const placeholderText = document.getElementById('placeholder-text');
+  const colorGrid = document.getElementById('colorGrid');
+  const colorTag = document.getElementById('colorTag');
+  const previewBox = document.getElementById('previewBox');
+
+  const scaleSlider = document.getElementById('scale');
+  const moveXSlider = document.getElementById('moveX');
+  const moveYSlider = document.getElementById('moveY');
+  const rotateSlider = document.getElementById('rotate');
+  const skewSlider = document.getElementById('skew');
+
+  const scaleVal = document.getElementById('scaleVal');
+  const moveXVal = document.getElementById('moveXVal');
+  const moveYVal = document.getElementById('moveYVal');
+  const rotateVal = document.getElementById('rotateVal');
+  const skewVal = document.getElementById('skewVal');
+
+  // Render color swatches
+  catalogColors.forEach(color => {
+    const btn = document.createElement('button');
+    btn.className = 'color-btn';
+    btn.innerHTML = `
+      <span class="num">${color.id}</span>
+      <div class="color-preview" style="background-color:${color.hex}"></div>
+      <span class="name">${color.name}</span>
+    `;
+    btn.onclick = () => {
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      shirtBody.setAttribute('fill', color.hex);
+      colorTag.textContent = color.name.toUpperCase();
+      colorTag.style.display = 'block';
+    };
+    colorGrid.appendChild(btn);
+  });
+
+  // Upload photo
+  uploadInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        userPhoto.src = event.target.result;
+        userPhoto.style.display = 'block';
+        shirtSvg.style.display = 'block';
+        placeholderText.style.display = 'none';
+        startCropBtn.disabled = false;
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Shirt transform
+  function updateShirtTransform() {
+    const scale = scaleSlider.value;
+    const x = moveXSlider.value;
+    const y = moveYSlider.value;
+    const rot = rotateSlider.value;
+    const skew = skewSlider.value;
+    shirtSvg.style.width = scale + 'px';
+    shirtSvg.style.left = x + 'px';
+    shirtSvg.style.top = y + 'px';
+    shirtSvg.style.transform = `rotate(${rot}deg) skewX(${skew}deg)`;
+    scaleVal.textContent = scale;
+    moveXVal.textContent = x;
+    moveYVal.textContent = y;
+    rotateVal.textContent = rot + '°';
+    skewVal.textContent = skew + '°';
+  }
+  [scaleSlider, moveXSlider, moveYSlider, rotateSlider, skewSlider].forEach(s => {
+    s.addEventListener('input', updateShirtTransform);
+  });
+  updateShirtTransform();
+
+  /* ---------------- Crop tool ---------------- */
+  const cropBox = document.getElementById('cropBox');
+  const startCropBtn = document.getElementById('startCropBtn');
+  const applyCropBtn = document.getElementById('applyCropBtn');
+  const cancelCropBtn = document.getElementById('cancelCropBtn');
+  let cropState = null;
+
+  function boxRect(){
+    return { x:parseFloat(cropBox.style.left), y:parseFloat(cropBox.style.top),
+             w:parseFloat(cropBox.style.width), h:parseFloat(cropBox.style.height) };
+  }
+
+  startCropBtn.addEventListener('click', () => {
+    const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
+    const w = pbW*0.7, h = pbH*0.7;
+    cropBox.style.left = ((pbW-w)/2)+'px';
+    cropBox.style.top = ((pbH-h)/2)+'px';
+    cropBox.style.width = w+'px';
+    cropBox.style.height = h+'px';
+    cropBox.style.display = 'block';
+    shirtSvg.style.visibility = 'hidden';
+    applyCropBtn.style.display = 'inline-block';
+    cancelCropBtn.style.display = 'inline-block';
+    applyCropBtn.disabled = false;
+    cancelCropBtn.disabled = false;
+    startCropBtn.style.display = 'none';
+  });
+
+  cancelCropBtn.addEventListener('click', () => {
+    cropBox.style.display = 'none';
+    shirtSvg.style.visibility = 'visible';
+    applyCropBtn.style.display = 'none';
+    cancelCropBtn.style.display = 'none';
+    startCropBtn.style.display = 'inline-block';
+  });
+
+  applyCropBtn.addEventListener('click', () => {
+    const r = boxRect();
+    const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
+    const img = new Image();
+    img.onload = () => {
+      // map preview box coords -> natural image coords (object-fit: cover math)
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = pbW / pbH;
+      let drawW, drawH, offX, offY;
+      if (imgRatio > boxRatio) {
+        drawH = pbH; drawW = pbH * imgRatio;
+        offX = (pbW - drawW) / 2; offY = 0;
+      } else {
+        drawW = pbW; drawH = pbW / imgRatio;
+        offX = 0; offY = (pbH - drawH) / 2;
+      }
+      const scaleFactor = img.naturalWidth / drawW;
+      const sx = (r.x - offX) * scaleFactor;
+      const sy = (r.y - offY) * scaleFactor;
+      const sw = r.w * scaleFactor;
+      const sh = r.h * scaleFactor;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = sw; canvas.height = sh;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      userPhoto.src = canvas.toDataURL('image/png');
+
+      cropBox.style.display = 'none';
+      shirtSvg.style.visibility = 'visible';
+      applyCropBtn.style.display = 'none';
+      cancelCropBtn.style.display = 'none';
+      startCropBtn.style.display = 'inline-block';
+    };
+    img.src = userPhoto.src;
+  });
+
+  // Dragging / resizing crop box
+  function makeDraggable(el, onMove){
+    let dragging = false, startX, startY, orig;
+    el.addEventListener('mousedown', e => {
+      dragging = true; startX = e.clientX; startY = e.clientY;
+      orig = boxRect();
+      e.stopPropagation(); e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      onMove(e.clientX-startX, e.clientY-startY, orig);
+    });
+    window.addEventListener('mouseup', () => dragging=false);
+  }
+
+  makeDraggable(cropBox, (dx,dy,orig) => {
+    const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
+    let x = orig.x+dx, y = orig.y+dy;
+    x = Math.max(0, Math.min(pbW-orig.w, x));
+    y = Math.max(0, Math.min(pbH-orig.h, y));
+    cropBox.style.left = x+'px';
+    cropBox.style.top = y+'px';
+  });
+
+  document.querySelectorAll('.crop-handle').forEach(handle => {
+    makeDraggable(handle, (dx,dy,orig) => {
+      const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
+      let {x,y,w,h} = orig;
+      const cls = handle.classList;
+      if(cls.contains('se')){ w=Math.max(40,orig.w+dx); h=Math.max(40,orig.h+dy); }
+      if(cls.contains('sw')){ w=Math.max(40,orig.w-dx); x=orig.x+dx; h=Math.max(40,orig.h+dy); }
+      if(cls.contains('ne')){ w=Math.max(40,orig.w+dx); h=Math.max(40,orig.h-dy); y=orig.y+dy; }
+      if(cls.contains('nw')){ w=Math.max(40,orig.w-dx); x=orig.x+dx; h=Math.max(40,orig.h-dy); y=orig.y+dy; }
+      x = Math.max(0, Math.min(pbW-20, x));
+      y = Math.max(0, Math.min(pbH-20, y));
+      w = Math.min(w, pbW-x);
+      h = Math.min(h, pbH-y);
+      cropBox.style.left=x+'px'; cropBox.style.top=y+'px';
+      cropBox.style.width=w+'px'; cropBox.style.height=h+'px';
+    });
+  });
+  /* ---------------- Tema claro / oscuro ---------------- */
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const themeLabel = document.getElementById('themeLabel');
+
+  function setTheme(light){
+    document.body.classList.toggle('theme-light', light);
+    themeIcon.textContent = light ? '☀' : '☾';
+    themeLabel.textContent = light ? 'Modo claro' : 'Modo oscuro';
+  }
+
+  let isLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  setTheme(isLight);
+
+  themeToggle.addEventListener('click', () => {
+    isLight = !isLight;
+    setTheme(isLight);
+  });
+</script>
+
+  <footer class="site-footer">
+    <span class="brand-name">Inversiones Aripar</span>
+    <span class="sep"></span>
+    <a href="mailto:alucard8@gmail.com">
+      <svg viewBox="0 0 24 24"><path d="M2 4h20v16H2V4zm2 2v.01L12 12l8-5.99V6H4zm16 12V8.24l-8 6-8-6V18h16z"/></svg>
+      alucard8@gmail.com
+    </a>
+    <span class="sep"></span>
+    <a href="https://wa.me/573128816469" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.06-1.33A10 10 0 1 0 12 2zm5.6 14.3c-.24.68-1.2 1.28-1.98 1.44-.53.1-1.22.19-3.6-.77-3.02-1.25-4.98-4.29-5.13-4.49-.15-.2-1.23-1.64-1.23-3.13 0-1.49.78-2.22 1.06-2.52.28-.3.61-.38.82-.38l.58.01c.19 0 .43-.07.68.52.24.6.83 2.06.9 2.21.07.15.12.33.02.53-.1.2-.15.33-.3.5-.15.18-.32.4-.46.53-.15.15-.31.31-.13.61.18.3.8 1.32 1.71 2.14 1.18 1.05 2.17 1.38 2.47 1.53.3.15.48.13.66-.08.18-.2.76-.88.96-1.18.2-.3.4-.25.68-.15.28.1 1.77.84 2.07.99.3.15.5.23.57.36.08.13.08.75-.16 1.43z"/></svg>
+      WhatsApp 312 881 6469
+    </a>
+  </footer>
+</body>
+</html>
