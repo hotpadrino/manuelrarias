@@ -111,6 +111,7 @@
     border:1px solid var(--preview-border);
     transition:background .25s, border-color .25s;
     cursor:pointer;
+    touch-action:none;
   }
   #placeholder-text{
     position:absolute;z-index:1;color:var(--text-dim);
@@ -897,6 +898,54 @@
     const newScale = clampScale(parseFloat(scaleSlider.value) - e.deltaY * 0.5);
     scaleSlider.value = newScale;
     updateShirtTransform();
+  }, { passive: false });
+
+  /* -------- Pellizco (2 dedos) o Ctrl+rueda sobre la foto original: controla el zoom -------- */
+  function clampZoom(v){
+    return Math.max(parseFloat(zoomSlider.min), Math.min(parseFloat(zoomSlider.max), v));
+  }
+
+  const photoPointers = new Map();
+  let photoPinchState = null;
+
+  previewBox.addEventListener('pointerdown', (e) => {
+    if (!hasPhoto) return;
+    photoPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (photoPointers.size === 2) {
+      const pts = [...photoPointers.values()];
+      photoPinchState = {
+        startDist: getDistance(pts[0], pts[1]),
+        startZoom: parseFloat(zoomSlider.value)
+      };
+    }
+  });
+
+  previewBox.addEventListener('pointermove', (e) => {
+    if (!photoPointers.has(e.pointerId)) return;
+    photoPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (photoPointers.size >= 2 && photoPinchState) {
+      const pts = [...photoPointers.values()];
+      const dist = getDistance(pts[0], pts[1]);
+      if (dist > 0) {
+        zoomSlider.value = clampZoom(photoPinchState.startZoom * (dist / photoPinchState.startDist));
+        applyPhotoZoom();
+      }
+    }
+  });
+
+  function endPhotoPointer(e){
+    photoPointers.delete(e.pointerId);
+    if (photoPointers.size < 2) photoPinchState = null;
+  }
+  previewBox.addEventListener('pointerup', endPhotoPointer);
+  previewBox.addEventListener('pointercancel', endPhotoPointer);
+  previewBox.addEventListener('pointerleave', endPhotoPointer);
+
+  previewBox.addEventListener('wheel', (e) => {
+    if (!hasPhoto || !e.ctrlKey) return;
+    e.preventDefault();
+    zoomSlider.value = clampZoom(parseFloat(zoomSlider.value) - e.deltaY * 0.3);
+    applyPhotoZoom();
   }, { passive: false });
 
 
