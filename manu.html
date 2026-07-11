@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjeta de Presentación - Manuel Arias</title>
+    <style>
+        :root {
+            --brand-color: #628AF8;
+            --brand-dark: #3467F5;
+            --text-main: #1A202C;
+            --text-muted: #718096;
+            --bg-canvas: #EDF2F7;
+            --card-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 10px 100px 10px; /* Margen extra inferior para que el botón flotante fijo no estorbe */
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Lienzo interactivo del fondo */
+        #bg-canvas-interactive {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: all;
+        }
+
+        .card-wrapper {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(98, 138, 248, 0.15), 0 1px 10px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2; /* Se posiciona encima del canvas */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+        }
+
+        .header-viewport {
+            width: 100%;
+            position: relative;
+            background-color: #f7fafc;
+            line-height: 0;
+        }
+
+        .profile-photo {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .wave-separator {
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            z-index: 2;
+            line-height: 0;
+        }
+
+        .wave-separator svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .logo-badge {
+            position: absolute;
+            bottom: 12%;
+            right: 6%;
+            width: 18%;
+            max-width: 75px;
+            aspect-ratio: 1;
+            background: #ffffff;
+            border-radius: 50%;
+            padding: 2%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .identity-section {
+            padding: 20px 24px 12px 24px;
+            border-left: 3px solid var(--brand-color);
+            margin: 15px 24px 0 24px;
+        }
+
+        .full-name {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .job-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .tags-skills {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--brand-color);
+            margin-bottom: 4px;
+        }
+
+        .company-name {
+            font-size: 14px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .links-body {
+            padding: 12px 24px 24px 24px;
+        }
+
+        .links-list {
+            list-style: none;
+        }
+
+        .links-list li {
+            margin-bottom: 12px;
+        }
+
+        .link-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            background-color: rgba(247, 250, 252, 0.8);
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .link-row:hover {
+            background-color: rgba(237, 242, 247, 0.9);
+            border-color: var(--brand-color);
+            transform: translateY(-1px);
+        }
+
+        .icon-circle {
+            width: 38px;
+            height: 38px;
+            background-color: var(--brand-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .icon-circle svg {
+            width: 18px;
+            height: 18px;
+            fill: #FFFFFF;
+        }
+
+        .link-label {
+            font-size: 15px;
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* BOTÓN FLOTANTE GLOBAL FIJO EN EL VIEWPORT */
+        .global-floating-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(237,242,247,1) 75%, rgba(237,242,247,0));
+            padding: 24px 20px;
+            z-index: 999; /* Máxima jerarquía visual */
+            display: flex;
+            justify-content: center;
+            pointer-events: none; /* Evita bloquear interacciones de fondo fuera del botón */
+        }
+
+        .vcf-download-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 420px;
+            background-color: var(--brand-color);
+            color: #FFFFFF;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 25px rgba(98, 138, 248, 0.4);
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            pointer-events: auto; /* Reactiva clicks en el botón */
+        }
+
+        .vcf-download-btn:hover {
+            background-color: var(--brand-dark);
+            box-shadow: 0 12px 28px rgba(98, 138, 248, 0.5);
+        }
+
+        .vcf-download-btn:active {
+            transform: scale(0.98);
+        }
+
+        .vcf-download-btn svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            fill: currentcolor;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Interactivo del Fondo Estilo Red Neural -->
+    <canvas id="bg-canvas-interactive"></canvas>
+
+    <!-- Contenedor de la Tarjeta -->
+    <div class="card-wrapper">
+        <div class="header-viewport">
+            <img class="profile-photo" alt="Manuel Arias" src="https://cdn.hihello.me/o/96031f33-21af-4af4-9ead-a07f153a1241.png">
+            
+            <div class="wave-separator">
+                <svg viewBox="0 0 246 57" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMax meet">
+                    <path d="M 214.7168,6.1113281 C 195.65271,5.9023124 172.37742,11.948182 137.87305,32.529297 110.16613,49.05604 86.980345,56.862784 65.015625,57 H 65 v 1 H 246 V 11.453125 C 236.0775,8.6129313 226.15525,6.2367376 214.7168,6.1113281 Z" fill="white"></path>
+                    <path d="M 0,35.773438 V 58 H 65 L 64.97852,57 C 43.192081,57.127508 22.605139,49.707997 0,35.773438 Z" fill="white"></path>
+                    <path d="m 0,16.7221 v 19.052 C 45.4067,63.7643 82.6667,65.4583 137.873,32.5286 193.08,-0.401184 219.54,3.87965 246,11.4535 V 6.51403 C 185.24,-16.8661 135.913,29.331 97.6933,40.8564 59.4733,52.3818 33.6467,44.1494 0,16.7221 Z" fill="#628AF8" opacity="0.3"></path>
+                </svg>
+            </div>
+
+            <div class="logo-badge">
+                <img alt="Soluciones Aeronáuticas" src="https://cdn.hihello.me/v/38e6abe3-7765-41f1-86b4-b084a619b0c4.png-small-preserve-ratio">
+            </div>
+        </div>
+
+        <div class="identity-section">
+            <h1 class="full-name">Manuel Arias</h1>
+            <div class="job-title">Ingeniero Electrónico</div>
+            <div class="tags-skills">Programador, Inteligencia Artificial, Diseño Web</div>
+            <div class="company-name">Soluciones Aeronáuticas</div>
+        </div>
+
+        <div class="links-body">
+            <ul class="links-list">
+                
+                <li>
+                    <a href="mailto:alucard8@gmail.com" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 20 20"><path d="M16.0708 4H3.56342C2.70354 4 2.00782 4.70354 2.00782 5.56342L2 14.944C2 15.8038 2.70354 16.5074 3.56342 16.5074H16.0708C16.9307 16.5074 17.6342 15.8038 17.6342 14.944V5.56342C17.6342 4.70354 16.9307 4 16.0708 4ZM15.7581 7.32227L10.2314 10.7774C9.98127 10.9338 9.65295 10.9338 9.4028 10.7774L3.87611 7.32227C3.68068 7.1972 3.56342 6.98614 3.56342 6.75944C3.56342 6.23569 4.13407 5.92301 4.57965 6.19661L9.81711 9.47198L15.0546 6.19661C15.5001 5.92301 16.0708 6.23569 16.0708 6.75944C16.0708 6.98614 15.9535 7.1972 15.7581 7.32227Z"/></svg>
+                        </span>
+                        <span class="link-label">alucard8@gmail.com</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://wa.me/+573128816469" target="_blank" rel="noopener noreferrer" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 24 24"><path d="M16.75 13.96C17 14.09 17.16 14.16 17.21 14.26C17.27 14.37 17.25 14.87 17 15.44C16.8 16 15.76 16.54 15.3 16.56C14.84 16.58 14.83 16.92 12.34 15.83C9.85 14.74 8.35 12.08 8.23 11.91C8.11 11.74 7.27 10.53 7.31 9.3C7.36 8.08 8 7.5 8.26 7.26C8.5 7 8.77 6.97 8.94 7H9.41C9.56 7 9.77 6.94 9.96 7.45L10.65 9.32C10.71 9.45 10.75 9.6 10.66 9.76L10.39 10.17L10 10.59C9.88 10.71 9.74 10.84 9.88 11.09C10 11.35 10.5 12.18 11.2 12.87C12.11 13.75 12.91 14.04 13.15 14.17C13.39 14.31 13.54 14.29 13.69 14.13L14.5 13.19C14.69 12.94 14.85 13 15.08 13.08L16.75 13.96ZM12 2C13.3132 2 14.6136 2.25866 15.8268 2.7612C17.0401 3.26375 18.1425 4.00035 19.0711 4.92893C19.9997 5.85752 20.7362 6.95991 21.2388 8.17317C21.7413 9.38642 22 10.6868 22 12C22 14.6522 20.9464 17.1957 19.0711 19.0711C17.1957 20.9464 14.6522 22 12 22C10.03 22 8.2 21.43 6.65 20.45L2 22L3.55 17.35C2.57 15.8 2 13.97 2 12C2 9.34784 3.05357 6.8043 4.92893 4.92893C6.8043 3.05357 9.34784 2 12 2V2ZM12 4C9.87827 4 7.84344 4.84285 6.34315 6.34315C4.84285 7.84344 4 9.87827 4 12C4 13.72 4.54 15.31 5.46 16.61L4.5 19.5L7.39 18.54C8.69 19.46 10.28 20 12 20C14.1217 20 16.1566 19.1571 17.6569 17.6569C19.1571 16.1566 20 14.1217 20 12C20 9.87827 19.1571 7.84344 17.6569 6.34315C16.1566 4.84285 14.1217 4 12 4V4Z"/></svg>
+                        </span>
+                        <span class="link-label">+57 312 8816469</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://www.linkedin.com/in/manuel-arias-6a292962/" target="_blank" rel="noopener noreferrer" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 24 24"><path d="M21 21H17V14.25C17 13.19 15.81 12.31 14.75 12.31C13.69 12.31 13 13.19 13 14.25V21H9V9H13V11C13.66 9.93 15.36 9.24 16.5 9.24C19 9.24 21 11.28 21 13.75V21ZM7 21H3V9H7V21ZM5 3C5.53043 3 6.03914 3.21071 6.41421 3.58579C6.78929 3.96086 7 4.46957 7 5C7 5.53043 6.78929 6.03914 6.41421 6.41421C6.03914 6.78929 5.53043 7 5 7C4.46957 7 3.96086 6.78929 3.58579 6.41421C3.21071 6.03914 3 5.53043 3 5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3V3Z"/></svg>
+                        </span>
+                        <span class="link-label">Contacto LinkedIn</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://www.airbnb.com.co/users/show/1144128" target="_blank" rel="noopener noreferrer" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18L2.01 6C2.01 4.9 2.9 4 4 4ZM4.00087 18H15.0009V14H4.00087V18ZM15.0009 13H4.00087V9H15.0009V13ZM15.9996 18H19.9996V9H15.9996V18Z"/></svg>
+                        </span>
+                        <span class="link-label">Superhost Airbnb</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://hotpadrino.github.io/manuelrarias/" target="_blank" rel="noopener noreferrer" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 24 24"><path d="M13.3297 4.02025C15.2265 2.12345 18.3018 2.12345 20.1986 4.02025C22.0954 5.91705 22.0954 8.99237 20.1986 10.8892L16.9851 14.1027C15.0883 15.9995 12.013 15.9995 10.1162 14.1027C9.72563 13.7122 9.72563 13.079 10.1162 12.6885C10.5067 12.298 11.1398 12.298 11.5304 12.6885C12.6461 13.8043 14.4551 13.8043 15.5709 12.6885L18.7844 9.47496C19.9002 8.35921 19.9002 6.55021 18.7844 5.43446C17.6687 4.31871 15.8597 4.31871 14.7439 5.43446L12.7071 7.47127C12.3166 7.86179 11.6834 7.86179 11.2929 7.47127C10.9024 7.08074 10.9024 6.44758 11.2929 6.05705L13.3297 4.02025Z"/><path d="M10.8891 20.198C8.99225 22.0948 5.91693 22.0948 4.02013 20.198C2.12333 18.3012 2.12333 15.2259 4.02013 13.3291L7.23367 10.1155C9.13047 8.21875 12.2058 8.21874 14.1026 10.1155C14.4931 10.5061 14.4931 11.1392 14.1026 11.5298C13.7121 11.9203 13.0789 11.9203 12.6884 11.5298C11.5726 10.414 9.76364 10.414 8.64788 11.5298L5.43434 14.7433C4.31859 15.8591 4.31859 17.668 5.43434 18.7838C6.55009 19.8996 8.35909 19.8996 9.47484 18.7838L11.4657 16.7929C11.8563 16.4024 12.4894 16.4024 12.88 16.7929C13.2705 17.1834 13.2705 17.8166 12.88 18.2071L10.8891 20.198Z"/></svg>
+                        </span>
+                        <span class="link-label">Micro sitios web</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="https://padlet.com/manuelrarias/" target="_blank" rel="noopener noreferrer" class="link-row">
+                        <span class="icon-circle">
+                            <svg viewBox="0 0 24 24"><path d="M13.3297 4.02025C15.2265 2.12345 18.3018 2.12345 20.1986 4.02025C22.0954 5.91705 22.0954 8.99237 20.1986 10.8892L16.9851 14.1027C15.0883 15.9995 12.013 15.9995 10.1162 14.1027C9.72563 13.7122 9.72563 13.079 10.1162 12.6885C10.5067 12.298 11.1398 12.298 11.5304 12.6885C12.6461 13.8043 14.4551 13.8043 15.5709 12.6885L18.7844 9.47496C19.9002 8.35921 19.9002 6.55021 18.7844 5.43446C17.6687 4.31871 15.8597 4.31871 14.7439 5.43446L12.7071 7.47127C12.3166 7.86179 11.6834 7.86179 11.2929 7.47127C10.9024 7.08074 10.9024 6.44758 11.2929 6.05705L13.3297 4.02025Z"/><path d="M10.8891 20.198C8.99225 22.0948 5.91693 22.0948 4.02013 20.198C2.12333 18.3012 2.12333 15.2259 4.02013 13.3291L7.23367 10.1155C9.13047 8.21875 12.2058 8.21874 14.1026 10.1155C14.4931 10.5061 14.4931 11.1392 14.1026 11.5298C13.7121 11.9203 13.0789 11.9203 12.6884 11.5298C11.5726 10.414 9.76364 10.414 8.64788 11.5298L5.43434 14.7433C4.31859 15.8591 4.31859 17.668 5.43434 18.7838C6.55009 19.8996 8.35909 19.8996 9.47484 18.7838L11.4657 16.7929C11.8563 16.4024 12.4894 16.4024 12.88 16.7929C13.2705 17.1834 13.2705 17.8166 12.88 18.2071L10.8891 20.198Z"/></svg>
+                        </span>
+                        <span class="link-label">Enlaces Padlet</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <!-- Contenedor Fijo Flotante en el Viewport para el Botón -->
+    <div class="global-floating-footer">
+        <a href="data:text/vcard;charset=utf-8;base64,QkVHSU46VkNBUkQNClZFUlNJT046My4wDQpGTjpNYW51ZWwgQXJpYXMNCk46QXJpYXM7TWFudWVsOzs7DQpPUkc6U29sdWNpb25lcyBBZXJvbsF1dGljYXMNClRJVExFOkloZ2VuaWVybyBFbGVjdHLzbmljbw0KRU1BSUw7VFlQRT1JTlRFUk5FVCxXT1JLOGFsdWNhcmQ4QGdtYWlsLmNvbQ0KVEVMO1RZUEU9Q0VMTCxWT0lDRSxURVhUOis1NzMxMjg4MTY0NjkNClVSTDtUWVBFPVdPUks6aHR0cHM6Ly9ob3RwYWRyaW5vLmdpdGh1Yi5pby9tYW51ZWxyYXJpYXMvDQpVSTDtUWVBFPUxJTktFRElOOmh0dHBzOi8vd3d3LmxpbmtlZGluLmNvbS9pbi9tYW51ZWwtYXJpYXMtNmEyOTI5NjIvDQpVSTDtUWVBFPUFJUkJOQjpodHRwczovL3d3dy5haXJibmIuY29tLmNvL3VzZXJzL3Nob3cvMTE0NDEyOA0KVVJMO1RZUEU9UEFETEVUOmh0dHBzOi8vcGFkbGV0LmNvbS9tYW51ZWxyYXJpYXMvDQpOT1RFOlByb2dyYW1hZG9yLCBJbnRlbGlnZW5jaWEgQXJ0aWZpY2lhbCwgRGlzZfFvIFdlYg1FTkQ6VkNBUks=" 
+           download="manuel_arias.vcf" 
+           class="vcf-download-btn">
+            <svg viewBox="0 0 20 20">
+                <path d="M10.707 11.293a1 1 0 0 1-1.414 0l-3-3a1 1 0 1 1 1.414-1.414L9 8.586V3a1 1 0 0 1 2 0v5.586l1.293-1.293a1 1 0 1 1 1.414 1.414l-3 3zM3 16a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1z"/>
+            </svg>
+            GUARDAR CONTACTO
+        </a>
+    </div>
+
+    <!-- Script del Fondo Interactivo (Efecto Constelación / Red Neural) -->
+    <script>
+        const canvas = document.getElementById('bg-canvas-interactive');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 45;
+        const connectionDistance = 120;
+        
+        let mouse = {
+            x: null,
+            y: null,
+            radius: 180
+        };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Rastreo del mouse
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.size = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Rebote en bordes
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // Interacción con ratón (Atracción sutil)
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        let force = (mouse.radius - dist) / mouse.radius;
+                        this.x -= (dx / dist) * force * 0.4;
+                        this.y -= (dy / dist) * force * 0.4;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(98, 138, 248, 0.4)';
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar y conectar partículas
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < connectionDistance) {
+                        let alpha = (connectionDistance - dist) / connectionDistance * 0.25;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(98, 138, 248, ${alpha})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+
+                // Líneas reactivas directas al puntero del mouse
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = particles[i].x - mouse.x;
+                    let dy = particles[i].y - mouse.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        let alpha = (mouse.radius - dist) / mouse.radius * 0.2;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.strokeStyle = `rgba(98, 138, 248, ${alpha})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
