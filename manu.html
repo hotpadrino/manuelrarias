@@ -6,12 +6,12 @@
     <title>Tarjeta de Presentación - Manuel Arias</title>
     <style>
         :root {
-            --brand-color: #628AF8;
-            --brand-dark: #3467F5;
+            --brand-color: #3467F5;
+            --brand-dark: #1A47C4;
             --text-main: #1A202C;
-            --text-muted: #718096;
-            --bg-canvas: #EDF2F7;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-muted: #4A5568;
+            --bg-canvas: #E2E8F0;
+            --card-bg: rgba(255, 255, 255, 0.96);
         }
 
         *, *::before, *::after {
@@ -28,12 +28,12 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 30px 10px 100px 10px; /* Margen extra inferior para que el botón flotante fijo no estorbe */
+            padding: 20px 10px 120px 10px;
+            overflow-y: auto;
             position: relative;
-            overflow-x: hidden;
         }
 
-        /* Lienzo interactivo del fondo */
+        /* CANVAS INTERACTIVO - Fondo de líneas de alta visibilidad */
         #bg-canvas-interactive {
             position: fixed;
             top: 0;
@@ -41,23 +41,34 @@
             width: 100vw;
             height: 100vh;
             z-index: 1;
-            pointer-events: all;
+            pointer-events: none;
         }
 
+        /* Contenedor adaptativo de la tarjeta */
         .card-wrapper {
             background-color: var(--card-bg);
             width: 100%;
             max-width: 440px;
             border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(98, 138, 248, 0.15), 0 1px 10px rgba(0, 0, 0, 0.02);
-            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(52, 103, 245, 0.15), 0 1px 12px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
             position: relative;
-            z-index: 2; /* Se posiciona encima del canvas */
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+        }
+
+        /* SECCIÓN ANCLADA SUPERIOR */
+        .card-sticky-top {
+            position: sticky;
+            top: 0;
+            background-color: #FFFFFF;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            flex-shrink: 0;
         }
 
         .header-viewport {
@@ -88,18 +99,25 @@
             height: auto;
         }
 
+        /* CONTENEDOR DE IDENTIDAD BLANCO (Incluye el badge reubicado) */
+        .identity-container-white {
+            position: relative;
+            padding-top: 1px; /* Previene colapso de márgenes */
+        }
+
+        /* BADGE REUBICADO: Flotando exactamente sobre el espacio blanco inferior */
         .logo-badge {
             position: absolute;
-            bottom: 12%;
-            right: 6%;
-            width: 18%;
-            max-width: 75px;
-            aspect-ratio: 1;
+            top: 0;
+            right: 24px;
+            transform: translateY(-65%); /* Empuja el badge hacia el espacio blanco cortando la onda */
+            width: 75px;
+            height: 75px;
             background: #ffffff;
             border-radius: 50%;
-            padding: 2%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            z-index: 3;
+            padding: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+            z-index: 15;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -112,9 +130,9 @@
         }
 
         .identity-section {
-            padding: 20px 24px 12px 24px;
-            border-left: 3px solid var(--brand-color);
-            margin: 15px 24px 0 24px;
+            padding: 15px 24px 18px 24px;
+            border-left: 4px solid var(--brand-color);
+            margin: 25px 24px 12px 24px; /* Margen superior adaptado para dar aire al badge */
         }
 
         .full-name {
@@ -122,7 +140,7 @@
             font-weight: 800;
             letter-spacing: -0.5px;
             color: var(--text-main);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .job-title {
@@ -145,8 +163,11 @@
             color: var(--text-muted);
         }
 
+        /* SECCIÓN DESLIZABLE DE ENLACES */
         .links-body {
-            padding: 12px 24px 24px 24px;
+            padding: 20px 24px 30px 24px;
+            position: relative;
+            z-index: 5;
         }
 
         .links-list {
@@ -161,17 +182,17 @@
             display: flex;
             align-items: center;
             padding: 14px 18px;
-            background-color: rgba(247, 250, 252, 0.8);
-            border: 1px solid #E2E8F0;
+            background-color: rgba(247, 250, 252, 0.85);
+            border: 1px solid #CBD5E0;
             border-radius: 14px;
             text-decoration: none;
             color: var(--text-main);
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .link-row:hover {
-            background-color: rgba(237, 242, 247, 0.9);
+            background-color: rgba(237, 242, 247, 1);
             border-color: var(--brand-color);
             transform: translateY(-1px);
         }
@@ -202,18 +223,18 @@
             text-overflow: ellipsis;
         }
 
-        /* BOTÓN FLOTANTE GLOBAL FIJO EN EL VIEWPORT */
+        /* FOOTER GLOBAL PERSISTENTE CON BOTÓN DE ACCIÓN */
         .global-floating-footer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to top, rgba(237,242,247,1) 75%, rgba(237,242,247,0));
+            background: linear-gradient(to top, rgba(226,232,240,1) 75%, rgba(226,232,240,0));
             padding: 24px 20px;
-            z-index: 999; /* Máxima jerarquía visual */
+            z-index: 999;
             display: flex;
             justify-content: center;
-            pointer-events: none; /* Evita bloquear interacciones de fondo fuera del botón */
+            pointer-events: none;
         }
 
         .vcf-download-btn {
@@ -229,14 +250,14 @@
             font-size: 16px;
             font-weight: 700;
             text-decoration: none;
-            box-shadow: 0 10px 25px rgba(98, 138, 248, 0.4);
+            box-shadow: 0 10px 25px rgba(52, 103, 245, 0.45);
             transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            pointer-events: auto; /* Reactiva clicks en el botón */
+            pointer-events: auto;
         }
 
         .vcf-download-btn:hover {
             background-color: var(--brand-dark);
-            box-shadow: 0 12px 28px rgba(98, 138, 248, 0.5);
+            box-shadow: 0 12px 28px rgba(52, 103, 245, 0.55);
         }
 
         .vcf-download-btn:active {
@@ -253,37 +274,50 @@
 </head>
 <body>
 
-    <!-- Canvas Interactivo del Fondo Estilo Red Neural -->
+    <!-- Canvas del Fondo Pasivo Interactivo (Efecto Red Neural) -->
     <canvas id="bg-canvas-interactive"></canvas>
 
-    <!-- Contenedor de la Tarjeta -->
+    <!-- Estructura Principal Adaptable -->
     <div class="card-wrapper">
-        <div class="header-viewport">
-            <img class="profile-photo" alt="Manuel Arias" src="https://cdn.hihello.me/o/96031f33-21af-4af4-9ead-a07f153a1241.png">
+        
+        <!-- Bloque Superior Pegajoso Fijo -->
+        <div class="card-sticky-top">
             
-            <div class="wave-separator">
-                <svg viewBox="0 0 246 57" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMax meet">
-                    <path d="M 214.7168,6.1113281 C 195.65271,5.9023124 172.37742,11.948182 137.87305,32.529297 110.16613,49.05604 86.980345,56.862784 65.015625,57 H 65 v 1 H 246 V 11.453125 C 236.0775,8.6129313 226.15525,6.2367376 214.7168,6.1113281 Z" fill="white"></path>
-                    <path d="M 0,35.773438 V 58 H 65 L 64.97852,57 C 43.192081,57.127508 22.605139,49.707997 0,35.773438 Z" fill="white"></path>
-                    <path d="m 0,16.7221 v 19.052 C 45.4067,63.7643 82.6667,65.4583 137.873,32.5286 193.08,-0.401184 219.54,3.87965 246,11.4535 V 6.51403 C 185.24,-16.8661 135.913,29.331 97.6933,40.8564 59.4733,52.3818 33.6467,44.1494 0,16.7221 Z" fill="#628AF8" opacity="0.3"></path>
-                </svg>
+            <!-- Contenedor del Gráfico Superior -->
+            <div class="header-viewport">
+                <img class="profile-photo" alt="Manuel Arias" src="https://cdn.hihello.me/o/96031f33-21af-4af4-9ead-a07f153a1241.png">
+                
+                <div class="wave-separator">
+                    <svg viewBox="0 0 246 57" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMax meet">
+                        <path d="M 214.7168,6.1113281 C 195.65271,5.9023124 172.37742,11.948182 137.87305,32.529297 110.16613,49.05604 86.980345,56.862784 65.015625,57 H 65 v 1 H 246 V 11.453125 C 236.0775,8.6129313 226.15525,6.2367376 214.7168,6.1113281 Z" fill="white"></path>
+                        <path d="M 0,35.773438 V 58 H 65 L 64.97852,57 C 43.192081,57.127508 22.605139,49.707997 0,35.773438 Z" fill="white"></path>
+                        <path d="m 0,16.7221 v 19.052 C 45.4067,63.7643 82.6667,65.4583 137.873,32.5286 193.08,-0.401184 219.54,3.87965 246,11.4535 V 6.51403 C 185.24,-16.8661 135.913,29.331 97.6933,40.8564 59.4733,52.3818 33.6467,44.1494 0,16.7221 Z" fill="#3467F5" opacity="0.35"></path>
+                    </svg>
+                </div>
             </div>
 
-            <div class="logo-badge">
-                <img alt="Soluciones Aeronáuticas" src="https://cdn.hihello.me/v/38e6abe3-7765-41f1-86b4-b084a619b0c4.png-small-preserve-ratio">
+            <!-- Contenedor Blanco de Identidad (Con el badge flotando encima de él) -->
+            <div class="identity-container-white">
+                
+                <!-- LOGO BADGE: Posicionado estratégicamente en la base blanca -->
+                <div class="logo-badge">
+                    <img alt="Soluciones Aeronáuticas" src="https://cdn.hihello.me/v/38e6abe3-7765-41f1-86b4-b084a619b0c4.png-small-preserve-ratio">
+                </div>
+
+                <div class="identity-section">
+                    <h1 class="full-name">Manuel Arias</h1>
+                    <div class="job-title">Ingeniero Electrónico</div>
+                    <div class="tags-skills">Programador, Inteligencia Artificial, Diseño Web</div>
+                    <div class="company-name">Soluciones Aeronáuticas</div>
+                </div>
             </div>
         </div>
 
-        <div class="identity-section">
-            <h1 class="full-name">Manuel Arias</h1>
-            <div class="job-title">Ingeniero Electrónico</div>
-            <div class="tags-skills">Programador, Inteligencia Artificial, Diseño Web</div>
-            <div class="company-name">Soluciones Aeronáuticas</div>
-        </div>
-
+        <!-- LISTADO DE ENLACES CON MOVIMIENTO LIBRE -->
         <div class="links-body">
             <ul class="links-list">
                 
+                <!-- Email -->
                 <li>
                     <a href="mailto:alucard8@gmail.com" class="link-row">
                         <span class="icon-circle">
@@ -293,6 +327,7 @@
                     </a>
                 </li>
 
+                <!-- WhatsApp -->
                 <li>
                     <a href="https://wa.me/+573128816469" target="_blank" rel="noopener noreferrer" class="link-row">
                         <span class="icon-circle">
@@ -302,6 +337,7 @@
                     </a>
                 </li>
 
+                <!-- LinkedIn -->
                 <li>
                     <a href="https://www.linkedin.com/in/manuel-arias-6a292962/" target="_blank" rel="noopener noreferrer" class="link-row">
                         <span class="icon-circle">
@@ -311,6 +347,7 @@
                     </a>
                 </li>
 
+                <!-- Airbnb -->
                 <li>
                     <a href="https://www.airbnb.com.co/users/show/1144128" target="_blank" rel="noopener noreferrer" class="link-row">
                         <span class="icon-circle">
@@ -320,6 +357,7 @@
                     </a>
                 </li>
 
+                <!-- Micro sitios web -->
                 <li>
                     <a href="https://hotpadrino.github.io/manuelrarias/" target="_blank" rel="noopener noreferrer" class="link-row">
                         <span class="icon-circle">
@@ -329,6 +367,7 @@
                     </a>
                 </li>
 
+                <!-- Padlet -->
                 <li>
                     <a href="https://padlet.com/manuelrarias/" target="_blank" rel="noopener noreferrer" class="link-row">
                         <span class="icon-circle">
@@ -342,7 +381,7 @@
         </div>
     </div>
 
-    <!-- Contenedor Fijo Flotante en el Viewport para el Botón -->
+    <!-- BOTÓN FIJO GLOBAL EN EL PIE DEL VIEWPORT -->
     <div class="global-floating-footer">
         <a href="data:text/vcard;charset=utf-8;base64,QkVHSU46VkNBUkQNClZFUlNJT046My4wDQpGTjpNYW51ZWwgQXJpYXMNCk46QXJpYXM7TWFudWVsOzs7DQpPUkc6U29sdWNpb25lcyBBZXJvbsF1dGljYXMNClRJVExFOkloZ2VuaWVybyBFbGVjdHLzbmljbw0KRU1BSUw7VFlQRT1JTlRFUk5FVCxXT1JLOGFsdWNhcmQ4QGdtYWlsLmNvbQ0KVEVMO1RZUEU9Q0VMTCxWT0lDRSxURVhUOis1NzMxMjg4MTY0NjkNClVSTDtUWVBFPVdPUks6aHR0cHM6Ly9ob3RwYWRyaW5vLmdpdGh1Yi5pby9tYW51ZWxyYXJpYXMvDQpVSTDtUWVBFPUxJTktFRElOOmh0dHBzOi8vd3d3LmxpbmtlZGluLmNvbS9pbi9tYW51ZWwtYXJpYXMtNmEyOTI5NjIvDQpVSTDtUWVBFPUFJUkJOQjpodHRwczovL3d3dy5haXJibmIuY29tLmNvL3VzZXJzL3Nob3cvMTE0NDEyOA0KVVJMO1RZUEU9UEFETEVUOmh0dHBzOi8vcGFkbGV0LmNvbS9tYW51ZWxyYXJpYXMvDQpOT1RFOlByb2dyYW1hZG9yLCBJbnRlbGlnZW5jaWEgQXJ0aWZpY2lhbCwgRGlzZfFvIFdlYg1FTkQ6VkNBUks=" 
            download="manuel_arias.vcf" 
@@ -354,19 +393,19 @@
         </a>
     </div>
 
-    <!-- Script del Fondo Interactivo (Efecto Constelación / Red Neural) -->
+    <!-- Script del Fondo de Nodos Interactivos -->
     <script>
         const canvas = document.getElementById('bg-canvas-interactive');
         const ctx = canvas.getContext('2d');
 
         let particles = [];
-        const particleCount = 45;
-        const connectionDistance = 120;
+        const particleCount = 40;
+        const connectionDistance = 140;
         
         let mouse = {
             x: null,
             y: null,
-            radius: 180
+            radius: 220
         };
 
         function resizeCanvas() {
@@ -376,7 +415,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Rastreo del mouse
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
@@ -391,28 +429,26 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.6;
-                this.vy = (Math.random() - 0.5) * 0.6;
-                this.size = Math.random() * 2 + 1;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.size = Math.random() * 3 + 1.5;
             }
 
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Rebote en bordes
                 if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-                // Interacción con ratón (Atracción sutil)
                 if (mouse.x !== null && mouse.y !== null) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < mouse.radius) {
                         let force = (mouse.radius - dist) / mouse.radius;
-                        this.x -= (dx / dist) * force * 0.4;
-                        this.y -= (dy / dist) * force * 0.4;
+                        this.x -= (dx / dist) * force * 0.5;
+                        this.y -= (dy / dist) * force * 0.5;
                     }
                 }
             }
@@ -420,7 +456,7 @@
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(98, 138, 248, 0.4)';
+                ctx.fillStyle = 'rgba(52, 103, 245, 0.6)';
                 ctx.fill();
             }
         }
@@ -435,7 +471,6 @@
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Dibujar y conectar partículas
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
@@ -446,28 +481,27 @@
                     let dist = Math.sqrt(dx * dx + dy * dy);
 
                     if (dist < connectionDistance) {
-                        let alpha = (connectionDistance - dist) / connectionDistance * 0.25;
+                        let alpha = (connectionDistance - dist) / connectionDistance * 0.5;
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(98, 138, 248, ${alpha})`;
-                        ctx.lineWidth = 0.8;
+                        ctx.strokeStyle = `rgba(52, 103, 245, ${alpha})`;
+                        ctx.lineWidth = 1.2;
                         ctx.stroke();
                     }
                 }
 
-                // Líneas reactivas directas al puntero del mouse
                 if (mouse.x !== null && mouse.y !== null) {
                     let dx = particles[i].x - mouse.x;
                     let dy = particles[i].y - mouse.y;
                     let dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < mouse.radius) {
-                        let alpha = (mouse.radius - dist) / mouse.radius * 0.2;
+                        let alpha = (mouse.radius - dist) / mouse.radius * 0.45;
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(mouse.x, mouse.y);
-                        ctx.strokeStyle = `rgba(98, 138, 248, ${alpha})`;
-                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = `rgba(52, 103, 245, ${alpha})`;
+                        ctx.lineWidth = 1.5;
                         ctx.stroke();
                     }
                 }
