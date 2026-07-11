@@ -122,7 +122,8 @@
     pointer-events:none;
   }
   .preview-box img#user-photo{
-    width:100%;height:100%;object-fit:cover;
+    width:100%;height:100%;object-fit:contain;
+    object-position:center top;
     position:absolute;top:0;left:0;z-index:1;
     display:none;
     pointer-events:none;
@@ -604,8 +605,9 @@
         </div>
 
         <label class="mini">Alejar / acercar foto <span class="val" id="zoomVal">100%</span></label>
-        <input type="range" id="zoomSlider" min="50" max="150" value="100" disabled>
+        <input type="range" id="zoomSlider" min="30" max="150" value="100" disabled>
         <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">La foto queda fija arriba; al alejarla se genera espacio en blanco a los lados y abajo para mover la camisa.</p>
+        <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">Al subir tu foto se muestra completa y te sugerimos un recorte inicial — ajústalo o toca "Aplicar recorte".</p>
       </div>
 
       <div class="control-group">
@@ -752,20 +754,41 @@
     if (file) {
       const reader = new FileReader();
       reader.onload = function(event) {
-        userPhoto.src = event.target.result;
-        userPhoto.style.display = 'block';
-        photoBackdrop.style.display = 'block';
-        shirtSvg.style.display = 'block';
-        placeholderText.style.display = 'none';
-        hasPhoto = true;
-        selectColor(currentColorIndex);
-        startCropBtn.disabled = false;
-        zoomSlider.disabled = false;
-        zoomSlider.value = 100;
-        zoomVal.textContent = '100%';
-        applyPhotoZoom();
-        dragHint.classList.add('show');
-        setTimeout(() => dragHint.classList.remove('show'), 2600);
+        const dataUrl = event.target.result;
+        const probe = new Image();
+        probe.onload = function() {
+          userPhoto.src = dataUrl;
+          userPhoto.style.display = 'block';
+          photoBackdrop.style.display = 'block';
+          shirtSvg.style.display = 'block';
+          placeholderText.style.display = 'none';
+          hasPhoto = true;
+          selectColor(currentColorIndex);
+          startCropBtn.disabled = false;
+          zoomSlider.disabled = false;
+          zoomSlider.value = 100;
+          applyPhotoZoom();
+
+          dragHint.classList.add('show');
+          setTimeout(() => dragHint.classList.remove('show'), 2600);
+
+          // Sugiere un área de recorte inicial = toda la foto visible (nada se descarta solo);
+          // el usuario decide qué conservar ajustando este recuadro.
+          const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
+          const imgRatio = probe.naturalWidth / probe.naturalHeight;
+          const boxRatio = pbW / pbH;
+          let drawW, drawH;
+          if (imgRatio > boxRatio) { drawW = pbW; drawH = pbW / imgRatio; }
+          else { drawH = pbH; drawW = pbH * imgRatio; }
+          const offX = (pbW - drawW) / 2, offY = 0;
+          setTimeout(() => openCropUI({
+            x: Math.max(0, offX),
+            y: Math.max(0, offY),
+            w: Math.min(pbW, drawW),
+            h: Math.min(pbH, drawH)
+          }), 150);
+        };
+        probe.src = dataUrl;
       }
       reader.readAsDataURL(file);
     }
@@ -960,14 +983,23 @@
              w:parseFloat(cropBox.style.width), h:parseFloat(cropBox.style.height) };
   }
 
-  startCropBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
+  function openCropUI(rect){
     const pbW = previewBox.clientWidth, pbH = previewBox.clientHeight;
-    const w = pbW*0.7, h = pbH*0.7;
-    cropBox.style.left = ((pbW-w)/2)+'px';
-    cropBox.style.top = ((pbH-h)/2)+'px';
-    cropBox.style.width = w+'px';
-    cropBox.style.height = h+'px';
+    let r = rect;
+    if (!r) {
+      const w = pbW*0.7, h = pbH*0.7;
+      r = { x:(pbW-w)/2, y:(pbH-h)/2, w, h };
+    }
+    // Asegura un tamaño mínimo utilizable y que quede dentro del recuadro
+    const w = Math.max(60, Math.min(pbW, r.w));
+    const h = Math.max(60, Math.min(pbH, r.h));
+    const x = Math.max(0, Math.min(pbW - w, r.x));
+    const y = Math.max(0, Math.min(pbH - h, r.y));
+
+    cropBox.style.left = x + 'px';
+    cropBox.style.top = y + 'px';
+    cropBox.style.width = w + 'px';
+    cropBox.style.height = h + 'px';
     cropBox.style.display = 'block';
     shirtSvg.style.visibility = 'hidden';
     applyCropBtn.style.display = 'inline-block';
@@ -975,6 +1007,11 @@
     applyCropBtn.disabled = false;
     cancelCropBtn.disabled = false;
     startCropBtn.style.display = 'none';
+  }
+
+  startCropBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openCropUI();
   });
 
   cancelCropBtn.addEventListener('click', (e) => {
@@ -996,9 +1033,9 @@
       const boxRatio = pbW / pbH;
       let baseW, baseH;
       if (imgRatio > boxRatio) {
-        baseH = pbH; baseW = pbH * imgRatio;
-      } else {
         baseW = pbW; baseH = pbW / imgRatio;
+      } else {
+        baseH = pbH; baseW = pbH * imgRatio;
       }
       const zoom = zoomSlider.value / 100;
       const drawW = baseW * zoom;
