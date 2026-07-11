@@ -285,6 +285,20 @@
             box-shadow: 0 10px 25px rgba(34, 163, 102, 0.45);
         }
 
+        .vcf-download-btn.is-loading {
+            opacity: 0.85;
+            cursor: wait;
+        }
+
+        .vcf-download-btn.is-loading .icon-download {
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .vcf-download-btn svg {
             width: 18px;
             height: 18px;
@@ -371,6 +385,9 @@
             .spark, .pulse-ring { animation: none; display: none; }
             .vcf-download-btn, .btn-icon-wrap svg, .btn-label-swap span {
                 transition: none;
+            }
+            .vcf-download-btn.is-loading .icon-download {
+                animation: none;
             }
         }
     </style>
@@ -488,7 +505,50 @@
 
     <script>
         // ---------- Generación dinámica del vCard (reemplaza el base64 roto) ----------
-        function buildVCF() {
+        const PHOTO_URL = "https://cdn.hihello.me/o/96031f33-21af-4af4-9ead-a07f153a1241.png";
+
+        // Pliegue de líneas según el estándar vCard (máx. 75 octetos por línea,
+        // continuación con un espacio al inicio). Necesario sobre todo para PHOTO en base64.
+        function foldLine(line) {
+            const maxLen = 75;
+            if (line.length <= maxLen) return line;
+            let out = line.slice(0, maxLen);
+            let rest = line.slice(maxLen);
+            while (rest.length > 0) {
+                out += "\r\n " + rest.slice(0, maxLen - 1);
+                rest = rest.slice(maxLen - 1);
+            }
+            return out;
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Intenta embeber la foto en base64 (funciona en iOS/Android/desktop).
+        // Si el CDN bloquea CORS, cae a PHOTO por URL (funciona en Android/desktop, no en iOS).
+        async function getPhotoLine() {
+            try {
+                const res = await fetch(PHOTO_URL, { mode: "cors" });
+                if (!res.ok) throw new Error("respuesta no válida");
+                const blob = await res.blob();
+                const dataUrl = await blobToBase64(blob);
+                const base64Data = dataUrl.split(",")[1];
+                const type = blob.type.includes("jpeg") ? "JPEG" : "PNG";
+                return foldLine(`PHOTO;ENCODING=b;TYPE=${type}:${base64Data}`);
+            } catch (e) {
+                console.warn("No se pudo embeber la foto en base64, se usará enlace URI:", e);
+                return `PHOTO;VALUE=URI:${PHOTO_URL}`;
+            }
+        }
+
+        async function buildVCF() {
+            const photoLine = await getPhotoLine();
             const lines = [
                 "BEGIN:VCARD",
                 "VERSION:3.0",
@@ -503,13 +563,15 @@
                 "URL;TYPE=LinkedIn:https://www.linkedin.com/in/manuel-arias-6a292962/",
                 "URL;TYPE=Airbnb:https://www.airbnb.com.co/users/show/1144128",
                 "URL;TYPE=Padlet:https://padlet.com/manuelrarias/",
+                photoLine,
                 "END:VCARD"
             ];
             return lines.join("\r\n");
         }
 
-        function triggerVCFDownload() {
-            const blob = new Blob([buildVCF()], { type: "text/vcard;charset=utf-8" });
+        async function triggerVCFDownload() {
+            const vcfText = await buildVCF();
+            const blob = new Blob([vcfText], { type: "text/vcard;charset=utf-8" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -547,11 +609,17 @@
         }
 
         let downloadTimer = null;
-        function handleDownload() {
-            triggerVCFDownload();
-
+        async function handleDownload() {
             const btn = document.getElementById('vcfBtn');
             const wrapper = document.getElementById('btnWrapper');
+
+            btn.classList.add('is-loading');
+            btn.disabled = true;
+
+            await triggerVCFDownload();
+
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
 
             launchSparks(wrapper);
             btn.classList.add('is-success');
