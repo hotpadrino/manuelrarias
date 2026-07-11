@@ -84,14 +84,14 @@
             overflow-x: hidden;
         }
 
-        /* CANVAS INTERACTIVO DE RED NEURAL REFORZADO - Sin bloqueos de scroll */
+        /* CANVAS INTERACTIVO DE RED NEURAL REFORZADO */
         #bg-canvas {
             position: fixed;
             inset: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
-            pointer-events: none; /* Crucial para dejar pasar clics y gestos de scroll */
+            pointer-events: none;
         }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; flex: 1; position: relative; z-index: 1; width: 100%; }
@@ -111,7 +111,7 @@
         .theme-toggle:hover { transform: scale(1.08); }
         .theme-toggle:focus-visible, .spin-btn:focus-visible, .card:focus-visible, .card-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
-        /* ANIMACIÓN LLAMATIVA PARA EL BOTÓN DE LA TARJETA DE NEGOCIOS */
+        /* ANIMACIÓN DE PULSO CONTINUO EN EL BOTÓN PRINCIPAL */
         @keyframes bouncePulse {
             0% {
                 transform: translateY(0);
@@ -133,12 +133,12 @@
             color: #1a1206; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
             font-size: 0.88em; text-decoration: none; padding: 12px 24px; border-radius: 999px;
             letter-spacing: 0.02em;
-            animation: bouncePulse 3s infinite ease-in-out; /* Animación de micro-movimiento cíclica instalada */
+            animation: bouncePulse 3s infinite ease-in-out;
             transition: background 0.2s ease;
         }
         html[data-theme="light"] .card-btn { color: #201400; }
         .card-btn:hover { 
-            animation-play-state: paused; /* Se congela sutilmente al poner el puntero encima */
+            animation-play-state: paused;
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 16px 35px rgba(255,176,32,0.5); 
         }
@@ -235,16 +235,14 @@
 </head>
 <body>
 
-<!-- Canvas del Fondo Pasivo e Interactivo -->
 <canvas id="bg-canvas" aria-hidden="true"></canvas>
 
 <div class="topbar">
-    <!-- Enlace e Interacción Llamativa Actualizados -->
     <a class="card-btn" href="https://hotpadrino.github.io/manuelrarias/manu" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 9h20"/><path d="M6 15h4"/></svg>
         Tarjeta de negocios
     </a>
-    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">🌙</button>
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema claro/oscuro">☀️</button>
 </div>
 
 <div class="container">
@@ -344,21 +342,22 @@
 </footer>
 
 <script>
-    /* ---------- THEME TOGGLE ---------- */
+    /* ---------- REFACTOR: TEMA OSCURO POR DEFECTO ESTRICTO ---------- */
     const root = document.documentElement;
     const themeToggle = document.getElementById('themeToggle');
-    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-    let currentTheme = prefersLight ? 'light' : 'dark';
+    
+    // Forzado rígido a modo oscuro por defecto en el arranque
+    let currentTheme = 'dark'; 
     root.setAttribute('data-theme', currentTheme);
-    themeToggle.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    themeToggle.textContent = '☀️'; // Muestra el Sol para poder alternar a Claro
 
     themeToggle.addEventListener('click', () => {
         currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
         root.setAttribute('data-theme', currentTheme);
-        themeToggle.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
     });
 
-    /* ---------- REFACTOR: MOTOR INTERACTIVO DE RED NEURAL DE ALTA VISIBILIDAD ---------- */
+    /* ---------- MOTOR INTERACTIVO DE RED NEURAL ---------- */
     const bgCanvas = document.getElementById('bg-canvas');
     const bgCtx = bgCanvas.getContext('2d');
     let W, H, nodes = [];
@@ -380,7 +379,6 @@
     window.addEventListener('resize', resizeBg);
     resizeBg();
 
-    // Captura pasiva global del puntero
     window.addEventListener('mousemove', (e) => {
         mouse.x = e.clientX;
         mouse.y = e.clientY;
@@ -407,7 +405,6 @@
             if (this.x < 0 || this.x > W) this.vx *= -1;
             if (this.y < 0 || this.y > H) this.vy *= -1;
 
-            // Atracción vectorial interactiva
             if (mouse.x !== null && mouse.y !== null) {
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
@@ -438,12 +435,10 @@
         const primary = getVar('--primary') || '#4b83ff';
         const accent = getVar('--accent') || '#ffb020';
 
-        // Actualizar posiciones autónomas
         if (!reduceMotion) {
             for (const n of nodes) n.update();
         }
 
-        // Trazado de líneas estructurales de alta definición
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
                 const a = nodes[i], b = nodes[j];
@@ -462,7 +457,6 @@
                 }
             }
 
-            // Enlaces activos de conexión directa con el cursor
             if (mouse.x !== null && mouse.y !== null) {
                 const a = nodes[i];
                 let dx = a.x - mouse.x;
@@ -481,7 +475,6 @@
             }
         }
 
-        // Dibujo de nodos principales
         nodes.forEach((n, idx) => {
             bgCtx.fillStyle = idx % 6 === 0 ? accent : primary;
             bgCtx.globalAlpha = 0.75;
@@ -504,7 +497,7 @@
     }
 
     /* ---------- RULETA ---------- */
-    const options = ["Accidentes", "Documentos", "Finanzas", "Ingeniería", "Gantt", "Proyectos"];
+    const options = ["Colegio", "Documentos", "Finanzas", "Ingeniería", "Gantt", "Proyectos"];
     const colorPairs = [
         ['#1d3f8f', '#265bc7'],
         ['#0d2a63', '#173f8f'],
