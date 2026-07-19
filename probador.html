@@ -283,7 +283,7 @@
     box-shadow:0 20px 50px var(--shadow);
     font-family:'Helvetica Neue', Arial, sans-serif;
     transition:background .25s, border-color .25s;
-    max-height:80vh;
+    height:702px;
     overflow-y:auto;
   }
   .step-label{
@@ -296,6 +296,8 @@
     color:var(--gold-soft);
     margin-bottom:12px;
     font-weight:600;
+    cursor:pointer;
+    user-select:none;
   }
   .step-label .num{
     width:20px;height:20px;
@@ -312,6 +314,15 @@
     border-bottom:1px solid var(--line);
   }
   .control-group:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  
+  .control-content {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+  .control-content.collapsed {
+    max-height: 0px !important;
+  }
 
   .privacy-notice{
     display:flex;
@@ -623,6 +634,7 @@
       transition:transform .28s ease;
       z-index:200;
       padding-top:14px;
+      height:auto;
     }
     .control-panel.open{ transform:translateY(0); }
     .control-panel::before{
@@ -743,13 +755,13 @@
             <path d="M 150,313 L 150,349"/>
           </g>
 
-        <g id="shoesBody" fill="#9C7A54" stroke="rgba(0,0,0,0.25)" stroke-width="1.2" stroke-linejoin="round">
-          <!-- Zapato Izquierdo (Espejo exacto del ajuste manual, apuntando a la izquierda) -->
-          <path d="M 130,420 L 130,460 L 102,460 Q 88,454 75,456 L 45,460 Q 34,460 34,452 L 40,446 Q 65,434 94,420 Z" />
-        
-          <!-- Zapato Derecho (Tu ajuste manual optimizado en código, apuntando a la derecha) -->
-          <path d="M 170,420 L 170,460 L 198,460 Q 212,454 225,456 L 255,460 Q 266,460 266,452 L 260,446 Q 235,434 206,420 Z" />
-        </g>
+          <g id="shoesBody" fill="#9C7A54" stroke="rgba(0,0,0,0.25)" stroke-width="1.2" stroke-linejoin="round">
+            <!-- Zapato Izquierdo (Espejo exacto del ajuste manual, apuntando a la izquierda) -->
+            <path d="M 130,420 L 130,460 L 102,460 Q 88,454 75,456 L 45,460 Q 34,460 34,452 L 40,446 Q 65,434 94,420 Z" />
+          
+            <!-- Zapato Derecho (Tu ajuste manual optimizado en código, apuntando a la derecha) -->
+            <path d="M 170,420 L 170,460 L 198,460 Q 212,454 225,456 L 255,460 Q 266,460 266,452 L 260,446 Q 235,434 206,420 Z" />
+          </g>
 
         </svg>
 
@@ -761,52 +773,60 @@
     <div class="control-panel" id="controlPanel">
 
       <div class="control-group">
-        <div class="step-label"><span class="num">1</span> Carga tu foto</div>
-        <div class="privacy-notice">
-          <span class="privacy-icon">🔒</span>
-          <span>Tus fotos se procesan <strong>solo en este dispositivo</strong>. No se suben ni se comparten en internet.</span>
+        <div class="step-label" onclick="toggleSection('contentSec1')"><span class="num">1</span> Carga tu foto</div>
+        <div id="contentSec1" class="control-content">
+          <div class="privacy-notice">
+            <span class="privacy-icon">🔒</span>
+            <span>Tus fotos se procesan <strong>solo en este dispositivo</strong>. No se suben ni se comparten en internet.</span>
+          </div>
+          <input type="file" id="upload" accept="image/*">
+          <div class="btn-row">
+            <button class="ghost" id="startCropBtn" disabled>Recortar (cara y torso)</button>
+            <button class="ghost" id="applyCropBtn" disabled style="display:none;">Aplicar recorte</button>
+            <button class="ghost" id="cancelCropBtn" disabled style="display:none;">Cancelar</button>
+          </div>
+
+          <label class="mini">Alejar / acercar foto <span class="val" id="zoomVal">100%</span></label>
+          <input type="range" id="zoomSlider" min="30" max="150" value="100" disabled>
+          <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">La foto queda fija arriba; al alejarla se genera espacio en blanco a los lados y abajo para mover la camisa.</p>
+          <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">Al subir tu foto se muestra completa y te sugerimos un recorte inicial — ajústalo o toca "Aplicar recorte".</p>
         </div>
-        <input type="file" id="upload" accept="image/*">
-        <div class="btn-row">
-          <button class="ghost" id="startCropBtn" disabled>Recortar (cara y torso)</button>
-          <button class="ghost" id="applyCropBtn" disabled style="display:none;">Aplicar recorte</button>
-          <button class="ghost" id="cancelCropBtn" disabled style="display:none;">Cancelar</button>
+      </div>
+
+      <div class="control-group">
+        <div class="step-label" onclick="toggleSection('contentSec2')"><span class="num">2</span> Ajusta la camisa</div>
+        <div id="contentSec2" class="control-content">
+          <p style="font-size:11px;color:var(--text-dim);margin:-4px 0 12px;">Tip: también puedes arrastrar la camisa directamente sobre la foto con el dedo o el mouse.</p>
+
+          <label class="mini">Tamaño <span class="val" id="scaleVal">260</span></label>
+          <input type="range" id="scale" min="120" max="500" value="260">
+
+          <label class="mini">Ancho de la camisa <span class="val" id="widthVal">100%</span></label>
+          <input type="range" id="widthAdjust" min="60" max="160" value="100">
+
+          <label class="mini">Mover lateral (X) <span class="val" id="moveXVal">130</span></label>
+          <input type="range" id="moveX" min="-150" max="450" value="130">
+
+          <label class="mini">Mover vertical (Y) <span class="val" id="moveYVal">340</span></label>
+          <input type="range" id="moveY" min="-50" max="600" value="340">
+
+          <label class="mini">Rotación <span class="val" id="rotateVal">0°</span></label>
+          <input type="range" id="rotate" min="-25" max="25" value="0">
         </div>
-
-        <label class="mini">Alejar / acercar foto <span class="val" id="zoomVal">100%</span></label>
-        <input type="range" id="zoomSlider" min="30" max="150" value="100" disabled>
-        <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">La foto queda fija arriba; al alejarla se genera espacio en blanco a los lados y abajo para mover la camisa.</p>
-        <p style="font-size:11px;color:var(--text-dim);margin:6px 0 0;">Al subir tu foto se muestra completa y te sugerimos un recorte inicial — ajústalo o toca "Aplicar recorte".</p>
       </div>
 
       <div class="control-group">
-        <div class="step-label"><span class="num">2</span> Ajusta la camisa</div>
-        <p style="font-size:11px;color:var(--text-dim);margin:-4px 0 12px;">Tip: también puedes arrastrar la camisa directamente sobre la foto con el dedo o el mouse.</p>
-
-        <label class="mini">Tamaño <span class="val" id="scaleVal">260</span></label>
-        <input type="range" id="scale" min="120" max="500" value="260">
-
-        <label class="mini">Ancho de la camisa <span class="val" id="widthVal">100%</span></label>
-        <input type="range" id="widthAdjust" min="60" max="160" value="100">
-
-        <label class="mini">Mover lateral (X) <span class="val" id="moveXVal">130</span></label>
-        <input type="range" id="moveX" min="-150" max="450" value="130">
-
-        <label class="mini">Mover vertical (Y) <span class="val" id="moveYVal">340</span></label>
-        <input type="range" id="moveY" min="-50" max="600" value="340">
-
-        <label class="mini">Rotación <span class="val" id="rotateVal">0°</span></label>
-        <input type="range" id="rotate" min="-25" max="25" value="0">
+        <div class="step-label" onclick="toggleSection('contentSec3')"><span class="num">3</span> Elige tu color</div>
+        <div id="contentSec3" class="control-content">
+          <div class="color-grid" id="colorGrid"></div>
+        </div>
       </div>
 
       <div class="control-group">
-        <div class="step-label"><span class="num">3</span> Elige tu color</div>
-        <div class="color-grid" id="colorGrid"></div>
-      </div>
-
-      <div class="control-group">
-        <div class="step-label"><span class="num">4</span> Combina tu look</div>
-        <div id="outfitPanel"></div>
+        <div class="step-label" onclick="toggleSection('contentSec4')"><span class="num">4</span> Combina tu look</div>
+        <div id="contentSec4" class="control-content">
+          <div id="outfitPanel"></div>
+        </div>
       </div>
 
     </div>
@@ -960,6 +980,11 @@
   let currentColorIndex = 2; // Vinotinto: coincide con el color por defecto de la camisa
   let currentComboIndex = 0; // 0=Casual, 1=Formal, 2=Elegante — null = combinación mixta (piezas sueltas)
   const colorButtons = [];
+
+  function toggleSection(sectionId) {
+    const content = document.getElementById(sectionId);
+    content.classList.toggle('collapsed');
+  }
 
   function renderOutfits(color){
     const headers = color.outfits.map((o, i) => `<span class="outfit-col-header" data-combo-index="${i}">${o.label}</span>`).join('');
@@ -1179,6 +1204,9 @@
   }
   [scaleSlider, widthSlider, moveXSlider, moveYSlider, rotateSlider].forEach(s => {
     s.addEventListener('input', updateShirtTransform);
+    s.addEventListener('change', () => {
+      document.getElementById('contentSec2').classList.add('collapsed');
+    });
   });
   updateShirtTransform();
 
@@ -1272,6 +1300,7 @@
       pinchState = null;
       dragState = null;
       shirtSvg.classList.remove('dragging');
+      document.getElementById('contentSec2').classList.add('collapsed');
     }
   }
   shirtSvg.addEventListener('pointerup', endDrag);
@@ -1440,6 +1469,8 @@
       startCropBtn.style.display = 'inline-block';
       cropModeActive = false;
       if (hasPhoto) photoOutfitPalette.classList.add('show');
+      
+      document.getElementById('contentSec1').classList.add('collapsed');
     };
     img.src = userPhoto.src;
   });
