@@ -488,7 +488,7 @@
     font-size:8.5px;
     color:var(--text);
     text-align:center;
-    line-height:1.2;
+    line-line-height:1.2;
   }
 
   /* ---------------- Footer ---------------- */
@@ -610,9 +610,12 @@
       border:none;
     }
 
+    /* Se cambia el anclaje para que se compute de manera segura respecto a la zona visible del visor */
     .photo-outfit-palette{
-      bottom:16px;
-      left:16px;
+      position: absolute;
+      bottom: 84px; /* Cambiado de 10px a 84px para quedar perfectamente a ras del botón flotante */
+      left: 16px;
+      z-index: 6;
     }
 
     .crop-handle{
