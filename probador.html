@@ -120,7 +120,26 @@
     text-align:center;
     padding:0 30px;
     pointer-events:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
   }
+  .placeholder-privacy{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:rgba(46,125,50,0.16);
+    border:1px solid #4a8f4f;
+    border-radius:6px;
+    padding:8px 14px;
+    font-size:11.5px;
+    line-height:1.4;
+    color:var(--text);
+    max-width:260px;
+  }
+  .placeholder-privacy .privacy-icon{ font-size:15px; flex-shrink:0; }
+  .placeholder-privacy strong{ color:#4a8f4f; }
   .preview-box img#user-photo{
     width:100%;height:100%;object-fit:contain;
     object-position:center top;
@@ -185,6 +204,48 @@
   }
   .drag-hint.show{ opacity:1; }
 
+  .photo-outfit-palette{
+    position:absolute;
+    bottom:10px;left:10px;
+    z-index:6;
+    background:rgba(0,0,0,0.65);
+    border:1px solid #d9b45c;
+    border-radius:8px;
+    padding:9px 11px;
+    display:none;
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    cursor:pointer;
+    user-select:none;
+  }
+  .photo-outfit-palette.show{ display:block; }
+  .po-row{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-bottom:6px;
+  }
+  .po-row:last-child{ margin-bottom:0; }
+  .po-label{
+    font-size:7.5px;
+    color:#f5deA0;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    min-width:42px;
+    flex-shrink:0;
+  }
+  .po-dot{
+    width:15px;height:15px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.3);
+    box-shadow:inset 0 -2px 2px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.25);
+    flex-shrink:0;
+    transition:transform .12s, box-shadow .12s;
+  }
+  .po-dot.po-dot-active{
+    box-shadow:0 0 0 2px #f5deA0, inset 0 -2px 2px rgba(0,0,0,0.35), inset 0 1px 2px rgba(255,255,255,0.25);
+    transform:scale(1.15);
+  }
+
   /* Crop / pad overlay */
   .crop-box{
     position:absolute;
@@ -197,16 +258,18 @@
   }
   .crop-handle{
     position:absolute;
-    width:18px;height:18px;
+    width:30px;height:30px;
     background:var(--gold-soft);
-    border:1px solid #000;
+    border:2px solid #000;
+    border-radius:4px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.4);
     z-index:11;
     touch-action:none;
   }
-  .crop-handle.nw{top:-9px;left:-9px;cursor:nwse-resize;}
-  .crop-handle.ne{top:-9px;right:-9px;cursor:nesw-resize;}
-  .crop-handle.sw{bottom:-9px;left:-9px;cursor:nesw-resize;}
-  .crop-handle.se{bottom:-9px;right:-9px;cursor:nwse-resize;}
+  .crop-handle.nw{top:-15px;left:-15px;cursor:nwse-resize;}
+  .crop-handle.ne{top:-15px;right:-15px;cursor:nesw-resize;}
+  .crop-handle.sw{bottom:-15px;left:-15px;cursor:nesw-resize;}
+  .crop-handle.se{bottom:-15px;right:-15px;cursor:nwse-resize;}
 
   /* ---------------- Panel de controles ---------------- */
   .control-panel{
@@ -249,6 +312,23 @@
     border-bottom:1px solid var(--line);
   }
   .control-group:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+
+  .privacy-notice{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    background:rgba(46,125,50,0.14);
+    border:1px solid #4a8f4f;
+    border-radius:4px;
+    padding:9px 11px;
+    margin-bottom:10px;
+    font-size:11.5px;
+    line-height:1.4;
+    color:var(--text);
+  }
+  .privacy-icon{ font-size:15px; flex-shrink:0; line-height:1.3; }
+  .privacy-notice strong{ color:#4a8f4f; }
+  body.theme-light .privacy-notice{ background:rgba(46,125,50,0.08); }
 
   input[type="file"]{
     width:100%;
@@ -343,6 +423,62 @@
     text-align:center;
   }
   .color-btn.active span.name{color:var(--gold-soft);}
+
+  /* ---------------- Panel de combinaciones sugeridas ---------------- */
+  .outfit-table{
+    display:grid;
+    grid-template-columns:56px repeat(3, 1fr);
+    gap:10px 6px;
+    align-items:center;
+    cursor:pointer;
+    user-select:none;
+    padding:4px;
+    border-radius:4px;
+  }
+  .outfit-col-header{
+    font-size:9px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--gold-soft);
+    text-align:center;
+    padding:3px 2px;
+    border-radius:3px;
+    transition:background .15s, color .15s;
+  }
+  .outfit-col-header:hover{ background:rgba(201,162,75,0.15); }
+  .outfit-col-header.active{
+    background:var(--gold);
+    color:#0b0b0c;
+    font-weight:600;
+  }
+  .outfit-row-label{
+    font-size:10px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .outfit-cell{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    padding:3px;
+    border-radius:4px;
+    transition:background .15s;
+  }
+  .outfit-cell:hover{ background:rgba(201,162,75,0.12); }
+  .outfit-dot{
+    width:24px;height:24px;
+    border-radius:50%;
+    border:1px solid rgba(0,0,0,0.15);
+    box-shadow:inset 0 -2px 3px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.25);
+  }
+  .outfit-cell .colorname{
+    font-size:8.5px;
+    color:var(--text);
+    text-align:center;
+    line-height:1.2;
+  }
 
   /* ---------------- Footer ---------------- */
   .site-footer{
@@ -463,6 +599,14 @@
       border:none;
     }
 
+    .crop-handle{
+      width:42px;height:42px;
+    }
+    .crop-handle.nw{top:-21px;left:-21px;}
+    .crop-handle.ne{top:-21px;right:-21px;}
+    .crop-handle.sw{bottom:-21px;left:-21px;}
+    .crop-handle.se{bottom:-21px;right:-21px;}
+
     .controls-fab{ display:flex; }
     .drawer-backdrop.open{ display:block; }
 
@@ -518,7 +662,8 @@
     <div class="canvas-area">
       <div class="preview-box" id="previewBox">
         <span class="frame-tag" id="colorTag" style="display:none;"><span id="colorTagName">VINOTINTO</span> <span aria-hidden="true">›</span></span>
-        <p id="placeholder-text">Toca aquí para subir una foto<br>y comenzar tu prueba de estilo</p>
+        <div class="photo-outfit-palette" id="photoOutfitPalette"></div>
+        <p id="placeholder-text">Toca aquí para subir una foto<br>y comenzar tu prueba de estilo<span class="placeholder-privacy"><span class="privacy-icon">🔒</span><span>Tus fotos se procesan <strong>solo en este dispositivo</strong>. No se suben ni se comparten en internet.</span></span></p>
         <div class="photo-backdrop" id="photoBackdrop"></div>
         <img id="user-photo" src="" alt="">
 
@@ -529,7 +674,7 @@
           <div class="crop-handle se"></div>
         </div>
 
-        <svg id="shirt" class="shirt-overlay" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+        <svg id="shirt" class="shirt-overlay" viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg" style="display:none;">
           <defs>
             <linearGradient id="lightSheen" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%"  stop-color="#ffffff" stop-opacity="0.55"/>
@@ -551,15 +696,14 @@
             </radialGradient>
           </defs>
 
+          <!-- ===== CAMISA (recortada a la cintura) — prioridad visual principal ===== -->
           <g id="shirtBody" fill="#6B1724">
-            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 Z"/>
-            <path d="M 205,55 L 255,60 L 285,110 L 292,175 L 265,185 L 245,130 L 222,95 Z"/>
-            <path d="M 95,55 L 78,95 L 68,180 L 60,340 L 75,395 L 225,395 L 240,340 L 232,180 L 222,95 L 205,55 L 150,90 Z"/>
+            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 L 68,180 L 62,300 L 238,300 L 232,180 L 222,95 L 245,130 L 265,185 L 292,175 L 285,110 L 255,60 L 205,55 L 150,90 Z" stroke="rgba(0,0,0,0.4)" stroke-width="2.2" stroke-linejoin="round"/>
           </g>
 
           <g stroke="rgba(0,0,0,0.22)" stroke-width="1.4" fill="none">
-            <path d="M 95,55 L 78,95 L 68,180 L 60,340"/>
-            <path d="M 205,55 L 222,95 L 232,180 L 240,340"/>
+            <path d="M 95,55 L 78,95 L 68,180 L 62,300"/>
+            <path d="M 205,55 L 222,95 L 232,180 L 238,300"/>
             <path d="M 78,95 L 55,130"/>
             <path d="M 222,95 L 245,130"/>
           </g>
@@ -570,22 +714,43 @@
           <path d="M 95,55 L 150,90 L 205,55 L 150,72 Z" fill="url(#collarInner)"/>
           <path d="M 88,140 L 118,140 L 116,168 L 90,168 Z" fill="rgba(0,0,0,0.14)" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
 
-          <line x1="150" y1="92" x2="150" y2="392" stroke="rgba(0,0,0,0.25)" stroke-width="1.5"/>
+          <line x1="150" y1="92" x2="150" y2="298" stroke="rgba(0,0,0,0.25)" stroke-width="1.5"/>
           <circle cx="150" cy="125" r="3" fill="rgba(0,0,0,0.3)"/>
           <circle cx="150" cy="170" r="3" fill="rgba(0,0,0,0.3)"/>
           <circle cx="150" cy="215" r="3" fill="rgba(0,0,0,0.3)"/>
           <circle cx="150" cy="260" r="3" fill="rgba(0,0,0,0.3)"/>
-          <circle cx="150" cy="305" r="3" fill="rgba(0,0,0,0.3)"/>
-          <circle cx="150" cy="350" r="3" fill="rgba(0,0,0,0.3)"/>
 
           <path d="M 65,220 Q 150,232 235,220 L 235,226 Q 150,238 65,226 Z" fill="url(#foldShade)"/>
-          <path d="M 62,300 Q 150,312 238,300 L 238,306 Q 150,318 62,306 Z" fill="url(#foldShade)"/>
 
           <g style="mix-blend-mode:soft-light;">
-            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 Z" fill="url(#lightSheen)"/>
-            <path d="M 205,55 L 255,60 L 285,110 L 292,175 L 265,185 L 245,130 L 222,95 Z" fill="url(#lightSheen)"/>
-            <path d="M 95,55 L 78,95 L 68,180 L 60,340 L 75,395 L 225,395 L 240,340 L 232,180 L 222,95 L 205,55 L 150,90 Z" fill="url(#lightSheen)"/>
+            <path d="M 95,55 L 45,60 L 15,110 L 8,175 L 35,185 L 55,130 L 78,95 L 68,180 L 62,300 L 238,300 L 232,180 L 222,95 L 245,130 L 265,185 L 292,175 L 285,110 L 255,60 L 205,55 L 150,90 Z" fill="url(#lightSheen)"/>
           </g>
+
+          <!-- ===== Referencia de color: cinturón, pantalón y zapatos (secundarios, pueden quedar fuera de vista) ===== -->
+          <g id="beltBody" fill="#3D2817">
+            <rect x="62" y="300" width="176" height="13"/>
+            <rect x="140" y="300" width="20" height="13" fill="rgba(0,0,0,0.25)"/>
+          </g>
+
+          <g id="pantsBody" fill="#C2B183">
+            <path d="M 62,313 L 238,313 L 230,420 L 162,420 L 155,345 Q 150,352 145,345 L 138,420 L 70,420 Z"/>
+          </g>
+          <g stroke="rgba(0,0,0,0.18)" stroke-width="1.2" fill="none">
+            <path d="M 62,313 L 70,420"/>
+            <path d="M 145,345 L 138,420"/>
+            <path d="M 155,345 L 162,420"/>
+            <path d="M 238,313 L 230,420"/>
+            <path d="M 150,313 L 150,349"/>
+          </g>
+
+        <g id="shoesBody" fill="#9C7A54" stroke="rgba(0,0,0,0.25)" stroke-width="1.2" stroke-linejoin="round">
+          <!-- Zapato Izquierdo (Espejo exacto del ajuste manual, apuntando a la izquierda) -->
+          <path d="M 130,420 L 130,460 L 102,460 Q 88,454 75,456 L 45,460 Q 34,460 34,452 L 40,446 Q 65,434 94,420 Z" />
+        
+          <!-- Zapato Derecho (Tu ajuste manual optimizado en código, apuntando a la derecha) -->
+          <path d="M 170,420 L 170,460 L 198,460 Q 212,454 225,456 L 255,460 Q 266,460 266,452 L 260,446 Q 235,434 206,420 Z" />
+        </g>
+
         </svg>
 
         <span class="drag-hint" id="dragHint">Arrastra la camisa para moverla</span>
@@ -597,6 +762,10 @@
 
       <div class="control-group">
         <div class="step-label"><span class="num">1</span> Carga tu foto</div>
+        <div class="privacy-notice">
+          <span class="privacy-icon">🔒</span>
+          <span>Tus fotos se procesan <strong>solo en este dispositivo</strong>. No se suben ni se comparten en internet.</span>
+        </div>
         <input type="file" id="upload" accept="image/*">
         <div class="btn-row">
           <button class="ghost" id="startCropBtn" disabled>Recortar (cara y torso)</button>
@@ -635,6 +804,11 @@
         <div class="color-grid" id="colorGrid"></div>
       </div>
 
+      <div class="control-group">
+        <div class="step-label"><span class="num">4</span> Combina tu look</div>
+        <div id="outfitPanel"></div>
+      </div>
+
     </div>
   </div>
 
@@ -657,29 +831,112 @@
 
 <script>
   const catalogColors = [
-    { id: 1, name: "Arena", hex: "#EADCC3" },
-    { id: 2, name: "Lila", hex: "#9477C1" },
-    { id: 3, name: "Vinotinto", hex: "#6C1D2A" },
-    { id: 4, name: "Cobre", hex: "#A68D77" },
-    { id: 5, name: "Palo de Rosa", hex: "#E2939E" },
-    { id: 6, name: "Blanco", hex: "#FFFFFF" },
-    { id: 7, name: "Beige", hex: "#D6C3AF" },
-    { id: 8, name: "Azul Oscuro", hex: "#1A283C" },
-    { id: 9, name: "Rosado", hex: "#F3BCC4" },
-    { id: 10, name: "Azul Celeste", hex: "#A9C4E2" },
-    { id: 11, name: "Negro", hex: "#1C1C1C" },
-    { id: 12, name: "Azul Rey", hex: "#1047A1" },
-    { id: 13, name: "Rojo", hex: "#D31424" }
+    { id: 1, name: "Arena", hex: "#EADCC3",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café claro", hex:"#9C7A54"}, zapatos:{name:"Café claro", hex:"#9C7A54"} },
+        { label:"Formal",   pantalon:{name:"Gris medio", hex:"#6E6E6E"}, cinturon:{name:"Marrón oscuro", hex:"#3D2817"}, zapatos:{name:"Marrón oscuro", hex:"#3D2817"} },
+        { label:"Elegante", pantalon:{name:"Blanco", hex:"#F5F5F0"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} }
+      ]
+    },
+    { id: 2, name: "Lila", hex: "#9477C1",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Gris claro", hex:"#B9B7B2"}, cinturon:{name:"Gris oxford", hex:"#4A4A4A"}, zapatos:{name:"Blanco", hex:"#F5F5F0"} },
+        { label:"Formal",   pantalon:{name:"Stone", hex:"#C9BBA0"}, cinturon:{name:"Marrón", hex:"#6B4226"}, zapatos:{name:"Marrón", hex:"#6B4226"} },
+        { label:"Elegante", pantalon:{name:"Azul marino", hex:"#1A283C"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} }
+      ]
+    },
+    { id: 3, name: "Vinotinto", hex: "#6C1D2A",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Beige", hex:"#D6C3AF"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Marrón oscuro", hex:"#3D2817"}, zapatos:{name:"Marrón oscuro", hex:"#3D2817"} },
+        { label:"Elegante", pantalon:{name:"Camel", hex:"#C19A6B"}, cinturon:{name:"Marrón oscuro", hex:"#3D2817"}, zapatos:{name:"Marrón oscuro", hex:"#3D2817"} }
+      ]
+    },
+    { id: 4, name: "Cobre", hex: "#A68D77",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café claro", hex:"#9C7A54"}, zapatos:{name:"Café claro", hex:"#9C7A54"} },
+        { label:"Formal",   pantalon:{name:"Café", hex:"#6B4226"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Elegante", pantalon:{name:"Marrón oscuro", hex:"#3D2817"}, cinturon:{name:"Marrón oscuro", hex:"#3D2817"}, zapatos:{name:"Marrón oscuro", hex:"#3D2817"} }
+      ]
+    },
+    { id: 5, name: "Palo de Rosa", hex: "#E2939E",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Blanco", hex:"#F5F5F0"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Stone", hex:"#C9BBA0"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} }
+      ]
+    },
+    { id: 6, name: "Blanco", hex: "#FFFFFF",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Formal",   pantalon:{name:"Negro", hex:"#1C1C1C"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Azul marino", hex:"#1A283C"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} }
+      ]
+    },
+    { id: 7, name: "Beige", hex: "#D6C3AF",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café claro", hex:"#9C7A54"}, zapatos:{name:"Café claro", hex:"#9C7A54"} },
+        { label:"Formal",   pantalon:{name:"Gris medio", hex:"#6E6E6E"}, cinturon:{name:"Marrón", hex:"#6B4226"}, zapatos:{name:"Marrón", hex:"#6B4226"} },
+        { label:"Elegante", pantalon:{name:"Marrón oscuro", hex:"#3D2817"}, cinturon:{name:"Marrón oscuro", hex:"#3D2817"}, zapatos:{name:"Marrón oscuro", hex:"#3D2817"} }
+      ]
+    },
+    { id: 8, name: "Azul Oscuro", hex: "#1A283C",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Gris claro", hex:"#B9B7B2"}, cinturon:{name:"Café claro", hex:"#9C7A54"}, zapatos:{name:"Café claro", hex:"#9C7A54"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Crema", hex:"#F0E6D2"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} }
+      ]
+    },
+    { id: 9, name: "Rosado", hex: "#F3BCC4",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Blanco", hex:"#F5F5F0"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Azul marino", hex:"#1A283C"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} }
+      ]
+    },
+    { id: 10, name: "Azul Celeste", hex: "#A9C4E2",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Stone", hex:"#C9BBA0"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Azul marino", hex:"#1A283C"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} }
+      ]
+    },
+    { id: 11, name: "Negro", hex: "#1C1C1C",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Gris claro", hex:"#B9B7B2"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Camel", hex:"#C19A6B"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} }
+      ]
+    },
+    { id: 12, name: "Azul Rey", hex: "#1047A1",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Formal",   pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Blanco", hex:"#F5F5F0"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} }
+      ]
+    },
+    { id: 13, name: "Rojo", hex: "#D31424",
+      outfits: [
+        { label:"Casual",   pantalon:{name:"Caqui", hex:"#C2B183"}, cinturon:{name:"Café", hex:"#6B4226"}, zapatos:{name:"Café", hex:"#6B4226"} },
+        { label:"Formal",   pantalon:{name:"Negro", hex:"#1C1C1C"}, cinturon:{name:"Negro", hex:"#1C1C1C"}, zapatos:{name:"Negro", hex:"#1C1C1C"} },
+        { label:"Elegante", pantalon:{name:"Gris oxford", hex:"#4A4A4A"}, cinturon:{name:"Camel", hex:"#C19A6B"}, zapatos:{name:"Camel", hex:"#C19A6B"} }
+      ]
+    }
   ];
 
   const uploadInput = document.getElementById('upload');
   const userPhoto = document.getElementById('user-photo');
   const shirtSvg = document.getElementById('shirt');
   const shirtBody = document.getElementById('shirtBody');
+  const beltBody = document.getElementById('beltBody');
+  const pantsBody = document.getElementById('pantsBody');
+  const shoesBody = document.getElementById('shoesBody');
   const placeholderText = document.getElementById('placeholder-text');
   const colorGrid = document.getElementById('colorGrid');
+  const outfitPanel = document.getElementById('outfitPanel');
   const colorTag = document.getElementById('colorTag');
   const colorTagName = document.getElementById('colorTagName');
+  const photoOutfitPalette = document.getElementById('photoOutfitPalette');
   const previewBox = document.getElementById('previewBox');
   const dragHint = document.getElementById('dragHint');
   const photoBackdrop = document.getElementById('photoBackdrop');
@@ -699,8 +956,77 @@
   const rotateVal = document.getElementById('rotateVal');
 
   let hasPhoto = false;
+  let cropModeActive = false;
   let currentColorIndex = 2; // Vinotinto: coincide con el color por defecto de la camisa
+  let currentComboIndex = 0; // 0=Casual, 1=Formal, 2=Elegante — null = combinación mixta (piezas sueltas)
   const colorButtons = [];
+
+  function renderOutfits(color){
+    const headers = color.outfits.map((o, i) => `<span class="outfit-col-header" data-combo-index="${i}">${o.label}</span>`).join('');
+
+    function buildRow(rowLabel, piece){
+      const cells = color.outfits.map((o, i) => `
+        <div class="outfit-cell" data-piece="${piece}" data-combo-index="${i}" data-hex="${o[piece].hex}">
+          <div class="outfit-dot" style="background:${o[piece].hex}"></div>
+          <span class="colorname">${o[piece].name}</span>
+        </div>`).join('');
+      return `<span class="outfit-row-label">${rowLabel}</span>${cells}`;
+    }
+
+    outfitPanel.innerHTML = `
+      <div class="outfit-table">
+        <span></span>${headers}
+        ${buildRow('Cinturón', 'cinturon')}
+        ${buildRow('Pantalón', 'pantalon')}
+        ${buildRow('Zapatos', 'zapatos')}
+      </div>
+    `;
+  }
+
+  function renderPhotoOutfitPalette(color){
+    const pantalonDots = color.outfits.map(o => `<div class="po-dot" style="background:${o.pantalon.hex}"></div>`).join('');
+    const cinturonDots = color.outfits.map(o => `<div class="po-dot" style="background:${o.cinturon.hex}"></div>`).join('');
+    const zapatosDots = color.outfits.map(o => `<div class="po-dot" style="background:${o.zapatos.hex}"></div>`).join('');
+    photoOutfitPalette.innerHTML = `
+      <div class="po-row"><span class="po-label">Cinturón</span>${cinturonDots}</div>
+      <div class="po-row"><span class="po-label">Pantalón</span>${pantalonDots}</div>
+      <div class="po-row"><span class="po-label">Zapatos</span>${zapatosDots}</div>
+    `;
+  }
+
+  /* -------- Aplica una combinación completa (pantalón + cinturón + zapatos) -------- */
+  function applyCombo(index){
+    const color = catalogColors[currentColorIndex];
+    currentComboIndex = ((index % color.outfits.length) + color.outfits.length) % color.outfits.length;
+    const o = color.outfits[currentComboIndex];
+    pantsBody.setAttribute('fill', o.pantalon.hex);
+    beltBody.setAttribute('fill', o.cinturon.hex);
+    shoesBody.setAttribute('fill', o.zapatos.hex);
+    updateComboHighlight();
+  }
+
+  /* -------- Carga el color de una sola prenda (deja las demás como están) -------- */
+  function setSinglePiece(piece, hex){
+    if (piece === 'pantalon') pantsBody.setAttribute('fill', hex);
+    else if (piece === 'cinturon') beltBody.setAttribute('fill', hex);
+    else if (piece === 'zapatos') shoesBody.setAttribute('fill', hex);
+    currentComboIndex = null; // combinación mixta: ya no coincide con una sola columna
+    updateComboHighlight();
+  }
+
+  /* -------- Refleja visualmente cuál combinación está activa en ambos paneles -------- */
+  function updateComboHighlight(){
+    outfitPanel.querySelectorAll('.outfit-col-header').forEach(h => {
+      const idx = parseInt(h.dataset.comboIndex, 10);
+      h.classList.toggle('active', currentComboIndex !== null && idx === currentComboIndex);
+    });
+    photoOutfitPalette.querySelectorAll('.po-row').forEach(row => {
+      const dots = row.querySelectorAll('.po-dot');
+      dots.forEach((d, i) => {
+        d.classList.toggle('po-dot-active', currentComboIndex !== null && i === currentComboIndex);
+      });
+    });
+  }
 
   function selectColor(index){
     currentColorIndex = ((index % catalogColors.length) + catalogColors.length) % catalogColors.length;
@@ -710,7 +1036,32 @@
     shirtBody.setAttribute('fill', color.hex);
     colorTagName.textContent = color.name.toUpperCase();
     colorTag.style.display = 'block';
+    renderOutfits(color);
+    renderPhotoOutfitPalette(color);
+    applyCombo(0); // carga la primera columna (Casual) al cambiar de color de camisa
   }
+
+  /* -------- Interacciones del panel de opciones: encabezado = combo completo, celda = solo esa prenda, resto = siguiente combinación -------- */
+  outfitPanel.addEventListener('click', (e) => {
+    const headerEl = e.target.closest('.outfit-col-header');
+    if (headerEl) {
+      applyCombo(parseInt(headerEl.dataset.comboIndex, 10));
+      return;
+    }
+    const cellEl = e.target.closest('.outfit-cell');
+    if (cellEl) {
+      setSinglePiece(cellEl.dataset.piece, cellEl.dataset.hex);
+      return;
+    }
+    // Tocar el área de sugerencias fuera de una celda/encabezado: pasa a la siguiente combinación
+    applyCombo(currentComboIndex === null ? 0 : currentComboIndex + 1);
+  });
+
+  /* -------- Tocar el panel flotante sobre la foto: pasa a la siguiente combinación -------- */
+  photoOutfitPalette.addEventListener('click', (e) => {
+    e.stopPropagation(); // evita disparar el clic de "subir foto" / "aceptar recorte" del previewBox
+    applyCombo(currentComboIndex === null ? 0 : currentComboIndex + 1);
+  });
 
   /* -------- Colores del catálogo -------- */
   catalogColors.forEach((color, index) => {
@@ -726,6 +1077,12 @@
     colorButtons.push(btn);
   });
 
+  // Muestra el nombre de color activo y sus combinaciones desde el inicio
+  colorButtons[currentColorIndex].classList.add('active');
+  renderOutfits(catalogColors[currentColorIndex]);
+  renderPhotoOutfitPalette(catalogColors[currentColorIndex]);
+  applyCombo(0);
+
   /* -------- Zoom de la foto (aleja para dejar espacio en blanco) -------- */
   function applyPhotoZoom(){
     const z = zoomSlider.value / 100;
@@ -740,9 +1097,15 @@
     selectColor(currentColorIndex + 1);
   });
 
-  /* -------- Tocar el recuadro grande abre el selector de archivos -------- */
+  /* -------- Tocar el recuadro grande: abre el selector de archivos, o acepta el recorte si está activo -------- */
   previewBox.addEventListener('click', (e) => {
-    if (!hasPhoto && !e.target.closest('.crop-box')) {
+    if (cropModeActive) {
+      if (!e.target.closest('.crop-box')) {
+        applyCropBtn.click();
+      }
+      return;
+    }
+    if (!hasPhoto) {
       uploadInput.click();
     }
   });
@@ -766,6 +1129,7 @@
           selectColor(currentColorIndex);
           startCropBtn.disabled = false;
           zoomSlider.disabled = false;
+          photoOutfitPalette.classList.add('show');
           zoomSlider.value = 100;
           applyPhotoZoom();
 
@@ -1007,6 +1371,8 @@
     applyCropBtn.disabled = false;
     cancelCropBtn.disabled = false;
     startCropBtn.style.display = 'none';
+    cropModeActive = true;
+    photoOutfitPalette.classList.remove('show');
   }
 
   startCropBtn.addEventListener('click', (e) => {
@@ -1021,6 +1387,8 @@
     applyCropBtn.style.display = 'none';
     cancelCropBtn.style.display = 'none';
     startCropBtn.style.display = 'inline-block';
+    cropModeActive = false;
+    if (hasPhoto) photoOutfitPalette.classList.add('show');
   });
 
   applyCropBtn.addEventListener('click', (e) => {
@@ -1070,6 +1438,8 @@
       applyCropBtn.style.display = 'none';
       cancelCropBtn.style.display = 'none';
       startCropBtn.style.display = 'inline-block';
+      cropModeActive = false;
+      if (hasPhoto) photoOutfitPalette.classList.add('show');
     };
     img.src = userPhoto.src;
   });
