@@ -6,7 +6,7 @@
     <title>SmartPark · Control de Parqueadero</title>
 
     <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest_smartpark.json">
     <meta name="theme-color" content="#0B1120">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -335,6 +335,34 @@
                             </div>
                         </div>
 
+                        <!-- Auto-Auditoría del Operador -->
+                        <div class="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] shadow-xl space-y-4">
+                            <div class="flex flex-wrap justify-between items-center gap-3">
+                                <h2 class="font-display text-xl font-bold text-white">🧾 Mi Auditoría del Día</h2>
+                                <input type="date" id="autoaudit-fecha" onchange="cargarAutoAuditoriaOperador(this.value)" class="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-[var(--brand)]">
+                            </div>
+                            <p class="text-xs text-[var(--text-dim)]">Solo se muestran las salidas que tú despachaste en la fecha seleccionada; ningún otro operador aparece aquí.</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                                <div class="bg-[var(--bg)] p-3 rounded-xl border border-[var(--border)]"><p class="text-xs text-[var(--text-dim)] uppercase">🚗 Carros</p><p id="autoaudit-carro" class="font-display text-lg font-bold text-[var(--brand)]">$0</p></div>
+                                <div class="bg-[var(--bg)] p-3 rounded-xl border border-[var(--border)]"><p class="text-xs text-[var(--text-dim)] uppercase">🏍️ Motos</p><p id="autoaudit-moto" class="font-display text-lg font-bold text-[var(--go)]">$0</p></div>
+                                <div class="bg-[var(--bg)] p-3 rounded-xl border border-[var(--border)]"><p class="text-xs text-[var(--text-dim)] uppercase">🚲 Bicis</p><p id="autoaudit-bici" class="font-display text-lg font-bold text-[var(--caution)]">$0</p></div>
+                                <div class="bg-[var(--bg)] p-3 rounded-xl border border-[var(--border)]"><p class="text-xs text-[var(--text-dim)] uppercase">Total</p><p id="autoaudit-total" class="font-display text-lg font-bold text-white">$0</p></div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-slate-300">
+                                    <thead class="text-xs text-[var(--text-dim)] uppercase bg-[var(--bg)]/50">
+                                        <tr>
+                                            <th class="px-4 py-3">Placa</th>
+                                            <th class="px-4 py-3">Tipo</th>
+                                            <th class="px-4 py-3">Hora Salida</th>
+                                            <th class="px-4 py-3 text-right">Cobrado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-autoaudit-body" class="divide-y divide-[var(--border)]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
                         <!-- Buscador -->
                         <div class="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] shadow-xl space-y-4">
                             <h2 class="font-display text-xl font-bold text-white">🔍 Búsqueda de Vehículos (Historial General)</h2>
@@ -436,13 +464,43 @@
                     <!-- VISTA: AUDITOR -->
                     <section id="vista-auditor" class="hidden space-y-6">
                         <h2 class="font-display text-2xl font-bold text-white">📊 Trazabilidad y Auditoría Financiera</h2>
+                        <p class="text-sm text-[var(--text-dim)] -mt-4">Vista consolidada de todos los días y todos los operadores; no se filtra por usuario.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                             <div class="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)]"><p class="text-sm text-[var(--text-dim)]">Carros</p><p id="aud-caja-carro" class="font-display text-2xl font-bold text-[var(--brand)]">$0</p></div>
                             <div class="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)]"><p class="text-sm text-[var(--text-dim)]">Motos</p><p id="aud-caja-moto" class="font-display text-2xl font-bold text-[var(--go)]">$0</p></div>
                             <div class="bg-[var(--surface)] p-4 rounded-2xl border border-[var(--border)]"><p class="text-sm text-[var(--text-dim)]">Bicis</p><p id="aud-caja-bici" class="font-display text-2xl font-bold text-[var(--caution)]">$0</p></div>
                         </div>
                         <div class="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] shadow-xl">
-                            <h3 class="text-lg font-bold text-white mb-4">📜 Bitácora Histórica</h3>
+                            <h3 class="text-lg font-bold text-white mb-4">👥 Recaudo por Operador (Todos los Usuarios)</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-slate-300">
+                                    <thead class="text-xs text-[var(--text-dim)] uppercase bg-[var(--bg)]/50">
+                                        <tr>
+                                            <th class="px-4 py-3">Operador</th>
+                                            <th class="px-4 py-3 text-right">Despachos</th>
+                                            <th class="px-4 py-3 text-right">Total Recaudado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-auditor-operadores-body" class="divide-y divide-[var(--border)]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="bg-[var(--surface)] p-6 rounded-2xl border border-[var(--border)] shadow-xl">
+                            <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                                <h3 class="text-lg font-bold text-white">📜 Bitácora Histórica</h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <label class="text-xs font-semibold text-[var(--text-dim)] uppercase">Desde</label>
+                                    <input type="date" id="aud-filtro-desde" onchange="aplicarFiltrosAuditor()" class="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--brand)]">
+                                    <label class="text-xs font-semibold text-[var(--text-dim)] uppercase">Hasta</label>
+                                    <input type="date" id="aud-filtro-hasta" onchange="aplicarFiltrosAuditor()" class="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--brand)]">
+                                    <button onclick="limpiarFiltrosFechaAuditor()" class="text-xs text-[var(--text-dim)] hover:text-white underline px-1">Limpiar fechas</button>
+                                    <label class="text-xs font-semibold text-[var(--text-dim)] uppercase ml-2">Operador</label>
+                                    <select id="aud-filtro-operador" onchange="aplicarFiltrosAuditor()" class="bg-[var(--bg)] border border-[var(--border)] rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[var(--brand)]">
+                                        <option value="">Todos los operadores</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="text-xs text-[var(--text-dim)] -mt-2 mb-3">El rango de fechas filtra por la fecha de <strong>ingreso</strong> del vehículo.</p>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left text-sm text-slate-300">
                                     <thead class="text-xs text-[var(--text-dim)] uppercase bg-[var(--bg)]/50">
@@ -451,6 +509,8 @@
                                             <th class="px-4 py-3">Placa</th>
                                             <th class="px-4 py-3">Propietario</th>
                                             <th class="px-4 py-3">Ingreso/Salida</th>
+                                            <th class="px-4 py-3">Operador Ingreso</th>
+                                            <th class="px-4 py-3">Operador Despacho</th>
                                             <th class="px-4 py-3">Novedades</th>
                                             <th class="px-4 py-3 text-right">Recaudo</th>
                                         </tr>
@@ -846,7 +906,7 @@
             actualizarNavActivo(vista);
 
             let elActivo = null;
-            if (vista === 'operador') elActivo = document.getElementById('vista-operador');
+            if (vista === 'operador') { elActivo = document.getElementById('vista-operador'); cargarAutoAuditoriaOperador(); }
             if (vista === 'administrador') elActivo = document.getElementById('vista-administrador');
             if (vista === 'usuarios') { elActivo = document.getElementById('vista-usuarios'); cargarTablaUsuariosAdmin(); }
             if (vista === 'auditor') { elActivo = document.getElementById('vista-auditor'); cargarReportesAuditor(); }
@@ -1063,7 +1123,7 @@
             const correo = document.getElementById('ingreso-correo').value.trim();
             const notas = document.getElementById('ingreso-notas').value.trim();
 
-            let payload = { placa, tipo_vehiculo, nombre, telefono, correo, notas: notas || null };
+            let payload = { placa, tipo_vehiculo, nombre, telefono, correo, notas: notas || null, registrado_por: usuarioActual?.email || null };
             if (config.seguridadTiempos === "permitido" && document.getElementById('ingreso-hora-manual').value) {
                 payload.hora_ingreso = new Date(document.getElementById('ingreso-hora-manual').value).toISOString();
             }
@@ -1202,6 +1262,7 @@
             if (document.getElementById('salida-hora-manual').value) horaSalidaFinal = new Date(document.getElementById('salida-hora-manual').value).toISOString();
 
             const liq = calcularLiquidacion(vehiculoSeleccionado, horaSalidaFinal);
+            const despachadoPor = usuarioActual?.email || null;
 
             if (esModoPrueba) {
                 const registro = demoDB.vehiculos.find(v => v.id === vehiculoSeleccionado.id);
@@ -1209,18 +1270,97 @@
                     registro.hora_salida = horaSalidaFinal;
                     registro.valor_pagado = liq.costoReal;
                     registro.ahorro_obtenido = liq.ahorro;
+                    registro.despachado_por = despachadoPor;
                 }
                 alert(`✅ Salida procesada (modo prueba). Recaudo: $${liq.costoReal.toLocaleString()}`);
                 cerrarModalDetalle();
                 cargarDatosParqueadero();
+                cargarAutoAuditoriaOperador();
                 return;
             }
 
-            const { error } = await supabaseClient.from('parqueadero').update({ hora_salida: horaSalidaFinal, valor_pagado: liq.costoReal, ahorro_obtenido: liq.ahorro }).eq('id', vehiculoSeleccionado.id);
+            const { error } = await supabaseClient.from('parqueadero').update({ hora_salida: horaSalidaFinal, valor_pagado: liq.costoReal, ahorro_obtenido: liq.ahorro, despachado_por: despachadoPor }).eq('id', vehiculoSeleccionado.id);
             if (error) alert("Error: " + error.message);
-            else { alert(`✅ Salida procesada. Recaudo: $${liq.costoReal.toLocaleString()}`); cerrarModalDetalle(); cargarDatosParqueadero(); }
+            else {
+                alert(`✅ Salida procesada. Recaudo: $${liq.costoReal.toLocaleString()}`);
+                cerrarModalDetalle();
+                cargarDatosParqueadero();
+                cargarAutoAuditoriaOperador();
+            }
         }
         document.getElementById('btn-procesar-salida').onclick = procesarSalida;
+
+        function fechaHoyISO() {
+            const d = new Date();
+            const offsetMs = d.getTimezoneOffset() * 60000;
+            return new Date(d.getTime() - offsetMs).toISOString().slice(0, 10);
+        }
+
+        // Auto-Auditoría: cada operador solo ve lo que ÉL despachó, nunca lo de otros compañeros.
+        async function cargarAutoAuditoriaOperador(fechaStr) {
+            if (!usuarioActual || (rolActual !== 'operador' && rolActual !== 'demo')) return;
+
+            const tablaEl = document.getElementById('tabla-autoaudit-body');
+            const fechaInput = document.getElementById('autoaudit-fecha');
+            if (!tablaEl || !fechaInput) return;
+
+            const fecha = fechaStr || fechaInput.value || fechaHoyISO();
+            fechaInput.value = fecha;
+
+            const inicio = new Date(fecha + 'T00:00:00');
+            const fin = new Date(fecha + 'T23:59:59.999');
+            let data = [];
+
+            if (esModoPrueba) {
+                data = demoDB.vehiculos.filter(v =>
+                    v.despachado_por === usuarioActual.email &&
+                    v.hora_salida &&
+                    new Date(v.hora_salida) >= inicio && new Date(v.hora_salida) <= fin
+                );
+            } else {
+                const res = await supabaseClient.from('parqueadero').select('*')
+                    .eq('despachado_por', usuarioActual.email)
+                    .gte('hora_salida', inicio.toISOString())
+                    .lte('hora_salida', fin.toISOString());
+                data = res.data || [];
+            }
+
+            data.sort((a, b) => new Date(b.hora_salida) - new Date(a.hora_salida));
+
+            let totales = { carro: 0, moto: 0, bicicleta: 0 };
+            tablaEl.innerHTML = "";
+
+            data.forEach(v => {
+                totales[v.tipo_vehiculo] = (totales[v.tipo_vehiculo] || 0) + Number(v.valor_pagado || 0);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[var(--surface-2)]/60 text-xs";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-plate font-bold text-[var(--brand)]">${v.placa.toUpperCase()}</td>
+                    <td class="px-4 py-3 capitalize">${v.tipo_vehiculo}</td>
+                    <td class="px-4 py-3">${new Date(v.hora_salida).toLocaleTimeString()}</td>
+                    <td class="px-4 py-3 text-right font-bold text-[var(--go)]">$${Number(v.valor_pagado || 0).toLocaleString()}</td>
+                `;
+                tablaEl.appendChild(tr);
+            });
+
+            if (data.length === 0) {
+                tablaEl.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-[var(--text-dim)]">Sin despachos registrados por ti en esta fecha.</td></tr>`;
+            }
+
+            const total = totales.carro + totales.moto + totales.bicicleta;
+            document.getElementById('autoaudit-carro').innerText = `$${totales.carro.toLocaleString()}`;
+            document.getElementById('autoaudit-moto').innerText = `$${totales.moto.toLocaleString()}`;
+            document.getElementById('autoaudit-bici').innerText = `$${totales.bicicleta.toLocaleString()}`;
+            document.getElementById('autoaudit-total').innerText = `$${total.toLocaleString()}`;
+
+            // La tarjeta "Caja del Día" en el dashboard refleja el total de HOY despachado por este operador.
+            if (fecha === fechaHoyISO()) {
+                const cajaEl = document.getElementById('txt-ventas-dia');
+                if (cajaEl) cajaEl.innerText = `$${total.toLocaleString()}`;
+            }
+        }
+
+        let datosAuditorCache = [];
 
         async function cargarReportesAuditor() {
             let data;
@@ -1230,28 +1370,112 @@
                 const res = await supabaseClient.from('parqueadero').select('*').order('creado_en', { ascending: false });
                 data = res.data;
             }
-            const tbody = document.getElementById('tabla-auditor-body');
-            tbody.innerHTML = "";
-            let cajas = { carro: 0, moto: 0, bicicleta: 0 };
             if (!data) return;
+            datosAuditorCache = data;
 
+            // Poblar el filtro con todos los operadores distintos (ingreso o salida)
+            const selectFiltro = document.getElementById('aud-filtro-operador');
+            const valorPrevio = selectFiltro ? selectFiltro.value : "";
+            const operadoresUnicos = new Set();
+            data.forEach(v => {
+                if (v.registrado_por) operadoresUnicos.add(v.registrado_por);
+                if (v.despachado_por) operadoresUnicos.add(v.despachado_por);
+            });
+            if (selectFiltro) {
+                selectFiltro.innerHTML = `<option value="">Todos los operadores</option>` +
+                    [...operadoresUnicos].sort().map(op => `<option value="${op}">${op}</option>`).join("");
+                selectFiltro.value = [...operadoresUnicos].includes(valorPrevio) ? valorPrevio : "";
+            }
+
+            let cajas = { carro: 0, moto: 0, bicicleta: 0 };
+            let porOperador = {}; // { correo: { despachos, total } } — cubre a TODOS los operadores, no solo el que audita
             data.forEach(v => {
                 cajas[v.tipo_vehiculo] += Number(v.valor_pagado || 0);
+
+                if (v.despachado_por && v.hora_salida) {
+                    if (!porOperador[v.despachado_por]) porOperador[v.despachado_por] = { despachos: 0, total: 0 };
+                    porOperador[v.despachado_por].despachos += 1;
+                    porOperador[v.despachado_por].total += Number(v.valor_pagado || 0);
+                }
+            });
+
+            document.getElementById('aud-caja-carro').innerText = `$${cajas.carro.toLocaleString()}`;
+            document.getElementById('aud-caja-moto').innerText = `$${cajas.moto.toLocaleString()}`;
+            document.getElementById('aud-caja-bici').innerText = `$${cajas.bicicleta.toLocaleString()}`;
+
+            const tbodyOperadores = document.getElementById('tabla-auditor-operadores-body');
+            if (tbodyOperadores) {
+                tbodyOperadores.innerHTML = "";
+                const listaOperadores = Object.entries(porOperador).sort((a, b) => b[1].total - a[1].total);
+                if (listaOperadores.length === 0) {
+                    tbodyOperadores.innerHTML = `<tr><td colspan="3" class="px-4 py-6 text-center text-[var(--text-dim)]">Aún no hay despachos con operador registrado.</td></tr>`;
+                } else {
+                    listaOperadores.forEach(([correo, stats]) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-[var(--surface-2)]/60 text-xs";
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 font-semibold text-white">${correo}</td>
+                            <td class="px-4 py-3 text-right">${stats.despachos}</td>
+                            <td class="px-4 py-3 text-right font-bold text-[var(--go)]">$${stats.total.toLocaleString()}</td>
+                        `;
+                        tbodyOperadores.appendChild(tr);
+                    });
+                }
+            }
+
+            aplicarFiltrosAuditor();
+        }
+
+        function limpiarFiltrosFechaAuditor() {
+            document.getElementById('aud-filtro-desde').value = "";
+            document.getElementById('aud-filtro-hasta').value = "";
+            aplicarFiltrosAuditor();
+        }
+
+        // Renderiza la bitácora a partir de la caché ya cargada, combinando filtro de operador y rango de fechas (por fecha de ingreso).
+        function aplicarFiltrosAuditor() {
+            const tbody = document.getElementById('tabla-auditor-body');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const operadorFiltro = document.getElementById('aud-filtro-operador')?.value || "";
+            const desdeStr = document.getElementById('aud-filtro-desde')?.value || "";
+            const hastaStr = document.getElementById('aud-filtro-hasta')?.value || "";
+            const desde = desdeStr ? new Date(desdeStr + 'T00:00:00') : null;
+            const hasta = hastaStr ? new Date(hastaStr + 'T23:59:59.999') : null;
+
+            let datos = datosAuditorCache;
+
+            if (operadorFiltro) {
+                datos = datos.filter(v => v.registrado_por === operadorFiltro || v.despachado_por === operadorFiltro);
+            }
+            if (desde) {
+                datos = datos.filter(v => new Date(v.hora_ingreso) >= desde);
+            }
+            if (hasta) {
+                datos = datos.filter(v => new Date(v.hora_ingreso) <= hasta);
+            }
+
+            if (datos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-[var(--text-dim)]">Sin registros para los filtros seleccionados.</td></tr>`;
+                return;
+            }
+
+            datos.forEach(v => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-[var(--surface-2)]/60 text-xs";
                 tr.innerHTML = `
                     <td class="px-4 py-3">#${v.id}</td>
                     <td class="px-4 py-3 font-bold">${v.placa.toUpperCase()}</td>
                     <td class="px-4 py-3">${v.nombre || 'N/A'}</td>
-                    <td class="px-4 py-3">${new Date(v.hora_ingreso).toLocaleTimeString()} / ${v.hora_salida ? new Date(v.hora_salida).toLocaleTimeString() : 'En patio'}</td>
+                    <td class="px-4 py-3">${new Date(v.hora_ingreso).toLocaleString()} / ${v.hora_salida ? new Date(v.hora_salida).toLocaleString() : 'En patio'}</td>
+                    <td class="px-4 py-3">${v.registrado_por || 'N/A'}</td>
+                    <td class="px-4 py-3">${v.despachado_por || (v.hora_salida ? 'N/A' : '—')}</td>
                     <td class="px-4 py-3">${v.notas || 'Sin novedad'}</td>
                     <td class="px-4 py-3 text-right font-bold text-[var(--go)]">$${Number(v.valor_pagado||0).toLocaleString()}</td>
                 `;
                 tbody.appendChild(tr);
             });
-            document.getElementById('aud-caja-carro').innerText = `$${cajas.carro.toLocaleString()}`;
-            document.getElementById('aud-caja-moto').innerText = `$${cajas.moto.toLocaleString()}`;
-            document.getElementById('aud-caja-bici').innerText = `$${cajas.bicicleta.toLocaleString()}`;
         }
 
         async function inyectarDatosSemilla() {
@@ -1284,10 +1508,35 @@
                     valor_pagado: null,
                     ahorro_obtenido: null,
                     datos_eliminados: false,
+                    registrado_por: usuarioActual?.email || null,
                     creado_en: new Date().toISOString()
                 });
             });
+
+            // Un par de salidas ya despachadas HOY por el usuario demo, para poblar
+            // "Mi Auditoría del Día" y el desglose por operador sin datos vacíos.
+            const despachosDemo = [
+                { placa: "kkk111", tipo_vehiculo: "carro", nombre: "Sofía Ramírez", telefono: "3011112222", correo: "sofia@gmail.com", ingresoHace: 3 * 60 * 60 * 1000, salidaHace: 30 * 60 * 1000, cobrado: 8500 },
+                { placa: "lll222", tipo_vehiculo: "moto", nombre: "Pedro Álvarez", telefono: "3022223333", correo: "pedro@gmail.com", ingresoHace: 2 * 60 * 60 * 1000, salidaHace: 10 * 60 * 1000, cobrado: 4500 }
+            ];
+            despachosDemo.forEach(d => {
+                demoDB.vehiculos.push({
+                    id: demoDB.nextId++,
+                    placa: d.placa, tipo_vehiculo: d.tipo_vehiculo, nombre: d.nombre, telefono: d.telefono, correo: d.correo,
+                    notas: null,
+                    hora_ingreso: new Date(ahora.getTime() - d.ingresoHace).toISOString(),
+                    hora_salida: new Date(ahora.getTime() - d.salidaHace).toISOString(),
+                    valor_pagado: d.cobrado,
+                    ahorro_obtenido: 0,
+                    datos_eliminados: false,
+                    registrado_por: usuarioActual?.email || null,
+                    despachado_por: usuarioActual?.email || null,
+                    creado_en: new Date().toISOString()
+                });
+            });
+
             cargarDatosParqueadero();
+            cargarAutoAuditoriaOperador();
         }
 
         function formatearTiempo(minutos) {
@@ -1298,7 +1547,7 @@
         // Registrar el Service Worker (PWA) al cargar
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
+                navigator.serviceWorker.register('sw_smartpark.js').catch(() => {});
             });
         }
     </script>
