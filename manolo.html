@@ -24,7 +24,14 @@
     <meta name="twitter:title" content="✨ ¡Mi Mundo de Aprendizaje! - Aripar">
     <meta name="twitter:image" content="https://hotpadrino.github.io/manuelrarias/manolo.jpg">
     
-    <title>¡Mi Mundo de Aprendizaje! - Aripar</title>
+    <!-- Configuración PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4d96ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2490/2490402.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Configuración Base */
@@ -206,6 +213,28 @@
                 justify-content: space-between;
             }
         }
+
+        /* Estilos Botón PWA */
+        .btn-pwa {
+            display: none;
+            background: #6bcb77;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-family: 'Comic Neue', cursive;
+            box-shadow: 0 4px 0 #4ead5a;
+            transition: transform 0.1s, box-shadow 0.1s;
+            margin-top: 50px; /* Espacio extra debajo de las tarjetas */
+        }
+
+        .btn-pwa:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #4ead5a;
+        }
     </style>
 </head>
 <body>
@@ -268,6 +297,12 @@
                 <div class="titulo-tarjeta">Jarras</div>
             </a>
         </div>
+
+        <!-- Botón de Instalación PWA (Oculto por defecto) -->
+        <button id="btn-instalar-pwa" class="btn-pwa">
+            📲 Instalar App
+        </button>
+
     </main>
 
     <footer class="footer-infantil">
@@ -285,5 +320,32 @@
         </div>
     </footer>
 
+    <!-- Script PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js');
+        });
+      }
+
+      let eventoInstalacion;
+      const botonInstalar = document.getElementById('btn-instalar-pwa');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        eventoInstalacion = e;
+        botonInstalar.style.display = 'inline-block';
+      });
+
+      botonInstalar.addEventListener('click', async () => {
+        if (!eventoInstalacion) return;
+        eventoInstalacion.prompt();
+        const { outcome } = await eventoInstalacion.userChoice;
+        if (outcome === 'accepted') {
+          botonInstalar.style.display = 'none';
+        }
+        eventoInstalacion = null;
+      });
+    </script>
 </body>
 </html>
