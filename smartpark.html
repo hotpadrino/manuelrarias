@@ -474,6 +474,19 @@
                 <button id="btn-cerrar-modal-perfil" onclick="cerrarModalPerfil()" class="text-[var(--text-dim)] hover:text-white font-bold text-lg hidden">✕</button>
             </div>
             <p id="txt-banner-perfil" class="text-xs text-[var(--caution)] bg-[color-mix(in_srgb,var(--caution)_12%,transparent)] p-3 rounded-xl border border-[color-mix(in_srgb,var(--caution)_30%,transparent)]">⚠️ Completa tus datos para actualizar tu perfil.</p>
+
+            <!-- Información de solo lectura: correo y rol asignado -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm bg-[var(--bg)] border border-[var(--border)] rounded-xl p-3">
+                <div>
+                    <span class="block text-[10px] font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-0.5">Correo</span>
+                    <span id="perfil-correo-info" class="block text-white font-medium truncate">—</span>
+                </div>
+                <div>
+                    <span class="block text-[10px] font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-0.5">Rol asignado</span>
+                    <span id="perfil-rol-info" class="inline-block px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-[var(--surface-2)] text-[var(--text-dim)]">—</span>
+                </div>
+            </div>
+
             <div class="space-y-3 text-sm">
                 <div>
                     <label class="block text-xs font-semibold text-[var(--text-dim)] uppercase tracking-wider mb-1">Nombre Completo</label>
@@ -540,6 +553,19 @@
         let esModoPrueba = false;
         let memoriaVehiculos = [];
         let vehiculoSeleccionado = null;
+
+        // ---------- "Base de datos" 100% en memoria para el Modo de Prueba ----------
+        // Nada de lo que ocurra aquí toca Supabase ni la base de producción.
+        let demoDB = {
+            nextId: 1,
+            vehiculos: [],
+            usuarios: [
+                { id: 'demo-admin', correo: 'admin@demo.smartpark.com', nombre: 'Admin Demo', telefono: '3000000001', rol: 'administrador' },
+                { id: 'demo-operador', correo: 'operador@demo.smartpark.com', nombre: 'Operador Demo', telefono: '3000000002', rol: 'operador' },
+                { id: 'demo-auditor', correo: 'auditor@demo.smartpark.com', nombre: 'Auditor Demo', telefono: '3000000003', rol: 'auditor' },
+                { id: 'demo-pendiente', correo: 'nuevo@demo.smartpark.com', nombre: '', telefono: '', rol: 'pendiente' }
+            ]
+        };
 
         // ---------- Sidebar (nuevo, no existía en la versión anterior) ----------
         function toggleSidebar(forzar) {
@@ -670,13 +696,15 @@
                 navegarA('operador');
             } else {
                 document.getElementById('banner-modo-prueba').classList.add('hidden');
+                document.getElementById('banner-usuario-pendiente').classList.add('hidden');
                 actualizarBadgeRol(`Rol: ${rolActual}`, false);
 
                 if (rolActual === 'pendiente') {
-                    document.getElementById('banner-usuario-pendiente').classList.remove('hidden');
+                    // El único contenido visible para un usuario pendiente es el panel de datos:
+                    // ninguna vista de fondo, y el modal queda forzado (sin botón de cerrar).
                     navegarA(null);
+                    abrirModalPerfil(true);
                 } else {
-                    document.getElementById('banner-usuario-pendiente').classList.add('hidden');
                     if (!perfilActual.nombre || !perfilActual.telefono) abrirModalPerfil(true);
                     else if (rolActual === 'administrador') navegarA('administrador');
                     else if (rolActual === 'auditor') navegarA('auditor');
@@ -719,6 +747,23 @@
         function abrirModalPerfil(obligatorio = false) {
             document.getElementById('perfil-nombre').value = perfilActual?.nombre || '';
             document.getElementById('perfil-telefono').value = perfilActual?.telefono || '';
+
+            // Información de solo lectura: correo y rol, no editables desde aquí
+            document.getElementById('perfil-correo-info').innerText = usuarioActual?.email || '—';
+            const rolInfo = document.getElementById('perfil-rol-info');
+            rolInfo.innerText = rolActual || 'pendiente';
+            rolInfo.className = rolActual === 'pendiente'
+                ? "inline-block px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-[color-mix(in_srgb,var(--caution)_20%,transparent)] text-[var(--caution)]"
+                : "inline-block px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-[color-mix(in_srgb,var(--brand)_18%,transparent)] text-[var(--brand)]";
+
+            // Mensaje contextual: cuenta en revisión vs. onboarding normal
+            const aviso = document.getElementById('txt-banner-perfil');
+            if (rolActual === 'pendiente') {
+                aviso.innerText = "🔒 Tu cuenta está en revisión. Un administrador debe aprobar tu rol antes de que puedas usar el sistema. Mientras tanto, completa tu nombre y teléfono de contacto.";
+            } else {
+                aviso.innerText = "⚠️ Completa tus datos para actualizar tu perfil.";
+            }
+
             const btnCerrar = document.getElementById('btn-cerrar-modal-perfil');
             if (obligatorio) btnCerrar.classList.add('hidden');
             else btnCerrar.classList.remove('hidden');
@@ -731,22 +776,22 @@
         async function guardarDatosPerfil() {
             const nombre = document.getElementById('perfil-nombre').value.trim();
             const telefono = document.getElementById('perfil-telefono').value.trim();
-        
+
             if (!nombre || !telefono) {
                 alert("Por favor ingresa tu Nombre Completo y Número de Teléfono.");
                 return;
             }
-        
+
             if (!esModoPrueba) {
                 const emailUsuario = usuarioActual?.email?.toLowerCase().trim();
-        
+
                 // 1. Intentar actualizar por correo electrónico (forma desacoplada recomendada)
                 let { data, error } = await supabaseClient
                     .from('parqueadero_usuarios')
                     .update({ nombre, telefono })
                     .eq('correo', emailUsuario)
                     .select();
-        
+
                 // 2. Si no encontró por correo, intentar actualización por ID
                 if (!data || data.length === 0) {
                     const resId = await supabaseClient
@@ -754,35 +799,43 @@
                         .update({ nombre, telefono })
                         .eq('id', usuarioActual.id)
                         .select();
-                        
+
                     data = resId.data;
                     error = resId.error;
                 }
-        
+
                 if (error) {
                     console.error("Error actualizando perfil:", error);
                     alert("⚠️ No se pudo guardar el perfil en la base de datos: " + error.message);
                     return;
                 }
-        
+
                 if (!data || data.length === 0) {
                     alert("⚠️ No se encontró la fila correspondiente a tu usuario para actualizar. Revisa que tu correo figure en la tabla 'parqueadero_usuarios'.");
                     return;
                 }
             }
-        
+
             // Actualizar el estado local
             perfilActual.nombre = nombre;
             perfilActual.telefono = telefono;
-        
+
             alert("✅ Perfil actualizado exitosamente.");
+
+            if (rolActual === 'pendiente') {
+                // La cuenta sigue en revisión: el panel permanece como único contenido visible.
+                abrirModalPerfil(true);
+                return;
+            }
+
             cerrarModalPerfil();
-        
+
             // Redirigir a la vista según el rol asignado
             if (rolActual === 'administrador') navegarA('administrador');
             else if (rolActual === 'auditor') navegarA('auditor');
             else if (rolActual === 'operador') navegarA('operador');
         }
+
         function navegarA(vista) {
             document.getElementById('vista-operador').classList.add('hidden');
             document.getElementById('vista-administrador').classList.add('hidden');
@@ -811,7 +864,24 @@
             location.reload();
         }
 
+        function pintarFormularioConfig() {
+            document.getElementById('tarifa-cortesia-horas').value = config.cortesiaHoras;
+            document.getElementById('tarifa-carro-min').value = config.carro.min;
+            document.getElementById('tarifa-carro-plena').value = config.carro.plena;
+            document.getElementById('tarifa-moto-min').value = config.moto.min;
+            document.getElementById('tarifa-moto-plena').value = config.moto.plena;
+            document.getElementById('tarifa-bici-min').value = config.bici.min;
+            document.getElementById('tarifa-bici-plena').value = config.bici.plena;
+            document.getElementById('config-editar-tiempos').value = config.seguridadTiempos;
+        }
+
         async function cargarConfiguracionGlobalServidor() {
+            if (esModoPrueba) {
+                // En modo prueba se usan los valores por defecto en memoria; nunca se lee la nube.
+                pintarFormularioConfig();
+                return;
+            }
+
             const { data } = await supabaseClient.from('parqueadero_config').select('*').eq('id', 1).single();
             if (data) {
                 config.cortesiaHoras = Number(data.cortesia_horas);
@@ -822,15 +892,7 @@
                 config.bici.min = Number(data.bici_min);
                 config.bici.plena = Number(data.bici_plena);
                 config.seguridadTiempos = data.seguridad_tiempos;
-
-                document.getElementById('tarifa-cortesia-horas').value = data.cortesia_horas;
-                document.getElementById('tarifa-carro-min').value = data.carro_min;
-                document.getElementById('tarifa-carro-plena').value = data.carro_plena;
-                document.getElementById('tarifa-moto-min').value = data.moto_min;
-                document.getElementById('tarifa-moto-plena').value = data.moto_plena;
-                document.getElementById('tarifa-bici-min').value = data.bici_min;
-                document.getElementById('tarifa-bici-plena').value = data.bici_plena;
-                document.getElementById('config-editar-tiempos').value = data.seguridad_tiempos;
+                pintarFormularioConfig();
             }
         }
 
@@ -844,6 +906,18 @@
             const bici_plena = parseFloat(document.getElementById('tarifa-bici-plena').value);
             const seguridad_tiempos = document.getElementById('config-editar-tiempos').value;
 
+            if (esModoPrueba) {
+                // Solo se actualiza el estado local; jamás se escribe en 'parqueadero_config' real.
+                config.cortesiaHoras = cortesia_horas;
+                config.carro = { min: carro_min, plena: carro_plena };
+                config.moto = { min: moto_min, plena: moto_plena };
+                config.bici = { min: bici_min, plena: bici_plena };
+                config.seguridadTiempos = seguridad_tiempos;
+                alert("⚙️ Tarifas actualizadas (modo prueba). No se guardan en la nube.");
+                renderizarDashboard();
+                return;
+            }
+
             const { error } = await supabaseClient.from('parqueadero_config').update({
                 cortesia_horas, carro_min, carro_plena, moto_min, moto_plena, bici_min, bici_plena, seguridad_tiempos
             }).eq('id', 1);
@@ -853,7 +927,13 @@
         }
 
         async function cargarTablaUsuariosAdmin() {
-            const { data } = await supabaseClient.from('parqueadero_usuarios').select('*');
+            let data;
+            if (esModoPrueba) {
+                data = demoDB.usuarios;
+            } else {
+                const res = await supabaseClient.from('parqueadero_usuarios').select('*');
+                data = res.data;
+            }
             const tbody = document.getElementById('tabla-usuarios-body');
             tbody.innerHTML = "";
             if (!data) return;
@@ -885,12 +965,25 @@
         }
 
         async function cambiarRolUsuarioBD(id, nuevoRol) {
+            if (esModoPrueba) {
+                const u = demoDB.usuarios.find(u => u.id === id);
+                if (u) u.rol = nuevoRol;
+                alert("✅ Estado/Rol de usuario actualizado (modo prueba).");
+                cargarTablaUsuariosAdmin();
+                return;
+            }
             const { error } = await supabaseClient.from('parqueadero_usuarios').update({ rol: nuevoRol }).eq('id', id);
             if (error) alert("Error: " + error.message);
             else { alert("✅ Estado/Rol de usuario actualizado."); cargarTablaUsuariosAdmin(); }
         }
 
         async function cargarDatosParqueadero() {
+            if (esModoPrueba) {
+                memoriaVehiculos = demoDB.vehiculos.filter(v => v.hora_salida === null);
+                renderizarDashboard();
+                filtrarBusquedaGlobal("");
+                return;
+            }
             const { data } = await supabaseClient.from('parqueadero').select('*').is('hora_salida', null);
             memoriaVehiculos = data || [];
             renderizarDashboard();
@@ -975,6 +1068,22 @@
                 payload.hora_ingreso = new Date(document.getElementById('ingreso-hora-manual').value).toISOString();
             }
 
+            if (esModoPrueba) {
+                demoDB.vehiculos.push({
+                    id: demoDB.nextId++,
+                    ...payload,
+                    hora_ingreso: payload.hora_ingreso || new Date().toISOString(),
+                    hora_salida: null,
+                    valor_pagado: null,
+                    ahorro_obtenido: null,
+                    datos_eliminados: false,
+                    creado_en: new Date().toISOString()
+                });
+                document.getElementById('form-ingreso').reset();
+                cargarDatosParqueadero();
+                return;
+            }
+
             const { error } = await supabaseClient.from('parqueadero').insert([payload]);
             if (error) alert("Error: " + error.message);
             else { document.getElementById('form-ingreso').reset(); cargarDatosParqueadero(); }
@@ -982,12 +1091,24 @@
 
         async function buscarHistorialPlaca(placa) {
             if (placa.length < 3) return;
-            const { data } = await supabaseClient.from('parqueadero').select('nombre, telefono, correo, tipo_vehiculo').eq('placa', placa.trim().toLowerCase()).eq('datos_eliminados', false).order('creado_en', { ascending: false }).limit(1);
-            if (data && data.length > 0) {
-                document.getElementById('ingreso-nombre').value = data[0].nombre || '';
-                document.getElementById('ingreso-telefono').value = data[0].telefono || '';
-                document.getElementById('ingreso-correo').value = data[0].correo || '';
-                document.getElementById('ingreso-tipo').value = data[0].tipo_vehiculo;
+            const placaBuscada = placa.trim().toLowerCase();
+            let encontrado = null;
+
+            if (esModoPrueba) {
+                const candidatos = demoDB.vehiculos
+                    .filter(v => v.placa === placaBuscada && !v.datos_eliminados)
+                    .sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en));
+                encontrado = candidatos[0] || null;
+            } else {
+                const { data } = await supabaseClient.from('parqueadero').select('nombre, telefono, correo, tipo_vehiculo').eq('placa', placaBuscada).eq('datos_eliminados', false).order('creado_en', { ascending: false }).limit(1);
+                encontrado = (data && data.length > 0) ? data[0] : null;
+            }
+
+            if (encontrado) {
+                document.getElementById('ingreso-nombre').value = encontrado.nombre || '';
+                document.getElementById('ingreso-telefono').value = encontrado.telefono || '';
+                document.getElementById('ingreso-correo').value = encontrado.correo || '';
+                document.getElementById('ingreso-tipo').value = encontrado.tipo_vehiculo;
                 document.getElementById('alerta-historial').classList.remove('hidden');
             }
         }
@@ -995,12 +1116,22 @@
         function limpiarFormIngreso() { document.getElementById('form-ingreso').reset(); document.getElementById('alerta-historial').classList.add('hidden'); }
 
         async function filtrarBusquedaGlobal(valor) {
-            let query = supabaseClient.from('parqueadero').select('*');
-            if (valor.trim() !== "") {
+            let data;
+            if (esModoPrueba) {
                 const val = valor.trim().toLowerCase();
-                query = query.or(`placa.ilike.%${val}%,nombre.ilike.%${val}%,telefono.ilike.%${val}%`);
+                data = demoDB.vehiculos
+                    .filter(v => !val || v.placa.includes(val) || (v.nombre || '').toLowerCase().includes(val) || (v.telefono || '').includes(val))
+                    .sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en))
+                    .slice(0, 20);
+            } else {
+                let query = supabaseClient.from('parqueadero').select('*');
+                if (valor.trim() !== "") {
+                    const val = valor.trim().toLowerCase();
+                    query = query.or(`placa.ilike.%${val}%,nombre.ilike.%${val}%,telefono.ilike.%${val}%`);
+                }
+                const res = await query.order('creado_en', { ascending: false }).limit(20);
+                data = res.data;
             }
-            const { data } = await query.order('creado_en', { ascending: false }).limit(20);
             const tbody = document.getElementById('tabla-busqueda-body');
             tbody.innerHTML = "";
             if (!data) return;
@@ -1025,6 +1156,18 @@
 
         async function eliminarDatosHabeasData(placa) {
             if (!confirm(`¿Anonimizar datos de ${placa.toUpperCase()}?`)) return;
+
+            if (esModoPrueba) {
+                demoDB.vehiculos.filter(v => v.placa === placa.toLowerCase()).forEach(v => {
+                    v.nombre = "ANONIMIZADO POR PRIVACIDAD";
+                    v.telefono = "ANONIMIZADO";
+                    v.correo = "ANONIMIZADO";
+                    v.datos_eliminados = true;
+                });
+                cargarDatosParqueadero();
+                return;
+            }
+
             await supabaseClient.from('parqueadero').update({ nombre: "ANONIMIZADO POR PRIVACIDAD", telefono: "ANONIMIZADO", correo: "ANONIMIZADO", datos_eliminados: true }).eq('placa', placa.toLowerCase());
             cargarDatosParqueadero();
         }
@@ -1059,6 +1202,20 @@
             if (document.getElementById('salida-hora-manual').value) horaSalidaFinal = new Date(document.getElementById('salida-hora-manual').value).toISOString();
 
             const liq = calcularLiquidacion(vehiculoSeleccionado, horaSalidaFinal);
+
+            if (esModoPrueba) {
+                const registro = demoDB.vehiculos.find(v => v.id === vehiculoSeleccionado.id);
+                if (registro) {
+                    registro.hora_salida = horaSalidaFinal;
+                    registro.valor_pagado = liq.costoReal;
+                    registro.ahorro_obtenido = liq.ahorro;
+                }
+                alert(`✅ Salida procesada (modo prueba). Recaudo: $${liq.costoReal.toLocaleString()}`);
+                cerrarModalDetalle();
+                cargarDatosParqueadero();
+                return;
+            }
+
             const { error } = await supabaseClient.from('parqueadero').update({ hora_salida: horaSalidaFinal, valor_pagado: liq.costoReal, ahorro_obtenido: liq.ahorro }).eq('id', vehiculoSeleccionado.id);
             if (error) alert("Error: " + error.message);
             else { alert(`✅ Salida procesada. Recaudo: $${liq.costoReal.toLocaleString()}`); cerrarModalDetalle(); cargarDatosParqueadero(); }
@@ -1066,7 +1223,13 @@
         document.getElementById('btn-procesar-salida').onclick = procesarSalida;
 
         async function cargarReportesAuditor() {
-            const { data } = await supabaseClient.from('parqueadero').select('*').order('creado_en', { ascending: false });
+            let data;
+            if (esModoPrueba) {
+                data = [...demoDB.vehiculos].sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en));
+            } else {
+                const res = await supabaseClient.from('parqueadero').select('*').order('creado_en', { ascending: false });
+                data = res.data;
+            }
             const tbody = document.getElementById('tabla-auditor-body');
             tbody.innerHTML = "";
             let cajas = { carro: 0, moto: 0, bicicleta: 0 };
@@ -1105,7 +1268,25 @@
                 { placa: "iii999", tipo_vehiculo: "bicicleta", nombre: "Gloria Rodríguez", telefono: "3164448899", correo: "gloria@gmail.com", hora_ingreso: new Date(ahora.getTime() - 5 * 60 * 60 * 1000).toISOString() },
                 { placa: "jjj000", tipo_vehiculo: "carro", nombre: "Juan Manuel", telefono: "3171110022", correo: "juanma@gmail.com", hora_ingreso: new Date(ahora.getTime() - 13 * 60 * 60 * 1000).toISOString() }
             ];
-            await supabaseClient.from('parqueadero').insert(semillas);
+
+            // El modo prueba SIEMPRE debe quedarse aquí: jamás se inserta en 'parqueadero' real.
+            if (!esModoPrueba) {
+                console.warn("inyectarDatosSemilla() se llamó fuera del modo prueba; se bloqueó para proteger los datos de producción.");
+                return;
+            }
+
+            semillas.forEach(s => {
+                demoDB.vehiculos.push({
+                    id: demoDB.nextId++,
+                    ...s,
+                    notas: null,
+                    hora_salida: null,
+                    valor_pagado: null,
+                    ahorro_obtenido: null,
+                    datos_eliminados: false,
+                    creado_en: new Date().toISOString()
+                });
+            });
             cargarDatosParqueadero();
         }
 
