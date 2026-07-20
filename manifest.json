@@ -1,19 +1,19 @@
 {
-  "name": "SmartPark Control",
-  "short_name": "SmartPark",
-  "start_url": "./index.html",
+  "name": "Mi Mundo de Aprendizaje",
+  "short_name": "Multiplicar Pro",
+  "start_url": "./manolo.html",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#1e293b",
+  "background_color": "#f0f7ff",
+  "theme_color": "#4d96ff",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3005/3005358.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2490/2490402.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3005/3005358.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2490/2490402.png",
       "sizes": "512x512",
       "type": "image/png"
     }
