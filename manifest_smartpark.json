@@ -1,0 +1,19 @@
+{
+  "name": "SmartPark Control",
+  "short_name": "SmartPark",
+  "description": "Control de acceso y tarifas del parqueadero de visitantes",
+  "start_url": "./smartpark.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B1120",
+  "theme_color": "#0B1120",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3005/3005358.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
