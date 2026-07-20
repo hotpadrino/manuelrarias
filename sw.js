@@ -1,4 +1,4 @@
-const CACHE_NAME = 'smartpark-v1';
+const CACHE_NAME = 'Juanma-v1';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
