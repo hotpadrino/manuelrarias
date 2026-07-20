@@ -731,28 +731,58 @@
         async function guardarDatosPerfil() {
             const nombre = document.getElementById('perfil-nombre').value.trim();
             const telefono = document.getElementById('perfil-telefono').value.trim();
-
+        
             if (!nombre || !telefono) {
-                alert("Por favor ingresa nombre y teléfono.");
+                alert("Por favor ingresa tu Nombre Completo y Número de Teléfono.");
                 return;
             }
-
+        
             if (!esModoPrueba) {
-                const { error } = await supabaseClient.from('parqueadero_usuarios').update({ nombre, telefono }).eq('id', usuarioActual.id);
-                if (error) { alert("Error: " + error.message); return; }
+                const emailUsuario = usuarioActual?.email?.toLowerCase().trim();
+        
+                // 1. Intentar actualizar por correo electrónico (forma desacoplada recomendada)
+                let { data, error } = await supabaseClient
+                    .from('parqueadero_usuarios')
+                    .update({ nombre, telefono })
+                    .eq('correo', emailUsuario)
+                    .select();
+        
+                // 2. Si no encontró por correo, intentar actualización por ID
+                if (!data || data.length === 0) {
+                    const resId = await supabaseClient
+                        .from('parqueadero_usuarios')
+                        .update({ nombre, telefono })
+                        .eq('id', usuarioActual.id)
+                        .select();
+                        
+                    data = resId.data;
+                    error = resId.error;
+                }
+        
+                if (error) {
+                    console.error("Error actualizando perfil:", error);
+                    alert("⚠️ No se pudo guardar el perfil en la base de datos: " + error.message);
+                    return;
+                }
+        
+                if (!data || data.length === 0) {
+                    alert("⚠️ No se encontró la fila correspondiente a tu usuario para actualizar. Revisa que tu correo figure en la tabla 'parqueadero_usuarios'.");
+                    return;
+                }
             }
-
+        
+            // Actualizar el estado local
             perfilActual.nombre = nombre;
             perfilActual.telefono = telefono;
-
-            alert("✅ Perfil actualizado.");
+        
+            alert("✅ Perfil actualizado exitosamente.");
             cerrarModalPerfil();
-
+        
+            // Redirigir a la vista según el rol asignado
             if (rolActual === 'administrador') navegarA('administrador');
             else if (rolActual === 'auditor') navegarA('auditor');
             else if (rolActual === 'operador') navegarA('operador');
         }
-
         function navegarA(vista) {
             document.getElementById('vista-operador').classList.add('hidden');
             document.getElementById('vista-administrador').classList.add('hidden');
