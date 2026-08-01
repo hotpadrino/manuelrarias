@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control de Presupuesto y Activos (100% Local)</title>
+    <title>Control de Presupuesto y Activos (Supabase Broadcast)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,6 +12,8 @@
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- SDK oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 flex flex-col min-h-screen transition-colors duration-200">
 
@@ -24,7 +26,7 @@
                 <div>
                     <h1 class="text-xl font-bold text-slate-800 dark:text-white">Gestión Local de Activos y Presupuesto</h1>
                     <div class="flex items-center gap-3 mt-0.5">
-                        <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i> Privacidad total: Almacenamiento 100% local.</span>
+                        <span class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i> Sincronización Cloud en Vivo</span>
                         <span class="text-[11px] text-slate-400 dark:text-slate-500 font-medium border-l border-slate-200 dark:border-slate-800 pl-3">
                             <i class="fa-regular fa-clock mr-1"></i> Actualizado: <strong id="header-last-update" class="text-slate-600 dark:text-slate-300">-</strong>
                         </span>
@@ -92,17 +94,17 @@
             <!-- VISTA 2: GRUPOS Y FICHAS -->
             <section id="tab-groups" class="hidden space-y-6">
                 <!-- Registro Rápido Global con Búsqueda Flexible -->
-                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden transition-colors">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative transition-colors">
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600"></div>
                     <h2 class="text-md font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
                         <i class="fa-solid fa-bolt text-indigo-600 dark:text-indigo-400"></i> Registro Rápido de Pagos
                     </h2>
-                    <p class="text-xs text-slate-400 mb-3">Busque por parte del nombre del grupo o de la factura en cualquier orden.</p>
+                    <p class="text-xs text-slate-400 mb-3">Busque por parte del nombre del grupo o de la factura, o escriba un concepto nuevo libremente.</p>
                     <form onsubmit="handleQuickPay(event)" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                        <div class="md:col-span-4 relative">
-                            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Buscar Factura / Grupo</label>
-                            <input type="text" id="quick-search" placeholder="Escriba para buscar..." oninput="filterGlobalBills()" autocomplete="off" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <div id="quick-suggestions" class="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden z-20"></div>
+                        <div class="md:col-span-4 relative z-30">
+                            <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Buscar o Escribir Factura / Grupo</label>
+                            <input type="text" id="quick-search" placeholder="Escriba concepto..." oninput="filterGlobalBills()" autocomplete="off" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <div id="quick-suggestions" class="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-2xl max-h-48 overflow-y-auto hidden z-50"></div>
                             <input type="hidden" id="selected-global-bill-id">
                             <input type="hidden" id="selected-global-apt-id">
                         </div>
@@ -112,7 +114,7 @@
                         </div>
                         <div class="md:col-span-3">
                             <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Valor Pagado ($)</label>
-                            <input type="number" id="quick-amount" step="0.01" placeholder="Se sugiere el promedio" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
+                            <input type="number" id="quick-amount" step="0.01" placeholder="Ej. 150000" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">
                         </div>
                         <div class="md:col-span-2">
                             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2.5 rounded-lg transition shadow">Registrar Pago</button>
@@ -131,12 +133,12 @@
                 </div>
             </section>
 
-            <!-- VISTA 3: RESPALDO Y SYNC -->
+            <!-- VISTA 3: RESPALDO Y SYNC (SUPABASE BROADCAST) -->
             <section id="tab-sync" class="hidden space-y-6">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 max-w-4xl mx-auto transition-colors">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><i class="fa-solid fa-database text-indigo-600 dark:text-indigo-400 mr-2"></i> Gestión de Archivos y Sincronización Local</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Exporte su base completa (grupos, pagos maestros, órdenes y preferencias en JSON) o cargue un CSV para actualizar los datos maestros.</p>
+                        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-1"><i class="fa-solid fa-cloud text-indigo-600 dark:text-indigo-400 mr-2"></i> Gestión de Archivos y Sincronización en Vivo</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Exporte su base completa en JSON o sincronice sus dispositivos en tiempo real usando Supabase Broadcast.</p>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -158,16 +160,17 @@
 
                     <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
                         <h4 class="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-wifi text-indigo-600 dark:text-indigo-400"></i> Sincronización Broadcast Directa (Misma Red/Navegador)
+                            <i class="fa-solid fa-wifi text-indigo-600 dark:text-indigo-400"></i> Supabase Broadcast (Sincronización Inalámbrica)
                         </h4>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Ingrese una clave compartida con otra pestaña abierta para transferir datos al instante.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Ingrese una clave secreta y haga clic fuera del campo para conectar ambos dispositivos.</p>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Clave Broadcast Compartida</label>
-                            <input type="password" id="broadcast-key" placeholder="Ej. clave-secreta-aripar" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Clave Secreta de Sincronización</label>
+                            <input type="password" id="broadcast-key" placeholder="Ej. clave-secreta-aripar" onchange="conectarSupabaseCanal()" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none">
                         </div>
                         <div class="flex gap-3">
-                            <button onclick="broadcastSend()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 rounded-lg transition">Transmitir Datos</button>
+                            <button onclick="broadcastSend()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 rounded-lg transition">Transmitir Datos a la Nube</button>
                         </div>
+                        <p id="sync-status" class="text-[11px] text-amber-600 dark:text-amber-400 font-medium">Estado: Ingrese una clave para conectar en vivo.</p>
                     </div>
                 </div>
 
@@ -425,31 +428,69 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT -->
+    <!-- LÓGICA JAVASCRIPT CON SUPABASE BROADCAST -->
     <script>
-        const bc = new BroadcastChannel('novaelix_facturas_channel');
-        bc.onmessage = (event) => {
-            const userKey = document.getElementById('broadcast-key').value.trim();
-            if (!userKey) return; 
-            if (event.data && event.data.key === userKey) {
-                db = event.data.payload;
-                stagingPayments = db.stagingPayments || [];
-                applyTheme(db.theme || 'light');
-                saveData();
-                renderAll();
-                alert('¡Datos recibidos y sincronizados vía Broadcast exitosamente!');
-            }
-        };
+        // CONFIGURACIÓN SUPABASE CON TUS CLAVES PÚBLICAS
+        const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
 
-        function broadcastSend() {
+        let supabaseClient = null;
+        let supabaseChannel = null;
+
+        function conectarSupabaseCanal() {
             const userKey = document.getElementById('broadcast-key').value.trim();
-            if (!userKey) {
-                alert('Por favor escriba una clave broadcast para enviar los datos.');
+            const statusEl = document.getElementById('sync-status');
+            if (!userKey) return;
+
+            if (!supabaseClient) {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+
+            if (supabaseChannel) {
+                supabaseClient.removeChannel(supabaseChannel);
+            }
+
+            statusEl.innerText = "Estado: Conectando con la nube...";
+            statusEl.className = "text-[11px] text-indigo-600 font-medium";
+
+            // Creamos un canal único cifrado por la clave que escriba el usuario
+            supabaseChannel = supabaseClient.channel(`novaelix_channel_${userKey}`, {
+                config: { broadcast: { self: false } }
+            });
+
+            supabaseChannel.on('broadcast', { event: 'sync_payload' }, (payload) => {
+                if (payload && payload.payload) {
+                    db = payload.payload;
+                    stagingPayments = db.stagingPayments || [];
+                    applyTheme(db.theme || 'light');
+                    saveData();
+                    renderAll();
+                    alert('¡Datos sincronizados en vivo desde otro dispositivo!');
+                }
+            });
+
+            supabaseChannel.subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    statusEl.innerText = "Estado: Conectado y sincronizado en vivo ✓";
+                    statusEl.className = "text-[11px] text-emerald-600 font-medium";
+                } else {
+                    statusEl.innerText = `Estado: ${status}`;
+                }
+            });
+        }
+
+        async function broadcastSend() {
+            if (!supabaseChannel) {
+                alert('Por favor ingrese primero una clave y conéctese.');
                 return;
             }
             db.stagingPayments = stagingPayments;
-            bc.postMessage({ key: userKey, payload: db });
-            alert('¡Datos transmitidos correctamente vía Broadcast!');
+            await supabaseChannel.send({
+                type: 'broadcast',
+                event: 'sync_payload',
+                payload: db,
+            });
+            alert('¡Datos transmitidos exitosamente a todos tus dispositivos!');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -504,7 +545,7 @@
         let expandedChartBillId = null;
 
         function loadData() {
-            const saved = localStorage.getItem('facturas_db_v27');
+            const saved = localStorage.getItem('facturas_db_v28');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -562,7 +603,7 @@
         function saveData() {
             db.lastUpdate = new Date().toISOString();
             db.stagingPayments = stagingPayments;
-            localStorage.setItem('facturas_db_v27', JSON.stringify(db));
+            localStorage.setItem('facturas_db_v28', JSON.stringify(db));
         }
 
         function toggleTheme() {
@@ -623,11 +664,7 @@
 
         function resetToDefaultData() {
             if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
-            
-            // Eliminamos el registro de almacenamiento local
             localStorage.removeItem('facturas_db_v28');
-            
-            // Vaciamos la base de datos en memoria actual
             db = {
                 theme: db.theme || 'light',
                 lastUpdate: new Date().toISOString(),
@@ -635,11 +672,8 @@
                 stagingPayments: []
             };
             stagingPayments = [];
-            
-            // Renderizamos la interfaz vacía
             renderAll();
-            
-            //alert("Datos limpiados correctamente. La aplicación está en blanco. Recargue la página cuando desee restablecer los valores por defecto.");
+            alert("Datos limpiados correctamente. La aplicación está en blanco. Recargue la página cuando desee restablecer los valores por defecto.");
         }
 
         function renderAll() {
@@ -1247,7 +1281,7 @@
             });
 
             if (matches.length === 0) {
-                suggestionsBox.innerHTML = `<div class="p-3 text-xs text-slate-400">No se encontraron facturas</div>`;
+                suggestionsBox.innerHTML = `<div class="p-3 text-xs text-slate-400">Concepto libre (se agregará al maestro)</div>`;
                 suggestionsBox.classList.remove('hidden');
                 return;
             }
@@ -1274,38 +1308,67 @@
 
         function handleQuickPay(e) {
             e.preventDefault();
+            const searchInputVal = document.getElementById('quick-search').value.trim();
             const aptId = document.getElementById('selected-global-apt-id').value;
             const billId = document.getElementById('selected-global-bill-id').value;
             const paidDate = document.getElementById('quick-paid-date').value;
             const amount = parseFloat(document.getElementById('quick-amount').value) || 0;
 
-            if (!aptId || !billId) {
-                alert('Seleccione una factura del buscador.');
+            if (!searchInputVal) {
+                alert('Por favor ingrese o seleccione un concepto.');
                 return;
             }
 
-            const apt = db.apartments.find(a => a.id === aptId);
-            const bill = apt.bills.find(b => b.id === billId);
+            let targetConcept = searchInputVal;
 
-            if (bill) {
-                if (!bill.history) bill.history = [];
-                const generatedConcept = `${apt.name} - ${bill.concept}`;
-                const record = { date: paidDate, amount: amount, masterConcept: generatedConcept };
-                bill.history.unshift(record);
-
-                stagingPayments.unshift({
-                    date: paidDate,
-                    concept: generatedConcept,
-                    amount: amount,
-                    matched: true
-                });
+            if (aptId && billId) {
+                const apt = db.apartments.find(a => a.id === aptId);
+                const bill = apt.bills.find(b => b.id === billId);
+                if (bill) {
+                    targetConcept = `${apt.name} - ${bill.concept}`;
+                    if (!bill.history) bill.history = [];
+                    bill.history.unshift({ date: paidDate, amount: amount, masterConcept: targetConcept });
+                }
+            } else {
+                if (db.apartments.length > 0) {
+                    const defaultApt = db.apartments[0];
+                    targetConcept = searchInputVal.includes('-') ? searchInputVal : `${defaultApt.name} - ${searchInputVal}`;
+                    
+                    let existingBill = defaultApt.bills.find(b => `${defaultApt.name} - ${b.concept}`.toLowerCase() === targetConcept.toLowerCase() || b.concept.toLowerCase() === searchInputVal.toLowerCase());
+                    
+                    if (!existingBill) {
+                        defaultApt.bills.push({
+                            id: 'b_' + Date.now(),
+                            icon: '➕',
+                            concept: searchInputVal,
+                            dueDay: 10,
+                            cycle: 'mensual',
+                            dueDate: paidDate,
+                            history: [{ date: paidDate, amount: amount, masterConcept: targetConcept }]
+                        });
+                    } else {
+                        if (!existingBill.history) existingBill.history = [];
+                        existingBill.history.unshift({ date: paidDate, amount: amount, masterConcept: targetConcept });
+                    }
+                }
             }
+
+            stagingPayments.unshift({
+                date: paidDate,
+                concept: targetConcept,
+                amount: amount,
+                matched: true
+            });
 
             saveData();
             renderAll();
+
             document.getElementById('quick-search').value = '';
             document.getElementById('quick-amount').value = '';
-            alert('¡Pago registrado con éxito!');
+            document.getElementById('selected-global-bill-id').value = '';
+            document.getElementById('selected-global-apt-id').value = '';
+
+            alert('¡Pago y concepto agregado con éxito al maestro y fichas!');
         }
 
         let currentAptId = null;
@@ -1433,7 +1496,7 @@
             closeNewApartmentModal();
             document.getElementById('new-apt-name').value = '';
             document.getElementById('new-apt-desc').value = '';
-            alert('¡Nuevo grupo creado con sus facturas por defecto (Arriendo, Hipoteca, Administración, Agua, Luz, Gas, Internet)!');
+            alert('¡Nuevo grupo creado con sus facturas por defecto!');
         }
 
         function toggleNewBillForm(editBillId = null) {
