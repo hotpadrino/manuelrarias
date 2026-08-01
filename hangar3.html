@@ -108,17 +108,16 @@
         .f-ml:hover{background:rgba(232,160,32,.2);}
     </style>
 </head>
-<body class="min-h-screen flex items-start justify-center p-4 pt-8 sm:pt-10">
+<body class="min-h-screen flex items-start justify-center p-4 pt-8 sm:pt-10 mb-12">
 
     <div id="app" class="w-full max-w-2xl bg-bg2/95 backdrop-blur-sm p-5 sm:p-8 rounded-xl shadow-panel border border-borderx">
         
         <div id="view-login" class="max-w-md mx-auto">
             <h1 class="text-3xl font-black mb-2 text-center text-amber tracking-[0.18em] font-exo uppercase">FAC FLOTA v17</h1>
-            <p class="text-center text-dim mb-8 font-mono uppercase tracking-[0.18em] text-xs">PROTOCOLO DE HANGAR : BROADCAST</p>
+            <p class="text-center text-dim mb-8 font-mono uppercase tracking-[0.18em] text-xs">PROTOCOLO DE HANGAR</p>
             
             <div class="space-y-4">
                 <input id="input-room" type="text" placeholder="ID del Hangar (ej: ALFA)" class="w-full p-3 rounded-md bg-bg border border-borderx focus:outline-none focus:border-amber text-textx placeholder:text-dim uppercase font-mono tracking-wide">
-                <!-- Se quita la clase 'uppercase' para permitir visualizar minúsculas -->
                 <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded-md bg-bg border border-borderx focus:outline-none focus:border-amber text-textx placeholder:text-dim font-mono tracking-wide">
                 
                 <div class="flex gap-4 pt-4">
@@ -132,9 +131,14 @@
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-borderx pb-4">
                 <div>
                     <h2 class="text-xl font-bold uppercase tracking-[0.12em]">Hangar: <span id="display-room-i" class="text-amber uppercase font-mono"></span></h2>
-                    <button onclick="cerrarHangarDefinitivo()" class="text-xs bg-redx-d/30 hover:bg-redx text-redx hover:text-white px-3 py-1 rounded-md border border-redx/50 transition mt-2 font-bold uppercase tracking-[0.12em] shadow-sm">
-                        💥 CLAUSURAR HANGAR Y EXPULSAR
-                    </button>
+                    <div class="flex gap-2 mt-2">
+                        <button onclick="cerrarHangarDefinitivo()" class="text-xs bg-redx-d/30 hover:bg-redx text-redx hover:text-white px-3 py-1 rounded-md border border-redx/50 transition font-bold uppercase tracking-[0.12em] shadow-sm">
+                            💥 CLAUSURAR HANGAR
+                        </button>
+                        <button onclick="limpiarSalasInactivas12h()" class="text-xs bg-bg hover:bg-amber/20 text-amber px-3 py-1 rounded-md border border-amber/30 transition font-bold uppercase tracking-[0.12em]" title="Cierra hangares creados hace más de 12 horas">
+                            🧹 PURGAR >12H
+                        </button>
+                    </div>
                 </div>
                 <button onclick="iniciarJuego()" id="btn-iniciar-juego" class="w-full sm:w-auto bg-amber hover:bg-amber/90 text-bg px-6 py-3 rounded-md font-bold shadow-amber transition uppercase tracking-[0.14em]">
                     🔒 INICIAR MISIÓN
@@ -323,11 +327,27 @@
             window.location.reload();
         }
 
+        // MANTENIMIENTO: Módulo para clausurar salas inactivas por más de 12 horas
+        async function limpiarSalasInactivas12h() {
+            const limite12h = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+            
+            const { data, error } = await _supabase
+                .from('hangar_salas')
+                .update({ activa: false })
+                .eq('activa', true)
+                .lt('creada_en', limite12h)
+                .select();
+
+            if (error) {
+                alert("Error ejecutando purga de mantenimiento: " + error.message);
+            } else {
+                alert(`🧹 Mantenimiento completado: ${data ? data.length : 0} hangar(es) inactivo(s) fueron clausurados.`);
+            }
+        }
+
         // 2. CONEXIÓN REALTIME
         async function conectar(rol, esReconexion = false) {
-            // ID del Hangar siempre en mayúsculas para evitar desconexiones por tipado
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
-            // Nombre de técnico conserva minúsculas y mayúsculas ingresadas por el usuario
             miNombre = document.getElementById('input-name').value.trim();
 
             if (rol === 'instructor') {
@@ -339,7 +359,15 @@
             const { data: sala, error: errSala } = await _supabase.from('hangar_salas').select('fase, activa').eq('id_sala', miSala).single();
 
             if (rol === 'instructor') {
-                if (!esReconexion) await _supabase.from('hangar_salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
+                if (!esReconexion) {
+                    // REGISTRO DE FECHA DE CREACIÓN
+                    await _supabase.from('hangar_salas').upsert({ 
+                        id_sala: miSala, 
+                        activa: true, 
+                        fase: 'lobby',
+                        creada_en: new Date().toISOString() 
+                    });
+                }
                 guardarSesionLocal('instructor', miSala, miNombre);
                 iniciarConexionRealtime('instructor');
             } else {
