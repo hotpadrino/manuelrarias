@@ -114,11 +114,12 @@
         
         <div id="view-login" class="max-w-md mx-auto">
             <h1 class="text-3xl font-black mb-2 text-center text-amber tracking-[0.18em] font-exo uppercase">FAC FLOTA v17</h1>
-            <p class="text-center text-dim mb-8 font-mono uppercase tracking-[0.18em] text-xs">PROTOCOLO DE HANGAR</p>
+            <p class="text-center text-dim mb-8 font-mono uppercase tracking-[0.18em] text-xs">PROTOCOLO DE HANGAR : BROADCAST</p>
             
             <div class="space-y-4">
                 <input id="input-room" type="text" placeholder="ID del Hangar (ej: ALFA)" class="w-full p-3 rounded-md bg-bg border border-borderx focus:outline-none focus:border-amber text-textx placeholder:text-dim uppercase font-mono tracking-wide">
-                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded-md bg-bg border border-borderx focus:outline-none focus:border-amber text-textx placeholder:text-dim uppercase font-mono tracking-wide">
+                <!-- Se quita la clase 'uppercase' para permitir visualizar minúsculas -->
+                <input id="input-name" type="text" placeholder="Nombre de Técnico" class="w-full p-3 rounded-md bg-bg border border-borderx focus:outline-none focus:border-amber text-textx placeholder:text-dim font-mono tracking-wide">
                 
                 <div class="flex gap-4 pt-4">
                     <button onclick="conectar('alumno')" class="flex-1 bg-amber hover:bg-amber/90 text-bg p-3 rounded-md font-bold transition shadow-amber uppercase tracking-[0.12em]">Ingresar</button>
@@ -184,7 +185,7 @@
 
         <div id="view-alumno" class="hidden w-full max-w-sm mx-auto flex flex-col items-center">
             <div class="w-full text-center mb-6 border-b border-borderx pb-4">
-                <h2 class="text-dim font-mono text-sm uppercase tracking-[0.16em]">Operador: <span id="display-name-a" class="text-textx font-bold text-xl uppercase tracking-wider"></span></h2>
+                <h2 class="text-dim font-mono text-sm uppercase tracking-[0.16em]">Operador: <span id="display-name-a" class="text-textx font-bold text-xl tracking-wider"></span></h2>
                 <button onclick="cerrarSesionAlumno()" class="text-xs text-redx hover:text-redx/80 underline mt-2 uppercase tracking-[0.12em]">Desconectar y Salir</button>
             </div>
             
@@ -314,8 +315,8 @@
                 payload: { motivo: 'Misión finalizada por el instructor' }
             });
 
-            await _supabase.from('jugadores').delete().eq('sala_id', miSala);
-            await _supabase.from('salas').delete().eq('id_sala', miSala);
+            await _supabase.from('hangar_jugadores').delete().eq('sala_id', miSala);
+            await _supabase.from('hangar_salas').delete().eq('id_sala', miSala);
 
             if(canal) await canal.unsubscribe();
             localStorage.clear();
@@ -324,8 +325,10 @@
 
         // 2. CONEXIÓN REALTIME
         async function conectar(rol, esReconexion = false) {
+            // ID del Hangar siempre en mayúsculas para evitar desconexiones por tipado
             miSala = document.getElementById('input-room').value.trim().toUpperCase();
-            miNombre = document.getElementById('input-name').value.trim().toUpperCase();
+            // Nombre de técnico conserva minúsculas y mayúsculas ingresadas por el usuario
+            miNombre = document.getElementById('input-name').value.trim();
 
             if (rol === 'instructor') {
                 miNombre = 'INSTRUCTOR';
@@ -333,10 +336,10 @@
 
             if (!miSala || (!miNombre && rol === 'alumno')) return;
 
-            const { data: sala, error: errSala } = await _supabase.from('salas').select('fase, activa').eq('id_sala', miSala).single();
+            const { data: sala, error: errSala } = await _supabase.from('hangar_salas').select('fase, activa').eq('id_sala', miSala).single();
 
             if (rol === 'instructor') {
-                if (!esReconexion) await _supabase.from('salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
+                if (!esReconexion) await _supabase.from('hangar_salas').upsert({ id_sala: miSala, activa: true, fase: 'lobby' });
                 guardarSesionLocal('instructor', miSala, miNombre);
                 iniciarConexionRealtime('instructor');
             } else {
@@ -345,12 +348,12 @@
 
                 esFaseJuegoLocal = (sala.fase === 'juego');
 
-                const { error: errJugador } = await _supabase.from('jugadores').insert({ sala_id: miSala, nombre: miNombre });
+                const { error: errJugador } = await _supabase.from('hangar_jugadores').insert({ sala_id: miSala, nombre: miNombre });
                 if (errJugador && errJugador.code === '23505' && !esReconexion) {
                     return alert("🚫 Identidad en uso. Por favor utiliza otra credencial.");
                 }
 
-                const { data: userData } = await _supabase.from('jugadores').select('deshabilitado').eq('nombre', miNombre).eq('sala_id', miSala).single();
+                const { data: userData } = await _supabase.from('hangar_jugadores').select('deshabilitado').eq('nombre', miNombre).eq('sala_id', miSala).single();
                 if (userData && userData.deshabilitado) return mostrarPantallaSancion();
 
                 guardarSesionLocal('alumno', miSala, miNombre);
@@ -370,7 +373,7 @@
                 canal.on('broadcast', { event: 'nuevo_resultado' }, (payload) => procesarJugada(payload.payload));
                 
                 window.addEventListener('beforeunload', async () => {
-                    await _supabase.from('salas').update({ activa: false }).eq('id_sala', miSala);
+                    await _supabase.from('hangar_salas').update({ activa: false }).eq('id_sala', miSala);
                 });
 
             } else {
@@ -410,7 +413,7 @@
         // --- LÓGICA DEL INSTRUCTOR ---
         function actualizarFichasLobby(estado) {
             const contenedor = document.getElementById('fichas-ronda');
-            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n && n !== "INSTRUCTOR" && n.toUpperCase() !== "INSTRUCTOR");
+            const nombresConectados = Object.values(estado).map(p => p[0].nombre).filter(n => n && n.toUpperCase() !== "INSTRUCTOR");
             
             nombresConectados.forEach(nombre => {
                 let ficha = document.getElementById(`ficha-${nombre}`);
@@ -425,7 +428,7 @@
                     ficha.className = "bg-slate-800 p-4 rounded-xl border-l-4 border-slate-500 shadow-md flex justify-between items-center transition-all";
                     ficha.innerHTML = `
                         <div>
-                            <span class="font-black uppercase text-sm tracking-tighter text-slate-300 block">${nombre}</span>
+                            <span class="font-black tracking-tighter text-slate-300 block text-sm">${nombre}</span>
                             <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 rounded uppercase tracking-widest font-bold">Conectado</span>
                         </div>
                         <button onclick="sancionar('${nombre}')" class="text-[10px] bg-red-900/30 hover:bg-red-600 text-red-400 px-2 py-1 rounded transition uppercase font-bold tracking-wider">Sancionar</button>
@@ -436,7 +439,7 @@
 
         async function iniciarJuego() {
             const state = canal.presenceState();
-            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n && n !== "INSTRUCTOR" && n.toUpperCase() !== "INSTRUCTOR");
+            const nombres = Object.values(state).map(user => user[0].nombre).filter(n => n && n.toUpperCase() !== "INSTRUCTOR");
             
             const totalJugadores = nombres.length;
             if (totalJugadores < 3) return alert("Quórum insuficiente. Se requieren mínimo 3 técnicos.");
@@ -446,7 +449,7 @@
             listaInfiltrados = barajados.slice(0, numInfiltrados);
             listaLeales = barajados.slice(numInfiltrados);
 
-            await _supabase.from('salas').update({ fase: 'juego' }).eq('id_sala', miSala);
+            await _supabase.from('hangar_salas').update({ fase: 'juego' }).eq('id_sala', miSala);
 
             document.getElementById('btn-iniciar-juego').classList.add('hidden');
             document.getElementById('panel-avion').classList.remove('hidden');
@@ -465,7 +468,7 @@
             ficha.className = "bg-panel p-4 rounded-xl border border-borderx shadow-panel relative transition-all animate-fade-in";
             ficha.innerHTML = `
                 <div class="flex justify-between items-start mb-3">
-                    <span class="font-black uppercase tracking-[0.12em] text-textx text-sm">${data.nombre}</span>
+                    <span class="font-black tracking-[0.12em] text-textx text-sm">${data.nombre}</span>
                     <button onclick="sancionar('${data.nombre}')" class="text-[10px] bg-redx-d/40 hover:bg-redx text-redx px-2 py-1 rounded-md transition uppercase font-bold tracking-[0.14em] border border-redx/50">Sancionar</button>
                 </div>
                 <div class="flex gap-2 text-xs bg-bg p-2 rounded-md items-center border border-borderx">
@@ -537,7 +540,6 @@
             rondaActual = [];
             actualizarFichasLobby(canal.presenceState());
 
-            // Efectos de color de fondo y alerta de fin de juego
             if (progresoAvion >= 100) {
                 document.body.classList.remove("bg-green-950","bg-red-950");
                 document.body.classList.add("bg-green-950");
@@ -565,8 +567,7 @@
         async function sancionar(nombre) {
             if (!confirm(`Sancionar a ${nombre} lo inhabilitará permanentemente. ¿Confirmar orden?`)) return;
         
-            // 1. Actualizar base de datos y limpiar interfaz local
-            await _supabase.from('jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
+            await _supabase.from('hangar_jugadores').update({ deshabilitado: true }).eq('nombre', nombre).eq('sala_id', miSala);
             
             sancionados++;
             const elemento = document.getElementById(`ficha-${nombre}`);
@@ -575,7 +576,6 @@
             rondaActual = rondaActual.filter(j => j.nombre !== nombre); 
             canal.send({ type: 'broadcast', event: 'usuario_sancionado', payload: { nombre } });
         
-            // 2. Evaluar identidad y dar retroalimentación inmediata
             const esInfiltradoSancionado = listaInfiltrados.includes(nombre);
             
             if (esInfiltradoSancionado) {
@@ -589,7 +589,6 @@
             let infActivos = listaInfiltrados.length;
             let leaActivos = listaLeales.length;
         
-            // Actualizar conteos
             if(esInfiltradoSancionado) {
                 listaInfiltrados = listaInfiltrados.filter(n => n !== nombre);
                 infActivos--;
@@ -598,7 +597,6 @@
                 leaActivos--;
             }
         
-            // 3. Evaluar fin del juego integrando el efecto visual del avión y el fondo
             setTimeout(() => {
                 if (infActivos === 0) {
                     actualizarProgreso(100, 100 - progresoAvion, "🏆 VICTORIA TÁCTICA: Todos los infiltrados han sido expulsados.");
@@ -674,7 +672,6 @@
                 pl.classList.remove('hidden');
                 rev.classList.add('hidden');
                 body.classList.remove('bg-red-950', 'bg-green-950');
-                body.classList.remove("bg-red-950","bg-green-950");
             }
         }
 
@@ -710,7 +707,6 @@
                             payload: { nombre: miNombre, valor_dado: dadoFinal, valor_compromiso: compromiso }
                         });
                     } else {
-                        console.log(`[Modo Entrenamiento] Pericia: ${dadoFinal} | Compromiso: ${compromiso}`);
                         btn.disabled = false;
                         btn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
                     }
@@ -769,11 +765,9 @@
                 el.style.fontSize = (Math.random() * 20 + 20) + 'px';
                 el.style.opacity = Math.random() + 0.5;
                 el.style.transform = `rotate(${Math.random() * 360}deg)`;
-                // Transición para caída
                 el.style.transition = `transform ${Math.random() * 2 + 2}s linear, top ${Math.random() * 2 + 2}s linear, opacity ${Math.random() * 2 + 2}s linear`;
                 container.appendChild(el);
 
-                // Activar animación en el siguiente frame
                 setTimeout(() => {
                     el.style.top = '110vh';
                     el.style.transform = `rotate(${Math.random() * 720}deg)`;
@@ -781,7 +775,6 @@
                 }, 50);
             }
 
-            // Limpiar el DOM después de la animación
             setTimeout(() => container.remove(), 4500);
         }
     </script>
