@@ -622,9 +622,24 @@
         }
 
         function resetToDefaultData() {
-            if (!confirm("¿Está seguro de limpiar todos los datos y restaurar los valores por defecto? Se perderán los cambios locales.")) return;
-            localStorage.removeItem('facturas_db_v27');
-            location.reload();
+            if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
+            
+            // Eliminamos el registro de almacenamiento local
+            localStorage.removeItem('facturas_db_v28');
+            
+            // Vaciamos la base de datos en memoria actual
+            db = {
+                theme: db.theme || 'light',
+                lastUpdate: new Date().toISOString(),
+                apartments: [],
+                stagingPayments: []
+            };
+            stagingPayments = [];
+            
+            // Renderizamos la interfaz vacía
+            renderAll();
+            
+            //alert("Datos limpiados correctamente. La aplicación está en blanco. Recargue la página cuando desee restablecer los valores por defecto.");
         }
 
         function renderAll() {
