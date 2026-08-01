@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Presupuesto y Activos (Supabase Broadcast)</title>
     
-    <!-- Favicon de dólar -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
-
     <!-- Metaetiquetas para vista previa de enlaces (Open Graph) -->
     <meta property="og:title" content="Control de Presupuesto y Activos">
     <meta property="og:description" content="Gestión local y en tiempo real de activos, presupuestos y fichas de plazo.">
     <meta property="og:image" content="https://www.microtech.es/hubfs/Fotos%20blog/planificacion_presupuestos.jpg">
     <meta property="og:type" content="website">
 
+    <!-- Favicon de dólar -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💲</text></svg>">
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -586,19 +586,13 @@
         let expandedChartBillId = null;
 
         function loadData() {
-            const saved = localStorage.getItem('facturas_db_v41');
+            const saved = localStorage.getItem('facturas_db_v40');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
                     if (parsed && parsed.apartments) {
                         db = parsed;
                         stagingPayments = db.stagingPayments || [];
-                        // Asegurar que conceptos de arriendo existentes usen el icono 💲
-                        db.apartments.forEach(apt => {
-                            apt.bills.forEach(b => {
-                                if (b.concept.toLowerCase() === 'arriendo') b.icon = '💲';
-                            });
-                        });
                     }
                 } catch(e) {
                     console.error("Error cargando localStorage", e);
@@ -656,7 +650,7 @@
         function saveData() {
             db.lastUpdate = new Date().toISOString();
             db.stagingPayments = stagingPayments;
-            localStorage.setItem('facturas_db_v41', JSON.stringify(db));
+            localStorage.setItem('facturas_db_v40', JSON.stringify(db));
         }
 
         function toggleTheme() {
@@ -717,7 +711,7 @@
 
         function resetToDefaultData() {
             if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
-            localStorage.removeItem('facturas_db_v41');
+            localStorage.removeItem('facturas_db_v40');
             db = {
                 theme: db.theme || 'light',
                 lastUpdate: new Date().toISOString(),
@@ -1610,10 +1604,9 @@
                     let existingBill = defaultApt.bills.find(b => `${defaultApt.name} - ${b.concept}`.toLowerCase() === targetConcept.toLowerCase() || b.concept.toLowerCase() === searchInputVal.toLowerCase());
                     
                     if (!existingBill) {
-                        const assignedIcon = searchInputVal.toLowerCase().includes('arriendo') ? '💲' : '➕';
                         defaultApt.bills.push({
                             id: 'b_' + Date.now(),
-                            icon: assignedIcon,
+                            icon: '➕',
                             concept: searchInputVal,
                             dueDay: 10,
                             cycle: 'mensual',
@@ -1752,7 +1745,7 @@
             if (!name) return;
 
             const defaultBills = [
-                { id: 'b_' + Date.now() + '_1', icon: '💲', concept: 'Arriendo', dueDay: 1, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] },
+                { id: 'b_' + Date.now() + '_1', icon: '🏠', concept: 'Arriendo', dueDay: 1, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] },
                 { id: 'b_' + Date.now() + '_2', icon: '🏦', concept: 'Hipoteca', dueDay: 5, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] },
                 { id: 'b_' + Date.now() + '_3', icon: '📋', concept: 'Administración', dueDay: 10, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] },
                 { id: 'b_' + Date.now() + '_4', icon: '💧', concept: 'Agua', dueDay: 15, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] },
@@ -1779,8 +1772,6 @@
             const apt = db.apartments.find(a => a.id === currentAptId);
             let bill = billId ? apt.bills.find(b => b.id === billId) : null;
 
-            const defaultIcon = bill ? (bill.icon || '📄') : '📄';
-
             const formDiv = document.createElement('div');
             formDiv.id = 'inline-bill-editor';
             formDiv.className = 'bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-indigo-300 dark:border-indigo-700 mt-2 space-y-2';
@@ -1791,11 +1782,11 @@
                 <form onsubmit="handleInlineSaveBill(event, '${billId || ''}')" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
                     <div class="sm:col-span-2">
                         <label class="block text-[9px] text-slate-500">Icono</label>
-                        <input type="text" id="inline-bill-icon" value="${defaultIcon}" maxlength="2" class="w-full text-center text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                        <input type="text" id="inline-bill-icon" value="${bill ? (bill.icon || '📄') : '📄'}" maxlength="2" class="w-full text-center text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                     </div>
                     <div class="sm:col-span-4">
                         <label class="block text-[9px] text-slate-500">Concepto</label>
-                        <input type="text" id="inline-bill-concept" value="${bill ? bill.concept : ''}" placeholder="Ej. Agua" required oninput="checkArriendoIconInput(this)" class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                        <input type="text" id="inline-bill-concept" value="${bill ? bill.concept : ''}" placeholder="Ej. Agua" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                     </div>
                     <div class="sm:col-span-3">
                         <label class="block text-[9px] text-slate-500">Día Venc. (0 = Sin alerta)</label>
@@ -1821,25 +1812,13 @@
             cardEl.appendChild(formDiv);
         }
 
-        function checkArriendoIconInput(inputEl) {
-            const val = inputEl.value.toLowerCase();
-            const iconInput = document.getElementById('inline-bill-icon');
-            if (val.includes('arriendo') && iconInput) {
-                iconInput.value = '💲';
-            }
-        }
-
         function handleInlineSaveBill(event, editBillId) {
             event.preventDefault();
             const apt = db.apartments.find(a => a.id === currentAptId);
-            const concept = document.getElementById('inline-bill-concept').value.trim();
+            const concept = document.getElementById('inline-bill-concept').value;
             const dueDay = parseInt(document.getElementById('inline-bill-day').value);
             const cycle = document.getElementById('inline-bill-cycle').value;
-            let icon = document.getElementById('inline-bill-icon').value || '📄';
-
-            if (concept.toLowerCase().includes('arriendo')) {
-                icon = '💲';
-            }
+            const icon = document.getElementById('inline-bill-icon').value || '📄';
 
             if (editBillId) {
                 let bill = apt.bills.find(b => b.id === editBillId);
@@ -2037,10 +2016,6 @@
             }
 
             apt.bills.forEach((bill, billIdx) => {
-                if (bill.concept.toLowerCase().includes('arriendo')) {
-                    bill.icon = '💲';
-                }
-
                 const allPayments = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
                 const latest = allPayments.length > 0 ? allPayments[0] : null;
                 
