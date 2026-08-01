@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Presupuesto y Activos (Supabase Broadcast)</title>
+    
+    <!-- Metaetiquetas para vista previa de enlaces (Open Graph) -->
+    <meta property="og:title" content="Control de Presupuesto y Activos">
+    <meta property="og:description" content="Gestión local y en tiempo real de activos, presupuestos y fichas de plazo.">
+    <meta property="og:image" content="https://www.microtech.es/hubfs/Fotos%20blog/planificacion_presupuestos.jpg">
+    <meta property="og:type" content="website">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -576,7 +583,7 @@
         let expandedChartBillId = null;
 
         function loadData() {
-            const saved = localStorage.getItem('facturas_db_v39');
+            const saved = localStorage.getItem('facturas_db_v40');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -640,7 +647,7 @@
         function saveData() {
             db.lastUpdate = new Date().toISOString();
             db.stagingPayments = stagingPayments;
-            localStorage.setItem('facturas_db_v39', JSON.stringify(db));
+            localStorage.setItem('facturas_db_v40', JSON.stringify(db));
         }
 
         function toggleTheme() {
@@ -701,7 +708,7 @@
 
         function resetToDefaultData() {
             if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
-            localStorage.removeItem('facturas_db_v39');
+            localStorage.removeItem('facturas_db_v40');
             db = {
                 theme: db.theme || 'light',
                 lastUpdate: new Date().toISOString(),
