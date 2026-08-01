@@ -12,14 +12,38 @@
         }
     </script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <!-- SDK oficial de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Polyfill para soportar Drag and Drop nativo en celulares -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@3.0.0-rc.0/default.css">
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@3.0.0-rc.0/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@3.0.0-rc.0/scroll-behaviour.min.js"></script>
+    
+    <script>
+        MobileDragDrop.polyfill({
+            dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+        });
+        window.addEventListener('touchmove', function() {}, {passive: false});
+    </script>
+
+    <style>
+        /* Solo el tirador o icono permite iniciar el arrastre, permitiendo scroll en el resto de la tarjeta */
+        .drag-handle {
+            touch-action: none;
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+    </style>
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 flex flex-col min-h-screen transition-colors duration-200">
 
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="app-view" class="flex-1 flex flex-col pb-16">
-        <!-- Header / Navegación por pestañas con Fecha de Última Actualización y Toggle Tema -->
+        <!-- Header -->
         <header class="bg-white dark:bg-slate-900 shadow-sm border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center gap-4 transition-colors duration-200">
             <div class="flex items-center space-x-3">
                 <i class="fa-solid fa-file-invoice-dollar text-2xl text-indigo-600 dark:text-indigo-400"></i>
@@ -81,10 +105,24 @@
                     </div>
                 </div>
 
+                <!-- SECCIÓN: FICHAS DE PLAZO -->
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
                     <div class="flex justify-between items-center">
                         <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                            <i class="fa-solid fa-chart-bar text-indigo-600 dark:text-indigo-400"></i> Top Conceptos con Mayor Promedio de Pago <span class="text-xs font-normal text-slate-400">(Usa las flechas para reordenar)</span>
+                            <i class="fa-solid fa-hourglass-half text-indigo-600 dark:text-indigo-400"></i> Fichas de Plazo y Vencimientos <span class="text-xs font-normal text-slate-400">(Usa el icono <i class="fa-solid fa-grip-vertical"></i> para arrastrar)</span>
+                        </h3>
+                        <button onclick="openNewTermModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow">
+                            <i class="fa-solid fa-plus mr-1"></i> Nueva Ficha de Plazo
+                        </button>
+                    </div>
+                    <div id="term-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+
+                <!-- SECCIÓN: TOP CONCEPTOS -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-bar text-indigo-600 dark:text-indigo-400"></i> Top Conceptos con Mayor Promedio de Pago <span class="text-xs font-normal text-slate-400">(Usa el icono <i class="fa-solid fa-grip-vertical"></i> para arrastrar)</span>
                         </h3>
                     </div>
                     <div id="dash-top-concepts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -93,7 +131,7 @@
 
             <!-- VISTA 2: GRUPOS Y FICHAS -->
             <section id="tab-groups" class="hidden space-y-6">
-                <!-- Registro Rápido Global con Búsqueda Flexible -->
+                <!-- Registro Rápido Global -->
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative transition-colors">
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-indigo-600"></div>
                     <h2 class="text-md font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
@@ -124,7 +162,7 @@
 
                 <div>
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Listado de Activos / Grupos <span class="text-xs font-normal text-slate-400">(Usa las flechas para reordenar)</span></h2>
+                        <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Listado de Activos / Grupos <span class="text-xs font-normal text-slate-400">(Usa el icono para arrastrar)</span></h2>
                         <button onclick="openNewApartmentModal()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition">
                             <i class="fa-solid fa-plus mr-1"></i> Nuevo Grupo
                         </button>
@@ -133,7 +171,7 @@
                 </div>
             </section>
 
-            <!-- VISTA 3: RESPALDO Y SYNC (SUPABASE BROADCAST) -->
+            <!-- VISTA 3: RESPALDO Y SYNC -->
             <section id="tab-sync" class="hidden space-y-6">
                 <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 max-w-4xl mx-auto transition-colors">
                     <div>
@@ -197,7 +235,6 @@
                         </div>
                     </div>
                     
-                    <!-- Botón de Limpiar / Restaurar por Defecto -->
                     <div class="flex justify-between items-center pt-2">
                         <button onclick="resetToDefaultData()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-xs">
                             <i class="fa-solid fa-rotate-left"></i> Limpiar todo y restaurar por defecto
@@ -224,6 +261,34 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- MODAL NUEVA/EDITAR FICHA DE PLAZO -->
+    <div id="new-term-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800 space-y-4">
+            <h3 id="term-modal-title" class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <i class="fa-solid fa-hourglass-half text-indigo-600 dark:text-indigo-400"></i> Nueva Ficha de Plazo
+            </h3>
+            <form onsubmit="handleSaveTermCard(event)" class="space-y-3">
+                <input type="hidden" id="term-edit-id">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Título de la Ficha</label>
+                    <input type="text" id="term-title" required placeholder="Ej. Hipotecario Fontibón" class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Fecha de Inicio</label>
+                    <input type="date" id="term-start" required class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Fecha de Fin (Vencimiento del Plazo)</label>
+                    <input type="date" id="term-end" required class="w-full text-sm border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeNewTermModal()" class="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 font-medium">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 text-white font-medium rounded-lg shadow">Guardar Ficha</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- MODAL CONFIGURADOR DE IMPORTACIÓN CSV -->
@@ -270,9 +335,9 @@
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
             <div class="px-6 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span id="group-icon-display" class="text-2xl cursor-pointer p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700" onclick="makeGroupEditable('icon'); event.stopPropagation();" title="Cambiar icono">🏢</span>
-                    <div>
+                <div id="modal-header-left" class="flex items-center gap-3">
+                    <span id="group-icon-display" class="text-2xl cursor-pointer p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition" onclick="makeGroupEditable('icon'); event.stopPropagation();" title="Cambiar icono">🏢</span>
+                    <div id="group-header-info" class="space-y-0.5">
                         <h3 id="group-name-display" class="text-lg font-bold text-slate-800 dark:text-white cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition leading-tight" onclick="makeGroupEditable('name'); event.stopPropagation();" title="Editar nombre">Nombre Grupo</h3>
                         <p id="group-desc-display" class="text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition" onclick="makeGroupEditable('description'); event.stopPropagation();" title="Editar descripción">Descripción...</p>
                     </div>
@@ -286,41 +351,6 @@
             </div>
 
             <div class="p-4 overflow-y-auto flex-1 space-y-3">
-                <!-- Formulario Nueva Factura Oculto -->
-                <div id="new-bill-form-container" class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hidden space-y-2">
-                    <h4 id="bill-form-title" class="text-xs font-semibold text-slate-700 dark:text-slate-200"><i class="fa-solid fa-circle-plus text-indigo-600 dark:text-indigo-400 mr-1"></i> Configurar Factura</h4>
-                    <form onsubmit="handleSaveBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
-                        <input type="hidden" id="bill-apt-id">
-                        <input type="hidden" id="bill-edit-id">
-                        <div class="sm:col-span-2">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Icono</label>
-                            <input type="text" id="bill-icon" value="📄" maxlength="2" class="w-full text-center text-xs border border-slate-300 dark:border-slate-700 rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                        </div>
-                        <div class="sm:col-span-4">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Concepto</label>
-                            <input type="text" id="bill-concept" placeholder="Ej. Agua" required class="w-full text-xs border border-slate-300 dark:border-slate-700 rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Día Venc. (1-31)</label>
-                            <input type="number" id="bill-day" min="1" max="31" value="10" required class="w-full text-xs border border-slate-300 dark:border-slate-700 rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                        </div>
-                        <div class="sm:col-span-3">
-                            <label class="block text-[10px] text-slate-500 dark:text-slate-400">Frecuencia / Ciclo</label>
-                            <select id="bill-cycle" class="w-full text-xs border border-slate-300 dark:border-slate-700 rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
-                                <option value="mensual">Mensual</option>
-                                <option value="bimensual">Bimensual</option>
-                                <option value="trimestral">Trimestral</option>
-                                <option value="semestral">Semestral</option>
-                                <option value="anual">Anual</option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-12 flex gap-2 pt-1">
-                            <button type="submit" id="btn-submit-bill" class="flex-1 bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white text-xs font-medium py-1.5 rounded transition">Guardar</button>
-                            <button type="button" onclick="toggleNewBillForm()" class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-medium rounded transition">Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-
                 <!-- Formulario Rápido Pago -->
                 <div id="quick-add-payment-container" class="bg-indigo-50 dark:bg-indigo-950/60 p-3 rounded-xl border border-indigo-200 dark:border-indigo-800 hidden space-y-2">
                     <h4 class="text-xs font-semibold text-indigo-900 dark:text-indigo-200"><i class="fa-solid fa-plus-circle text-indigo-600 dark:text-indigo-400 mr-1"></i> Registrar Pago para: <span id="quick-add-target-title" class="underline font-bold"></span></h4>
@@ -342,7 +372,7 @@
                 </div>
 
                 <div>
-                    <h4 class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">Facturas del Grupo <span class="text-[10px] font-normal text-slate-400">(Usa las flechas para ordenar)</span></h4>
+                    <h4 class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">Facturas del Grupo <span class="text-[10px] font-normal text-slate-400">(Usa el icono para arrastrar)</span></h4>
                     <div id="bills-list-container" class="space-y-2"></div>
                 </div>
             </div>
@@ -388,7 +418,7 @@
                     </div>
                     <div class="flex-1">
                         <label class="block text-sm text-slate-600 dark:text-slate-300 mb-1">Nombre / Filtro</label>
-                        <input type="text" id="new-apt-name" required class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none" placeholder="Ej. Fontibón">
+                        <input type="text" id="new-apt-name" required class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none" placeholder="Ej. * Otros">
                     </div>
                 </div>
                 <div>
@@ -404,7 +434,7 @@
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
-                <p class="text-[11px] text-slate-400">Se incluirán automáticamente las facturas por defecto: Arriendo, Hipoteca, Administración, Agua, Luz, Gas e Internet.</p>
+                <p class="text-[11px] text-slate-400">Se incluirán automáticamente las facturas por defecto.</p>
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="closeNewApartmentModal()" class="px-4 py-2 text-sm text-slate-600 dark:text-slate-300 font-medium">Cancelar</button>
                     <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 text-white font-medium rounded-lg">Crear</button>
@@ -413,7 +443,7 @@
         </div>
     </div>
 
-    <!-- FOOTER SIEMPRE VISIBLE -->
+    <!-- FOOTER -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-400 fixed bottom-0 left-0 right-0 z-40 shadow-md transition-colors">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <span>© 2026 NOVAELIX · by Inversiones Aripar</span>
@@ -428,9 +458,8 @@
         </div>
     </footer>
 
-    <!-- LÓGICA JAVASCRIPT CON SUPABASE BROADCAST -->
+    <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // CONFIGURACIÓN SUPABASE CON TUS CLAVES PÚBLICAS
         const SUPABASE_URL = 'https://yfbfbywjwslxsrgamqhj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j';
 
@@ -453,7 +482,6 @@
             statusEl.innerText = "Estado: Conectando con la nube...";
             statusEl.className = "text-[11px] text-indigo-600 font-medium";
 
-            // Creamos un canal único cifrado por la clave que escriba el usuario
             supabaseChannel = supabaseClient.channel(`novaelix_channel_${userKey}`, {
                 config: { broadcast: { self: false } }
             });
@@ -505,6 +533,10 @@
         let db = {
             theme: 'light',
             lastUpdate: new Date().toISOString(),
+            termCards: [
+                { id: 't1', title: 'Hipotecario Fontibón', start: '2024-01-01', end: '2030-01-01' },
+                { id: 't2', title: 'Crédito Vehicular Madrid', start: '2025-06-01', end: '2028-06-01' }
+            ],
             apartments: [
                 {
                     id: '1', icon: '🏢', name: 'Fontibón', description: 'Apartamento principal en arriendo', type: 'Apartamento',
@@ -545,7 +577,7 @@
         let expandedChartBillId = null;
 
         function loadData() {
-            const saved = localStorage.getItem('facturas_db_v28');
+            const saved = localStorage.getItem('facturas_db_v35');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -556,6 +588,12 @@
                 } catch(e) {
                     console.error("Error cargando localStorage", e);
                 }
+            }
+            if (!db.termCards || db.termCards.length === 0) {
+                db.termCards = [
+                    { id: 't1', title: 'Hipotecario Fontibón', start: '2024-01-01', end: '2030-01-01' },
+                    { id: 't2', title: 'Crédito Vehicular Madrid', start: '2025-06-01', end: '2028-06-01' }
+                ];
             }
             if (!stagingPayments || stagingPayments.length === 0) {
                 initDemoStaging();
@@ -603,7 +641,7 @@
         function saveData() {
             db.lastUpdate = new Date().toISOString();
             db.stagingPayments = stagingPayments;
-            localStorage.setItem('facturas_db_v28', JSON.stringify(db));
+            localStorage.setItem('facturas_db_v35', JSON.stringify(db));
         }
 
         function toggleTheme() {
@@ -664,16 +702,20 @@
 
         function resetToDefaultData() {
             if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
-            localStorage.removeItem('facturas_db_v28');
+            localStorage.removeItem('facturas_db_v35');
             db = {
                 theme: db.theme || 'light',
                 lastUpdate: new Date().toISOString(),
+                termCards: [
+                    { id: 't1', title: 'Hipotecario Fontibón', start: '2024-01-01', end: '2030-01-01' },
+                    { id: 't2', title: 'Crédito Vehicular Madrid', start: '2025-06-01', end: '2028-06-01' }
+                ],
                 apartments: [],
                 stagingPayments: []
             };
             stagingPayments = [];
             renderAll();
-            alert("Datos limpiados correctamente. La aplicación está en blanco. Recargue la página cuando desee restablecer los valores por defecto.");
+            alert("Datos limpiados correctamente con fichas por defecto.");
         }
 
         function renderAll() {
@@ -706,18 +748,121 @@
             document.getElementById(`nav-${tabName}`).className = "px-4 py-2 text-xs font-semibold rounded-lg transition bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm";
         }
 
-        function moveDashboardCard(index, direction) {
-            let conceptsList = getDashboardConceptsList();
-            let targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= conceptsList.length) return;
+        // --- GESTIÓN Y ARRASTRE DE FICHAS DE PLAZO (SOLO DESDE EL ICONO) ---
+        let dragTermIndex = null;
+        
+        function handleTermDragStart(e, idx) {
+            dragTermIndex = idx;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleTermDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        
+        function handleTermDrop(e, targetIdx) {
+            e.preventDefault();
+            if (dragTermIndex === null || dragTermIndex === targetIdx) return;
+            let moved = db.termCards[dragTermIndex];
+            db.termCards.splice(dragTermIndex, 1);
+            db.termCards.splice(targetIdx, 0, moved);
+            saveData();
+            renderDashboard();
+            dragTermIndex = null;
+        }
 
-            let temp = conceptsList[index];
-            conceptsList[index] = conceptsList[targetIndex];
-            conceptsList[targetIndex] = temp;
+        function openNewTermModal() {
+            document.getElementById('term-edit-id').value = '';
+            document.getElementById('term-title').value = '';
+            document.getElementById('term-start').value = '';
+            document.getElementById('term-end').value = '';
+            document.getElementById('term-modal-title').innerHTML = '<i class="fa-solid fa-hourglass-half text-indigo-600 dark:text-indigo-400"></i> Nueva Ficha de Plazo';
+            document.getElementById('new-term-modal').classList.remove('hidden');
+            document.getElementById('new-term-modal').classList.add('flex');
+        }
+
+        function editTermCard(id) {
+            const term = db.termCards.find(t => t.id === id);
+            if (!term) return;
+
+            document.getElementById('term-edit-id').value = term.id;
+            document.getElementById('term-title').value = term.title;
+            document.getElementById('term-start').value = term.start;
+            document.getElementById('term-end').value = term.end;
+            document.getElementById('term-modal-title').innerHTML = '<i class="fa-solid fa-pen text-indigo-600 dark:text-indigo-400"></i> Editar Ficha de Plazo';
+            document.getElementById('new-term-modal').classList.remove('hidden');
+            document.getElementById('new-term-modal').classList.add('flex');
+        }
+
+        function closeNewTermModal() {
+            document.getElementById('new-term-modal').classList.add('hidden');
+            document.getElementById('new-term-modal').classList.remove('flex');
+        }
+
+        function handleSaveTermCard(e) {
+            e.preventDefault();
+            const editId = document.getElementById('term-edit-id').value;
+            const title = document.getElementById('term-title').value.trim();
+            const start = document.getElementById('term-start').value;
+            const end = document.getElementById('term-end').value;
+
+            if (!title || !start || !end) return;
+
+            if (!db.termCards) db.termCards = [];
+
+            if (editId) {
+                const term = db.termCards.find(t => t.id === editId);
+                if (term) {
+                    term.title = title;
+                    term.start = start;
+                    term.end = end;
+                }
+            } else {
+                db.termCards.push({
+                    id: 't_' + Date.now(),
+                    title,
+                    start,
+                    end
+                });
+            }
+
+            saveData();
+            renderDashboard();
+            closeNewTermModal();
+        }
+
+        function deleteTermCard(id) {
+            if (!confirm("¿Desea eliminar esta ficha de plazo?")) return;
+            if (db.termCards) {
+                db.termCards = db.termCards.filter(t => t.id !== id);
+                saveData();
+                renderDashboard();
+            }
+        }
+
+        // --- DRAG AND DROP PARA DASHBOARD ---
+        let dragDashboardIndex = null;
+        function handleDashDragStart(e, idx) {
+            dragDashboardIndex = idx;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        function handleDashDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        function handleDashDrop(e, targetIdx) {
+            e.preventDefault();
+            if (dragDashboardIndex === null || dragDashboardIndex === targetIdx) return;
+            let conceptsList = getDashboardConceptsList();
+            let movedItem = conceptsList[dragDashboardIndex];
+            conceptsList.splice(dragDashboardIndex, 1);
+            conceptsList.splice(targetIdx, 0, movedItem);
 
             db.dashOrder = conceptsList.map(c => c.title);
             saveData();
             renderDashboard();
+            dragDashboardIndex = null;
         }
 
         function getDashboardConceptsList() {
@@ -752,27 +897,51 @@
             return top6;
         }
 
-        function moveApartment(index, direction) {
-            let targetIndex = index + direction;
-            if (targetIndex < 0 || targetIndex >= db.apartments.length) return;
-            let temp = db.apartments[index];
-            db.apartments[index] = db.apartments[targetIndex];
-            db.apartments[targetIndex] = temp;
+        // --- DRAG AND DROP PARA GRUPOS ---
+        let dragAptIndex = null;
+        function handleAptDragStart(e, idx) {
+            dragAptIndex = idx;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        function handleAptDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        function handleAptDrop(e, targetIdx) {
+            e.preventDefault();
+            if (dragAptIndex === null || dragAptIndex === targetIdx) return;
+            let moved = db.apartments[dragAptIndex];
+            db.apartments.splice(dragAptIndex, 1);
+            db.apartments.splice(targetIdx, 0, moved);
             saveData();
             renderApartments();
+            dragAptIndex = null;
         }
 
-        function moveBill(aptId, billIndex, direction) {
-            const apt = db.apartments.find(a => a.id === aptId);
+        // --- DRAG AND DROP PARA FACTURAS ---
+        let dragBillIndex = null;
+        function handleBillDragStart(e, idx) {
+            dragBillIndex = idx;
+            e.dataTransfer.effectAllowed = 'move';
+            e.stopPropagation();
+        }
+        function handleBillDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        function handleBillDrop(e, targetIdx) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (dragBillIndex === null || dragBillIndex === targetIdx) return;
+            const apt = db.apartments.find(a => a.id === currentAptId);
             if (!apt) return;
-            let targetIndex = billIndex + direction;
-            if (targetIndex < 0 || targetIndex >= apt.bills.length) return;
-            let temp = apt.bills[billIndex];
-            apt.bills[billIndex] = apt.bills[targetIndex];
-            apt.bills[targetIndex] = temp;
+            let moved = apt.bills[dragBillIndex];
+            apt.bills.splice(dragBillIndex, 1);
+            apt.bills.splice(targetIdx, 0, moved);
             saveData();
             renderBillsDetail(apt);
             renderApartments();
+            dragBillIndex = null;
         }
 
         function renderDashboard() {
@@ -793,6 +962,68 @@
             document.getElementById('dash-total-pending').innerText = totalPending;
             document.getElementById('dash-total-groups').innerText = db.apartments.length;
 
+            // Renderizar Fichas de Plazo con colores sólidos y arrastre limitado al icono
+            const termContainer = document.getElementById('term-cards-grid');
+            termContainer.innerHTML = '';
+            
+            if (!db.termCards || db.termCards.length === 0) {
+                termContainer.innerHTML = `<p class="text-xs text-slate-400 col-span-3 text-center py-2">No hay fichas de plazo configuradas.</p>`;
+            } else {
+                const now = new Date();
+                db.termCards.forEach((term, idx) => {
+                    const startDate = new Date(term.start + 'T00:00:00');
+                    const endDate = new Date(term.end + 'T00:00:00');
+                    const totalDuration = endDate - startDate;
+                    const elapsed = now - startDate;
+                    
+                    let percent = 0;
+                    if (totalDuration > 0) {
+                        percent = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+                    }
+
+                    let barColor = 'bg-emerald-500';
+                    if (percent < 30) {
+                        barColor = 'bg-rose-500';
+                    } else if (percent < 70) {
+                        barColor = 'bg-amber-500';
+                    }
+
+                    const card = document.createElement('div');
+                    // NOTA: La tarjeta no es draggable en sí misma para permitir el scroll normal
+                    card.ondragover = handleTermDragOver;
+                    card.ondrop = (e) => handleTermDrop(e, idx);
+                    card.className = 'bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3 relative transition-colors';
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
+                                    Ficha de Plazo 
+                                    <!-- SOLO EL ICONO ES DRAG-HANDLE -->
+                                    <i class="fa-solid fa-grip-vertical ml-1 text-slate-400 drag-handle" draggable="true" ondragstart="handleTermDragStart(event, ${idx})" title="Mantén presionado para arrastrar"></i>
+                                </span>
+                                <h4 class="font-bold text-slate-800 dark:text-white text-sm mt-1">${term.title}</h4>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="editTermCard('${term.id}')" class="text-slate-400 hover:text-indigo-600 text-xs p-1" title="Editar ficha"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteTermCard('${term.id}')" class="text-slate-400 hover:text-rose-600 text-xs p-1" title="Eliminar ficha"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <span class="text-slate-500 dark:text-slate-400">Progreso (${percent}%)</span>
+                                <span class="text-indigo-600 dark:text-indigo-400">${term.start} al ${term.end}</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-500 ${barColor}" style="width: ${percent}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                    termContainer.appendChild(card);
+                });
+            }
+
+            // Renderizar Top Conceptos
             const top6 = getDashboardConceptsList();
             const gridContainer = document.getElementById('dash-top-concepts-grid');
             gridContainer.innerHTML = '';
@@ -834,16 +1065,17 @@
                 }
 
                 const card = document.createElement('div');
+                card.ondragover = handleDashDragOver;
+                card.ondrop = (e) => handleDashDrop(e, idx);
                 card.className = 'bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-3 transition-colors';
                 card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">Ficha #${idx + 1}</span>
-                            <div class="flex items-center gap-1">
-                                <button onclick="moveDashboardCard(${idx}, -1)" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover izquierda"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                                <button onclick="moveDashboardCard(${idx}, 1)" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover derecha"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                                <span class="text-lg ml-2">${item.icon}</span>
-                            </div>
+                            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
+                                Ficha #${idx + 1} 
+                                <i class="fa-solid fa-grip-vertical ml-1 text-slate-400 drag-handle" draggable="true" ondragstart="handleDashDragStart(event, ${idx})" title="Mantén presionado para arrastrar"></i>
+                            </span>
+                            <span class="text-lg">${item.icon}</span>
                         </div>
                         <h4 class="font-bold text-slate-800 dark:text-white text-sm mt-1 truncate" title="${item.title}">${item.title}</h4>
                         <div class="grid grid-cols-2 gap-2 mt-2 text-xs bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
@@ -890,9 +1122,7 @@
             dateStr = dateStr.trim().replace(/['"]/g, '');
             const format = document.getElementById('cfg-date-format').value;
             
-            if (format === 'internacional') {
-                return dateStr;
-            }
+            if (format === 'internacional') return dateStr;
 
             const months = { 'ene': '01', 'feb': '02', 'mar': '03', 'abr': '04', 'may': '05', 'jun': '06', 'jul': '07', 'ago': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dic': '12' };
             const partsAlt = dateStr.toLowerCase().split('-');
@@ -987,23 +1217,22 @@
 
                         let matched = false;
                         db.apartments.forEach(apt => {
+                            const isWildcardGroup = apt.name.trim().startsWith('*');
+                            const gName = apt.name.toLowerCase();
+
                             apt.bills.forEach(bill => {
-                                const gName = apt.name.toLowerCase();
                                 const bName = bill.concept.toLowerCase();
                                 const rawTarget = rawConcept.toLowerCase();
 
-                                if (rawTarget.includes(gName) && rawTarget.includes(bName)) {
-                                    matched = true;
+                                if (isWildcardGroup) {
+                                    if (rawTarget.includes(bName)) matched = true;
+                                } else {
+                                    if (rawTarget.includes(gName) && rawTarget.includes(bName)) matched = true;
                                 }
                             });
                         });
 
-                        newStaging.push({
-                            date,
-                            concept: rawConcept,
-                            amount,
-                            matched
-                        });
+                        newStaging.push({ date, concept: rawConcept, amount, matched });
                     }
 
                     stagingPayments = newStaging;
@@ -1011,7 +1240,7 @@
                     renderStagingTable();
                     renderApartments();
                     closeCSVConfigModal();
-                    alert(`¡Nuevos datos maestros cargados! Se reemplazaron los registros anteriores con ${stagingPayments.length} filas del CSV.`);
+                    alert(`¡Nuevos datos maestros cargados! Se reemplazaron con ${stagingPayments.length} filas.`);
                 } catch (err) {
                     alert('Error al procesar el CSV: ' + err.message);
                     closeCSVConfigModal();
@@ -1103,11 +1332,21 @@
             let paymentsMap = new Map();
 
             if (stagingPayments && stagingPayments.length > 0) {
+                const isWildcardGroup = aptName.trim().startsWith('*');
                 const g = normalizeStr(aptName);
                 const b = normalizeStr(billConcept);
+
                 stagingPayments.forEach(p => {
                     const target = normalizeStr(p.concept);
-                    if (target.includes(g) && target.includes(b)) {
+                    let isMatch = false;
+
+                    if (isWildcardGroup) {
+                        isMatch = target.includes(b);
+                    } else {
+                        isMatch = target.includes(g) && target.includes(b);
+                    }
+
+                    if (isMatch) {
                         paymentsMap.set(p.date, { date: p.date, amount: p.amount, masterConcept: p.concept });
                     }
                 });
@@ -1155,12 +1394,21 @@
             let updatedCount = 0;
             stagingPayments.forEach(p => {
                 db.apartments.forEach(apt => {
+                    const isWildcardGroup = apt.name.trim().startsWith('*');
+                    const gName = apt.name.toLowerCase();
+
                     apt.bills.forEach(bill => {
-                        const gName = apt.name.toLowerCase();
                         const bName = bill.concept.toLowerCase();
                         const rawTarget = p.concept.toLowerCase();
+                        let matched = false;
 
-                        if (rawTarget.includes(gName) && rawTarget.includes(bName)) {
+                        if (isWildcardGroup) {
+                            matched = rawTarget.includes(bName);
+                        } else {
+                            matched = rawTarget.includes(gName) && rawTarget.includes(bName);
+                        }
+
+                        if (matched) {
                             p.matched = true;
                             if (!bill.history) bill.history = [];
                             if (!bill.history.some(h => (typeof h === 'string' ? h : h.date) === p.date)) {
@@ -1175,7 +1423,7 @@
             saveData();
             renderAll();
             renderStagingTable();
-            alert(`¡Sincronización completada! Se asociaron pagos con las fichas.`);
+            alert(`¡Sincronización completada! Se asociaron ${updatedCount} pagos.`);
         }
 
         function renderApartments() {
@@ -1216,7 +1464,10 @@
                 });
 
                 const card = document.createElement('div');
-                card.className = 'bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition flex flex-col justify-between overflow-hidden cursor-pointer transition-colors';
+                // Arrastre limitado al icono dentro de la tarjeta de grupo
+                card.ondragover = handleAptDragOver;
+                card.ondrop = (e) => handleAptDrop(e, idx);
+                card.className = 'bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition flex flex-col justify-between overflow-hidden transition-colors';
                 card.onclick = () => openModal(apt.id);
 
                 card.innerHTML = `
@@ -1224,11 +1475,10 @@
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">${apt.type || 'Grupo'}</span>
-                                    <div class="flex items-center gap-0.5" onclick="event.stopPropagation()">
-                                        <button onclick="moveApartment(${idx}, -1)" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover izquierda"><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                                        <button onclick="moveApartment(${idx}, 1)" class="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover derecha"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                                    </div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
+                                        ${apt.type || 'Grupo'} 
+                                        <i class="fa-solid fa-grip-vertical ml-1 text-slate-400 drag-handle" draggable="true" ondragstart="handleAptDragStart(event, ${idx})" title="Mantén presionado para arrastrar"></i>
+                                    </span>
                                 </div>
                                 <h3 class="font-bold text-slate-800 dark:text-white text-lg mt-1 flex items-center gap-2">
                                     <span class="text-2xl">${apt.icon || '🏢'}</span> ${apt.name}
@@ -1368,7 +1618,7 @@
             document.getElementById('selected-global-bill-id').value = '';
             document.getElementById('selected-global-apt-id').value = '';
 
-            alert('¡Pago y concepto agregado con éxito al maestro y fichas!');
+            alert('¡Pago y concepto agregado con éxito!');
         }
 
         let currentAptId = null;
@@ -1379,10 +1629,7 @@
             expandedChartBillId = null;
             const apt = db.apartments.find(a => a.id === aptId);
             
-            document.getElementById('bill-apt-id').value = aptId;
             renderModalHeader(apt);
-
-            document.getElementById('new-bill-form-container').classList.add('hidden');
             document.getElementById('quick-add-payment-container').classList.add('hidden');
             
             renderBillsDetail(apt);
@@ -1391,14 +1638,16 @@
         }
 
         function renderModalHeader(apt) {
-            const container = document.getElementById('group-name-display').parentElement.parentElement;
-            container.innerHTML = `
-                <span id="group-icon-display" class="text-2xl cursor-pointer p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700" onclick="makeGroupEditable('icon'); event.stopPropagation();" title="Cambiar icono">${apt.icon || '🏢'}</span>
-                <div>
-                    <h3 id="group-name-display" class="text-lg font-bold text-slate-800 dark:text-white cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition leading-tight" onclick="makeGroupEditable('name'); event.stopPropagation();" title="Editar nombre">${apt.name}</h3>
-                    <p id="group-desc-display" class="text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition" onclick="makeGroupEditable('description'); event.stopPropagation();" title="Editar descripción">${apt.description || 'Sin descripción...'}</p>
-                </div>
-            `;
+            const container = document.getElementById('modal-header-left');
+            if (container) {
+                container.innerHTML = `
+                    <span id="group-icon-display" class="text-2xl cursor-pointer p-1 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500 transition" onclick="makeGroupEditable('icon'); event.stopPropagation();" title="Cambiar icono">${apt.icon || '🏢'}</span>
+                    <div id="group-header-info" class="space-y-0.5">
+                        <h3 id="group-name-display" class="text-lg font-bold text-slate-800 dark:text-white cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition leading-tight" onclick="makeGroupEditable('name'); event.stopPropagation();" title="Editar nombre">${apt.name}</h3>
+                        <p id="group-desc-display" class="text-[11px] text-slate-500 dark:text-slate-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition" onclick="makeGroupEditable('description'); event.stopPropagation();" title="Editar descripción">${apt.description || 'Sin descripción...'}</p>
+                    </div>
+                `;
+            }
         }
 
         function closeModal() {
@@ -1421,13 +1670,20 @@
             const apt = db.apartments.find(a => a.id === currentAptId);
             if (!apt) return;
 
+            let targetEl = field === 'icon' ? document.getElementById('group-icon-display') : (field === 'name' ? document.getElementById('group-name-display') : document.getElementById('group-desc-display'));
+            if (!targetEl || targetEl.tagName === 'INPUT') return;
+
             let currentValue = field === 'icon' ? apt.icon : (field === 'name' ? apt.name : apt.description);
             let input = document.createElement('input');
             input.type = 'text';
             input.value = currentValue || '';
-            input.className = "text-sm border border-indigo-500 rounded p-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none";
-
-            let targetEl = field === 'icon' ? document.getElementById('group-icon-display') : (field === 'name' ? document.getElementById('group-name-display') : document.getElementById('group-desc-display'));
+            
+            if (field === 'icon') {
+                input.className = "text-2xl text-center w-12 border border-indigo-500 rounded p-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none";
+                input.maxLength = 2;
+            } else {
+                input.className = "text-sm border border-indigo-500 rounded p-1 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none w-full";
+            }
 
             let saved = false;
             const triggerSave = () => {
@@ -1481,57 +1737,108 @@
                 { id: 'b_' + Date.now() + '_7', icon: '🌐', concept: 'Internet', dueDay: 25, cycle: 'mensual', dueDate: new Date().toISOString().split('T')[0], history: [] }
             ];
 
-            const newApt = {
-                id: Date.now().toString(),
-                icon,
-                name,
-                description,
-                type,
-                bills: defaultBills
-            };
-
-            db.apartments.push(newApt);
+            db.apartments.push({ id: Date.now().toString(), icon, name, description, type, bills: defaultBills });
             saveData();
             renderAll();
             closeNewApartmentModal();
             document.getElementById('new-apt-name').value = '';
             document.getElementById('new-apt-desc').value = '';
-            alert('¡Nuevo grupo creado con sus facturas por defecto!');
+            alert('¡Nuevo grupo creado!');
         }
 
-        function toggleNewBillForm(editBillId = null) {
-            document.getElementById('quick-add-payment-container').classList.add('hidden');
-            const container = document.getElementById('new-bill-form-container');
-            const formTitle = document.getElementById('bill-form-title');
-            const submitBtn = document.getElementById('btn-submit-bill');
+        function toggleInlineBillForm(billId = null, cardEl = null) {
+            const existing = document.getElementById('inline-bill-editor');
+            if (existing) existing.remove();
+
+            if (!cardEl) return;
+
+            const apt = db.apartments.find(a => a.id === currentAptId);
+            let bill = billId ? apt.bills.find(b => b.id === billId) : null;
+
+            const formDiv = document.createElement('div');
+            formDiv.id = 'inline-bill-editor';
+            formDiv.className = 'bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-indigo-300 dark:border-indigo-700 mt-2 space-y-2';
+            formDiv.onclick = (e) => e.stopPropagation();
+
+            formDiv.innerHTML = `
+                <h5 class="text-xs font-bold text-slate-700 dark:text-slate-200"><i class="fa-solid fa-pen text-indigo-600 mr-1"></i> ${billId ? 'Editar Factura' : 'Nueva Factura'}</h5>
+                <form onsubmit="handleInlineSaveBill(event, '${billId || ''}')" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                    <div class="sm:col-span-2">
+                        <label class="block text-[9px] text-slate-500">Icono</label>
+                        <input type="text" id="inline-bill-icon" value="${bill ? (bill.icon || '📄') : '📄'}" maxlength="2" class="w-full text-center text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                    </div>
+                    <div class="sm:col-span-4">
+                        <label class="block text-[9px] text-slate-500">Concepto</label>
+                        <input type="text" id="inline-bill-concept" value="${bill ? bill.concept : ''}" placeholder="Ej. Agua" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label class="block text-[9px] text-slate-500">Día Venc. (1-31)</label>
+                        <input type="number" id="inline-bill-day" min="1" max="31" value="${bill ? (bill.dueDay || 10) : 10}" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label class="block text-[9px] text-slate-500">Ciclo</label>
+                        <select id="inline-bill-cycle" class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                            <option value="mensual" ${bill && bill.cycle === 'mensual' ? 'selected' : ''}>Mensual</option>
+                            <option value="bimensual" ${bill && bill.cycle === 'bimensual' ? 'selected' : ''}>Bimensual</option>
+                            <option value="trimestral" ${bill && bill.cycle === 'trimestral' ? 'selected' : ''}>Trimestral</option>
+                            <option value="semestral" ${bill && bill.cycle === 'semestral' ? 'selected' : ''}>Semestral</option>
+                            <option value="anual" ${bill && bill.cycle === 'anual' ? 'selected' : ''}>Anual</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-12 flex gap-2 pt-1">
+                        <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-1 rounded">Guardar</button>
+                        <button type="button" onclick="document.getElementById('inline-bill-editor').remove()" class="px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs rounded">Cancelar</button>
+                    </div>
+                </form>
+            `;
+
+            cardEl.appendChild(formDiv);
+        }
+
+        function handleInlineSaveBill(event, editBillId) {
+            event.preventDefault();
+            const apt = db.apartments.find(a => a.id === currentAptId);
+            const concept = document.getElementById('inline-bill-concept').value;
+            const dueDay = parseInt(document.getElementById('inline-bill-day').value) || 1;
+            const cycle = document.getElementById('inline-bill-cycle').value;
+            const icon = document.getElementById('inline-bill-icon').value || '📄';
 
             if (editBillId) {
-                const apt = db.apartments.find(a => a.id === currentAptId);
-                const bill = apt.bills.find(b => b.id === editBillId);
+                let bill = apt.bills.find(b => b.id === editBillId);
                 if (bill) {
-                    document.getElementById('bill-edit-id').value = bill.id;
-                    document.getElementById('bill-icon').value = bill.icon || '📄';
-                    document.getElementById('bill-concept').value = bill.concept;
-                    document.getElementById('bill-day').value = bill.dueDay || 10;
-                    document.getElementById('bill-cycle').value = bill.cycle || 'mensual';
-                    formTitle.innerHTML = `<i class="fa-solid fa-pen text-indigo-600 dark:text-indigo-400 mr-1"></i> Editar Factura`;
-                    submitBtn.innerText = `Actualizar`;
+                    bill.icon = icon;
+                    bill.concept = concept;
+                    bill.dueDay = dueDay;
+                    bill.cycle = cycle;
                 }
-                container.classList.remove('hidden');
             } else {
-                document.getElementById('bill-edit-id').value = '';
-                document.getElementById('bill-concept').value = '';
-                document.getElementById('bill-day').value = '10';
-                document.getElementById('bill-cycle').value = 'mensual';
-                document.getElementById('bill-icon').value = '📄';
-                formTitle.innerHTML = `<i class="fa-solid fa-circle-plus text-indigo-600 dark:text-indigo-400 mr-1"></i> Nueva Factura`;
-                submitBtn.innerText = `Guardar`;
-                container.classList.toggle('hidden');
+                const now = new Date();
+                let year = now.getFullYear();
+                let month = now.getMonth();
+                if (now.getDate() > dueDay) month += 1;
+                const initialDueDate = new Date(year, month, dueDay).toISOString().split('T')[0];
+
+                apt.bills.push({
+                    id: Date.now().toString(),
+                    icon,
+                    concept,
+                    dueDay,
+                    cycle,
+                    dueDate: initialDueDate,
+                    history: []
+                });
             }
+
+            saveData();
+            renderBillsDetail(apt);
+        }
+
+        function toggleNewBillForm() {
+            const container = document.getElementById('bills-list-container');
+            toggleInlineBillForm(null, container);
         }
 
         function openQuickAddPayment(billId) {
-            document.getElementById('new-bill-form-container').classList.add('hidden');
             const apt = db.apartments.find(a => a.id === currentAptId);
             const bill = apt.bills.find(b => b.id === billId);
             if (!bill) return;
@@ -1703,7 +2010,7 @@
                                     <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
                                         <tr>
                                             <th class="p-1.5">Fecha de Pago</th>
-                                            <th class="p-1.5">Concepto (Exacto de Tabla Maestra)</th>
+                                            <th class="p-1.5">Concepto</th>
                                             <th class="p-1.5">Monto</th>
                                             <th class="p-1.5 text-right">Acciones</th>
                                         </tr>
@@ -1766,16 +2073,18 @@
                 }
 
                 const div = document.createElement('div');
-                div.className = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col gap-2 shadow-2xs cursor-pointer transition-colors';
+                div.id = `bill-card-${bill.id}`;
+                // Arrastre limitado al icono dentro de la factura
+                div.ondragover = handleBillDragOver;
+                div.ondrop = (e) => handleBillDrop(e, billIdx);
+                div.className = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col gap-2 shadow-2xs transition-colors';
                 div.onclick = () => toggleChartExpand(bill.id);
 
                 div.innerHTML = `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div class="flex items-center gap-2.5 flex-1">
-                            <div class="flex flex-col gap-0.5" onclick="event.stopPropagation()">
-                                <button onclick="moveBill('${apt.id}', ${billIdx}, -1)" class="p-0.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover arriba"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
-                                <button onclick="moveBill('${apt.id}', ${billIdx}, 1)" class="p-0.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded" title="Mover abajo"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
-                            </div>
+                            <!-- SOLO EL ICONO ES DRAG-HANDLE -->
+                            <span class="text-slate-400 hover:text-indigo-600 drag-handle" draggable="true" ondragstart="handleBillDragStart(event, ${billIdx})" title="Mantén presionado para arrastrar"><i class="fa-solid fa-grip-vertical text-xs"></i></span>
                             <span class="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded border border-slate-100 dark:border-slate-700">${bill.icon || '📄'}</span>
                             <div>
                                 <div class="flex items-center gap-2">
@@ -1794,7 +2103,7 @@
                             <button type="button" onclick="toggleChartExpand('${bill.id}')" class="text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-semibold px-2 py-1 rounded transition flex items-center gap-1" title="Ver gráfica"><i class="fa-solid fa-chart-simple text-indigo-600 dark:text-indigo-400"></i> Gráfica</button>
                             <button type="button" onclick="toggleBillExpand('${bill.id}')" class="text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-semibold px-2 py-1 rounded transition flex items-center gap-1" title="Ver historial"><i class="fa-solid fa-list text-indigo-600 dark:text-indigo-400"></i> Historial</button>
                             <button type="button" onclick="openQuickAddPayment('${bill.id}')" class="text-white bg-indigo-600 hover:bg-indigo-700 text-[11px] font-bold px-2 py-1 rounded transition shadow flex items-center gap-1" title="Registrar pago"><i class="fa-solid fa-plus"></i> Pago</button>
-                            <button type="button" onclick="toggleNewBillForm('${bill.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs p-1 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 transition" title="Editar factura"><i class="fa-solid fa-pen"></i></button>
+                            <button type="button" onclick="toggleInlineBillForm('${bill.id}', document.getElementById('bill-card-${bill.id}'))" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs p-1 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 transition" title="Editar factura"><i class="fa-solid fa-pen"></i></button>
                             <button type="button" onclick="deleteBill('${apt.id}', '${bill.id}')" class="text-slate-400 hover:text-red-600 text-xs p-1 bg-slate-50 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 transition" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
@@ -1803,48 +2112,6 @@
                 `;
                 container.appendChild(div);
             });
-        }
-
-        function handleSaveBill(e) {
-            e.preventDefault();
-            const aptId = document.getElementById('bill-apt-id').value;
-            const editId = document.getElementById('bill-edit-id').value;
-            const concept = document.getElementById('bill-concept').value;
-            const dueDay = parseInt(document.getElementById('bill-day').value) || 1;
-            const cycle = document.getElementById('bill-cycle').value;
-            const icon = document.getElementById('bill-icon').value || '📄';
-
-            const apt = db.apartments.find(a => a.id === aptId);
-
-            if (editId) {
-                let bill = apt.bills.find(b => b.id === editId);
-                if (bill) {
-                    bill.icon = icon;
-                    bill.concept = concept;
-                    bill.dueDay = dueDay;
-                    bill.cycle = cycle;
-                }
-            } else {
-                const now = new Date();
-                let year = now.getFullYear();
-                let month = now.getMonth();
-                if (now.getDate() > dueDay) month += 1;
-                const initialDueDate = new Date(year, month, dueDay).toISOString().split('T')[0];
-
-                apt.bills.push({
-                    id: Date.now().toString(),
-                    icon,
-                    concept,
-                    dueDay,
-                    cycle,
-                    dueDate: initialDueDate,
-                    history: []
-                });
-            }
-
-            saveData();
-            renderBillsDetail(apt);
-            toggleNewBillForm();
         }
 
         function deleteBill(aptId, billId) {
