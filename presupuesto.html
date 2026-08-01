@@ -29,7 +29,6 @@
     </script>
 
     <style>
-        /* Solo el tirador o icono permite iniciar el arrastre, permitiendo scroll en el resto de la tarjeta */
         .drag-handle {
             touch-action: none;
             cursor: grab;
@@ -163,7 +162,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200">Listado de Activos / Grupos <span class="text-xs font-normal text-slate-400">(Usa el icono para arrastrar)</span></h2>
-                        <button onclick="openNewApartmentModal()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition">
+                        <button onclick="openNewApartmentModal()" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:text-white text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition">
                             <i class="fa-solid fa-plus mr-1"></i> Nuevo Grupo
                         </button>
                     </div>
@@ -577,7 +576,7 @@
         let expandedChartBillId = null;
 
         function loadData() {
-            const saved = localStorage.getItem('facturas_db_v35');
+            const saved = localStorage.getItem('facturas_db_v39');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -641,7 +640,7 @@
         function saveData() {
             db.lastUpdate = new Date().toISOString();
             db.stagingPayments = stagingPayments;
-            localStorage.setItem('facturas_db_v35', JSON.stringify(db));
+            localStorage.setItem('facturas_db_v39', JSON.stringify(db));
         }
 
         function toggleTheme() {
@@ -702,7 +701,7 @@
 
         function resetToDefaultData() {
             if (!confirm("¿Está seguro de limpiar todos los datos? Se borrará el almacenamiento local y la pantalla quedará en blanco hasta que recargue la página.")) return;
-            localStorage.removeItem('facturas_db_v35');
+            localStorage.removeItem('facturas_db_v39');
             db = {
                 theme: db.theme || 'light',
                 lastUpdate: new Date().toISOString(),
@@ -748,7 +747,7 @@
             document.getElementById(`nav-${tabName}`).className = "px-4 py-2 text-xs font-semibold rounded-lg transition bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm";
         }
 
-        // --- GESTIÓN Y ARRASTRE DE FICHAS DE PLAZO (SOLO DESDE EL ICONO) ---
+        // --- GESTIÓN Y ARRASTRE DE FICHAS DE PLAZO ---
         let dragTermIndex = null;
         
         function handleTermDragStart(e, idx) {
@@ -902,6 +901,7 @@
         function handleAptDragStart(e, idx) {
             dragAptIndex = idx;
             e.dataTransfer.effectAllowed = 'move';
+            e.stopPropagation();
         }
         function handleAptDragOver(e) {
             e.preventDefault();
@@ -909,6 +909,7 @@
         }
         function handleAptDrop(e, targetIdx) {
             e.preventDefault();
+            e.stopPropagation();
             if (dragAptIndex === null || dragAptIndex === targetIdx) return;
             let moved = db.apartments[dragAptIndex];
             db.apartments.splice(dragAptIndex, 1);
@@ -953,7 +954,10 @@
                     const allP = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
                     const latestPaid = allP.length > 0 ? allP[0] : null;
                     if (latestPaid) totalPaid += Number(latestPaid.amount);
-                    const isPending = !latestPaid || new Date(latestPaid.date) < new Date(bill.dueDate);
+                    
+                    const dueDayVal = Number(bill.dueDay);
+                    const isDueActive = !isNaN(dueDayVal) && dueDayVal > 0;
+                    const isPending = isDueActive && (!latestPaid || new Date(latestPaid.date) < new Date(bill.dueDate));
                     if (isPending) totalPending++;
                 });
             });
@@ -962,7 +966,6 @@
             document.getElementById('dash-total-pending').innerText = totalPending;
             document.getElementById('dash-total-groups').innerText = db.apartments.length;
 
-            // Renderizar Fichas de Plazo con colores sólidos y arrastre limitado al icono
             const termContainer = document.getElementById('term-cards-grid');
             termContainer.innerHTML = '';
             
@@ -989,7 +992,6 @@
                     }
 
                     const card = document.createElement('div');
-                    // NOTA: La tarjeta no es draggable en sí misma para permitir el scroll normal
                     card.ondragover = handleTermDragOver;
                     card.ondrop = (e) => handleTermDrop(e, idx);
                     card.className = 'bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3 relative transition-colors';
@@ -999,7 +1001,6 @@
                             <div>
                                 <span class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
                                     Ficha de Plazo 
-                                    <!-- SOLO EL ICONO ES DRAG-HANDLE -->
                                     <i class="fa-solid fa-grip-vertical ml-1 text-slate-400 drag-handle" draggable="true" ondragstart="handleTermDragStart(event, ${idx})" title="Mantén presionado para arrastrar"></i>
                                 </span>
                                 <h4 class="font-bold text-slate-800 dark:text-white text-sm mt-1">${term.title}</h4>
@@ -1023,7 +1024,6 @@
                 });
             }
 
-            // Renderizar Top Conceptos
             const top6 = getDashboardConceptsList();
             const gridContainer = document.getElementById('dash-top-concepts-grid');
             gridContainer.innerHTML = '';
@@ -1355,7 +1355,7 @@
             if (history && Array.isArray(history)) {
                 history.forEach(h => {
                     const item = typeof h === 'string' ? { date: h, amount: 0 } : h;
-                    if (item.date && !paymentsMap.has(item.date)) {
+                    if (item.date && !item.deleted) {
                         const defaultConcept = `${aptName} - ${billConcept}`;
                         paymentsMap.set(item.date, { date: item.date, amount: item.amount || 0, masterConcept: item.masterConcept || defaultConcept });
                     }
@@ -1373,7 +1373,8 @@
         }
 
         function predictNextDueDate(lastPaidDateStr, dueDay, cycle) {
-            if (!lastPaidDateStr) return '';
+            const dueDayNum = Number(dueDay);
+            if (!lastPaidDateStr || isNaN(dueDayNum) || dueDayNum <= 0) return '';
             let baseDate = new Date(lastPaidDateStr + 'T00:00:00');
             if (isNaN(baseDate.getTime())) baseDate = new Date();
 
@@ -1386,7 +1387,7 @@
             else if (cycle === 'semestral') month += 6;
             else if (cycle === 'anual') year += 1;
 
-            let nextDate = new Date(year, month, parseInt(dueDay) || 1);
+            let nextDate = new Date(year, month, dueDayNum);
             return nextDate.toISOString().split('T')[0];
         }
 
@@ -1440,31 +1441,35 @@
                 let pendingCount = 0;
 
                 apt.bills.forEach(bill => {
-                    const latest = getLatestPaidFromMasterOrHistory(apt.name, bill.concept, bill.history);
-                    const predictedDue = predictNextDueDate(latest ? latest.date : null, bill.dueDay || 1, bill.cycle || 'mensual');
-                    
-                    if (predictedDue) {
-                        const due = new Date(predictedDue + 'T00:00:00');
-                        const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
-                        const isPending = !latest || new Date(latest.date) < new Date(predictedDue);
+                    const dueDayVal = Number(bill.dueDay);
+                    const isDueActive = !isNaN(dueDayVal) && dueDayVal > 0;
 
-                        if (isPending) {
-                            pendingCount++;
-                            if (diffDays < 0) {
-                                statusColor = 'bg-rose-500';
-                                statusText = 'Vencido';
-                                urgentCount++;
-                            } else if (diffDays <= 5 && statusColor !== 'bg-rose-500') {
-                                statusColor = 'bg-amber-500';
-                                statusText = 'Atención';
-                                urgentCount++;
+                    if (isDueActive) {
+                        const latest = getLatestPaidFromMasterOrHistory(apt.name, bill.concept, bill.history);
+                        const predictedDue = predictNextDueDate(latest ? latest.date : null, dueDayVal, bill.cycle || 'mensual');
+                        
+                        if (predictedDue) {
+                            const due = new Date(predictedDue + 'T00:00:00');
+                            const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+                            const isPending = !latest || new Date(latest.date) < new Date(predictedDue);
+
+                            if (isPending) {
+                                pendingCount++;
+                                if (diffDays < 0) {
+                                    statusColor = 'bg-rose-500';
+                                    statusText = 'Vencido';
+                                    urgentCount++;
+                                } else if (diffDays <= 5 && statusColor !== 'bg-rose-500') {
+                                    statusColor = 'bg-amber-500';
+                                    statusText = 'Atención';
+                                    urgentCount++;
+                                }
                             }
                         }
                     }
                 });
 
                 const card = document.createElement('div');
-                // Arrastre limitado al icono dentro de la tarjeta de grupo
                 card.ondragover = handleAptDragOver;
                 card.ondrop = (e) => handleAptDrop(e, idx);
                 card.className = 'bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 hover:shadow-md transition flex flex-col justify-between overflow-hidden transition-colors';
@@ -1475,9 +1480,9 @@
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <div class="flex items-center gap-2">
+                                    <span class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 drag-handle" draggable="true" ondragstart="handleAptDragStart(event, ${idx})" title="Mantén presionado para arrastrar"><i class="fa-solid fa-grip-vertical text-xs"></i></span>
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">
-                                        ${apt.type || 'Grupo'} 
-                                        <i class="fa-solid fa-grip-vertical ml-1 text-slate-400 drag-handle" draggable="true" ondragstart="handleAptDragStart(event, ${idx})" title="Mantén presionado para arrastrar"></i>
+                                        ${apt.type || 'Grupo'}
                                     </span>
                                 </div>
                                 <h3 class="font-bold text-slate-800 dark:text-white text-lg mt-1 flex items-center gap-2">
@@ -1519,10 +1524,12 @@
                     if (fullText.includes(query)) {
                         const allP = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
                         const avg = allP.length > 0 ? Math.round(allP.reduce((s,p)=>s+p.amount,0)/allP.length) : 0;
+                        const lastPaid = allP.length > 0 ? allP[0].amount : 0;
                         matches.push({
                             aptId: apt.id,
                             billId: bill.id,
                             fullLabel: `${apt.name} - ${bill.concept}`,
+                            lastAmount: lastPaid,
                             avgAmount: avg,
                             icon: bill.icon || '📄'
                         });
@@ -1537,22 +1544,22 @@
             }
 
             suggestionsBox.innerHTML = matches.map(m => `
-                <div onclick="selectGlobalBill('${m.aptId}', '${m.billId}', '${m.fullLabel}', ${m.avgAmount})" class="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 text-xs flex items-center gap-2">
+                <div onclick="selectGlobalBill('${m.aptId}', '${m.billId}', '${m.fullLabel}', ${m.lastAmount})" class="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer border-b border-slate-100 dark:border-slate-700 text-xs flex items-center gap-2">
                     <span class="text-base">${m.icon}</span>
                     <div>
                         <p class="font-bold text-slate-800 dark:text-white">${m.fullLabel}</p>
-                        <p class="text-slate-500 dark:text-slate-300">Promedio sugerido: $${m.avgAmount.toLocaleString()}</p>
+                        <p class="text-slate-500 dark:text-slate-300">último pago $${m.lastAmount.toLocaleString()} | promedio $${m.avgAmount.toLocaleString()}</p>
                     </div>
                 </div>
             `).join('');
             suggestionsBox.classList.remove('hidden');
         }
 
-        function selectGlobalBill(aptId, billId, fullLabel, avgAmount) {
+        function selectGlobalBill(aptId, billId, fullLabel, lastAmount) {
             document.getElementById('quick-search').value = fullLabel;
             document.getElementById('selected-global-bill-id').value = billId;
             document.getElementById('selected-global-apt-id').value = aptId;
-            document.getElementById('quick-amount').value = avgAmount;
+            document.getElementById('quick-amount').value = lastAmount;
             document.getElementById('quick-suggestions').classList.add('hidden');
         }
 
@@ -1772,8 +1779,8 @@
                         <input type="text" id="inline-bill-concept" value="${bill ? bill.concept : ''}" placeholder="Ej. Agua" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                     </div>
                     <div class="sm:col-span-3">
-                        <label class="block text-[9px] text-slate-500">Día Venc. (1-31)</label>
-                        <input type="number" id="inline-bill-day" min="1" max="31" value="${bill ? (bill.dueDay || 10) : 10}" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                        <label class="block text-[9px] text-slate-500">Día Venc. (0 = Sin alerta)</label>
+                        <input type="number" id="inline-bill-day" min="0" max="31" value="${bill && bill.dueDay !== undefined ? bill.dueDay : 10}" required class="w-full text-xs border rounded p-1 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                     </div>
                     <div class="sm:col-span-3">
                         <label class="block text-[9px] text-slate-500">Ciclo</label>
@@ -1799,7 +1806,7 @@
             event.preventDefault();
             const apt = db.apartments.find(a => a.id === currentAptId);
             const concept = document.getElementById('inline-bill-concept').value;
-            const dueDay = parseInt(document.getElementById('inline-bill-day').value) || 1;
+            const dueDay = parseInt(document.getElementById('inline-bill-day').value);
             const cycle = document.getElementById('inline-bill-cycle').value;
             const icon = document.getElementById('inline-bill-icon').value || '📄';
 
@@ -1808,21 +1815,22 @@
                 if (bill) {
                     bill.icon = icon;
                     bill.concept = concept;
-                    bill.dueDay = dueDay;
+                    bill.dueDay = isNaN(dueDay) ? 0 : dueDay;
                     bill.cycle = cycle;
                 }
             } else {
                 const now = new Date();
                 let year = now.getFullYear();
                 let month = now.getMonth();
-                if (now.getDate() > dueDay) month += 1;
-                const initialDueDate = new Date(year, month, dueDay).toISOString().split('T')[0];
+                const validDay = (isNaN(dueDay) || dueDay <= 0) ? 1 : dueDay;
+                if (now.getDate() > validDay) month += 1;
+                const initialDueDate = new Date(year, month, validDay).toISOString().split('T')[0];
 
                 apt.bills.push({
                     id: Date.now().toString(),
                     icon,
                     concept,
-                    dueDay,
+                    dueDay: isNaN(dueDay) ? 0 : dueDay,
                     cycle,
                     dueDate: initialDueDate,
                     history: []
@@ -1844,12 +1852,12 @@
             if (!bill) return;
 
             const allP = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
-            const avg = allP.length > 0 ? Math.round(allP.reduce((s,p)=>s+p.amount,0)/allP.length) : 0;
+            const lastAmount = allP.length > 0 ? allP[0].amount : 0;
 
             document.getElementById('quick-add-bill-id').value = bill.id;
             document.getElementById('quick-add-target-title').innerText = `${apt.name} - ${bill.concept}`;
             document.getElementById('quick-add-paid-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('quick-add-amount').value = avg;
+            document.getElementById('quick-add-amount').value = lastAmount;
 
             document.getElementById('quick-add-payment-container').classList.remove('hidden');
         }
@@ -1893,7 +1901,10 @@
             if (!record) return;
 
             if (!bill.history) bill.history = [];
-            let internalIndex = bill.history.findIndex(h => (typeof h === 'object' ? h.date === record.date : h === record.date));
+            let internalIndex = bill.history.findIndex(h => {
+                const hDate = typeof h === 'object' ? h.date : h;
+                return hDate === record.date;
+            });
             if (internalIndex === -1) {
                 bill.history.push({ date: record.date, amount: record.amount, masterConcept: record.masterConcept });
                 internalIndex = bill.history.length - 1;
@@ -1940,22 +1951,37 @@
         }
 
         function deleteHistoryRecord(billId, index) {
-            if (!confirm("¿Desea eliminar este registro del historial?")) return;
+            if (!confirm("¿Desea eliminar este registro de pago?")) return;
             const apt = db.apartments.find(a => a.id === currentAptId);
             const bill = apt.bills.find(b => b.id === billId);
+            if (!bill) return;
+
             const allP = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
             const record = allP[index];
+            if (!record) return;
 
-            if (bill && bill.history) {
-                let internalIndex = bill.history.findIndex(h => (typeof h === 'object' ? h.date === record.date : h === record.date));
-                if (internalIndex !== -1) {
-                    bill.history.splice(internalIndex, 1);
+            if (!bill.history) bill.history = [];
+
+            let internalIndex = bill.history.findIndex(h => {
+                const hDate = typeof h === 'object' ? h.date : h;
+                return hDate === record.date;
+            });
+
+            if (internalIndex !== -1) {
+                if (typeof bill.history[internalIndex] === 'object') {
+                    bill.history[internalIndex].deleted = true;
                 } else {
-                    bill.history.push({ date: record.date, amount: 0, deleted: true });
+                    bill.history.splice(internalIndex, 1);
                 }
-                saveData();
-                renderBillsDetail(apt);
+            } else {
+                bill.history.push({ date: record.date, amount: 0, deleted: true });
             }
+
+            stagingPayments = stagingPayments.filter(p => !(p.date === record.date && p.concept === record.masterConcept));
+
+            saveData();
+            renderBillsDetail(apt);
+            renderDashboard();
         }
 
         function toggleBillExpand(billId) {
@@ -1982,18 +2008,23 @@
             apt.bills.forEach((bill, billIdx) => {
                 const allPayments = getAllPaymentsForBill(apt.name, bill.concept, bill.history);
                 const latest = allPayments.length > 0 ? allPayments[0] : null;
-                const predictedDue = predictNextDueDate(latest ? latest.date : null, bill.dueDay || 1, bill.cycle || 'mensual');
+                
+                const dueDayVal = Number(bill.dueDay);
+                const isDueActive = !isNaN(dueDayVal) && dueDayVal > 0;
+                const predictedDue = isDueActive ? predictNextDueDate(latest ? latest.date : null, dueDayVal, bill.cycle || 'mensual') : '';
 
                 let avgAmount = allPayments.length > 0 ? allPayments.reduce((sum, p) => sum + (p.amount || 0), 0) / allPayments.length : 0;
 
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 const dueDateObj = predictedDue ? new Date(predictedDue + 'T00:00:00') : null;
-                const isPending = !latest || (dueDateObj && today > dueDateObj);
+                const isPending = isDueActive && (!latest || (dueDateObj && today > dueDateObj));
 
-                const badgeStatus = isPending 
-                    ? `<span class="text-[9px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded font-semibold">Pendiente</span>`
-                    : `<span class="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">Al día</span>`;
+                const badgeStatus = !isDueActive 
+                    ? `<span class="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded font-semibold">Sin alerta</span>`
+                    : (isPending 
+                        ? `<span class="text-[9px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded font-semibold">Pendiente</span>`
+                        : `<span class="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-semibold">Al día</span>`);
 
                 const isExpanded = expandedBillId === bill.id;
                 const isChartExpanded = expandedChartBillId === bill.id;
@@ -2074,7 +2105,6 @@
 
                 const div = document.createElement('div');
                 div.id = `bill-card-${bill.id}`;
-                // Arrastre limitado al icono dentro de la factura
                 div.ondragover = handleBillDragOver;
                 div.ondrop = (e) => handleBillDrop(e, billIdx);
                 div.className = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex flex-col gap-2 shadow-2xs transition-colors';
@@ -2083,7 +2113,6 @@
                 div.innerHTML = `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div class="flex items-center gap-2.5 flex-1">
-                            <!-- SOLO EL ICONO ES DRAG-HANDLE -->
                             <span class="text-slate-400 hover:text-indigo-600 drag-handle" draggable="true" ondragstart="handleBillDragStart(event, ${billIdx})" title="Mantén presionado para arrastrar"><i class="fa-solid fa-grip-vertical text-xs"></i></span>
                             <span class="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded border border-slate-100 dark:border-slate-700">${bill.icon || '📄'}</span>
                             <div>
@@ -2094,7 +2123,7 @@
                                 </div>
                                 <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                     Último pago: <strong class="text-slate-700 dark:text-slate-200">${latest ? latest.date : 'Ninguno'}</strong> | 
-                                    Próx. Vencimiento: <strong class="text-slate-700 dark:text-slate-200">${predictedDue || 'No definido'}</strong> | 
+                                    Próx. Vencimiento: <strong class="text-slate-700 dark:text-slate-200">${predictedDue || 'No aplica'}</strong> | 
                                     Promedio: <strong class="text-indigo-600 dark:text-indigo-400">$${Math.round(avgAmount).toLocaleString()}</strong>
                                 </p>
                             </div>
