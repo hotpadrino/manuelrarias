@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Supabase Broadcast</title>
+    <!-- Tailwind CSS para diseño rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SDK oficial de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 p-6 font-sans">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6 space-y-4">
+        <h2 class="text-lg font-bold text-slate-800">Prueba de Broadcast en Tiempo Real</h2>
+        
+        <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Supabase URL</label>
+            <input type="text" id="supabase-url" placeholder="https://tu-proyecto.supabase.co" class="w-full text-xs border rounded p-2">
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Supabase Anon Key</label>
+            <input type="password" id="supabase-key" placeholder="eyJhbGciOi..." class="w-full text-xs border rounded p-2">
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Clave o Nombre del Canal</label>
+            <input type="text" id="channel-name" value="mi-canal-secreto" class="w-full text-xs border rounded p-2">
+        </div>
+
+        <button onclick="conectarCanal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2 rounded">
+            Conectar Canal
+        </button>
+
+        <div class="pt-2 border-t">
+            <button onclick="enviarMensaje()" id="btn-enviar" disabled class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded opacity-50 cursor-not-allowed">
+                Enviar Mensaje de Prueba
+            </button>
+        </div>
+
+        <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Consola de Diagnóstico:</label>
+            <div id="log" class="bg-slate-900 text-emerald-400 text-[10px] p-3 rounded h-36 overflow-y-auto font-mono">
+                Esperando conexión...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let client = null;
+        let channel = null;
+
+        function logMsg(msg) {
+            const box = document.getElementById('log');
+            box.innerHTML += `> ${msg}<br>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function conectarCanal() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+            const channelName = document.getElementById('channel-name').value.trim();
+
+            if (!url || !key || !channelName) {
+                alert('Por favor completa todos los campos de Supabase y Canal.');
+                return;
+            }
+
+            try {
+                logMsg('Inicializando cliente de Supabase...');
+                client = supabase.createClient(url, key);
+
+                logMsg(`Uniéndose al canal: ${channelName}...`);
+                channel = client.channel(channelName, {
+                    config: { broadcast: { self: true } }
+                });
+
+                channel.on('broadcast', { event: 'test-event' }, (payload) => {
+                    logMsg(`¡Mensaje recibido! Payload: ${JSON.stringify(payload.payload)}`);
+                });
+
+                channel.subscribe((status) => {
+                    logMsg(`Estado de suscripción: ${status}`);
+                    if (status === 'SUBSCRIBED') {
+                        document.getElementById('btn-enviar').disabled = false;
+                        document.getElementById('btn-enviar').classList.remove('opacity-50', 'cursor-not-allowed');
+                        logMsg('¡Canal conectado y listo para enviar/recibir!');
+                    }
+                });
+
+            } catch (err) {
+                logMsg(`Error crítico: ${err.message}`);
+            }
+        }
+
+        async function enviarMensaje() {
+            if (!channel) return;
+            const hora = new Date().toLocaleTimeString();
+            logMsg(`Enviando mensaje a las ${hora}...`);
+            
+            await channel.send({
+                type: 'broadcast',
+                event: 'test-event',
+                payload: { texto: `Hola desde dispositivo a las ${hora}` }
+            });
+        }
+    </script>
+</body>
+</html>
