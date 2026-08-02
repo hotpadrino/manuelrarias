@@ -1,5 +1,38 @@
-#ISO 9001:2015 SISTEMAS DE GESTIÓN DE CALIDAD
-##SECCIÓN 4 - CONTEXTO DE LA ORGANIZACIÓN:
+# RAC 143 ORGANIZACIONES DE MANTENIMIENTO APROBADAS (OMA)
+## SECCIÓN A - GENERALIDADES Y REQUISITOS DE CERTIFICACIÓN:
+Solicitud y emisión del certificado de aprobación de la OMA
+Especificaciones de operación (Ops Specs) y limitaciones
+Instalaciones, equipos y herramientas de trabajo
+Control de datos técnicos, manuales y publicaciones aeronáuticas
+
+## SECCIÓN B - SISTEMA DE CALIDAD Y GESTIÓN:
+Establecimiento del manual del sistema de calidad
+Programa de auditorías internas y evaluación de cumplimiento
+Gestión de acciones correctivas y preventivas (CAPA)
+Control de proveedores y talleres externos aprobados
+
+## SECCIÓN C - PERSONAL Y COMPETENCIA:
+Requisitos de experiencia, instrucción y licencias del personal técnico
+Calificación y autorizaciones del personal certificador (Certifying Staff)
+Registros de entrenamiento recurrente y factores humanos
+Control de turnos, jornadas y limitaciones de fatiga
+
+## SECCIÓN D - CONTROL TÉCNICO Y EJECUCIÓN DE MANTENIMIENTO:
+Recepción, almacenamiento y segregación de partes y materiales
+Control metrológico de equipos de prueba y medición (ETP)
+Apertura, ejecución y cierre de órdenes de trabajo y tarjetas de tarea
+Gestión de inspecciones duplicadas y trabajos críticos
+
+## SECCIÓN E - REGISTROS, INFORMES Y LIBERACIÓN:
+Conservación y archivo de registros de mantenimiento
+Emisión de certificados de liberación a servicio (Authorized Release Certificate)
+Reporte de fallas, anomalías y defectos obligatorios a la autoridad aeronáutica
+Revisiones por la dirección y mejora continua del sistema
+
+---
+
+# ISO 9001:2015 SISTEMAS DE GESTIÓN DE CALIDAD
+## SECCIÓN 4 - CONTEXTO DE LA ORGANIZACIÓN:
 Determinar cuestiones internas y externas relevantes
 Identificar partes interesadas pertinentes
 Determinar requisitos de las partes interesadas
@@ -13,7 +46,7 @@ Abordar riesgos y oportunidades de los procesos
 Implementar cambios planificados en procesos
 Mejorar continuamente los procesos
 
-##SECCIÓN 5 - LIDERAZGO:
+## SECCIÓN 5 - LIDERAZGO:
 Compromiso de la alta dirección con el SGC
 Establecer política de calidad
 Comunicar política de calidad
@@ -23,7 +56,7 @@ Integrar requisitos del SGC en procesos de negocio
 Definir roles, responsabilidades y autoridades
 Comunicar roles y responsabilidades
 
-##SECCIÓN 6 - PLANIFICACIÓN:
+## SECCIÓN 6 - PLANIFICACIÓN:
 Identificar riesgos y oportunidades
 Planificar acciones para abordar riesgos y oportunidades
 Integrar acciones en procesos del SGC
@@ -35,7 +68,7 @@ Objetivos monitoreados y actualizados
 Planificar cómo lograr objetivos de calidad
 Planificar cambios en el SGC de manera sistemática
 
-##SECCIÓN 7 - APOYO:
+## SECCIÓN 7 - APOYO:
 Determinar y proporcionar recursos necesarios
 Determinar y proporcionar personas necesarias
 Determinar y proporcionar infraestructura necesaria
@@ -60,7 +93,7 @@ Distribución, acceso y uso de información documentada
 Control de cambios en información documentada
 Conservación y disposición de información documentada
 
-##SECCIÓN 8 - OPERACIÓN:
+## SECCIÓN 8 - OPERACIÓN:
 Planificar y controlar procesos operacionales
 Determinar requisitos para productos y servicios
 Establecer criterios para procesos y aceptación de productos
@@ -111,7 +144,7 @@ Tomar acciones sobre salidas no conformes
 Verificar conformidad cuando se corrige salida no conforme
 Conservar información documentada de no conformidades
 
-##SECCIÓN 9 - EVALUACIÓN DEL DESEMPEÑO:
+## SECCIÓN 9 - EVALUACIÓN DEL DESEMPEÑO:
 Determinar qué necesita seguimiento y medición
 Determinar métodos de seguimiento, medición, análisis y evaluación
 Determinar cuándo efectuar seguimiento y medición
@@ -147,7 +180,7 @@ Salidas incluyen necesidades de cambio en el SGC
 Salidas incluyen necesidades de recursos
 Conservar información documentada de revisiones
 
-##SECCIÓN 10 - MEJORA:
+## SECCIÓN 10 - MEJORA:
 Determinar y seleccionar oportunidades de mejora
 Implementar acciones necesarias para cumplir requisitos del cliente
 Mejorar productos y servicios
@@ -167,9 +200,9 @@ Conservar información documentada de acciones tomadas
 Conservar información documentada de resultados de acciones correctivas
 Mejorar continuamente conveniencia, adecuación y eficacia del SGC
 
+---
 
 # AS9100 Rev D 2016  SISTEMAS DE GESTION DE CALIDAD AERONÁUTICA
-
 ## 4. Gestión del Sistema de Calidad
 4.1 Requerimientos Generales
 a) Compruebe si la documentación de los procesos está incluida en el QMS
@@ -206,7 +239,7 @@ g) ¿Cómo se manejan los documentos viejos? ¿Se retiran de uso? ¿Se etiquetan
 ¿El procedimiento de los registros incluye un proceso para controlar los registros creados o conservados por los proveedores?
 ¿Hay un proceso de configuración administrativa en el lugar?
 
-## 5 Responsabilidad de la Dirección
+## 5. Responsabilidad de la Dirección
 5.1 Compromiso de la Dirección
 ¿Conocen quién es el Director?
 a)¿Los empleados están al tanto de la importancia de cumplir con requisitos de cliente? ¿Qué rol desempeña el director en la comunicación de esto a los empleados?
@@ -267,7 +300,7 @@ e) Revisión de Registros
 ¿Qué ambiente de trabajo es necesario para cumplir con los requerimientos del producto o servicio?
 ¿Se ha proporcionado este ambiente del trabajo?
 
-## 7 Realizacón del Producto
+## 7. Realizacón del Producto
 7.1 Planeación de la realización del producto
 ¿Cómo se inicia la planeación?
 a) ¿Están documentados los objetivos de calidad y los requisitos del producto?
@@ -449,7 +482,7 @@ a. El procedimiento de acciones correctivas incluye los artículos requeridos po
 ¿La organización ha establecido un procedimiento para eliminar las causas de inconformidades potenciales?
 ¿El procedimiento incluye los artículos requeridos por el estándar? a. Identificar las inconformidades potenciales b. Revisión de inconformidades c. Determinación de causa d. Identificar las acciones para prevenir recurrencias e. Implementar las acciones f. Registros g. Revisión de las acciones tomadas h. Seguimiento a las acciones correctivas de los requerimientos del proveedor cuando sea requerido i. Tomar medidas cuando las acciones correctivas no sean alcanzadas a tiempo o de manera efectiva j. Determinar si existe mas producto inconforme basado en las causas.
 
-##SECCIÓN 9 - EVALUACIÓN DEL DESEMPEÑO:
+## 9. EVALUACIÓN DEL DESEMPEÑO:
 Determinar qué necesita seguimiento y medición
 Determinar métodos de seguimiento, medición, análisis y evaluación
 Determinar cuándo efectuar seguimiento y medición
@@ -485,7 +518,7 @@ Salidas incluyen necesidades de cambio en el SGC
 Salidas incluyen necesidades de recursos
 Conservar información documentada de revisiones
 
-##SECCIÓN 10 - MEJORA:
+## 10. MEJORA:
 Determinar y seleccionar oportunidades de mejora
 Implementar acciones necesarias para cumplir requisitos del cliente
 Mejorar productos y servicios
@@ -505,10 +538,10 @@ Conservar información documentada de acciones tomadas
 Conservar información documentada de resultados de acciones correctivas
 Mejorar continuamente conveniencia, adecuación y eficacia del SGC
 
+---
 
-#RAC 141 CENTROS DE INSTRUCCION ENM 4 ABRIL 2024
-
-##REQUISITOS DE CERTIFICACIÓN (141.105):
+# RAC 141 CENTROS DE INSTRUCCION
+## REQUISITOS DE CERTIFICACIÓN (141.105):
 Descripción del personal del CIAC según organigrama propuesto
 Documentos de calificaciones mínimas del personal de dirección según 141.210
 Documento de compromiso de notificar cambios de personal a UAEAC
@@ -532,7 +565,7 @@ Seguro estudiantes y terceros
 Concepto de la Dirección de Servicios a la Navegación zonas entto
 Concepto del administrador de los aeropuertos bases de operación
 
-##REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.110):
+## REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.110):
 Programa aprobado por UAEAC, currículo
 Objetivos generales del curso, carga horaria
 Descripción aeronaves y equipo de instrucción
@@ -543,7 +576,7 @@ Medio de seguimiento del rendimiento del estudiante
 La duración puede extenterse 10% por seguridad operacional
 Aula máximo 25 alumnos según 141.200.a.3
 
-##REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.115):
+## REQUISITOS DEL PROGRAMA DE INSTRUCCIÓN (141.115):
 Requisitos previos de ingreso
 Objetivos de instrucción detallados
 Descripción de facilidades
@@ -557,7 +590,7 @@ Experiencia de vuelo solo con número mínimo de horas (cuando aplique)
 Horas máximas de instrucción establecidas
 Currículum del curso detallado
 
-##DIRECCION Y ORGANIZACION (141.135):
+## DIRECCION Y ORGANIZACION (141.135):
 Estructura de dirección, supervisión de todos los niveles
 Responsabilidades individuales MIP
 Gerente asegure instrucción financiada y requisitos
@@ -569,7 +602,7 @@ Acreditar experiencia previa de un estudiante RAC61,63,65
 Notificar UAEAC cambios de gerente, supervisón, instrucción, instalac
 Suspensión por no tener personal o aeronaves en 60 días
 
-##REQUISITOS DE INSTALACIONES (141.200):
+## REQUISITOS DE INSTALACIONES (141.200):
 Instalaciones disponibles en todo momento
 Protección contra condiciones meteorológicas
 Ambientes adecuados para actividades de instrucción
@@ -607,7 +640,7 @@ Area sesiones briefing debriefing en cada aeródromo
 Despachadores elaboración planes de vuelo
 Tripulantes de cabina con aeronave, maqueda energizada, emergencia y supervivencia A20
 
-##REQUISITOS DE EQUIPAMIENTO (141.205):
+## REQUISITOS DE EQUIPAMIENTO (141.205):
 Equipo de instrucción en vuelo, entrenador para vuelo instrumentos ATD
 Material didáctico actualizado
 Ayudas de instrucción necesarias
@@ -618,7 +651,7 @@ Equipos de simulación cuando corresponda
 Maquetas especializadas cuando corresponda
 Equipos en condiciones operativas
 
-##REQUISITOS DE PERSONAL (141.210):
+## REQUISITOS DE PERSONAL (141.210):
 Personal suficiente para alcance de instrucción
 Gerente responsable designado
 Responsable de instrucción designado
@@ -632,14 +665,14 @@ Gestor de aeronavegabilidad
 Personal con certificados médicos vigentes cuando aplique
 Personal con experiencia requerida según función
 
-##CALIFICACIONES GERENTE RESPONSABLE (141.135):
+## CALIFICACIONES GERENTE RESPONSABLE (141.135):
 Conocimiento de procedimientos administrativos del CIAC
 Conocimiento de RAC 141
 Autoridad corporativa suficiente
 Responsabilidad de financiamiento
 Capacidad para asegurar estándares UAEAC
 
-##CALIFICACIONES RESPONSABLE DE INSTRUCCIÓN (141.215):
+## CALIFICACIONES RESPONSABLE DE INSTRUCCIÓN (141.215):
 Licencia de piloto comercial o superior (para CIAC Tipo 3)
 Habilitación de instructor de vuelo
 Certificado médico de segunda clase vigente mínimo
@@ -648,13 +681,13 @@ Experiencia como instructor mínima
 Conocimiento profundo del RAC 141
 Experiencia en gestión de instrucción
 
-##CALIFICACIONES RESPONSABLE INSTRUCCIÓN TEÓRICA (141.225):
+## CALIFICACIONES RESPONSABLE INSTRUCCIÓN TEÓRICA (141.225):
 Título profesional en área relacionada o experiencia equivalente
 Conocimiento de métodos de enseñanza
 Experiencia en instrucción teórica aeronáutica
 Conocimiento del RAC 141
 
-##CALIFICACIONES INSTRUCTOR DE VUELO (141.230):
+## CALIFICACIONES INSTRUCTOR DE VUELO (141.230):
 Licencia de piloto comercial o superior
 Habilitación de instructor de vuelo vigente
 Certificado médico clase correspondiente vigente
@@ -662,13 +695,13 @@ Experiencia mínima de vuelo establecida
 Competencia en tipo de aeronave a instruir
 Conocimiento de procedimientos del CIAC
 
-##CALIFICACIONES INSTRUCTOR EN TIERRA (141.235):
+## CALIFICACIONES INSTRUCTOR EN TIERRA (141.235):
 Título profesional relacionado o experiencia equivalente
 Conocimiento profundo de materias a enseñar
 Experiencia en instrucción
 Capacitación en métodos pedagógicos
 
-##CALIFICACIONES EXAMINADOR DESIGNADO (141.240):
+## CALIFICACIONES EXAMINADOR DESIGNADO (141.240):
 Designación vigente por UAEAC
 Licencia apropiada con habilitaciones requeridas
 Certificado médico vigente
@@ -676,26 +709,26 @@ Experiencia mínima establecida
 Conocimiento de procedimientos de examen
 Capacitación en evaluación
 
-##CALIFICACIONES RESPONSABLE FACTORES HUMANOS (141.242):
+## CALIFICACIONES RESPONSABLE FACTORES HUMANOS (141.242):
 Profesional con título universitario en área relacionada
 Conocimiento de factores humanos en aviación
 Experiencia en evaluación psicofísica
 Conocimiento de normativa aplicable
 
-##CALIFICACIONES GESTOR AERONAVEGABILIDAD (141.244):
+## CALIFICACIONES GESTOR AERONAVEGABILIDAD (141.244):
 Licencia de técnico de mantenimiento o ingeniero aeronáutico
 Experiencia en mantenimiento de aeronaves
 Conocimiento de RAC 43 y RAC 91
 Conocimiento de gestión de aeronavegabilidad
 
-##REQUISITOS DE AERÓDROMOS (141.245):
+## REQUISITOS DE AERÓDROMOS (141.245):
 Aeródromo certificado o registrado para instrucción de vuelo
 Condiciones apropiadas para instrucción
 Espacios de estacionamiento disponibles
 Instalaciones de combustible
 Autorización de uso del aeródromo
 
-##MANUAL DE INSTRUCCIÓN Y PROCEDIMIENTOS (141.250):
+## MANUAL DE INSTRUCCIÓN Y PROCEDIMIENTOS (141.250):
 Manual MIP actualizado
 Contenido según Apéndice 11 del RAC 141
 Procedimientos de operación detallados
@@ -705,7 +738,7 @@ Procedimientos de seguridad
 Control de enmiendas del manual
 Distribución controlada del manual
 
-##SISTEMA DE GARANTÍA DE CALIDAD (141.255):
+## SISTEMA DE GARANTÍA DE CALIDAD (141.255):
 Sistema documentado de garantía de calidad
 Procedimientos de auditoría interna
 Programa de auditorías planificado
@@ -714,7 +747,7 @@ Acciones correctivas documentadas
 Seguimiento de implementación de acciones correctivas
 Revisión periódica del sistema
 
-##SISTEMA DE GESTIÓN DE SEGURIDAD OPERACIONAL SMS (141.275):
+## SISTEMA DE GESTIÓN DE SEGURIDAD OPERACIONAL SMS (141.275):
 Manual de gestión SMS
 Política de seguridad operacional
 Identificación de peligros
@@ -725,7 +758,7 @@ Sistema de reporte de eventos de seguridad
 Capacitación en SMS para personal
 Revisión periódica del SMS
 
-##REQUISITOS DE EXÁMENES (141.265):
+## REQUISITOS DE EXÁMENES (141.265):
 Exámenes teóricos aprobados por UAEAC
 Exámenes prácticos supervisados
 Calificación mínima establecida para aprobar
@@ -733,7 +766,7 @@ Registros de exámenes conservados mínimo 3 años
 Custodia segura de cuestionarios
 Supervisión por inspector UAEAC o examinador designado
 
-##REQUISITOS ADMINISTRATIVOS (141.300-320):
+## REQUISITOS ADMINISTRATIVOS (141.300-320):
 Exhibición del certificado en lugar visible
 Condiciones de elegibilidad de estudiantes documentadas
 Proceso de admisión establecido
@@ -745,7 +778,7 @@ Certificados de instrucción emitidos a graduados
 Constancias de estudios emitidas
 Conservación de registros mínimo 2 años
 
-##REQUISITOS DE AERONAVES (141.400):
+## REQUISITOS DE AERONAVES (141.400):
 Aeronaves con certificado de aeronavegabilidad vigente
 Aeronaves apropiadas para tipo de instrucción
 Instrumentos y equipos operativos
@@ -753,7 +786,7 @@ Manuales de aeronave disponibles
 Programa de mantenimiento aprobado
 Póliza de seguro vigente
 
-##REQUISITOS DISPOSITIVOS DE SIMULACIÓN (141.405):
+## REQUISITOS DISPOSITIVOS DE SIMULACIÓN (141.405):
 Dispositivos aprobados por UAEAC cuando se requieran
 Certificación o calificación del dispositivo
 Programa de mantenimiento del dispositivo
@@ -761,7 +794,7 @@ Operatividad verificada
 Representación fiel de aeronave
 Registros de uso y mantenimiento
 
-##REQUISITOS DE OPERACIÓN:
+## REQUISITOS DE OPERACIÓN:
 Notificación de cambios a UAEAC dentro de 30 días
 Cumplimiento continuo de requisitos de certificación
 Operación conforme a especificaciones de instrucción aprobadas
