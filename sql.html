@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico y Autenticación Supabase</title>
+    <title>Diagnóstico, Autenticación y Consultas Supabase</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Cliente oficial de Supabase -->
@@ -11,7 +11,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen p-6 font-sans">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- Encabezado -->
         <header class="border-b border-slate-800 pb-4">
@@ -19,91 +19,103 @@
             <p class="text-slate-400 text-sm">Herramienta integral para probar conectividad, sesión de usuario (Login/Logout) y consultas evaluando cada fase.</p>
         </header>
 
-        <!-- 1. Formulario de Conexión -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-            <h2 class="text-lg font-semibold text-slate-200">1. Credenciales de Conexión</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">URL de Supabase</label>
-                    <input type="text" id="supabaseUrl" placeholder="https://tu-proyecto.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1">Clave (Anon Key)</label>
-                    <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                </div>
-            </div>
-            <div class="flex items-center justify-between pt-2">
-                <button onclick="probarConexion()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
-                    Conectar y Verificar
-                </button>
-                <span id="estadoConexion" class="text-xs font-medium text-slate-500">Estado: Desconectado</span>
-            </div>
-        </section>
-
-        <!-- 2. Ficha de Autenticación (Login / Logout) -->
-        <section id="authSection" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4 opacity-50 pointer-events-none transition-opacity">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-slate-200">2. Ficha de Autenticación (Login / Logout)</h2>
-                <div id="estadoSesion" class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700">Sesión: No iniciada</div>
-            </div>
-
-            <!-- Formulario de Login -->
-            <div id="loginFormContainer" class="space-y-3 pt-2">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
-                        <input type="email" id="loginEmail" placeholder="usuario@correo.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 pt-2">
-                    <button onclick="iniciarSesion()" class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
-                        Iniciar Sesión (Login)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Panel de Usuario Autenticado (Oculto por defecto) -->
-            <div id="userPanel" class="hidden space-y-3 pt-2">
-                <div class="bg-slate-950 border border-slate-800 p-3 rounded-lg flex items-center justify-between">
-                    <div>
-                        <span class="text-xs text-slate-400 block">Usuario Conectado:</span>
-                        <span id="userEmailDisplay" class="text-sm font-medium text-emerald-400"></span>
-                    </div>
-                    <button onclick="cerrarSesion()" class="bg-rose-600 hover:bg-rose-500 text-white font-medium px-4 py-1.5 rounded-lg text-xs transition-colors cursor-pointer">
-                        Cerrar Sesión (Logout)
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. Panel de Consultas -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-            <h2 class="text-lg font-semibold text-slate-200">3. Ejecución de Consultas (Texto Plano)</h2>
-            <p class="text-xs text-slate-400">Escribe comandos con la instancia de Supabase (ej: <code class="text-emerald-400">supabase.from('jugadores').select('*')</code>)</p>
+        <!-- Layout en Grid: Izquierda controles, Derecha consola en pantallas grandes -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <div>
-                <textarea id="queryInput" rows="4" placeholder="supabase.from('tu_tabla').select('*').limit(5)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500"></textarea>
-            </div>
-            
-            <button onclick="ejecutarConsulta()" id="btnEjecutar" disabled class="bg-slate-800 text-slate-500 font-medium px-5 py-2 rounded-lg text-sm cursor-not-allowed transition-colors">
-                Enviar Consulta de Prueba
-            </button>
-        </section>
+            <!-- Columna Izquierda: Controles (Ancho 6 de 12) -->
+            <div class="lg:col-span-6 space-y-6">
+                
+                <!-- 1. Formulario de Conexión -->
+                <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
+                    <h2 class="text-lg font-semibold text-slate-200">1. Credenciales de Conexión</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">URL de Supabase</label>
+                            <input type="text" id="supabaseUrl" placeholder="https://tu-proyecto.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Clave (Anon Key)</label>
+                            <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2">
+                        <button onclick="probarConexion()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
+                            Conectar y Verificar
+                        </button>
+                        <span id="estadoConexion" class="text-xs font-medium text-slate-500">Estado: Desconectado</span>
+                    </div>
+                </section>
 
-        <!-- Consola de Diagnósticos -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-slate-200">4. Fases de Diagnóstico y Resultados</h2>
-                <button onclick="limpiarConsola()" class="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer">Limpiar registro</button>
+                <!-- 2. Ficha de Autenticación (Login / Logout) -->
+                <section id="authSection" class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4 opacity-50 pointer-events-none transition-opacity">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-slate-200">2. Ficha de Autenticación</h2>
+                        <div id="estadoSesion" class="text-xs bg-slate-800 text-slate-400 px-3 py-1 rounded-full border border-slate-700">Sesión: No iniciada</div>
+                    </div>
+
+                    <!-- Formulario de Login -->
+                    <div id="loginFormContainer" class="space-y-3 pt-2">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Correo Electrónico</label>
+                                <input type="email" id="loginEmail" placeholder="usuario@correo.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
+                                <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 pt-2">
+                            <button onclick="iniciarSesion()" class="bg-sky-600 hover:bg-sky-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
+                                Iniciar Sesión (Login)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Usuario Autenticado (Oculto por defecto) -->
+                    <div id="userPanel" class="hidden space-y-3 pt-2">
+                        <div class="bg-slate-950 border border-slate-800 p-3 rounded-lg flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Usuario Conectado:</span>
+                                <span id="userEmailDisplay" class="text-sm font-medium text-emerald-400"></span>
+                            </div>
+                            <button onclick="cerrarSesion()" class="bg-rose-600 hover:bg-rose-500 text-white font-medium px-4 py-1.5 rounded-lg text-xs transition-colors cursor-pointer">
+                                Cerrar Sesión (Logout)
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Panel de Consultas -->
+                <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
+                    <h2 class="text-lg font-semibold text-slate-200">3. Ejecución de Consultas</h2>
+                    <p class="text-xs text-slate-400">Escribe comandos con la instancia de Supabase (ej: <code class="text-emerald-400">supabase.from('jugadores').select('*')</code>)</p>
+                    
+                    <div>
+                        <textarea id="queryInput" rows="4" placeholder="supabase.from('tu_tabla').select('*').limit(5)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500"></textarea>
+                    </div>
+                    
+                    <button onclick="ejecutarConsulta()" id="btnEjecutar" disabled class="bg-slate-800 text-slate-500 font-medium px-5 py-2 rounded-lg text-sm cursor-not-allowed transition-colors">
+                        Enviar Consulta de Prueba
+                    </button>
+                </section>
+
             </div>
-            <div id="consolaDiagnostico" class="bg-slate-950 border border-slate-800 rounded-lg p-4 h-64 overflow-y-auto font-mono text-xs space-y-2 text-slate-300">
-                <span class="text-slate-600">// Los eventos de diagnóstico y red aparecerán aquí en tiempo real...</span>
+
+            <!-- Columna Derecha: Consola de Diagnósticos Ocupando Todo el Espacio Vertical (Ancho 6 de 12) -->
+            <div class="lg:col-span-6 flex flex-col">
+                <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col h-full min-h-[500px] lg:min-h-full space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-slate-200">4. Consola de Diagnósticos y Resultados</h2>
+                        <button onclick="limpiarConsola()" class="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer">Limpiar registro</button>
+                    </div>
+                    <div id="consolaDiagnostico" class="bg-slate-950 border border-slate-800 rounded-lg p-4 flex-1 overflow-y-auto font-mono text-xs space-y-2 text-slate-300 min-h-[400px] lg:h-[calc(100vh-250px)]">
+                        <span class="text-slate-600">// Los eventos de diagnóstico y red aparecerán aquí en tiempo real...</span>
+                    </div>
+                </section>
             </div>
-        </section>
+
+        </div>
 
     </div>
 
@@ -157,18 +169,16 @@
                 estadoLabel.textContent = 'Estado: Conectado ✔';
                 estadoLabel.className = 'text-xs font-medium text-emerald-400';
                 
-                // Habilitar sección de autenticación y botón de consultas
                 authSection.classList.remove('opacity-50', 'pointer-events-none');
                 btnEjecutar.disabled = false;
                 btnEjecutar.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer';
 
-                // Verificar si ya hay una sesión activa guardada en localStorage
                 if (data.session) {
                     actualizarUIUsuario(data.session.user);
                 }
 
             } catch (err) {
-                log(`❌ Fallo en la comunicación con Supabase: ${err.message}`, 'error');
+                log(`❌ Fallo de conexión o Clave de Supabase inválida: ${err.message}`, 'error');
                 estadoLabel.textContent = 'Estado: Error de Conexión ❌';
                 estadoLabel.className = 'text-xs font-medium text-rose-400';
                 supabaseClient = null;
@@ -197,13 +207,16 @@
                     password: password,
                 });
 
-                if (error) throw error;
+                if (error) {
+                    log(`❌ Error de Autenticación (Credenciales incorrectas): ${error.message}`, 'error');
+                    return;
+                }
 
                 log(`✅ Login exitoso. Token JWT generado correctamente para el rol 'authenticated'.`, 'success');
                 actualizarUIUsuario(data.user);
 
             } catch (err) {
-                log(`❌ Error en el inicio de sesión: ${err.message}`, 'error');
+                log(`❌ Excepción crítica en el login: ${err.message}`, 'error');
             }
         }
 
@@ -214,13 +227,16 @@
 
             try {
                 const { error } = await supabaseClient.auth.signOut();
-                if (error) throw error;
+                if (error) {
+                    log(`❌ Error al cerrar sesión: ${error.message}`, 'error');
+                    return;
+                }
 
                 log('✅ Sesión cerrada correctamente. El cliente vuelve al rol anónimo.', 'success');
                 reestablecerUIUsuario();
 
             } catch (err) {
-                log(`❌ Error al cerrar sesión: ${err.message}`, 'error');
+                log(`❌ Excepción crítica al cerrar sesión: ${err.message}`, 'error');
             }
         }
 
@@ -266,8 +282,12 @@
                 const resultado = await funcionEval(supabaseClient);
                 const finQuery = performance.now();
                 
-                log(`✅ Consulta ejecutada en ${Math.round(finQuery - inicioQuery)}ms`, 'success');
-                log(`📦 Resultado obtenido:\n${JSON.stringify(resultado, null, 2)}`, 'success');
+                if (resultado && resultado.error) {
+                    log(`❌ Error devuelto por la base de datos / RLS: ${resultado.error.message}`, 'error');
+                } else {
+                    log(`✅ Consulta ejecutada en ${Math.round(finQuery - inicioQuery)}ms`, 'success');
+                    log(`📦 Resultado obtenido:\n${JSON.stringify(resultado, null, 2)}`, 'success');
+                }
 
             } catch (err) {
                 log(`❌ Error durante la ejecución de la consulta: ${err.message}`, 'error');
