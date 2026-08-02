@@ -146,40 +146,53 @@
             const estadoLabel = document.getElementById('estadoConexion');
             const btnEjecutar = document.getElementById('btnEjecutar');
             const authSection = document.getElementById('authSection');
-
+        
             if (!url || !key) {
                 log('⚠️ Error: Debes ingresar tanto la URL como la Clave de Supabase.', 'error');
                 return;
             }
-
+        
             log('Fase 1: Inicializando la instancia del cliente de Supabase...');
             try {
                 supabaseClient = supabase.createClient(url, key);
-                log('✅ Instancia creada correctamente en memoria.', 'success');
-
-                log('Fase 2: Probando latencia y conectividad con la API REST...');
+                log('✅ Instancia creada en memoria.', 'success');
+        
+                log('Fase 2: Validando credenciales con el servidor de Supabase...');
                 const inicio = performance.now();
+                
+                // Intentamos listar los proveedores de auth o un endpoint protegido básico para forzar el rechazo si la clave es inválida
                 const { data, error } = await supabaseClient.auth.getSession();
+                
                 const fin = performance.now();
                 const latencia = Math.round(fin - inicio);
-
-                if (error) throw error;
-
-                log(`✅ Conexión establecida con éxito. Latencia de red: ${latencia}ms`, 'success');
+        
+                // Si la clave es totalmente inventada, Supabase Auth suele retornar un error de API o la respuesta viene vacía/rechazada
+                if (error) {
+                    throw error;
+                }
+        
+                // Validación extra: Probamos una consulta ligera al esquema public para asegurar que la clave API responde
+                const testQuery = await supabaseClient.from('_non_existent_table_test_').select('*').limit(1);
+                // Si el error es 401 (Unauthorized), la clave es incorrecta
+                if (testQuery.error && testQuery.error.code === 'PGRST301') {
+                    throw new Error('Clave de Supabase inválida (No autorizada por la API).');
+                }
+        
+                log(`✅ Conexión y clave validadas con éxito. Latencia: ${latencia}ms`, 'success');
                 estadoLabel.textContent = 'Estado: Conectado ✔';
                 estadoLabel.className = 'text-xs font-medium text-emerald-400';
                 
                 authSection.classList.remove('opacity-50', 'pointer-events-none');
                 btnEjecutar.disabled = false;
                 btnEjecutar.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer';
-
+        
                 if (data.session) {
                     actualizarUIUsuario(data.session.user);
                 }
-
+        
             } catch (err) {
-                log(`❌ Fallo de conexión o Clave de Supabase inválida: ${err.message}`, 'error');
-                estadoLabel.textContent = 'Estado: Error de Conexión ❌';
+                log(`❌ Error de Conexión o Clave inválida: ${err.message}`, 'error');
+                estadoLabel.textContent = 'Estado: Clave o URL errónea ❌';
                 estadoLabel.className = 'text-xs font-medium text-rose-400';
                 supabaseClient = null;
                 authSection.classList.add('opacity-50', 'pointer-events-none');
