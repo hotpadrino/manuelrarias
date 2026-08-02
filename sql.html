@@ -144,7 +144,7 @@
         <i data-lucide="mail" class="h-3.5 w-3.5"></i>
         <span class="hidden sm:inline">Correo</span>
       </a>
-      <a href="https://wa.me/573128816469" target="_blank" rel="noreferrer"
+      <a href="https://wa.me/" target="_blank" rel="noreferrer"
         class="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 px-3 py-1 font-medium text-[#25D366] transition-all hover:bg-[#25D366]/20 active:scale-95">
         <i data-lucide="message-circle" class="h-3.5 w-3.5"></i>
         <span>WhatsApp</span>
@@ -188,26 +188,19 @@
       supabaseClient = supabase.createClient(url, key);
       log('✅ Instancia creada en memoria.', 'success');
 
-      log('Fase 2: Validando credenciales contra el servidor (REST API)...');
+      log('Fase 2: Probando consulta de verificación (select *) con el servidor...');
       const inicio = performance.now();
 
-      // auth.getSession() NO valida la clave contra el servidor (solo lee el
-      // almacenamiento local), por eso antes se mostraba "éxito" con claves
-      // inválidas. Aquí se hace una petición real a PostgREST que sí valida
-      // el apikey/JWT contra el servidor.
-      const baseUrl = url.replace(/\/$/, '');
-      const resp = await fetch(`${baseUrl}/rest/v1/`, {
-        headers: { apikey: key, Authorization: `Bearer ${key}` }
-      });
+      // Hacemos una consulta ligera limitando a 0 registros para verificar la autenticidad de la clave
+      // Si la clave es errónea, Supabase/PostgREST rechazará la petición con un error de autenticación.
+      const { data, error } = await supabaseClient.from('tabla').select('*').limit(0);
 
       const fin = performance.now();
       const latencia = Math.round(fin - inicio);
 
-      if (resp.status === 401 || resp.status === 403) {
-        throw new Error('Clave (Anon/Service Role) inválida o sin permisos.');
-      }
-      if (!resp.ok) {
-        throw new Error(`El servidor respondió con estado ${resp.status}. Verifica la URL del proyecto.`);
+      // Si hay un error de clave no autorizada (ej. JWT mal formado o apikey incorrecta)
+      if (error && (error.code === 'PGRST301' || error.message.includes('JWT') || error.message.includes('apikey') || error.message.includes('Invalid API key'))) {
+        throw new Error(error.message);
       }
 
       log(`✅ Conexión establecida con éxito. Latencia: ${latencia}ms`, 'success');
@@ -217,12 +210,14 @@
       btnEjecutar.disabled = false;
       btnEjecutar.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer';
 
-      const { data } = await supabaseClient.auth.getSession();
-      if (data.session) actualizarUIUsuario(data.session.user);
+      const sessionRes = await supabaseClient.auth.getSession();
+      if (sessionRes.data && sessionRes.data.session) {
+        actualizarUIUsuario(sessionRes.data.session.user);
+      }
 
     } catch (err) {
       log(`❌ Error de Conexión o Clave inválida: ${err.message}`, 'error');
-      estadoLabel.textContent = 'Estado: Error de Conexión';
+      estadoLabel.textContent = 'Estado: Clave errónea ❌';
       estadoLabel.className = 'text-xs font-medium text-rose-400';
       supabaseClient = null;
       authSection.classList.add('opacity-50', 'pointer-events-none');
