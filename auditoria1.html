@@ -81,8 +81,8 @@
         <input type="date" id="fecha" oninput="save()">
         <select id="auditSelector" onchange="renderChecklist(true)"></select>
         <div style="display:flex;">
-            <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="handleFileUpload(this)">
-            <label for="fileInput" class="btn" style="border:1px solid var(--border); font-size:11px; width:100%; text-align:center; cursor:pointer;">📂 Cargar .txt</label>
+            <input type="file" id="fileInput" accept=".txt,.md" style="display:none;" onchange="handleFileUpload(this)">
+            <label for="fileInput" class="btn" style="border:1px solid var(--border); font-size:11px; width:100%; text-align:center; cursor:pointer;">📂 Cargar .txt / .md</label>
         </div>
     </div>
 
@@ -137,9 +137,17 @@ window.onload = async () => {
     sigPad = new SignaturePad(c, { backgroundColor: 'white' });
     
     try {
-        const res = await fetch('auditoria.txt');
-        if (res.ok) processTxt(await res.text());
-    } catch (e) { document.getElementById('results-counter').innerText = "Cargue el archivo auditoria.txt"; }
+        const res = await fetch('auditoria.md');
+        if (res.ok) {
+            processTxt(await res.text());
+        } else {
+            const resTxt = await fetch('auditoria.txt');
+            if (resTxt.ok) processTxt(await resTxt.text());
+            else throw new Error("No se encontró archivo remoto");
+        }
+    } catch (e) { 
+        document.getElementById('results-counter').innerText = "Cargue el archivo auditoria.md o auditoria.txt"; 
+    }
 
     load();
     renderChecklist();
@@ -156,17 +164,34 @@ function processTxt(text) {
     const lines = text.split('\n');
     let curA = "", curS = "";
     auditData = {};
+    
     lines.forEach(l => {
-        const line = l.trim();
-        if (!line) return;
-        if (line.startsWith('##')) {
-            curS = line.replace('##','').trim();
-            if (curA) auditData[curA].secciones[curS] = [];
-        } else if (line.startsWith('#')) {
+        let line = l.trim();
+        if (!line || line.startsWith('---')) return;
+        
+        // Soporte de títulos Markdown H1 (#) y H2 (##) o viñetas de listas (*)
+        if (line.startsWith('# ')) {
             curA = line.replace('#','').trim();
             auditData[curA] = { secciones: {} };
-        } else if (curA && curS) {
-            auditData[curA].secciones[curS].push(line);
+            curS = "";
+        } else if (line.startsWith('## ')) {
+            curS = line.replace('##','').trim();
+            if (curA) {
+                if(!auditData[curA].secciones[curS]) auditData[curA].secciones[curS] = [];
+            }
+        } else {
+            // Limpiar viñetas de markdown si las hay (* o -)
+            if (line.startsWith('* ') || line.startsWith('- ')) {
+                line = line.substring(2).trim();
+            }
+            if (curA && curS && line) {
+                auditData[curA].secciones[curS].push(line);
+            } else if (curA && !curS && line) {
+                // Si hay items huérfanos antes de una sección H2, crear sección por defecto
+                curS = "GENERAL";
+                if(!auditData[curA].secciones[curS]) auditData[curA].secciones[curS] = [];
+                auditData[curA].secciones[curS].push(line);
+            }
         }
     });
     updateSelectors();
@@ -200,6 +225,8 @@ function renderChecklist(reset = false) {
 
     const activeSec = secciones[currentSecIdx];
     container.innerHTML = "";
+    if(!auditData[audit].secciones[activeSec]) return;
+
     auditData[audit].secciones[activeSec].forEach((q, i) => {
         const id = `q_${audit}_${activeSec}_${i}`.replace(/\s+/g, '_');
         container.innerHTML += `
@@ -318,7 +345,6 @@ function acceptSig() {
     closeSig(); save();
 }
 
-// REPORTE EN PESTAÑA NUEVA (Optimizado para móvil)
 function generateReport() {
     const audit = document.getElementById('auditSelector').value;
     if (!auditData[audit]) return;
