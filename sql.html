@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico, Autenticación y Consultas Supabase</title>
+    <title>Diagnóstico, Autenticación y Consultas Supabase - NOVAELIX</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- Cliente oficial de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Iconos Lucide (para correo y whatsapp) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-6 font-sans">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-6 pb-20 font-sans">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
@@ -19,8 +21,8 @@
             <p class="text-slate-400 text-sm">Herramienta integral para probar conectividad, sesión de usuario (Login/Logout) y consultas evaluando cada fase.</p>
         </header>
 
-        <!-- Layout en Grid: Izquierda controles, Derecha consola en pantallas grandes -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Layout en Grid: Izquierda controles, Derecha consola fija -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             <!-- Columna Izquierda: Controles (Ancho 6 de 12) -->
             <div class="lg:col-span-6 space-y-6">
@@ -34,7 +36,7 @@
                             <input type="text" id="supabaseUrl" placeholder="https://tu-proyecto.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Clave (Anon Key)</label>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Clave (Anon Key / Service Role)</label>
                             <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
                         </div>
                     </div>
@@ -72,7 +74,7 @@
                         </div>
                     </div>
 
-                    <!-- Panel de Usuario Autenticado (Oculto por defecto) -->
+                    <!-- Panel de Usuario Autenticado -->
                     <div id="userPanel" class="hidden space-y-3 pt-2">
                         <div class="bg-slate-950 border border-slate-800 p-3 rounded-lg flex items-center justify-between">
                             <div>
@@ -89,7 +91,7 @@
                 <!-- 3. Panel de Consultas -->
                 <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
                     <h2 class="text-lg font-semibold text-slate-200">3. Ejecución de Consultas</h2>
-                    <p class="text-xs text-slate-400">Escribe comandos con la instancia de Supabase (ej: <code class="text-emerald-400">supabase.from('tabla').select('*')</code>)</p>
+                    <p class="text-xs text-slate-400">Escribe comandos (ej: <code class="text-emerald-400">supabase.from('jugadores').select('*')</code>)</p>
                     
                     <div>
                         <textarea id="queryInput" rows="4" placeholder="supabase.from('tu_tabla').select('*').limit(5)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500"></textarea>
@@ -102,14 +104,15 @@
 
             </div>
 
-            <!-- Columna Derecha: Consola de Diagnósticos Ocupando Todo el Espacio Vertical (Ancho 6 de 12) -->
-            <div class="lg:col-span-6 flex flex-col">
-                <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col h-full min-h-[500px] lg:min-h-full space-y-3">
+            <!-- Columna Derecha: Consola de Diagnósticos con Altura Fija y Scroll Controlado (Ancho 6 de 12) -->
+            <div class="lg:col-span-6 sticky top-6">
+                <section class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col h-[650px] space-y-3">
                     <div class="flex items-center justify-between">
                         <h2 class="text-lg font-semibold text-slate-200">4. Consola de Diagnósticos y Resultados</h2>
                         <button onclick="limpiarConsola()" class="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer">Limpiar registro</button>
                     </div>
-                    <div id="consolaDiagnostico" class="bg-slate-950 border border-slate-800 rounded-lg p-4 flex-1 overflow-y-auto font-mono text-xs space-y-2 text-slate-300 min-h-[400px] lg:h-[calc(100vh-250px)]">
+                    <!-- Contenedor con altura fija y scroll interno automático -->
+                    <div id="consolaDiagnostico" class="bg-slate-950 border border-slate-800 rounded-lg p-4 flex-1 overflow-y-auto font-mono text-xs space-y-2 text-slate-300">
                         <span class="text-slate-600">// Los eventos de diagnóstico y red aparecerán aquí en tiempo real...</span>
                     </div>
                 </section>
@@ -119,7 +122,48 @@
 
     </div>
 
+    <!-- Footer compacto y fijo en la parte inferior -->
+    <footer class="fixed bottom-0 left-0 w-full z-50 border-t border-slate-800 bg-slate-950/90 backdrop-blur-md shadow-lg">
+        <div class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-2 text-xs sm:px-6">
+            <div class="flex items-center gap-2">
+                <img
+                    src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=64&h=64&fit=crop"
+                    alt="Logo NOVAELIX"
+                    class="h-6 w-6 rounded-md object-cover bg-emerald-500/10 p-0.5 border border-slate-800"
+                />
+                <span class="font-semibold text-sm hidden sm:inline text-slate-200">NOVAELIX</span>
+            </div>
+
+            <p class="text-slate-400 text-[11px] sm:text-xs">
+                © 2026 NOVAELIX · by Inversiones Aripar
+            </p>
+
+            <div class="flex items-center gap-2">
+                <a
+                    href="mailto:alucard8@gmail.com"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900 px-3 py-1 font-medium text-slate-200 transition-all hover:border-emerald-500 hover:text-emerald-400 active:scale-95"
+                >
+                    <i data-lucide="mail" class="h-3.5 w-3.5"></i>
+                    <span class="hidden sm:inline">Correo</span>
+                </a>
+
+                <a
+                    href="https://wa.me/"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/10 border border-[#25D366]/30 px-3 py-1 font-medium text-[#25D366] transition-all hover:bg-[#25D366]/20 active:scale-95"
+                >
+                    <i data-lucide="message-circle" class="h-3.5 w-3.5"></i>
+                    <span>WhatsApp</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
     <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
         let supabaseClient = null;
 
         function log(mensaje, tipo = 'info') {
@@ -146,53 +190,40 @@
             const estadoLabel = document.getElementById('estadoConexion');
             const btnEjecutar = document.getElementById('btnEjecutar');
             const authSection = document.getElementById('authSection');
-        
+
             if (!url || !key) {
                 log('⚠️ Error: Debes ingresar tanto la URL como la Clave de Supabase.', 'error');
                 return;
             }
-        
+
             log('Fase 1: Inicializando la instancia del cliente de Supabase...');
             try {
                 supabaseClient = supabase.createClient(url, key);
                 log('✅ Instancia creada en memoria.', 'success');
-        
-                log('Fase 2: Validando credenciales con el servidor de Supabase...');
+
+                log('Fase 2: Probando latencia y validez de credenciales...');
                 const inicio = performance.now();
-                
-                // Intentamos listar los proveedores de auth o un endpoint protegido básico para forzar el rechazo si la clave es inválida
                 const { data, error } = await supabaseClient.auth.getSession();
-                
                 const fin = performance.now();
                 const latencia = Math.round(fin - inicio);
-        
-                // Si la clave es totalmente inventada, Supabase Auth suele retornar un error de API o la respuesta viene vacía/rechazada
-                if (error) {
-                    throw error;
-                }
-        
-                // Validación extra: Probamos una consulta ligera al esquema public para asegurar que la clave API responde
-                const testQuery = await supabaseClient.from('_non_existent_table_test_').select('*').limit(1);
-                // Si el error es 401 (Unauthorized), la clave es incorrecta
-                if (testQuery.error && testQuery.error.code === 'PGRST301') {
-                    throw new Error('Clave de Supabase inválida (No autorizada por la API).');
-                }
-        
-                log(`✅ Conexión y clave validadas con éxito. Latencia: ${latencia}ms`, 'success');
+
+                if (error) throw error;
+
+                log(`✅ Conexión establecida con éxito. Latencia: ${latencia}ms`, 'success');
                 estadoLabel.textContent = 'Estado: Conectado ✔';
                 estadoLabel.className = 'text-xs font-medium text-emerald-400';
                 
                 authSection.classList.remove('opacity-50', 'pointer-events-none');
                 btnEjecutar.disabled = false;
                 btnEjecutar.className = 'bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer';
-        
+
                 if (data.session) {
                     actualizarUIUsuario(data.session.user);
                 }
-        
+
             } catch (err) {
                 log(`❌ Error de Conexión o Clave inválida: ${err.message}`, 'error');
-                estadoLabel.textContent = 'Estado: Clave o URL errónea ❌';
+                estadoLabel.textContent = 'Estado: Error de Conexión ❌';
                 estadoLabel.className = 'text-xs font-medium text-rose-400';
                 supabaseClient = null;
                 authSection.classList.add('opacity-50', 'pointer-events-none');
