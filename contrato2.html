@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expediente de Arrendamiento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1f2f2b;--ink-soft:#4a5b56;--paper:#eef1ee;--card:#ffffff;--line:#d8ded9;--stamp:#8c3230;--stamp-soft:#f3e3e1;--sage:#5f7d70;--sage-soft:#e4ece7;--ok:#3d7a5e;box-sizing:border-box}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,sans-serif;line-height:1.5;padding:28px 16px 60px}
+.wrap{max-width:1180px;margin:0 auto}
+.masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.masthead h1{font-family:Fraunces,serif;font-weight:600;font-size:2.1rem;margin:0 0 4px;letter-spacing:-.01em}
+.masthead p{margin:0;color:var(--ink-soft);font-size:.95rem}
+.folio{font-family:Fraunces,serif;font-size:.8rem;color:var(--stamp);border:1.5px solid var(--stamp);border-radius:999px;padding:6px 14px;white-space:nowrap;transform:rotate(-2deg)}
+
+.login-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--sage-soft);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:16px;font-size:.8rem}
+.login-bar input{font-size:.8rem;padding:6px 8px;border:1px solid var(--line);border-radius:6px;width:150px}
+.login-bar button{font-size:.78rem;padding:6px 12px;border:none;border-radius:6px;background:var(--ink);color:#fff;font-weight:600;cursor:pointer}
+.login-bar button:hover{opacity:.9}
+.login-bar .lb-note{color:var(--sage);font-weight:600;font-size:.75rem}
+.login-bar .lb-status{margin-left:auto;font-weight:600;color:var(--ink-soft);font-size:.75rem}
+.login-bar .lb-link{background:none;border:none;color:var(--stamp);font-size:.75rem;font-weight:600;cursor:pointer;text-decoration:underline;padding:0}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:980px){.layout{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:18px}
+.col-sticky{position:sticky;top:20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 24px}
+.card h2{font-family:Fraunces,serif;font-weight:600;font-size:1.15rem;margin:0 0 4px;color:var(--ink)}
+.card .sub{color:var(--ink-soft);font-size:.85rem;margin:0 0 16px}
+.apto-select{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+select,input[type=text],input[type=email],input[type=number],input[type=date],input[type=password],textarea{font-family:Inter,sans-serif;padding:10px 12px;border:1px solid var(--line);border-radius:7px;font-size:.92rem;background:#fff;color:var(--ink);width:100%}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--sage);box-shadow:0 0 0 3px var(--sage-soft)}
+#aptoselector{max-width:340px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:.78rem;background:var(--sage-soft);color:var(--sage);border-radius:6px;padding:6px 10px;display:flex;gap:5px}
+.chip b{color:var(--ink)}
+.chip.na{background:#f1f1f0;color:#94978f}
+
+details.acc{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+details.acc + details.acc{margin-top:0}
+details.acc summary{list-style:none;cursor:pointer;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;font-family:Fraunces,serif;font-weight:600;font-size:1.05rem;color:var(--ink)}
+details.acc summary::-webkit-details-marker{display:none}
+.acc-badge{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-family:Fraunces,serif;font-size:.8rem;display:inline-flex;align-items:center;justify-content:center;margin-right:12px;flex:none}
+.acc-title{display:flex;align-items:center}
+.chev{transition:transform .2s ease;color:var(--ink-soft);font-size:1.1rem}
+details.acc[open] .chev{transform:rotate(180deg)}
+.acc-body{padding:0 24px 22px;border-top:1px solid var(--line)}
+.acc-body-inner{padding-top:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.form-group{display:flex;flex-direction:column}
+.form-group label{font-weight:600;font-size:.78rem;margin-bottom:5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.02em}
+
+.persona-card{border:1px dashed var(--line);border-radius:8px;padding:16px;margin-bottom:14px;background:#fafbfa;position:relative}
+.persona-card .persona-head{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.persona-head select{max-width:260px}
+.remove-btn{background:none;border:none;color:var(--stamp);cursor:pointer;font-size:.8rem;font-weight:600;margin-left:auto;padding:6px 10px}
+.remove-btn:disabled{opacity:.3;cursor:not-allowed}
+.add-btn{background:none;border:1.5px dashed var(--sage);color:var(--sage);border-radius:7px;padding:10px 14px;font-weight:600;font-size:.85rem;cursor:pointer;width:100%}
+.add-btn:disabled{opacity:.35;cursor:not-allowed}
+.add-btn:hover:not(:disabled){background:var(--sage-soft)}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:.9rem}
+.toggle-row input{width:auto}
+
+.canon-box{position:relative}
+.canon-box input{font-family:Fraunces,serif;font-size:1.15rem;font-weight:600;padding-left:26px}
+.canon-box::before{content:"$";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:Fraunces,serif;font-weight:600;color:var(--ink-soft)}
+
+.inv-textarea{font-family:Inter,sans-serif;min-height:160px;resize:vertical;white-space:pre-wrap}
+.inv-toolbar{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.inv-toolbar button{font-size:.75rem;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink-soft);cursor:pointer;font-weight:600}
+.inv-toolbar button:hover{background:var(--sage-soft);color:var(--sage)}
+.inv-hint{font-size:.78rem;color:var(--ink-soft);margin:6px 0 0}
+.inv-source{font-size:.78rem;font-weight:600;margin:0 0 10px;color:var(--sage)}
+.inv-source.manual{color:var(--ink-soft)}
+
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
+button.act{font-family:Inter,sans-serif;border:none;border-radius:7px;padding:12px 18px;font-weight:600;font-size:.88rem;cursor:pointer;transition:transform .1s ease,opacity .15s ease}
+button.act:active{transform:scale(.97)}
+.btn-primary{background:var(--ink);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-accent{background:var(--stamp);color:#fff}
+.btn-accent:hover{opacity:.9}
+.btn-ghost{background:var(--sage-soft);color:var(--sage)}
+.btn-ghost:hover{opacity:.85}
+.btn-outline{background:none;border:1px solid var(--line);color:var(--ink-soft)}
+.save-note{font-size:.78rem;color:var(--sage);display:flex;align-items:center;gap:6px;margin-top:2px}
+.save-note .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+
+.preview-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:0;overflow:hidden}
+.preview-head{background:var(--ink);color:#fff;padding:14px 22px;font-family:Fraunces,serif;font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
+#contrato-preview{background:#fff;padding:40px 44px;font-size:11pt;font-family:"Source Serif 4",Georgia,serif;text-align:justify;color:#111;max-height:78vh;overflow-y:auto}
+#contrato-preview h1,#contrato-preview h2{text-align:center;font-size:13pt;font-weight:700;margin-bottom:20px;text-transform:uppercase}
+#contrato-preview p{margin-bottom:10px}
+#contrato-preview table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10pt}
+#contrato-preview table td,#contrato-preview table th{border:1px solid #ccc;padding:6px 8px}
+#contrato-preview .missing{color:var(--stamp);font-weight:700}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(20,26,24,.6);z-index:1000;align-items:center;justify-content:center}
+.modal-content{background:#fff;padding:26px;border-radius:12px;width:92%;max-width:600px;box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.modal-content h3{font-family:Fraunces,serif;margin:0 0 6px;color:var(--ink)}
+.modal-content p{margin:0 0 14px;color:var(--ink-soft);font-size:.88rem}
+canvas{border:2px dashed var(--line);background:#fafbfa;border-radius:8px;width:100%;height:200px;touch-action:none;cursor:crosshair}
+.modal-buttons{margin-top:16px;display:flex;justify-content:space-between;gap:10px}
+
+@media print{
+  body{background:#fff;padding:0}
+  .masthead,.layout .stack,.actions,.modal,.folio,.save-note,.login-bar{display:none !important}
+  .preview-card{border:none}
+  .preview-head{display:none}
+  #contrato-preview{max-height:none;overflow:visible;padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <h1>Expediente de Arrendamiento</h1>
+      <p>Diligencia los datos y genera el contrato a partir de la plantilla oficial.</p>
+    </div>
+    <div class="folio">Radicado &middot; Notaría</div>
+  </div>
+
+  <!-- LOGIN: campo pequeño, opcional. No hay datos personales fijos en el código: -->
+  <!-- todo lo que se muestra en el formulario proviene de Supabase (si hay sesión) o de lo que digite el usuario. -->
+  <div class="login-bar" id="loginBar">
+    <span class="lb-note">🔓 No necesitas iniciar sesión para usar el formulario</span>
+    <input type="email" id="loginEmail" placeholder="correo" autocomplete="username">
+    <input type="password" id="loginPassword" placeholder="contraseña" autocomplete="current-password">
+    <button type="button" onclick="iniciarSesion()">Iniciar sesión</button>
+    <span class="lb-status" id="loginStatus">Sesión no iniciada · los campos quedan vacíos para llenarlos a mano</span>
+  </div>
+
+  <div class="layout">
+    <div class="stack">
+
+      <!-- Paso 0: Apartamento -->
+      <div class="card">
+        <h2>0 &middot; Selecciona el apartamento</h2>
+        <p class="sub" id="aptosub">Inicia sesión o escribe la descripción del inmueble manualmente más abajo.</p>
+        <div class="apto-select">
+          <select id="aptoselector" onchange="onAptoChange()"></select>
+        </div>
+        <div class="chips" id="aptochips"></div>
+      </div>
+
+      <!-- 1. Arrendadores -->
+      <details class="acc" id="accarrendadores">
+        <summary><span class="acc-title"><span class="acc-badge">1</span><span>Arrendador(es)</span></span><span class="chev">&#9660;</span></summary>
+        <div class="acc-body"><div class="acc-body-inner">
+          <p class="sub" id="arrendadoressub">Cargar un arrendador o digita los datos manualmente. Máximo 2 arrendadores.</p>
+          <div id="arrendadorescontainer"></div>
+          <button type="button" class="add-btn" id="btnaddarrendador" onclick="agregarArrendador()">+ Agregar arrendador</button>
+        </div></div>
+      </details>
+
+      <!-- 2. Arrendatario -->
+      <details class="acc" id="accarrendatario" open>
+        <summary><span class="acc-title"><span class="acc-badge">2</span><span>Arrendatario</span></span><span class="chev">&#9660;</span></summary>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="grid">
+            <div class="form-group"><label>Nombre completo</label><input type="text" id="arratnombre" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Cédula</label><input type="text" id="arratcedula" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Estado civil</label><input type="text" id="arratestadoCivil" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Teléfono</label><input type="text" id="arrattelefono" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Correo electrónico</label><input type="email" id="arratcorreo" oninput="onFieldChange()"></div>
+          </div>
+        </div></div>
+      </details>
+
+      <!-- 3. Coarrendatario -->
+      <details class="acc" id="acccoarrendatario">
+        <summary><span class="acc-title"><span class="acc-badge">3</span><span>Coarrendatario</span></span><span class="chev">&#9660;</span></summary>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="toggle-row">
+            <input type="checkbox" id="coarrincluir" onchange="onFieldChange()" checked>
+            <label style="margin:0;text-transform:none;font-weight:600;color:var(--ink)">Incluir coarrendatario solidario en el contrato</label>
+          </div>
+          <div class="grid">
+            <div class="form-group"><label>Nombre completo</label><input type="text" id="coarrnombre" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Cédula</label><input type="text" id="coarrcedula" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Estado civil</label><input type="text" id="coarrestadoCivil" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Teléfono</label><input type="text" id="coarrtelefono" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Correo electrónico</label><input type="email" id="coarrcorreo" oninput="onFieldChange()"></div>
+          </div>
+        </div></div>
+      </details>
+
+      <!-- 4. Inmueble, canon y fecha -->
+      <details class="acc" id="accinmueble" open>
+        <summary><span class="acc-title"><span class="acc-badge">4</span><span>Inmueble, canon y fecha</span></span><span class="chev">&#9660;</span></summary>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="grid">
+            <div class="form-group" style="grid-column:1/-1"><label>Descripción del inmueble</label><textarea id="inmuebledesc" rows="3" oninput="onFieldChange()"></textarea></div>
+            <div class="form-group"><label>Canon de arrendamiento</label><div class="canon-box"><input type="text" id="canondisplay" inputmode="numeric" placeholder="0" oninput="onCanonInput()"></div></div>
+            <div class="form-group"><label>Cuenta para el pago del canon</label><input type="text" id="cuentapago" placeholder="Ej: Ahorros No. 000 de Bancolombia" oninput="onFieldChange()"></div>
+            <div class="form-group"><label>Fecha de inicio / firma</label><input type="date" id="fechainicio" oninput="onFieldChange()"></div>
+          </div>
+        </div></div>
+      </details>
+
+      <!-- 5. Inventario: texto plano con viñetas -->
+      <details class="acc" id="accinventario">
+        <summary><span class="acc-title"><span class="acc-badge">5</span><span>Inventario (Anexo 1)</span></span><span class="chev">&#9660;</span></summary>
+        <div class="acc-body"><div class="acc-body-inner">
+          <p class="inv-source manual" id="invsource">Sin sesión iniciada: escribe el inventario manualmente.</p>
+          <div class="inv-toolbar">
+            <button type="button" onclick="insertarVineta()">+ Insertar viñeta ( - )</button>
+            <button type="button" onclick="limpiarInventario()">Vaciar campo</button>
+          </div>
+          <textarea id="inventariotexto" class="inv-textarea" placeholder="- Nevera&#10;- Estufa a gas&#10;- Closet empotrado en alcoba principal&#10;- Cortinas (sala y alcobas)" oninput="onFieldChange()"></textarea>
+          <p class="inv-hint">Cada línea que empiece con "- " se mostrará como viñeta en el contrato. Puedes escribir texto libre sin viñetas si lo prefieres.</p>
+        </div></div>
+      </details>
+
+      <div class="actions">
+        <button class="act btn-primary" onclick="generarContrato()">Actualizar contrato</button>
+        <button class="act btn-accent" onclick="abrirModalFirma()">Firmar a mano (digital)</button>
+        <button class="act btn-ghost" onclick="exportarWord()">Descargar como Word</button>
+        <button class="act btn-outline" onclick="window.print()">Imprimir / Guardar PDF</button>
+        <button class="act btn-outline" onclick="borrarDatos()">Borrar datos guardados</button>
+      </div>
+      <div class="save-note" id="savenote"><span class="dot"></span>Los datos se guardan automáticamente en este navegador (no en la nube).</div>
+    </div>
+
+    <div class="col-sticky">
+      <div class="preview-card">
+        <div class="preview-head"><span>Vista previa del contrato</span><span id="aptotag"></span></div>
+        <div id="contrato-preview">Cargando plantilla /contrato.md&hellip;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de firma -->
+<div id="firmaModal" class="modal">
+  <div class="modal-content">
+    <h3>Firma digital</h3>
+    <p>Firme dentro del recuadro usando el ratón o el dedo en pantalla táctil.</p>
+    <canvas id="firmaCanvas"></canvas>
+    <div class="modal-buttons">
+      <button class="act btn-outline" onclick="limpiarFirma()">Limpiar</button>
+      <div style="display:flex;gap:10px">
+        <button class="act btn-outline" onclick="cerrarModalFirma()">Cancelar</button>
+        <button class="act btn-primary" onclick="guardarFirma()">Guardar e insertar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+/* =========================================================================
+   IMPORTANTE — SIN DATOS PERSONALES EN EL CÓDIGO
+   Este archivo no contiene nombres, cédulas, correos, teléfonos, matrículas
+   ni cuentas reales de nadie. Toda esa información sale de dos únicas
+   fuentes en tiempo de ejecución:
+     1) Lo que el usuario digita a mano en el formulario.
+     2) Lo que se consulta a Supabase, y solo si hay una sesión iniciada.
+   Si no hay sesión, los selectores de apartamento/arrendador quedan con
+   una única opción "Manual" y el inventario queda vacío.
+   ========================================================================= */
+const SUPABASE_URL = "https://TU-PROYECTO.supabase.co";
+const SUPABASE_ANON_KEY = "TU-ANON-KEY";
+const sb = (window.supabase && SUPABASE_URL.indexOf("TU-PROYECTO") === -1)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const STORAGE_KEY = "contratoArriendoMdV1";
+let firmaDataUrl = null;
+let suspenderGuardado = false;
+let loggedIn = false;
+let mdTemplateCache = null;
+
+let APARTAMENTOS = [{ id:"manual", nombre:"Manual (sin datos precargados)", direccion:"", matricula:"" }];
+let ARRENDADORESDB = [];
+let arrendadoresState = [{ key:"manual", nombre:"", cedula:"", estadoCivil:"", telefono:"", correo:"" }];
+
+/* ---------- utilidades ---------- */
+function val(id){ const el = document.getElementById(id); return el ? el.value.trim() : ""; }
+function formatMiles(n){ n = Math.round(n) || 0; return n.toLocaleString("es-CO"); }
+function escapeHtmlAttr(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function numeroALetras(numero){
+  numero = Math.round(numero) || 0;
+  if (numero === 0) return "CERO";
+  const UNIDADES = ["","UNO","DOS","TRES","CUATRO","CINCO","SEIS","SIETE","OCHO","NUEVE","DIEZ","ONCE","DOCE","TRECE","CATORCE","QUINCE","DIECISÉIS","DIECISIETE","DIECIOCHO","DIECINUEVE"];
+  const DECENAS = ["","","VEINTE","TREINTA","CUARENTA","CINCUENTA","SESENTA","SETENTA","OCHENTA","NOVENTA"];
+  const CENTENAS = ["CIENTO","DOSCIENTOS","TRESCIENTOS","CUATROCIENTOS","QUINIENTOS","SEISCIENTOS","SETECIENTOS","OCHOCIENTOS","NOVECIENTOS"];
+  function grupo(n){
+    if (n === 100) return "CIEN";
+    let s = "";
+    const c = Math.floor(n/100), r = n % 100;
+    if (c > 0) s += CENTENAS[c-1] + " ";
+    if (r > 0){
+      if (r < 20) s += UNIDADES[r];
+      else {
+        const d = Math.floor(r/10), u = r % 10;
+        s += DECENAS[d] + (u > 0 ? " Y " + UNIDADES[u] : "");
+      }
+    }
+    return s.trim();
+  }
+  let entero = Math.floor(numero);
+  const millones = Math.floor(entero/1000000); entero %= 1000000;
+  const miles = Math.floor(entero/1000); entero %= 1000;
+  const resto = entero;
+  const partes = [];
+  if (millones > 0) partes.push((millones === 1 ? "UN MILLÓN" : grupo(millones) + " MILLONES"));
+  if (miles > 0) partes.push((miles === 1 ? "MIL" : grupo(miles) + " MIL"));
+  if (resto > 0) partes.push(grupo(resto));
+  return partes.join(" ").trim();
+}
+
+function formatearFechaTexto(fechaStr){
+  if (!fechaStr) return "";
+  const partes = fechaStr.split("-");
+  if (partes.length !== 3) return fechaStr;
+  const anio = partes[0], mesNum = parseInt(partes[1],10), dia = parseInt(partes[2],10);
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  return `${dia} de ${meses[mesNum-1]} de ${anio}`;
+}
+
+/* ---------- apartamento (solo Supabase o manual) ---------- */
+function getApto(){
+  const id = document.getElementById("aptoselector").value;
+  return APARTAMENTOS.find(a => a.id === id) || APARTAMENTOS[0];
+}
+function initAptoSelector(){
+  const sel = document.getElementById("aptoselector");
+  sel.innerHTML = APARTAMENTOS.map(a => `<option value="${a.id}">${a.nombre}</option>`).join("");
+}
+function renderAptoChips(apto){
+  const chips = document.getElementById("aptochips");
+  if (apto.id === "manual"){ chips.innerHTML = ""; document.getElementById("aptotag").textContent = ""; return; }
+  const items = [
+    { label:"Dirección", value: apto.direccion },
+    { label:"Matrícula", value: apto.matricula }
+  ];
+  chips.innerHTML = items.map(it => {
+    const na = !it.value;
+    return `<span class="chip ${na?'na':''}"><b>${it.label}:</b> ${na ? "No aplica" : it.value}</span>`;
+  }).join("");
+  document.getElementById("aptotag").textContent = apto.nombre;
+}
+function onAptoChange(applyDescripcion){
+  const apto = getApto();
+  renderAptoChips(apto);
+  if (applyDescripcion !== false && apto.direccion){
+    document.getElementById("inmuebledesc").value = `Apartamento ubicado en ${apto.direccion}, correspondiente al conjunto/edificio ${apto.nombre.toUpperCase()}${apto.matricula ? ", identificado con matrícula inmobiliaria No. " + apto.matricula : ""}.`;
+  }
+  if (sb && loggedIn && apto.id !== "manual") cargarInventarioSupabase(apto.id);
+  onFieldChange();
+}
+
+/* ---------- arrendadores (dropdown solo si hay Supabase + sesión) ---------- */
+function renderArrendadores(){
+  const cont = document.getElementById("arrendadorescontainer");
+  cont.innerHTML = arrendadoresState.map((item, idx) => {
+    const opciones = ARRENDADORESDB.map(p => `<option value="${p.id}" ${item.key===p.id?"selected":""}>${p.nombre}</option>`).join("");
+    return `<div class="persona-card">
+      <div class="persona-head">
+        <select onchange="onPersonaSelect(${idx}, this.value)" ${ARRENDADORESDB.length===0?"disabled title='Inicia sesión para ver registros guardados'":""}>
+          <option value="manual" ${item.key==="manual"?"selected":""}>Manual (digitar datos)</option>
+          ${opciones}
+        </select>
+        <button type="button" class="remove-btn" onclick="quitarArrendador(${idx})" ${arrendadoresState.length===1?"disabled":""}>Quitar</button>
+      </div>
+      <div class="grid">
+        <div class="form-group"><label>Nombre</label><input type="text" value="${escapeHtmlAttr(item.nombre||"")}" oninput="onPersonaField(${idx},'nombre',this.value)"></div>
+        <div class="form-group"><label>Cédula</label><input type="text" value="${escapeHtmlAttr(item.cedula||"")}" oninput="onPersonaField(${idx},'cedula',this.value)"></div>
+        <div class="form-group"><label>Estado civil</label><input type="text" value="${escapeHtmlAttr(item.estadoCivil||"")}" oninput="onPersonaField(${idx},'estadoCivil',this.value)"></div>
+        <div class="form-group"><label>Teléfono</label><input type="text" value="${escapeHtmlAttr(item.telefono||"")}" oninput="onPersonaField(${idx},'telefono',this.value)"></div>
+        <div class="form-group"><label>Correo electrónico</label><input type="email" value="${escapeHtmlAttr(item.correo||"")}" oninput="onPersonaField(${idx},'correo',this.value)"></div>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("btnaddarrendador").disabled = arrendadoresState.length >= 2;
+}
+function onPersonaSelect(idx, key){
+  if (key === "manual"){ arrendadoresState[idx] = { key:"manual", nombre:"", cedula:"", estadoCivil:"", telefono:"", correo:"" }; }
+  else {
+    const p = ARRENDADORESDB.find(x => x.id === key);
+    arrendadoresState[idx] = { key, nombre:p.nombre||"", cedula:p.cedula||"", estadoCivil:p.estadoCivil||"", telefono:p.telefono||"", correo:p.correo||"" };
+  }
+  renderArrendadores(); onFieldChange();
+}
+function onPersonaField(idx, field, value){ arrendadoresState[idx][field] = value; guardarEstado(); generarContrato(); }
+function agregarArrendador(){
+  if (arrendadoresState.length >= 2) return;
+  arrendadoresState.push({ key:"manual", nombre:"", cedula:"", estadoCivil:"", telefono:"", correo:"" });
+  renderArrendadores(); onFieldChange();
+}
+function quitarArrendador(idx){
+  if (arrendadoresState.length === 1) return;
+  arrendadoresState.splice(idx,1); renderArrendadores(); onFieldChange();
+}
+
+/* ---------- canon ---------- */
+function onCanonInput(){
+  const el = document.getElementById("canondisplay");
+  const raw = el.value.replace(/\D/g,"");
+  el.dataset.raw = raw;
+  el.value = raw ? formatMiles(parseInt(raw,10)) : "";
+  onFieldChange();
+}
+
+/* ---------- inventario: texto plano con viñetas ---------- */
+function insertarVineta(){
+  const ta = document.getElementById("inventariotexto");
+  const cursor = ta.selectionStart ?? ta.value.length;
+  const antes = ta.value.slice(0, cursor);
+  const despues = ta.value.slice(cursor);
+  const prefijo = (antes.length && !antes.endsWith("\n")) ? "\n- " : "- ";
+  ta.value = antes + prefijo + despues;
+  ta.focus();
+  onFieldChange();
+}
+function limpiarInventario(){
+  if (!confirm("¿Vaciar el campo de inventario?")) return;
+  document.getElementById("inventariotexto").value = "";
+  onFieldChange();
+}
+function actualizarFuenteInventario(){
+  const src = document.getElementById("invsource");
+  if (loggedIn){ src.textContent = "Inventario precargado desde Supabase para este apartamento. Puedes editarlo libremente."; src.classList.remove("manual"); }
+  else { src.textContent = "Sin sesión iniciada: escribe el inventario manualmente."; src.classList.add("manual"); }
+}
+
+/* ---------- Supabase: login, apartamentos, arrendadores e inventario ---------- */
+async function iniciarSesion(){
+  if (!sb){
+    document.getElementById("loginStatus").textContent = "Configura SUPABASE_URL y SUPABASE_ANON_KEY para habilitar el login.";
+    return;
+  }
+  const email = val("loginEmail"), password = document.getElementById("loginPassword").value;
+  if (!email || !password) return;
+  document.getElementById("loginStatus").textContent = "Verificando credenciales…";
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error){
+    loggedIn = false;
+    document.getElementById("loginStatus").textContent = "No se pudo iniciar sesión. Puedes seguir usando el formulario sin login.";
+    return;
+  }
+  loggedIn = true;
+  document.getElementById("loginStatus").innerHTML = `Sesión iniciada como ${email} &middot; <button type="button" class="lb-link" onclick="cerrarSesion()">Cerrar sesión</button>`;
+  document.getElementById("loginPassword").value = "";
+  await cargarCatalogosSupabase();
+  await cargarInventarioSupabase(getApto().id);
+}
+async function cerrarSesion(){
+  if (sb) await sb.auth.signOut();
+  loggedIn = false;
+  APARTAMENTOS = [{ id:"manual", nombre:"Manual (sin datos precargados)", direccion:"", matricula:"" }];
+  ARRENDADORESDB = [];
+  initAptoSelector();
+  document.getElementById("aptosub").textContent = "Inicia sesión para cargar la lista de apartamentos guardada en Supabase, o escribe la descripción del inmueble manualmente más abajo.";
+  document.getElementById("arrendadoressub").textContent = "Si inicias sesión puedes cargar un arrendador guardado en Supabase; de lo contrario digita los datos manualmente. Máximo 2 arrendadores.";
+  renderArrendadores();
+  document.getElementById("inventariotexto").value = "";
+  actualizarFuenteInventario();
+  document.getElementById("loginStatus").textContent = "Sesión no iniciada · los campos quedan vacíos para llenarlos a mano";
+  onFieldChange();
+}
+async function cargarCatalogosSupabase(){
+  if (!sb || !loggedIn) return;
+  try{
+    const { data: aptos, error: e1 } = await sb.from("apartamentos").select("*");
+    if (!e1 && aptos && aptos.length){
+      APARTAMENTOS = aptos.map(a => ({ id:a.id, nombre:a.nombre||a.id, direccion:a.direccion||"", matricula:a.matricula||"" }));
+      APARTAMENTOS.push({ id:"manual", nombre:"Manual (sin datos precargados)", direccion:"", matricula:"" });
+      initAptoSelector();
+      document.getElementById("aptosub").textContent = "Selecciona un apartamento cargado desde Supabase, o usa la opción Manual.";
+    }
+  } catch(e){}
+  try{
+    const { data: personas, error: e2 } = await sb.from("arrendadores").select("*");
+    if (!e2 && personas){
+      ARRENDADORESDB = personas.map(p => ({ id:p.id, nombre:p.nombre||"", cedula:p.cedula||"", estadoCivil:p.estado_civil||"", telefono:p.telefono||"", correo:p.correo||"" }));
+      document.getElementById("arrendadoressub").textContent = "Selecciona un arrendador guardado en Supabase o usa la opción Manual. Máximo 2 arrendadores.";
+      renderArrendadores();
+    }
+  } catch(e){}
+}
+async function cargarInventarioSupabase(aptoId){
+  actualizarFuenteInventario();
+  if (!sb || !loggedIn || !aptoId || aptoId === "manual") return;
+  try{
+    const { data, error } = await sb.from("inventario_items").select("*").eq("apto_id", aptoId);
+    if (error) throw error;
+    const lineas = (data || []).map(r => `- ${r.descripcion || ""}${r.cantidad ? " (Cantidad: " + r.cantidad + ")" : ""}`);
+    document.getElementById("inventariotexto").value = lineas.join("\n");
+  } catch(e){
+    document.getElementById("inventariotexto").value = "";
+  }
+  onFieldChange();
+}
+
+/* =========================================================================
+   GENERAR CONTRATO: carga /contrato.md y reemplaza únicamente los campos
+   diligenciados. Los campos vacíos NO se toca: el placeholder queda tal
+   cual venía en la plantilla, para no dañarla.
+   ========================================================================= */
+function construirReemplazos(){
+  const map = {};
+  const ar1 = arrendadoresState[0] || {};
+  const ar2 = arrendadoresState[1] || {};
+  map["NOMBRE_ARRENDADOR"]    = ar1.nombre;
+  map["CEDULA_ARRENDADOR"]    = ar1.cedula;
+  map["ECIVIL_ARRENDADOR"]    = ar1.estadoCivil;
+  map["TELEFONO_ARRENDADOR"]  = ar1.telefono;
+  map["CORREO_ARRENDADOR"]    = ar1.correo;
+  
+  map["NOMBRE_ARRENDADOR2"]   = ar2.nombre;
+  map["CEDULA_ARRENDADOR2"]   = ar2.cedula;
+  map["ECIVIL_ARRENDADOR2"]   = ar2.estadoCivil;
+  map["TELEFONO_ARRENDADOR2"] = ar2.telefono;
+  map["CORREO_ARRENDADOR2"]   = ar2.correo;
+
+  map["NOMBRE_ARRENDATARIO"]   = val("arratnombre");
+  map["CEDULA_ARRENDATARIO"]   = val("arratcedula");
+  map["ECIVIL_ARRENDATARIO"]   = val("arratestadoCivil");
+  map["TELEFONO_ARRENDATARIO"] = val("arrattelefono");
+  map["CORREO_ARRENDATARIO"]   = val("arratcorreo");
+
+  if (document.getElementById("coarrincluir").checked){
+    map["NOMBRE_COARRENDATARIO"]   = val("coarrnombre");
+    map["CEDULA_COARRENDATARIO"]   = val("coarrcedula");
+    map["ECIVIL_COARRENDATARIO"]   = val("coarrestadoCivil");
+    map["TELEFONO_COARRENDATARIO"] = val("coarrtelefono");
+    map["CORREO_COARRENDATARIO"]   = val("coarrcorreo");
+  }
+
+  map["DESCRIPCION_INMUEBLE"] = val("inmuebledesc");
+
+  const canonRaw = parseInt(document.getElementById("canondisplay").dataset.raw || "0", 10);
+  if (canonRaw > 0){
+    map["CANON_LETRAS"]  = numeroALetras(canonRaw) + " PESOS M/CTE";
+    map["CANON_NUMEROS"] = formatMiles(canonRaw) + ".oo";
+  }
+  map["CANON_CUENTA"] = val("cuentapago");
+
+  const fechaVal = document.getElementById("fechainicio").value;
+  if (fechaVal) map["FECHA_INICIO"] = formatearFechaTexto(fechaVal);
+
+  const inv = val("inventariotexto");
+  if (inv) map["INVENTARIO_INMUEBLE"] = inv;
+
+  return map;
+}
+
+function aplicarReemplazos(md, map){
+  let out = md;
+  Object.entries(map).forEach(([token, value]) => {
+    if (value === undefined || value === null || String(value).trim() === "") return;
+    out = out.split(token).join(String(value));
+  });
+  return out;
+}
+
+async function obtenerPlantilla(){
+  if (mdTemplateCache) return mdTemplateCache;
+  const res = await fetch("/contrato.md");
+  if (!res.ok) throw new Error("No se pudo cargar /contrato.md");
+  mdTemplateCache = await res.text();
+  return mdTemplateCache;
+}
+
+async function generarContrato(){
+  const preview = document.getElementById("contrato-preview");
+  try{
+    const plantilla = await obtenerPlantilla();
+    const reemplazos = construirReemplazos();
+    const mdFinal = aplicarReemplazos(plantilla, reemplazos);
+    const html = (window.marked ? marked.parse(mdFinal) : `<pre>${mdFinal}</pre>`);
+    preview.innerHTML = html;
+    if (firmaDataUrl){
+      preview.innerHTML += `<div style="margin-top:20px"><img src="${firmaDataUrl}" style="max-height:65px;display:block;margin:8px 0 6px"></div>`;
+    }
+  } catch(e){
+    preview.innerHTML = `<p class="missing">No se pudo cargar la plantilla /contrato.md (${e.message}). Verifica que el archivo esté publicado en la raíz del sitio.</p>`;
+  }
+  guardarEstado();
+}
+
+/* ---------- firma ---------- */
+let canvas, ctx, dibujando = false;
+function initCanvas(){
+  canvas = document.getElementById("firmaCanvas");
+  ctx = canvas.getContext("2d");
+  function pos(e){
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches && e.touches[0]) return { x: e.touches[0].clientX-rect.left, y: e.touches[0].clientY-rect.top };
+    return { x: e.offsetX, y: e.offsetY };
+  }
+  canvas.addEventListener("mousedown", e => { dibujando=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY); });
+  canvas.addEventListener("mousemove", e => { if(!dibujando) return; ctx.lineTo(e.offsetX,e.offsetY); ctx.stroke(); });
+  canvas.addEventListener("mouseup", () => dibujando=false);
+  canvas.addEventListener("mouseleave", () => dibujando=false);
+  canvas.addEventListener("touchstart", e => { e.preventDefault(); const p=pos(e); dibujando=true; ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+  canvas.addEventListener("touchmove", e => { e.preventDefault(); if(!dibujando) return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+  canvas.addEventListener("touchend", () => dibujando=false);
+}
+function ajustarCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width; canvas.height = rect.height;
+  ctx.strokeStyle = "#1f2f2b"; ctx.lineWidth = 2.5; ctx.lineCap = "round";
+}
+function abrirModalFirma(){ document.getElementById("firmaModal").style.display="flex"; setTimeout(ajustarCanvas,50); }
+function cerrarModalFirma(){ document.getElementById("firmaModal").style.display="none"; }
+function limpiarFirma(){ ctx.clearRect(0,0,canvas.width,canvas.height); }
+function guardarFirma(){ firmaDataUrl = canvas.toDataURL("image/png"); cerrarModalFirma(); generarContrato(); }
+
+/* ---------- exportar Word ---------- */
+function exportarWord(){
+  const contenidoHTML = document.getElementById("contrato-preview").innerHTML;
+  const header = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Contrato</title><style>@page{size:21.59cm 27.94cm;margin:2.8cm 2.5cm}body{font-family:'Times New Roman',Times,serif;font-size:12pt;text-align:justify;color:#000}h1,h2{text-align:center;font-size:14pt;text-transform:uppercase}table{width:100%;border-collapse:collapse;margin-top:30px}td{width:50%;padding:14px;vertical-align:top}</style></head><body>`;
+  const footer = "</body></html>";
+  const source = header + contenidoHTML + footer;
+  const blobUrl = "data:application/vnd.ms-word;charset=utf-8," + encodeURIComponent(source);
+  const apto = getApto();
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = `ContratoArrendamiento_${(apto.nombre||"contrato").replace(/\s+/g,"_")}.doc`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+/* ---------- persistencia local (solo lo digitado, no credenciales) ---------- */
+function collectState(){
+  return {
+    aptoId: document.getElementById("aptoselector").value,
+    arrendadores: arrendadoresState,
+    arrat: { nombre: val("arratnombre"), cedula: val("arratcedula"), estadoCivil: val("arratestadoCivil"), telefono: val("arrattelefono"), correo: val("arratcorreo") },
+    coarr: { incluir: document.getElementById("coarrincluir").checked, nombre: val("coarrnombre"), cedula: val("coarrcedula"), estadoCivil: val("coarrestadoCivil"), telefono: val("coarrtelefono"), correo: val("coarrcorreo") },
+    inmueble: { desc: val("inmuebledesc"), canonRaw: document.getElementById("canondisplay").dataset.raw, cuentaPago: val("cuentapago"), fecha: document.getElementById("fechainicio").value },
+    inventarioTexto: val("inventariotexto"),
+    firmaDataUrl
+  };
+}
+function guardarEstado(){
+  if (suspenderGuardado) return;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState())); } catch(e){}
+}
+function aplicarEstado(st){
+  suspenderGuardado = true;
+  if (st.aptoId){ document.getElementById("aptoselector").value = st.aptoId; onAptoChange(false); }
+  if (Array.isArray(st.arrendadores) && st.arrendadores.length){ arrendadoresState = st.arrendadores; renderArrendadores(); }
+  if (st.arrat){
+    document.getElementById("arratnombre").value = st.arrat.nombre||"";
+    document.getElementById("arratcedula").value = st.arrat.cedula||"";
+    document.getElementById("arratestadoCivil").value = st.arrat.estadoCivil||"";
+    document.getElementById("arrattelefono").value = st.arrat.telefono||"";
+    document.getElementById("arratcorreo").value = st.arrat.correo||"";
+  }
+  if (st.coarr){
+    document.getElementById("coarrincluir").checked = !!st.coarr.incluir;
+    document.getElementById("coarrnombre").value = st.coarr.nombre||"";
+    document.getElementById("coarrcedula").value = st.coarr.cedula||"";
+    document.getElementById("coarrestadoCivil").value = st.coarr.estadoCivil||"";
+    document.getElementById("coarrtelefono").value = st.coarr.telefono||"";
+    document.getElementById("coarrcorreo").value = st.coarr.correo||"";
+  }
+  if (st.inmueble){
+    if (st.inmueble.desc) document.getElementById("inmuebledesc").value = st.inmueble.desc;
+    document.getElementById("cuentapago").value = st.inmueble.cuentaPago||"";
+    document.getElementById("fechainicio").value = st.inmueble.fecha||"";
+    const canonEl = document.getElementById("canondisplay");
+    if (st.inmueble.canonRaw){ canonEl.dataset.raw = st.inmueble.canonRaw; canonEl.value = formatMiles(parseInt(st.inmueble.canonRaw,10)); }
+  }
+  document.getElementById("inventariotexto").value = st.inventarioTexto || "";
+  actualizarFuenteInventario();
+  firmaDataUrl = st.firmaDataUrl || null;
+  suspenderGuardado = false;
+}
+function cargarEstado(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+}
+function borrarDatos(){
+  if (!confirm("¿Borrar todos los datos guardados en este navegador? Esta acción no se puede deshacer.")) return;
+  try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+  location.reload();
+}
+function aplicarValoresPorDefecto(){
+  document.getElementById("fechainicio").value = new Date().toISOString().slice(0,10);
+  onAptoChange();
+}
+function onFieldChange(){ guardarEstado(); generarContrato(); }
+
+/* ---------- init ---------- */
+window.onload = function(){
+  initAptoSelector();
+  initCanvas();
+  renderArrendadores();
+  actualizarFuenteInventario();
+  const st = cargarEstado();
+  if (st) aplicarEstado(st); else aplicarValoresPorDefecto();
+  generarContrato();
+};
+</script>
+</body>
+</html>
