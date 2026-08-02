@@ -253,7 +253,10 @@ textarea { resize: vertical; min-height: 60px; }
   display: flex; gap: 6px; overflow-x: auto;
   padding: 2px 0 6px; flex: 1;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  user-select: none;
 }
+.section-tabs:active { cursor: grabbing; }
 .section-tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
   padding: 7px 16px; border: 1px solid var(--border);
@@ -261,6 +264,7 @@ textarea { resize: vertical; min-height: 60px; }
   color: var(--muted); font-size: 12px; font-weight: 500;
   cursor: pointer; white-space: nowrap;
   transition: all var(--ease); font-family: var(--font); min-height: 34px;
+  flex-shrink: 0;
 }
 .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
 .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -586,14 +590,14 @@ textarea { resize: vertical; min-height: 60px; }
     <div class="load-area">
       <label class="load-option" for="fileInput">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <strong>Archivo local (.txt)</strong>
+        <strong>Archivo local (.txt / .md)</strong>
         <small>Seleccionar o arrastrar</small>
-        <input type="file" id="fileInput" accept=".txt" onchange="handleFileUpload(this)">
+        <input type="file" id="fileInput" accept=".txt,.md" onchange="handleFileUpload(this)">
       </label>
-      <div class="load-option" onclick="loadDefaultTxt()">
+      <div class="load-option" onclick="loadDefaultMd()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
-        <strong>Recargar servidor</strong>
-        <small>auditoria.txt del sitio</small>
+        <strong>Recargar nube</strong>
+        <small>auditoria.md del servidor</small>
       </div>
     </div>
     <div id="load-status" style="margin-top:8px; font-size:12px; color:var(--muted);"></div>
@@ -604,7 +608,7 @@ textarea { resize: vertical; min-height: 60px; }
     <div id="empty-state" class="empty-state" style="margin-top:40px;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       <h3>Sin auditoría cargada</h3>
-      <p>Usa <strong>Archivo local (.txt)</strong> para cargar tu auditoría, o coloca <code>auditoria.txt</code> en la misma carpeta que este HTML y pulsa <strong>Recargar servidor</strong>.</p>
+      <p>Usa <strong>Archivo local (.txt / .md)</strong> para cargar tu auditoría, o coloca <code>auditoria.md</code> en el servidor y pulsa <strong>Recargar nube</strong>.</p>
     </div>
 
     <div id="audit-view" class="hidden">
@@ -761,10 +765,38 @@ window.onload = async () => {
   document.documentElement.setAttribute('data-theme', savedTheme);
   updateThemeIcon(savedTheme);
 
-  await loadDefaultTxt();
+  await loadDefaultMd();
   load();
   updateSelectors();
   renderChecklist();
+
+  // Implementación de arrastre horizontal (Drag-to-scroll) para la barra de secciones
+  const slider = document.getElementById('sectionNav');
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  slider.addEventListener('mousedown', (e) => {
+    isDown = true;
+    slider.classList.add('active');
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+  });
+  slider.addEventListener('mouseleave', () => {
+    isDown = false;
+    slider.classList.remove('active');
+  });
+  slider.addEventListener('mouseup', () => {
+    isDown = false;
+    slider.classList.remove('active');
+  });
+  slider.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    slider.scrollLeft = scrollLeft - walk;
+  });
 
   // Swipe táctil para cambiar sección (solo en área de preguntas, no en tabs)
   let touchStartX = 0, touchStartY = 0;
@@ -774,24 +806,31 @@ window.onload = async () => {
     touchStartY = e.changedTouches[0].screenY;
   }, { passive: true });
   area.addEventListener('touchend', e => {
-    // Ignorar si el toque empezó en la barra de tabs o botones de navegación
     const target = e.target;
     if (target.closest('.section-tabs') || target.closest('.section-nav-mobile') || target.closest('.section-nav-arrow')) return;
     const dx = touchStartX - e.changedTouches[0].screenX;
     const dy = touchStartY - e.changedTouches[0].screenY;
-    // Solo swipe si es más horizontal que vertical y supera 60px
     if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
       goSection(dx > 0 ? 1 : -1);
     }
   }, { passive: true });
 };
 
-/* ── CARGA ── */
-async function loadDefaultTxt() {
+/* ── CARGA DESDE LA NUBE (.md) ── */
+async function loadDefaultMd() {
   try {
-    const res = await fetch('auditoria.txt');
-    if (res.ok) { processTxt(await res.text(), 'auditoria.txt'); }
-    else { setLoadStatus('auditoria.txt no encontrado en el servidor. Carga un archivo local.', false); }
+    const res = await fetch('auditoria.md');
+    if (res.ok) { 
+      processTxt(await res.text(), 'auditoria.md'); 
+    } else { 
+      // Intento alternativo con auditoria.txt por retrocompatibilidad
+      const resTxt = await fetch('auditoria.txt');
+      if (resTxt.ok) {
+        processTxt(await resTxt.text(), 'auditoria.txt');
+      } else {
+        setLoadStatus('auditoria.md no encontrado en el servidor. Carga un archivo local.', false); 
+      }
+    }
   } catch(e) {
     setLoadStatus('Carga automática no disponible. Usa un archivo local.', false);
   }
@@ -799,9 +838,10 @@ async function loadDefaultTxt() {
 
 function handleFileUpload(input) {
   if (input.files && input.files[0]) {
+    const file = input.files[0];
     const reader = new FileReader();
-    reader.onload = e => processTxt(e.target.result, input.files[0].name);
-    reader.readAsText(input.files[0]);
+    reader.onload = e => processTxt(e.target.result, file.name);
+    reader.readAsText(file);
   }
 }
 
@@ -810,7 +850,10 @@ function handleDrop(event) {
   document.getElementById('load-card').classList.remove('drag-over');
   const file = event.dataTransfer.files[0];
   if (!file) return;
-  if (!file.name.endsWith('.txt')) { showToast('Solo se aceptan archivos .txt'); return; }
+  if (!file.name.endsWith('.txt') && !file.name.endsWith('.md')) { 
+    showToast('Solo se aceptan archivos .txt o .md'); 
+    return; 
+  }
   const reader = new FileReader();
   reader.onload = e => processTxt(e.target.result, file.name);
   reader.readAsText(file);
@@ -821,14 +864,40 @@ function processTxt(text, source) {
   const lines = text.split(/\r?\n/);
   let curA = '', curS = '';
   auditData = {};
+  
   lines.forEach(l => {
-    const line = l.trim();
-    if (!line) return;
-    if      (line.startsWith('##')) { curS = line.slice(2).trim(); if (curA) auditData[curA].secciones[curS] = []; }
-    else if (line.startsWith('#'))  { curA = line.slice(1).trim(); auditData[curA] = { secciones: {} }; }
-    else if (curA && curS)          { auditData[curA].secciones[curS].push(line); }
+    let line = l.trim();
+    if (!line || line.startsWith('---')) return;
+    
+    // Soporte para formato de títulos Markdown e indexación de listas (* o -)
+    if (line.startsWith('# ')) {
+      curA = line.replace('#','').trim();
+      auditData[curA] = { secciones: {} };
+      curS = '';
+    } else if (line.startsWith('## ')) {
+      curS = line.replace('##','').trim();
+      if (curA) {
+        if (!auditData[curA].secciones[curS]) auditData[curA].secciones[curS] = [];
+      }
+    } else {
+      if (line.startsWith('* ') || line.startsWith('- ')) {
+        line = line.substring(2).trim();
+      }
+      if (curA && curS && line) {
+        auditData[curA].secciones[curS].push(line);
+      } else if (curA && !curS && line) {
+        curS = "GENERAL";
+        if (!auditData[curA].secciones[curS]) auditData[curA].secciones[curS] = [];
+        auditData[curA].secciones[curS].push(line);
+      }
+    }
   });
-  if (!Object.keys(auditData).length) { setLoadStatus('⚠ Formato incorrecto: no se encontraron líneas con # o ##.', false); return; }
+
+  if (!Object.keys(auditData).length) { 
+    setLoadStatus('⚠ Formato incorrecto: no se encontraron estructuras con # o ##.', false); 
+    return; 
+  }
+  
   const src = source ? ` — ${source.length > 40 ? '…' + source.slice(-38) : source}` : '';
   setLoadStatus(`✓ Archivo cargado correctamente${src}`, true);
   updateSelectors();
@@ -909,11 +978,9 @@ function renderChecklist(reset = false) {
     const btn = document.createElement('button');
     btn.className = `tab-btn ${idx === currentSectionIndex ? 'active' : ''}`;
     btn.textContent = sec;
-    // Usar touchend en lugar de onclick para mejor control en móvil
     let btnTouchStartX = 0;
     btn.addEventListener('touchstart', e => { btnTouchStartX = e.changedTouches[0].screenX; }, { passive: true });
     btn.addEventListener('touchend', e => {
-      // Solo activar si no fue un swipe horizontal
       if (Math.abs(btnTouchStartX - e.changedTouches[0].screenX) < 10) {
         currentSectionIndex = idx; renderChecklist(); save();
       }
@@ -938,6 +1005,7 @@ function renderChecklist(reset = false) {
 }
 
 function renderQuestions(audit, section, container) {
+  if (!auditData[audit].secciones[section]) return;
   auditData[audit].secciones[section].forEach((q, i) => {
     const id   = `q_${audit}_${section}_${i}`.replace(/\s+/g, '_');
     const card = document.createElement('div');
@@ -1051,7 +1119,6 @@ function filter() {
     total++;
     if (show) visible++;
   });
-  // Actualizar contador de sección
   const counter = document.getElementById('sectionCounter');
   if (!counter) return;
   const spans = counter.querySelectorAll('span');
@@ -1177,7 +1244,6 @@ function printFullReport() {
   const audit = document.getElementById('auditSelector').value;
   if (!auditData[audit]) { showToast('No hay auditoría cargada'); return; }
 
-  // PASO 1 — Recopilar todos los datos en variables (sin tocar el DOM)
   const empresa  = document.getElementById('empresa').value     || '---';
   const depto    = document.getElementById('departamento').value || '---';
   const fecha    = document.getElementById('fecha').value        || '---';
@@ -1193,7 +1259,6 @@ function printFullReport() {
   const now      = new Date();
   const ts       = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
 
-  // PASO 2 — Construir el string completo de una sola vez (concatenación += sobre string, nunca sobre DOM)
   let report = `<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1256,16 +1321,13 @@ function printFullReport() {
     </div>
   </div>`;
 
-  // Script partido para evitar que el parser HTML lo corte prematuramente
   report += `<scr` + `ipt>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</scr` + `ipt>`;
   report += `</body></html>`;
 
-  // PASO 3 — Inyectar UNA sola vez en ventana nueva y cerrar el documento
   const win = window.open('', '_blank');
   if (!win) { showToast('Permite ventanas emergentes en el navegador'); return; }
   win.document.write(report);
   win.document.close();
-  // PASO 4 — El setTimeout interno espera 500ms y lanza window.print() cuando el render terminó
 }
 
 /* ─── TOAST ──────────────────────────────────────────────── */
