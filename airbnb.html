@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<script>
+/* =========================================================
+   CÓDIGO DE ACCESO — Cambia solo aquí para actualizar
+   en todo el archivo (Check-in ES y EN).
+   ========================================================= */
+var Codigo = "1234#";
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unique Mine 315 · Welcome Book</title>
+<link rel="icon" type="image/png" href="https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-Favicons/original/d1fcc0b3-865f-485a-b28b-43ca0bf7c891.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   FICHA DE ESTILO — Colores, fuentes y espaciados
+   ========================================================= */
+:root{
+  --ink:#211E1A;
+  --cream:#F6F1E6;
+  --card:#FFFFFF;
+  --terracotta:#C1592C;
+  --brass:#A6813C;
+  --muted:#6B655C;
+  --line:rgba(33,30,26,0.10);
+  --radius:18px;
+  --shadow:0 8px 22px rgba(33,30,26,0.08);
+  --serif:'Fraunces', serif;
+  --sans:'Inter', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--sans);}
+body{
+  background:#171410 radial-gradient(circle at 50% 0%, #241E17 0%, #171410 65%);
+  color:var(--ink);
+  display:flex;justify-content:center;
+  min-height:100vh;
+}
+.app{
+  width:100%;max-width:480px;background:var(--cream);
+  min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.35);
+  position:relative;padding-bottom:70px;
+}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;height:260px;overflow:hidden;
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+  display:flex;align-items:flex-end;padding:20px;
+  text-decoration:none;
+}
+.hero img.hero-bg{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(20,18,14,0.82), rgba(20,18,14,0) 60%);
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+}
+.hero-title{position:relative;z-index:1;color:#fff;width:100%;}
+.hero-title .eyebrow{
+  font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:#F0D9B5;font-weight:600;margin-bottom:4px;
+}
+.hero-title h1{font-family:var(--serif);font-size:1.65rem;font-weight:600;line-height:1.15;}
+.hero-title p{font-size:0.84rem;opacity:0.9;margin-top:5px;}
+.hero-badge{
+  position:absolute;top:16px;right:16px;z-index:2;
+  background:rgba(255,255,255,0.95);color:var(--terracotta);
+  padding:6px 13px;border-radius:20px;font-size:0.72rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);
+}
+
+/* ---------- Selector de idioma (Banderas con Imágenes SVG) ---------- */
+.lang-pill{
+  position:absolute;top:18px;left:0;z-index:3;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.95);
+  padding:8px 20px 8px 14px;
+  clip-path:polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%);
+  box-shadow:var(--shadow);
+}
+.flag-btn{
+  width:22px;height:16px;
+  object-fit:cover;
+  border-radius:2px;
+  cursor:pointer;
+  user-select:none;
+  opacity:.35;
+  transition:transform .2s, opacity .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.flag-btn.active{
+  opacity:1;
+  transform:scale(1.2);
+}
+.lang-pill .chevron{color:var(--terracotta);font-size:0.75rem;margin-left:-2px;}
+
+/* ---------- Grid de menú ---------- */
+.grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:13px;padding:14px 20px 6px;
+}
+.grid-item{
+  background:var(--card);border-radius:var(--radius);
+  padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;box-shadow:var(--shadow);cursor:pointer;
+  border:1px solid var(--line);transition:transform .15s;
+}
+.grid-item:active{transform:scale(0.95);}
+.grid-item i{font-size:1.6rem;color:var(--terracotta);margin-bottom:8px;}
+.grid-item span{
+  font-size:0.68rem;font-weight:700;color:var(--ink);
+  text-transform:uppercase;letter-spacing:0.4px;
+}
+
+/* ---------- Modal ---------- */
+.modal{
+  display:none;position:fixed;inset:0;background:rgba(20,18,14,0.55);
+  z-index:100;align-items:flex-end;justify-content:center;
+}
+.modal.active{display:flex;}
+.modal-content{
+  background:var(--cream);width:100%;max-width:480px;
+  border-top-left-radius:26px;border-top-right-radius:26px;
+  padding:26px 24px 30px;max-height:82vh;overflow-y:auto;
+  animation:slideUp .3s ease-out;position:relative;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.close-btn{
+  position:absolute;top:16px;right:20px;font-size:1.5rem;color:var(--muted);cursor:pointer;
+}
+.modal-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.modal-header i{font-size:1.4rem;color:var(--terracotta);}
+.modal-header h2{font-family:var(--serif);font-size:1.25rem;font-weight:600;}
+.modal-body p{color:var(--muted);line-height:1.65;font-size:0.93rem;margin-bottom:14px;}
+.modal-body img{width:100%;border-radius:12px;margin-bottom:14px;object-fit:cover;max-height:200px;}
+.modal-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.modal-gallery img{width:100%;height:70px;object-fit:cover;border-radius:8px;margin:0;}
+.code-box{
+  background:var(--ink);color:#F6F1E6;border-radius:10px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;margin:12px 0;font-family:var(--serif);
+}
+.code-box .code{font-size:1.3rem;font-weight:700;letter-spacing:2px;color:#F0D9B5;}
+.info-box{
+  background:#FBF3E4;border-left:3px solid var(--brass);
+  padding:11px 14px;border-radius:8px;font-size:0.86rem;margin:10px 0;color:var(--muted);
+}
+.host-mini{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.host-mini img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--terracotta);}
+.host-mini strong{font-family:var(--serif);font-size:1rem;}
+.btn-action{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;
+  background:var(--terracotta);color:#fff;text-align:center;border-radius:10px;
+  text-decoration:none;font-weight:600;margin-top:8px;font-size:0.9rem;
+}
+.btn-action.whatsapp{background:#3E5C46;}
+
+/* ---------- Footer fijo ---------- */
+.site-footer{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:center;
+}
+.site-footer a{
+  width:100%;max-width:480px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--ink);color:#F6F1E6;text-decoration:none;
+  padding:10px;font-size:0.75rem;font-weight:600;letter-spacing:0.3px;
+}
+.site-footer i{color:var(--brass);}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ HERO (enlaza a Airbnb) ============ -->
+  <a href="https://es-l.airbnb.com/rooms/53810802" target="_blank" class="hero">
+    <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/2199c8c7-cc9b-4ac2-a5eb-eaaa0de26a47.jpeg?im_w=1200" alt="Unique Mine 315" class="hero-bg">
+    <div class="hero-badge"><i class="fa-brands fa-airbnb"></i> Ver en Airbnb</div>
+
+    <!-- Componente con Imágenes de Banderas (SVG) -->
+    <div class="lang-pill" onclick="event.preventDefault()">
+      <img src="https://flagcdn.com/co.svg" class="flag-btn active" onclick="event.preventDefault();event.stopPropagation();setLanguage('es')" id="flag-es" title="Español (Colombia)" alt="Colombia">
+      <img src="https://flagcdn.com/us.svg" class="flag-btn" onclick="event.preventDefault();event.stopPropagation();setLanguage('en')" id="flag-en" title="English (USA)" alt="USA">
+      <i class="fa-solid fa-chevron-right chevron"></i>
+    </div>
+
+    <div class="hero-title">
+      <div class="eyebrow">Edificio Unique Mine · El Chicó</div>
+      <h1 id="hero-h1">Guia de Prueba</h1>
+      <p id="hero-p">Carrera 9 #100-77, Bogotá</p>
+    </div>
+  </a>
+
+  <!-- ============ GRID DE BOTONES ============ -->
+  <div class="grid">
+    <div class="grid-item" onclick="openModal('bienvenido')"><i class="fa-solid fa-house-chimney"></i><span id="btn-bienvenido">Bienvenido</span></div>
+    <div class="grid-item" onclick="openModal('checkin')"><i class="fa-solid fa-key"></i><span id="btn-checkin">Check In</span></div>
+    <div class="grid-item" onclick="openModal('ubicacion')"><i class="fa-solid fa-location-dot"></i><span id="btn-ubicacion">Ubicación</span></div>
+    <div class="grid-item" onclick="openModal('normas')"><i class="fa-solid fa-wifi"></i><span id="btn-normas">Wi-Fi &amp; TV</span></div>
+    <div class="grid-item" onclick="openModal('servicios')"><i class="fa-solid fa-couch"></i><span id="btn-servicios">Servicios</span></div>
+    <div class="grid-item" onclick="openModal('actividades')"><i class="fa-solid fa-camera"></i><span id="btn-actividades">Actividades</span></div>
+    <div class="grid-item" onclick="openModal('informacion')"><i class="fa-solid fa-circle-info"></i><span id="btn-informacion">Información</span></div>
+    <div class="grid-item" onclick="openModal('bares')"><i class="fa-solid fa-martini-glass-citrus"></i><span id="btn-bares">Bares &amp; Rooftop</span></div>
+    <div class="grid-item" onclick="openModal('restaurantes')"><i class="fa-solid fa-utensils"></i><span id="btn-restaurantes">Restaurantes</span></div>
+    <div class="grid-item" onclick="openModal('compras')"><i class="fa-solid fa-cart-shopping"></i><span id="btn-compras">Supermercados</span></div>
+    <div class="grid-item" onclick="openModal('emergencias')"><i class="fa-solid fa-bus"></i><span id="btn-emergencias">Transporte</span></div>
+    <div class="grid-item" onclick="openModal('contacto')"><i class="fa-solid fa-phone"></i><span id="btn-contacto">Contacto</span></div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div id="modal" class="modal" onclick="closeModalOnOut(event)">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <div class="modal-header">
+      <i id="modal-icon" class="fa-solid"></i>
+      <h2 id="modal-title">Título</h2>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ============ FOOTER FIJO ============ -->
+<div class="site-footer">
+  <a href="https://novaelix.vercel.app/" target="_blank">
+    <i class="fa-solid fa-bolt"></i>
+    <span>Creado por Novaelix</span>
+  </a>
+</div>
+
+<script>
+let currentLang = 'es';
+
+/* =========================================================
+   IMÁGENES UNIFICADAS — Un solo lugar para ES y EN.
+   Corrige aquí y ambos idiomas se actualizan automáticamente.
+   ========================================================= */
+const Imagenes = {
+  bienvenido: "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/b651b33e-568e-44dc-9f1a-14bf78901a8e.jpeg",
+  checkin: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/e0ccdff7-ded7-4f4f-ab68-a710b842a139.jpeg",
+  ubicacion: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/77557398-674d-4c44-83d8-5ec9defe42bd.jpeg",
+  normas: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/c1488b2b-c523-49e1-97a7-9bbc901fc2f2.jpeg",
+  servicios: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/61e4a32d-9c68-438c-8786-269ac7f59e52.jpeg",
+  actividades: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/27ba8624-06c8-4535-9be0-b2fe23724c7a.jpeg",
+  host: "https://a0.muscache.com/im/pictures/user/3fa19daf-21c0-473d-87de-962bfb2bc088.jpg?im_w=240",
+  galeriaBienvenido: [
+    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/a9445e50-86f1-451e-8c69-82d9e33772f8.jpeg",
+    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/d62f2655-ac03-4e39-8ded-caf051623a13.jpeg",
+    "https://a0.muscache.com/im/pictures/miso/Hosting-53810802/original/874db146-e34b-4ddb-8f8a-a2479e395f54.jpeg"
+  ]
+};
+
+function hostHtml(nombre, subtitulo){
+  return `<div class="host-mini">
+      <img src="${Imagenes.host}" alt="${nombre}">
+      <div><strong>${nombre}</strong><br><span style="font-size:0.8rem;color:var(--muted)">${subtitulo}</span></div>
+    </div>`;
+}
+
+const translations = {
+  es: {
+    buttons: {
+      bienvenido:"Bienvenido", checkin:"Check In", ubicacion:"Ubicación", normas:"Wi-Fi & TV",
+      servicios:"Servicios", actividades:"Actividades", informacion:"Información",
+      bares:"Bares & Rooftop", restaurantes:"Restaurantes", compras:"Supermercados",
+      emergencias:"Transporte", contacto:"Contacto"
+    },
+    content: {
+      bienvenido: {
+        title: "¡Bienvenido a tu alojamiento!",
+        icon: "fa-house-chimney",
+        image: Imagenes.bienvenido,
+        hostHtml: hostHtml("Manuel Arias", "Tu anfitrión · 15 años recibiendo huéspedes"),
+        text: "¡Prepara las maletas! ✈️ Este apartamento en el Chicó, Edificio Unique Mine, no es solo un lugar para dormir: es una experiencia completa. Piscina climatizada, spa y baño turco, gimnasio, cocina equipada, coworking, mesa de billar y un restaurante-gastrobar en la azotea con vistas 360° de Bogotá — con room service incluido.<br><br>Ubicación TOP: a pasos del Parque de la 93, la Zona T y los principales centros comerciales.",
+        gallery: Imagenes.galeriaBienvenido,
+        btnText: "Ver anuncio completo en Airbnb",
+        btnLink: "https://es-l.airbnb.com/rooms/53810802"
+      },
+      checkin: {
+        title: "Instrucciones de Ingreso",
+        icon: "fa-key",
+        image: Imagenes.checkin,
+        text: `1. Anúnciate en la recepción principal (Carrera 9 #100-77).<br>2. Toma el ascensor hacia el <strong>3er piso</strong>.<br>3. Al salir, avanza a mano izquierda hasta el <strong>apartamento 315</strong>.<br>4. La puerta tiene cerradura digital.<br><br>🔐 <strong>Clave de acceso:</strong><div class='code-box'><span>Código</span><span class='code'>${Codigo}</span></div><div class='info-box'>📌 <em>Aviso de Recepción:</em> Si comentan sobre un cobro de $2 USD por áreas comunes, no debes pagarlo por tratarse de una estancia superior a 30 días.</div><div class='info-box'>🕒 Check-in desde las 3:00 p.m. · Check-out antes de las 11:00 a.m. · Máximo 3 huéspedes.</div>`,
+        btnText: "Ver Video Guía de Ingreso",
+        btnLink: "https://youtube.com/shorts/X3Pt_7nisyw"
+      },
+      ubicacion: {
+        title: "Ubicación & Dirección",
+        icon: "fa-location-dot",
+        image: Imagenes.ubicacion,
+        text: "<strong>Edificio Unique Mine</strong><br>Carrera 9 #100-77, El Chicó, Bogotá.<br><br>Ubicación TOP junto al <strong>Hotel Dan Carlton</strong> y el <strong>Parque de la calle 106</strong>. A pocos minutos del Parque de la 93 y Zona T.",
+        btnText: "Ver Ubicación en Google Maps",
+        btnLink: "https://maps.app.goo.gl/mN9GuGNn69jabEru5"
+      },
+      normas: {
+        title: "Wi-Fi & Entretenimiento",
+        icon: "fa-wifi",
+        image: Imagenes.normas,
+        text: "📶 <strong>Red Wi-Fi:</strong> Nombre_Red<br>🔑 <strong>Contraseña:</strong> Clave_Red<br><br>📺 <strong>Televisor:</strong> Conecta tus dispositivos a la red para controlar YouTube desde tu celular. Incluye la app <strong>Xuper</strong> con cientos de canales y películas en vivo."
+      },
+      servicios: {
+        title: "Zonas Comunes & Amenidades",
+        icon: "fa-couch",
+        image: Imagenes.servicios,
+        text: "• <strong>Piso 1 (Gratuito):</strong> Piscina climatizada, Gimnasio, Sauna y Spa / Baño Turco.<br>• <strong>Piso 3:</strong> Lavadoras de autoservicio (funcionan con efectivo o app).<br>• <strong>Piso 11:</strong> Restaurante & Gastrobar en la azotea (¡con Room Service!), Coworking y Mesa de Billar.<br>• <strong>Depósito (Gratuito):</strong> Almacenamiento privado en sótano S1.<br>"
+      },
+      actividades: {
+        title: "Sitios de Interés Cercanos",
+        icon: "fa-camera",
+        image: Imagenes.actividades,
+        text: "• <strong>Parque de la 93 & Zona T:</strong> Bares, restaurantes y vida nocturna premium.<br>• <strong>Parque Calle 106:</strong> Excelente zona verde justo al lado para caminatas.<br>• <strong>Centros Comerciales:</strong> Unicentro, Andino y El Retiro.",
+        btnText: "Ver Guía de Puntos de Interés",
+        btnLink: "https://maps.app.goo.gl/XXBS1SnESGHs8bmv7?g_st=ac"
+      },
+      informacion: {
+        title: "Servicios Adicionales & Aseo",
+        icon: "fa-circle-info",
+        text: "Para cualquier inquietud de la propiedad, recomendaciones locales o si deseas contratar <strong>servicio de aseo adicional</strong>, la señora <strong>Maribel</strong> estará encantada de ayudarte."
+      },
+      bares: {
+        title: "Restaurante & Gastrobar Roof 360°",
+        icon: "fa-martini-glass-citrus",
+        text: "¡No tienes que salir del edificio! En el <strong>Piso 11</strong> encuentras el Gastrobar con vistas 360° de Bogotá, tragos, cena ¡y servicio a la habitación (Room Service)!"
+      },
+      restaurantes: {
+        title: "Gastronomía Cercana",
+        icon: "fa-utensils",
+        text: "Disfruta de la mejor oferta gastronómica de Bogotá en el Parque de la 93 y la Zona T, a solo 5 minutos en taxi/Uber."
+      },
+      compras: {
+        title: "Supermercados Cercanos",
+        icon: "fa-cart-shopping",
+        text: "A solo un par de calles encontrarás:<br>• Supermercado <strong>DE LA SABANA</strong><br>• Supermercados <strong>ARA y D1</strong><br>• Supermercados <strong>ÉXITO</strong><br><br>Ideales para adquirir víveres y artículos de aseo personal."
+      },
+      emergencias: {
+        title: "Opciones de Transporte",
+        icon: "fa-bus",
+        text: "• <strong>Transmilenio:</strong> Estación <em>Autonorte Calle 100</em> a pocas calles.<br>• <strong>Transporte Privado / Taxis:</strong> Mi tío <strong>Luis</strong> ofrece servicio de transporte privado (recogida en aeropuerto o viajes dentro/fuera de Bogotá). Avísame si deseas coordinar con él."
+      },
+      contacto: {
+        title: "Contacto con el Anfitrión",
+        icon: "fa-phone",
+        text: "¡Estoy para ayudarte en todo momento!<br><br><strong>Anfitrión:</strong> Manuel Arias<br>📱 <strong>WhatsApp / Tel:</strong> 312 881 6469",
+        btnText: "Escribir a Manuel por WhatsApp",
+        btnLink: "https://wa.me/573128816469",
+        whatsapp: true
+      }
+    }
+  },
+  en: {
+    buttons: {
+      bienvenido:"Welcome", checkin:"Check In", ubicacion:"Location", normas:"Wi-Fi & TV",
+      servicios:"Amenities", actividades:"Activities", informacion:"Information",
+      bares:"Bars & Rooftop", restaurantes:"Restaurants", compras:"Groceries",
+      emergencias:"Transport", contacto:"Contact"
+    },
+    content: {
+      bienvenido: {
+        title: "Welcome to your stay!",
+        icon: "fa-house-chimney",
+        image: Imagenes.bienvenido,
+        hostHtml: hostHtml("Manuel Arias", "Your host · 15 years hosting"),
+        text: "Pack your bags! ✈️ This apartment in El Chicó, Unique Mine Building, is more than a place to sleep: it's a full experience. Heated pool, spa and steam room, gym, equipped kitchen, coworking, pool table, and a rooftop gastrobar with 360° views of Bogotá — with room service included.<br><br>TOP location: steps from Parque de la 93, Zona T, and the city's main malls.",
+        gallery: Imagenes.galeriaBienvenido,
+        btnText: "View full Airbnb listing",
+        btnLink: "https://es-l.airbnb.com/rooms/53810802"
+      },
+      checkin: {
+        title: "Check-In Instructions",
+        icon: "fa-key",
+        image: Imagenes.checkin,
+        text: `1. Announce yourself at the front desk (Carrera 9 #100-77).<br>2. Take the elevator to the <strong>3rd floor</strong>.<br>3. Turn left until apartment <strong>315</strong>.<br>4. Enter using the smart door lock.<br><br>🔐 <strong>Door code:</strong><div class='code-box'><span>Code</span><span class='code'>${Codigo}</span></div><div class='info-box'>📌 <em>Front Desk Note:</em> If they mention a $2 USD common area fee, you do NOT pay it since your stay is over 30 days.</div><div class='info-box'>🕒 Check-in from 3:00 p.m. · Check-out before 11:00 a.m. · Maximum 3 guests.</div>`,
+        btnText: "Watch Access Video Guide",
+        btnLink: "https://youtube.com/shorts/X3Pt_7nisyw"
+      },
+      ubicacion: {
+        title: "Location & Address",
+        icon: "fa-location-dot",
+        image: Imagenes.ubicacion,
+        text: "<strong>Unique Mine Building</strong><br>Carrera 9 #100-77, El Chicó, Bogotá.<br><br>TOP location right next to <strong>Dan Carlton Hotel</strong> and <strong>106th St Park</strong>. Just minutes from Parque de la 93 and Zona T.",
+        btnText: "Open in Google Maps",
+        btnLink: "https://maps.app.goo.gl/mN9GuGNn69jabEru5"
+      },
+      normas: {
+        title: "Wi-Fi & Entertainment",
+        icon: "fa-wifi",
+        text: "📶 <strong>Wi-Fi Name:</strong> Nombre_Red<br>🔑 <strong>Password:</strong> Clave_Red<br><br>📺 <strong>TV:</strong> Connect to Wi-Fi to control YouTube directly from your phone. Includes the <strong>Xuper</strong> app with live channels and movies."
+      },
+      servicios: {
+        title: "Building Amenities",
+        icon: "fa-couch",
+        text: "• <strong>1st Floor (Free):</strong> Heated Pool, Gym, Sauna & Steam Room.<br>• <strong>3rd Floor:</strong> Self-service washers (paid cash and app).<br>• <strong>11th Floor:</strong> Rooftop Bar & Restaurant (with Room Service!), Coworking Area, and Pool Table.<br>• <strong>Storage Unit (Free):</strong> Private storage in basement level S1.<br>"
+      },
+      actividades: {
+        title: "Things to Do Nearby",
+        icon: "fa-camera",
+        text: "• <strong>Parque de la 93 & Zona T:</strong> Premium dining & nightlife.<br>• <strong>106th St Park:</strong> Great green park for walks/running right next door.<br>• <strong>Shopping Malls:</strong> Unicentro, Andino, and El Retiro.",
+        btnText: "View Points of Interest Map",
+        btnLink: "https://maps.app.goo.gl/XXBS1SnESGHs8bmv7?g_st=ac"
+      },
+      informacion: {
+        title: "Extra Services & Cleaning",
+        icon: "fa-circle-info",
+        text: "For property support, local guidance, or booking <strong>extra cleaning service</strong>, Ms. <strong>Maribel</strong> will be glad to assist you."
+      },
+      bares: {
+        title: "Roof 360° Gastrobar",
+        icon: "fa-martini-glass-citrus",
+        text: "On the <strong>11th floor</strong>, enjoy 360° views of Bogotá, drinks, dinner, and Room Service straight to apt 315!"
+      },
+      restaurantes: {
+        title: "Nearby Dining",
+        icon: "fa-utensils",
+        text: "Explore Bogotá's top cuisine at Parque de la 93 and Zona T, just 5 minutes away."
+      },
+      compras: {
+        title: "Nearby Supermarkets",
+        icon: "fa-cart-shopping",
+        text: "Just a couple of blocks away:<br>• <strong>DE LA SABANA</strong><br>• <strong>ARA</strong><br>• <strong>ÉXITO</strong>"
+      },
+      emergencias: {
+        title: "Transportation",
+        icon: "fa-bus",
+        text: "• <strong>Transmilenio:</strong> Station <em>Autonorte Calle 100</em> nearby.<br>• <strong>Private Transport:</strong> My uncle <strong>Luis</strong> offers private rides (airport pickup or trips around/outside Bogotá). Let me know to arrange it."
+      },
+      contacto: {
+        title: "Contact Your Host",
+        icon: "fa-phone",
+        text: "Feel free to message me anytime!<br><br><strong>Host:</strong> Manuel Arias<br>📱 <strong>WhatsApp:</strong> +57 312 881 6469",
+        btnText: "Chat on WhatsApp",
+        btnLink: "https://wa.me/573128816469",
+        whatsapp: true
+      }
+    }
+  }
+};
+
+function setLanguage(lang){
+  currentLang = lang;
+  document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`flag-${lang}`).classList.add('active');
+  const btns = translations[lang].buttons;
+  for (const key in btns){
+    const elem = document.getElementById(`btn-${key}`);
+    if (elem) elem.innerText = btns[key];
+  }
+}
+
+function openModal(key){
+  const data = translations[currentLang].content[key];
+  if (!data) return;
+
+  document.getElementById('modal-title').innerText = data.title;
+  const iconElem = document.getElementById('modal-icon');
+  iconElem.className = 'fa-solid ' + data.icon;
+
+  let bodyHtml = '';
+  if (data.image) bodyHtml += `<img src="${data.image}" alt="${data.title}">`;
+  if (data.hostHtml) bodyHtml += data.hostHtml;
+  bodyHtml += `<p>${data.text}</p>`;
+  if (data.gallery){
+    bodyHtml += `<div class="modal-gallery">${data.gallery.map(src => `<img src="${src}">`).join('')}</div>`;
+  }
+  if (data.btnText && data.btnLink){
+    bodyHtml += `<a href="${data.btnLink}" target="_blank" class="btn-action${data.whatsapp ? ' whatsapp' : ''}">${data.btnText}</a>`;
+  }
+
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('active');
+}
+function closeModalOnOut(event){
+  if (event.target.id === 'modal') closeModal();
+}
+</script>
+</body>
+</html>
