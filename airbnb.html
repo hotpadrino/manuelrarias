@@ -43,6 +43,7 @@ body{
   width:100%;max-width:480px;background:var(--cream);
   min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.35);
   position:relative;padding-bottom:70px;
+  transition:background-color .3s ease, color .3s ease;
 }
 
 /* ---------- Hero ---------- */
@@ -100,6 +101,37 @@ body{
 }
 .lang-pill .chevron{color:var(--terracotta);font-size:0.75rem;margin-left:-2px;}
 
+/* ---------- Barra de temas (6 botones pequeños) ---------- */
+.theme-bar{
+  display:flex;justify-content:center;align-items:center;gap:6px;
+  padding:16px 20px 2px;flex-wrap:wrap;
+}
+.theme-btn{
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  padding:5px 10px;
+  border-radius:14px;
+  font-size:0.68rem;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+  transition:all .2s ease;
+  user-select:none;
+}
+.theme-btn i{font-size:0.7rem;color:var(--terracotta);}
+.theme-btn:active, .theme-btn.active{
+  border-color:var(--terracotta);
+  background:var(--terracotta);
+  color:#FFFFFF;
+}
+.theme-btn:active i, .theme-btn.active i{
+  color:#FFFFFF;
+}
+
 /* ---------- Grid de menú ---------- */
 .grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:13px;padding:14px 20px 6px;
@@ -108,7 +140,7 @@ body{
   background:var(--card);border-radius:var(--radius);
   padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   text-align:center;box-shadow:var(--shadow);cursor:pointer;
-  border:1px solid var(--line);transition:transform .15s;
+  border:1px solid var(--line);transition:transform .15s, background-color .3s;
 }
 .grid-item:active{transform:scale(0.95);}
 .grid-item i{font-size:1.6rem;color:var(--terracotta);margin-bottom:8px;}
@@ -146,7 +178,7 @@ body{
 }
 .code-box .code{font-size:1.3rem;font-weight:700;letter-spacing:2px;color:#F0D9B5;}
 .info-box{
-  background:#FBF3E4;border-left:3px solid var(--brass);
+  background:rgba(166,129,60,0.12);border-left:3px solid var(--brass);
   padding:11px 14px;border-radius:8px;font-size:0.86rem;margin:10px 0;color:var(--muted);
 }
 .host-mini{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
@@ -191,10 +223,20 @@ body{
 
     <div class="hero-title">
       <div class="eyebrow">Edificio Unique Mine · El Chicó</div>
-      <h1 id="hero-h1">Guia de Prueba</h1>
+      <h1 id="hero-h1">Unique Mine 315</h1>
       <p id="hero-p">Carrera 9 #100-77, Bogotá</p>
     </div>
   </a>
+
+  <!-- ============ BARRA DE 6 TEMAS (3 CLAROS, 3 OSCUROS) ============ -->
+  <div class="theme-bar">
+    <button class="theme-btn active" onclick="setTheme('cream', this)"><i class="fa-solid fa-sun"></i> Crema</button>
+    <button class="theme-btn" onclick="setTheme('botanical', this)"><i class="fa-solid fa-leaf"></i> Oliva</button>
+    <button class="theme-btn" onclick="setTheme('blue', this)"><i class="fa-solid fa-compass"></i> Azul</button>
+    <button class="theme-btn" onclick="setTheme('darkGold', this)"><i class="fa-solid fa-moon"></i> Dorado</button>
+    <button class="theme-btn" onclick="setTheme('emerald', this)"><i class="fa-solid fa-gem"></i> Esmeralda</button>
+    <button class="theme-btn" onclick="setTheme('charcoal', this)"><i class="fa-solid fa-fire-flame-curved"></i> Carbón</button>
+  </div>
 
   <!-- ============ GRID DE BOTONES ============ -->
   <div class="grid">
@@ -235,6 +277,55 @@ body{
 
 <script>
 let currentLang = 'es';
+
+// 3 Temas Claros y 3 Temas Oscuros
+const themes = {
+  cream: {
+    '--cream': '#F6F1E6', '--ink': '#211E1A', '--card': '#FFFFFF',
+    '--terracotta': '#C1592C', '--brass': '#A6813C', '--muted': '#6B655C',
+    '--line': 'rgba(33,30,26,0.10)', bg: '#171410 radial-gradient(circle at 50% 0%, #241E17 0%, #171410 65%)'
+  },
+  botanical: {
+    '--cream': '#F3F5F0', '--ink': '#1C241D', '--card': '#FFFFFF',
+    '--terracotta': '#3F5E4D', '--brass': '#8C734B', '--muted': '#5C665E',
+    '--line': 'rgba(28,36,29,0.10)', bg: '#121913 radial-gradient(circle at 50% 0%, #1C261D 0%, #121913 65%)'
+  },
+  blue: {
+    '--cream': '#F8FAFC', '--ink': '#1F2937', '--card': '#FFFFFF',
+    '--terracotta': '#2563EB', '--brass': '#64748B', '--muted': '#64748B',
+    '--line': 'rgba(31,41,55,0.08)', bg: '#0F172A radial-gradient(circle at 50% 0%, #1E293B 0%, #0F172A 65%)'
+  },
+  darkGold: {
+    '--cream': '#0F172A', '--ink': '#F8FAFC', '--card': '#1E293B',
+    '--terracotta': '#F59E0B', '--brass': '#CBD5E1', '--muted': '#94A3B8',
+    '--line': 'rgba(255,255,255,0.10)', bg: '#020617 radial-gradient(circle at 50% 0%, #0F172A 0%, #020617 65%)'
+  },
+  emerald: {
+    '--cream': '#121212', '--ink': '#F1F5F9', '--card': '#1E1E1E',
+    '--terracotta': '#10B981', '--brass': '#06B6D4', '--muted': '#A1A1AA',
+    '--line': 'rgba(255,255,255,0.12)', bg: '#080808 radial-gradient(circle at 50% 0%, #171717 0%, #080808 65%)'
+  },
+  charcoal: {
+    '--cream': '#1C1917', '--ink': '#F5F5F4', '--card': '#292524',
+    '--terracotta': '#EA580C', '--brass': '#D6D3D1', '--muted': '#A8A29E',
+    '--line': 'rgba(255,255,255,0.08)', bg: '#0C0A09 radial-gradient(circle at 50% 0%, #1C1917 0%, #0C0A09 65%)'
+  }
+};
+
+function setTheme(name, btnElem){
+  const t = themes[name];
+  if (!t) return;
+  const root = document.documentElement;
+  for (const prop in t){
+    if (prop === 'bg'){
+      document.body.style.background = t.bg;
+    } else {
+      root.style.setProperty(prop, t[prop]);
+    }
+  }
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  if (btnElem) btnElem.classList.add('active');
+}
 
 /* =========================================================
    IMÁGENES UNIFICADAS — Un solo lugar para ES y EN.
@@ -345,7 +436,7 @@ const translations = {
       contacto: {
         title: "Contacto con el Anfitrión",
         icon: "fa-phone",
-        text: "¡Estoy para ayudarte en todo momento!<br><br><strong>Anfitrión:</strong> Manuel Arias<br>📱 <strong>WhatsApp / Tel:</strong> 312 881 6469",
+        text: "¡Estoy para ayudarte en todo momento!<br><br><strong>Anfitrión:</strong> Manuel Arias<br>📱 <strong>WhatsApp / Tel:</strong> 312 881 6469<br><br><div class='info-box'>🚨 <strong>Números de Emergencia en Colombia:</strong><br>• <strong>123:</strong> Línea Única de Emergencias Nacional<br>• <strong>156:</strong> Policía de Turismo<br>• <strong>125:</strong> Urgencias Médicas y Ambulancias<br>• <strong>#767:</strong> Policía de Tránsito y Transporte</div>",
         btnText: "Escribir a Manuel por WhatsApp",
         btnLink: "https://wa.me/573128816469",
         whatsapp: true
@@ -431,7 +522,7 @@ const translations = {
       contacto: {
         title: "Contact Your Host",
         icon: "fa-phone",
-        text: "Feel free to message me anytime!<br><br><strong>Host:</strong> Manuel Arias<br>📱 <strong>WhatsApp:</strong> +57 312 881 6469",
+        text: "Feel free to message me anytime!<br><br><strong>Host:</strong> Manuel Arias<br>📱 <strong>WhatsApp:</strong> +57 312 881 6469<br><br><div class='info-box'>🚨 <strong>Emergency Numbers in Colombia:</strong><br>• <strong>123:</strong> National Emergency Hotline<br>• <strong>156:</strong> Tourism Police<br>• <strong>125:</strong> Medical Emergencies & Ambulance<br>• <strong>#767:</strong> Traffic & Highway Police</div>",
         btnText: "Chat on WhatsApp",
         btnLink: "https://wa.me/573128816469",
         whatsapp: true
