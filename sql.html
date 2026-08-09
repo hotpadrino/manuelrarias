@@ -99,14 +99,14 @@
       <!-- 3. Panel de Consultas -->
       <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-lg space-y-4">
         <h2 class="text-lg font-semibold text-slate-200">3. Ejecución de Consultas</h2>
-        <p class="text-xs text-slate-400">Escribe comandos (ej: <code class="text-emerald-400">supabase.schema('schema').from('tabla').select('*')</code>)</p>
+        <p class="text-xs text-slate-400">Escribe comandos ej: <code class="text-emerald-400">supabase.schema('schema').from('tabla').select('*').limit(5)</code> o help.</p>
         <div>
-          <textarea id="queryInput" rows="4" placeholder="supabase.schema('public').from('tutabla').select('*').limit(5)"
+          <textarea id="queryInput" rows="4" placeholder="Escriba su consulta SQL... (Ctrl + Enter para enviar)"
             class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm font-mono text-emerald-300 focus:outline-none focus:border-emerald-500"></textarea>
         </div>
         <button onclick="ejecutarConsulta()" id="btnEjecutar" disabled
           class="bg-slate-800 text-slate-500 font-medium px-5 py-2 rounded-lg text-sm cursor-not-allowed transition-colors">
-          Enviar Consulta de Prueba
+          Enviar Consulta (Ctrl + Enter)
         </button>
       </section>
 
@@ -287,11 +287,25 @@
       log('No hay una conexión activa establecida.', 'warning');
       return;
     }
+    
     const codigoConsulta = document.getElementById('queryInput').value.trim();
     if (!codigoConsulta) {
       log('El campo de consulta está vacío.', 'warning');
       return;
     }
+
+    // Interceptar el comando "help" o "help()"
+    if (codigoConsulta.toLowerCase() === 'help' || codigoConsulta.toLowerCase() === 'help()') {
+      log('===== GUÍA RÁPIDA DE COMANDOS DE SUPABASE =====', 'info');
+      log('1. SELECT (Consultar datos):\n   supabase.from(\'tabla\').select(\'*\').limit(5)', 'success');
+      log('2. INSERT (Insertar registros):\n   supabase.from(\'tabla\').insert([{ columna: \'valor\' }])', 'success');
+      log('3. UPDATE (Modificar registros):\n   supabase.from(\'tabla\').update({ columna: \'nuevo_valor\' }).eq(\'id\', 1)', 'warning');
+      log('4. DELETE (Eliminar registros):\n   supabase.from(\'tabla\').delete().eq(\'id\', 1)', 'error');
+      log('5. RPC (Ejecutar función SQL):\n   supabase.rpc(\'nombre_funcion\', { parametro: \'valor\' })', 'info');
+      log('=============================================', 'info');
+      return;
+    }
+
     log('Fase de Consulta: Ejecutando expresión evaluada...', 'info');
     log(codigoConsulta, 'info');
     try {
@@ -311,6 +325,14 @@
       console.error(err);
     }
   }
+
+  // Escuchar la combinación Ctrl + Enter o Cmd + Enter en el textarea
+  document.getElementById('queryInput').addEventListener('keydown', function(event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault(); // Evita el salto de línea adicional
+      ejecutarConsulta();    // Ejecuta la función existente
+    }
+  });
 </script>
 </body>
 </html>
