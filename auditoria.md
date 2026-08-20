@@ -29,6 +29,20 @@ Emisión de certificados de liberación a servicio (Authorized Release Certifica
 Reporte de fallas, anomalías y defectos obligatorios a la autoridad aeronáutica
 Revisiones por la dirección y mejora continua del sistema
 
+## SECCIÓN F - SISTEMA DE GESTIÓN DE LA SEGURIDAD OPERACIONAL (SMS RAC-219):
+Política de seguridad operacional firmada por el Ejecutivo Responsable y difundida
+Designación del Gerente SMS y Comité de Seguridad Operacional (CSO/SAG)
+Plan de Respuesta ante Emergencias (ERP) documentado y probado
+Manual SMS (SMSM) actualizado y aprobado
+Sistema de reporte de peligros (voluntario, obligatorio, confidencial y no punitivo)
+Proceso de identificación de peligros y gestión de riesgos en mantenimiento
+Implementación y seguimiento de medidas de mitigación de riesgo
+Monitoreo de indicadores y metas de seguridad operacional (SPIs / SPTs)
+Proceso de Gestión del Cambio (Management of Change)
+Auditorías específicas al SMS y evaluación de efectividad de mitigaciones
+Programa de capacitación y entrenamiento continuo en SMS
+Mecanismos de comunicación y difusión de la cultura de seguridad operacional
+
 ---
 
 # ISO 9001:2015 SISTEMAS DE GESTIÓN DE CALIDAD
