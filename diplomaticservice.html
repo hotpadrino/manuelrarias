@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Diplomatic Service - Alquiler de Carros en Bogotá</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#0B1B3D',
+                            dark: '#060E21',
+                            light: '#132B5C'
+                        },
+                        brandBlue: {
+                            DEFAULT: '#0066FF',
+                            hover: '#0052CC',
+                            cyan: '#00D2FF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        .hero-bg {
+            background: linear-gradient(135deg, rgba(11, 27, 61, 0.95) 0%, rgba(6, 14, 33, 0.92) 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #00D2FF 0%, #0066FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ===== SKYLINE ANIMADO (fondo del encabezado) ===== */
+        .skyline-stage {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .skyline-stage::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(6,14,33,0.15) 0%, rgba(6,14,33,0.55) 55%, rgba(6,14,33,0.98) 100%);
+            z-index: 3;
+        }
+        .skyline-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 46%;
+            display: flex;
+            will-change: transform;
+        }
+        .skyline-layer svg { width: 50%; height: 100%; flex-shrink: 0; display: block; }
+        .layer-back  { height: 38%; animation: skylineScroll 95s linear infinite; }
+        .layer-mid   { height: 52%; animation: skylineScroll 60s linear infinite; }
+        .layer-front { height: 68%; animation: skylineScroll 38s linear infinite reverse; }
+        @keyframes skylineScroll {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+        .win { animation: winFlicker 5s ease-in-out infinite; }
+        @keyframes winFlicker {
+            0%, 100% { opacity: .85; }
+            45% { opacity: .2; }
+            55% { opacity: .2; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .skyline-layer { animation: none !important; }
+            .win { animation: none !important; opacity: .6; }
+        }
+
+        /* ===== Selector de idioma (banderas) ===== */
+        .lang-flag {
+            line-height: 1;
+            padding: .3rem .35rem;
+            border-radius: .65rem;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            background: transparent;
+            cursor: pointer;
+            transition: transform .2s ease, background-color .2s ease, border-color .2s ease;
+            filter: grayscale(35%) opacity(.75);
+        }
+        .flag-icon { width: 26px; height: 18px; border-radius: 3px; display: block; box-shadow: 0 0 0 1px rgba(255,255,255,0.15); }
+        .lang-flag:hover { transform: translateY(-2px) scale(1.08); filter: grayscale(0%) opacity(1); }
+        .lang-flag.active {
+            filter: grayscale(0%) opacity(1);
+            background: rgba(0, 102, 255, 0.22);
+            border-color: rgba(0, 210, 255, 0.4);
+            box-shadow: 0 0 0 2px rgba(0,210,255,0.15) inset;
+        }
+
+        /* ===== Fichas técnicas desplegables ===== */
+        details.spec-details summary::-webkit-details-marker { display: none; }
+        details.spec-details summary { list-style: none; }
+        details.spec-details[open] summary .chev { transform: rotate(180deg); }
+        .spec-row { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .55rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .spec-row:last-child { border-bottom: none; }
+        .lang-panel[data-active="false"] { display: none; }
+
+        body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        footer.app-footer { padding-bottom: calc(0.625rem + env(safe-area-inset-bottom, 0px)); }
+    </style>
+</head>
+<body class="bg-navy-dark text-white font-sans antialiased selection:bg-brandBlue selection:text-white pb-14">
+
+    <!-- NAV BAR -->
+    <nav class="fixed w-full z-40 bg-navy-dark/90 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- LOGO -->
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-brandBlue rounded-lg">
+                    <i class="fa-solid fa-car-side text-2xl text-white"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-wider block text-white uppercase leading-none">Diplomatic</span>
+                    <span class="text-xs text-brandBlue-cyan font-semibold tracking-widest block uppercase">Service</span>
+                </div>
+            </div>
+
+            <!-- IDIOMA + RESERVAR -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <div class="flex items-center gap-1 bg-navy-light/60 rounded-full px-1.5 py-1 border border-white/10" role="group" aria-label="Idioma / Language / Idioma">
+                    <button type="button" class="lang-flag" data-lang="es" title="Español" aria-label="Español">
+                        <svg viewBox="0 0 30 20" class="flag-icon" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="30" height="20" rx="3" fill="#CE1126"></rect>
+                            <rect width="30" height="10" fill="#FCD116"></rect>
+                            <rect y="10" width="30" height="5" fill="#003893"></rect>
+                        </svg>
+                    </button>
+                    <button type="button" class="lang-flag" data-lang="en" title="English" aria-label="English">
+                        <svg viewBox="0 0 30 20" class="flag-icon" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="30" height="20" rx="3" fill="#B22234"></rect>
+                            <g fill="#fff">
+                                <rect y="2.3" width="30" height="1.5"></rect>
+                                <rect y="6.15" width="30" height="1.5"></rect>
+                                <rect y="10" width="30" height="1.5"></rect>
+                                <rect y="13.85" width="30" height="1.5"></rect>
+                                <rect y="17.7" width="30" height="1.5"></rect>
+                            </g>
+                            <rect width="13" height="11" fill="#3C3B6E"></rect>
+                            <g fill="#fff">
+                                <circle cx="2.5" cy="2" r="0.6"></circle>
+                                <circle cx="6" cy="2" r="0.6"></circle>
+                                <circle cx="9.5" cy="2" r="0.6"></circle>
+                                <circle cx="4.2" cy="4" r="0.6"></circle>
+                                <circle cx="7.8" cy="4" r="0.6"></circle>
+                                <circle cx="11.2" cy="4" r="0.6"></circle>
+                                <circle cx="2.5" cy="6" r="0.6"></circle>
+                                <circle cx="6" cy="6" r="0.6"></circle>
+                                <circle cx="9.5" cy="6" r="0.6"></circle>
+                                <circle cx="4.2" cy="8" r="0.6"></circle>
+                                <circle cx="7.8" cy="8" r="0.6"></circle>
+                                <circle cx="11.2" cy="8" r="0.6"></circle>
+                            </g>
+                        </svg>
+                    </button>
+                    <button type="button" class="lang-flag" data-lang="pt" title="Português" aria-label="Português">
+                        <svg viewBox="0 0 30 20" class="flag-icon" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="30" height="20" rx="3" fill="#009739"></rect>
+                            <polygon points="15,2.5 27,10 15,17.5 3,10" fill="#FEDD00"></polygon>
+                            <circle cx="15" cy="10" r="4.6" fill="#012169"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <a href="https://wa.me/573212429608" target="_blank" class="hidden sm:inline-flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-bold px-5 py-2.5 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span data-i18n="nav_book">Reservar</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero-bg min-h-screen pt-28 pb-16 flex items-center relative overflow-hidden">
+
+        <!-- SKYLINE ANIMADO -->
+        <div class="skyline-stage" aria-hidden="true">
+            <div id="layerBack" class="skyline-layer layer-back"></div>
+            <div id="layerMid" class="skyline-layer layer-mid"></div>
+            <div id="layerFront" class="skyline-layer layer-front"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full space-y-10">
+
+            <!-- VIDEO DE YOUTUBE DEBAJO DEL SKYLINE -->
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-card p-2 sm:p-3 rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+                    <div class="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-navy-dark/80">
+                        <iframe 
+                            class="absolute top-0 left-0 w-full h-full border-0"
+                            src="https://www.youtube.com/embed/0tm2NPh_TZE" 
+                            title="Diplomatic Service - Alquiler de vehículos en Bogotá" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6 text-center lg:text-left">
+                    <div class="inline-block bg-brandBlue/20 border border-brandBlue-cyan/30 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-brandBlue-cyan uppercase tracking-wider">
+                        <i class="fa-solid fa-star mr-1"></i> <span data-i18n="hero_badge">Alquiler de Carros en Bogotá</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
+                        <span data-i18n="hero_title_1">Conduzca en Bogotá</span> <br>
+                        <span class="gradient-text" data-i18n="hero_title_2">a su manera</span>
+                    </h1>
+                    <p class="text-gray-300 text-base sm:text-lg max-w-xl mx-auto lg:mx-0" data-i18n="hero_desc">
+                        Vehículos modernos, automáticos y en excelente estado. Su destino es nuestra prioridad. Confort, seguridad y confianza garantizada.
+                    </p>
+
+                    <!-- BENEFICIOS RÁPIDOS -->
+                    <div class="grid grid-cols-2 gap-4 pt-2 max-w-lg mx-auto lg:mx-0 text-left">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-circle-check text-brandBlue-cyan text-lg"></i>
+                            <span class="text-sm text-gray-200" data-i18n="feat_auto">Vehículos Automáticos</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-circle-check text-brandBlue-cyan text-lg"></i>
+                            <span class="text-sm text-gray-200" data-i18n="feat_lang">Atención Trilingüe</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-circle-check text-brandBlue-cyan text-lg"></i>
+                            <span class="text-sm text-gray-200" data-i18n="feat_pickup">Entrega en Bogotá</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-circle-check text-brandBlue-cyan text-lg"></i>
+                            <span class="text-sm text-gray-200" data-i18n="feat_flex">Flexibilidad de Planes</span>
+                        </div>
+                    </div>
+
+                    <!-- CTA BOTONES -->
+                    <div class="pt-4 flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="https://wa.me/573212429608?text=Hola,%20deseo%20reservar%20un%20vehículo" target="_blank" class="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold px-8 py-4 rounded-full text-lg shadow-xl flex items-center justify-center space-x-3 transition transform hover:-translate-y-1">
+                            <i class="fa-brands fa-whatsapp text-2xl"></i>
+                            <span data-i18n="cta_reserve">¡Reserve ahora!</span>
+                        </a>
+                        <a href="#vehiculos" class="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-4 rounded-full text-lg border border-white/20 backdrop-blur-md transition flex items-center justify-center">
+                            <span data-i18n="cta_cars">Ver Vehículos</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CARDS RESUMEN / WHATSAPP BANNER -->
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl relative">
+                    <div class="absolute -top-4 -right-4 bg-brandBlue text-white font-extrabold px-4 py-1 rounded-full text-xs uppercase tracking-widest shadow-lg">
+                        <i class="fa-solid fa-bolt mr-1"></i> <span data-i18n="badge_quick">Reserva Rápida</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-center sm:text-left" data-i18n="contact_direct">Contacto Directo por WhatsApp</h3>
+                    <div class="bg-navy-light/60 p-4 rounded-2xl border border-white/5 flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 text-2xl">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase font-bold" data-i18n="whatsapp_label">WhatsApp Oficial</p>
+                                <p class="text-lg sm:text-xl font-extrabold text-white">+57 3212429608</p>
+                            </div>
+                        </div>
+                        <a href="https://wa.me/573212429608" target="_blank" class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl transition">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs text-gray-400 text-center" data-i18n="experience_note">Más que un alquiler, una mejor experiencia. Muévase con libertad.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CARS SECTION -->
+    <section id="vehiculos" class="py-20 bg-navy relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl sm:text-4xl font-extrabold mb-4" data-i18n="cars_title">Nuestra Flota Disponible</h2>
+                <p class="text-gray-400 mb-2" data-i18n="cars_subtitle">Vehículos modernos, automáticos y mantenidos bajo los más altos estándares de calidad.</p>
+                <p class="text-brandBlue-cyan text-sm font-semibold flex items-center justify-center gap-2" data-i18n="cars_hint">
+                    <i class="fa-solid fa-hand-pointer"></i> Toca cada ficha para ver los datos técnicos completos
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- CAR 1: TOYOTA COROLLA -->
+                <div class="glass-card rounded-3xl overflow-hidden hover:border-brandBlue/50 transition duration-300 group flex flex-col justify-between">
+                    <div>
+                        <div class="h-64 bg-navy-light/50 relative overflow-hidden flex items-center justify-center p-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/71/2019-2022_Toyota_Corolla_G-X_1.8_3BA-ZRE212_%2820220911%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original" alt="Toyota Corolla" class="max-h-full object-contain group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 left-4 bg-brandBlue text-xs font-bold px-3 py-1 rounded-full uppercase" data-i18n="premium_tag">Premium</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold mb-2">Toyota Corolla</h3>
+                            <p class="text-gray-400 text-sm mb-6" data-i18n="corolla_desc">Elegancia, máximo confort y la mayor fiabilidad para tus recorridos ejecutivos o familiares.</p>
+
+                            <div class="grid grid-cols-2 gap-4 text-sm mb-2">
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-gears text-brandBlue-cyan"></i>
+                                    <span data-i18n="transmission">Automático</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-users text-brandBlue-cyan"></i>
+                                    <span>5 <span data-i18n="passengers">Pasajeros</span></span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-snowflake text-brandBlue-cyan"></i>
+                                    <span data-i18n="ac">Aire Acondicionado</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-shield-halved text-brandBlue-cyan"></i>
+                                    <span data-i18n="full_safety">Seguridad Total</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FICHA TÉCNICA DESPLEGABLE -->
+                    <details class="spec-details border-t border-white/10">
+                        <summary class="cursor-pointer flex items-center justify-between px-6 py-4 hover:bg-white/5 transition select-none">
+                            <span class="text-sm font-semibold text-brandBlue-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-gauge-high"></i>
+                                <span data-i18n="specs_toggle">Ver datos técnicos</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300 chev"></i>
+                        </summary>
+                        <div class="px-6 pb-5 pt-1 bg-navy-dark/40 text-sm">
+                            <div class="lang-panel" data-lang="es" data-active="true">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Motor</span><span class="font-semibold text-right">2.0L 4 cilindros (Dynamic Force)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmisión</span><span class="font-semibold text-right">CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Potencia</span><span class="font-semibold text-right">~169–170 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>Consumo en ciudad</span><span class="font-semibold text-right">7.3 L/100 km · 53 km/gal (14.1 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensiones (L×A×A)</span><span class="font-semibold text-right">4.630 × 1.780 × 1.435 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Despeje al piso</span><span class="font-semibold text-right">13,5 cm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Baúl / Maletero</span><span class="font-semibold text-right">470 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Capacidad del tanque</span><span class="font-semibold text-right">50 L (~13.2 gal)</span></div>
+                            </div>
+                            <div class="lang-panel" data-lang="en" data-active="false">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Engine</span><span class="font-semibold text-right">2.0L 4-cyl (Dynamic Force)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmission</span><span class="font-semibold text-right">CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Power</span><span class="font-semibold text-right">~169–170 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>City fuel consumption</span><span class="font-semibold text-right">7.3 L/100 km · 53 km/gal (14.1 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensions (L×W×H)</span><span class="font-semibold text-right">4,630 × 1,780 × 1,435 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Ground clearance</span><span class="font-semibold text-right">13.5 cm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Trunk</span><span class="font-semibold text-right">470 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Fuel tank</span><span class="font-semibold text-right">50 L (~13.2 gal)</span></div>
+                            </div>
+                            <div class="lang-panel" data-lang="pt" data-active="false">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Motor</span><span class="font-semibold text-right">2.0L 4 cilindros (Dynamic Force)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmissão</span><span class="font-semibold text-right">CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Potência</span><span class="font-semibold text-right">~169–170 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>Consumo na cidade</span><span class="font-semibold text-right">7.3 L/100 km · 53 km/gal (14.1 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensões (C×L×A)</span><span class="font-semibold text-right">4.630 × 1.780 × 1.435 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Distância ao solo</span><span class="font-semibold text-right">13,5 cm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Porta-malas</span><span class="font-semibold text-right">470 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Capacidade do tanque</span><span class="font-semibold text-right">50 L (~13.2 gal)</span></div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="p-6 pt-4">
+                        <a href="https://wa.me/573212429608?text=Hola,%20deseo%20alquilar%20el%20Toyota%20Corolla" target="_blank" class="w-full bg-brandBlue hover:bg-brandBlue-hover text-white font-bold py-3.5 rounded-xl text-center block transition shadow-lg">
+                            <span data-i18n="book_corolla">Reservar Toyota Corolla</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CAR 2: NISSAN VERSA -->
+                <div class="glass-card rounded-3xl overflow-hidden hover:border-brandBlue/50 transition duration-300 group flex flex-col justify-between">
+                    <div>
+                        <div class="h-64 bg-navy-light/50 relative overflow-hidden flex items-center justify-center p-6">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/2023_Nissan_Versa_%28N18%29_IMG_3105.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original" alt="Nissan Versa" class="max-h-full object-contain group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 left-4 bg-brandBlue-cyan text-navy font-bold text-xs px-3 py-1 rounded-full uppercase" data-i18n="comfort_tag">Confort & Eficiencia</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-2xl font-bold mb-2">Nissan Versa</h3>
+                            <p class="text-gray-400 text-sm mb-6" data-i18n="versa_desc">Espacio amplio, excelente rendimiento de combustible y tecnología moderna para la ciudad.</p>
+
+                            <div class="grid grid-cols-2 gap-4 text-sm mb-2">
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-gears text-brandBlue-cyan"></i>
+                                    <span data-i18n="transmission">Automático</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-users text-brandBlue-cyan"></i>
+                                    <span>5 <span data-i18n="passengers">Pasajeros</span></span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-suitcase text-brandBlue-cyan"></i>
+                                    <span data-i18n="trunk">Baúl Amplio</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-gray-300">
+                                    <i class="fa-solid fa-gas-pump text-brandBlue-cyan"></i>
+                                    <span data-i18n="efficient">Eficiente</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FICHA TÉCNICA DESPLEGABLE -->
+                    <details class="spec-details border-t border-white/10">
+                        <summary class="cursor-pointer flex items-center justify-between px-6 py-4 hover:bg-white/5 transition select-none">
+                            <span class="text-sm font-semibold text-brandBlue-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-gauge-high"></i>
+                                <span data-i18n="specs_toggle">Ver datos técnicos</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-300 chev"></i>
+                        </summary>
+                        <div class="px-6 pb-5 pt-1 bg-navy-dark/40 text-sm">
+                            <div class="lang-panel" data-lang="es" data-active="true">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Motor</span><span class="font-semibold text-right">1.6L 4 cilindros</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmisión</span><span class="font-semibold text-right">Xtronic CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Potencia</span><span class="font-semibold text-right">~118–122 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>Consumo en ciudad</span><span class="font-semibold text-right">7.2 L/100 km · ~56 km/gal (14.9 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensiones (L×A×A)</span><span class="font-semibold text-right">4.496 × 1.740 × 1.455 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Despeje al piso</span><span class="font-semibold text-right">145 – 155 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Baúl / Maletero</span><span class="font-semibold text-right">482 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Capacidad del tanque</span><span class="font-semibold text-right">41 L (~10.8 gal)</span></div>
+                            </div>
+                            <div class="lang-panel" data-lang="en" data-active="false">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Engine</span><span class="font-semibold text-right">1.6L 4-cyl</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmission</span><span class="font-semibold text-right">Xtronic CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Power</span><span class="font-semibold text-right">~118–122 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>City fuel consumption</span><span class="font-semibold text-right">7.2 L/100 km · ~56 km/gal (14.9 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensions (L×W×H)</span><span class="font-semibold text-right">4,496 × 1,740 × 1,455 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Ground clearance</span><span class="font-semibold text-right">145 – 155 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Trunk</span><span class="font-semibold text-right">482 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Fuel tank</span><span class="font-semibold text-right">41 L (~10.8 gal)</span></div>
+                            </div>
+                            <div class="lang-panel" data-lang="pt" data-active="false">
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-oil-can text-brandBlue-cyan/80 w-4"></i>Motor</span><span class="font-semibold text-right">1.6L 4 cilindros</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gears text-brandBlue-cyan/80 w-4"></i>Transmissão</span><span class="font-semibold text-right">Xtronic CVT</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-bolt text-brandBlue-cyan/80 w-4"></i>Potência</span><span class="font-semibold text-right">~118–122 HP</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-gas-pump text-brandBlue-cyan/80 w-4"></i>Consumo na cidade</span><span class="font-semibold text-right">7.2 L/100 km · ~56 km/gal (14.9 km/L)</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-brandBlue-cyan/80 w-4"></i>Dimensões (C×L×A)</span><span class="font-semibold text-right">4.496 × 1.740 × 1.455 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-road text-brandBlue-cyan/80 w-4"></i>Distância ao solo</span><span class="font-semibold text-right">145 – 155 mm</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-suitcase text-brandBlue-cyan/80 w-4"></i>Porta-malas</span><span class="font-semibold text-right">482 L</span></div>
+                                <div class="spec-row"><span class="text-gray-400 flex items-center gap-2"><i class="fa-solid fa-droplet text-brandBlue-cyan/80 w-4"></i>Capacidade do tanque</span><span class="font-semibold text-right">41 L (~10.8 gal)</span></div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div class="p-6 pt-4">
+                        <a href="https://wa.me/573212429608?text=Hola,%20deseo%20alquilar%20el%20Nissan%20Versa" target="_blank" class="w-full bg-brandBlue hover:bg-brandBlue-hover text-white font-bold py-3.5 rounded-xl text-center block transition shadow-lg">
+                            <span data-i18n="book_versa">Reservar Nissan Versa</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES CATEGORIES -->
+    <section class="py-16 bg-navy-dark border-t border-white/5 mb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-xs font-bold text-brandBlue-cyan uppercase tracking-widest mb-8" data-i18n="discover_title">Descubra Bogotá, nosotros se lo llevamos</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 text-center">
+                <div class="glass-card p-4 rounded-2xl hover:bg-white/10 transition">
+                    <i class="fa-solid fa-plane-departure text-3xl text-brandBlue-cyan mb-2"></i>
+                    <p class="text-sm font-semibold" data-i18n="cat_airport">Aeropuerto</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl hover:bg-white/10 transition">
+                    <i class="fa-solid fa-city text-3xl text-brandBlue-cyan mb-2"></i>
+                    <p class="text-sm font-semibold" data-i18n="cat_city">Ciudad</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl hover:bg-white/10 transition">
+                    <i class="fa-solid fa-mountain-sun text-3xl text-brandBlue-cyan mb-2"></i>
+                    <p class="text-sm font-semibold" data-i18n="cat_tourism">Turismo</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl hover:bg-white/10 transition">
+                    <i class="fa-solid fa-briefcase text-3xl text-brandBlue-cyan mb-2"></i>
+                    <p class="text-sm font-semibold" data-i18n="cat_business">Negocios</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl hover:bg-white/10 transition col-span-2 sm:col-span-1">
+                    <i class="fa-solid fa-people-roof text-3xl text-brandBlue-cyan mb-2"></i>
+                    <p class="text-sm font-semibold" data-i18n="cat_family">Familia</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- FOOTER FIJO / SIEMPRE VISIBLE -->
+    <footer class="app-footer fixed bottom-0 left-0 w-full z-50 bg-navy-dark/95 backdrop-blur-md border-t border-white/10 py-2.5 px-4 sm:px-8 text-xs font-medium">
+        <div class="max-w-7xl mx-auto flex flex-row items-center justify-between gap-4 pr-20 sm:pr-28">
+            <!-- IZQUIERDA: Contacto y reservas -->
+            <div class="flex items-center space-x-2 min-w-0">
+                <span class="text-gray-300 hidden sm:inline" data-i18n="footer_contact">Contacto y reservas:</span>
+                <a href="https://wa.me/573212429608" target="_blank" class="text-green-400 hover:text-green-300 font-bold flex items-center space-x-1.5 transition truncate">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span class="truncate">(+57) 321 242 9608</span>
+                </a>
+            </div>
+
+            <!-- DERECHA: Créditos Novaelix (separado del borde derecho para evitar el badge de Netlify) -->
+            <div class="flex items-center shrink-0">
+                <span class="text-gray-400"><span data-i18n="footer_designed">Diseñado por</span> <a href="https://novaelix.vercel.app" target="_blank" rel="noopener noreferrer" class="text-brandBlue-cyan hover:underline font-bold">Novaelix</a></span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TRANSLATION & DETECTOR SCRIPT -->
+    <script>
+        const translations = {
+            es: {
+                nav_book: "Reservar",
+                hero_badge: "Alquiler de Carros en Bogotá",
+                hero_title_1: "Conduzca en Bogotá",
+                hero_title_2: "a su manera",
+                hero_desc: "Vehículos modernos, automáticos y en excelente estado. Su destino es nuestra prioridad. Confort, seguridad y confianza garantizada.",
+                feat_auto: "Vehículos Automáticos",
+                feat_lang: "Atención Trilingüe",
+                feat_pickup: "Entrega en Bogotá",
+                feat_flex: "Planes Flexibles",
+                cta_reserve: "¡Reserve ahora!",
+                cta_cars: "Ver Vehículos",
+                badge_quick: "Reserva Rápida",
+                contact_direct: "Contacto Directo por WhatsApp",
+                whatsapp_label: "WhatsApp Oficial",
+                experience_note: "Más que un alquiler, una mejor experiencia. Muévase con libertad.",
+                cars_title: "Nuestra Flota Disponible",
+                cars_subtitle: "Vehículos modernos, automáticos y mantenidos bajo los más altos estándares de calidad.",
+                cars_hint: "Toca cada ficha para ver los datos técnicos completos",
+                specs_toggle: "Ver datos técnicos",
+                premium_tag: "Premium",
+                comfort_tag: "Confort & Eficiencia",
+                corolla_desc: "Elegancia, máximo confort y la mayor fiabilidad para tus recorridos ejecutivos o familiares.",
+                versa_desc: "Espacio amplio, excelente rendimiento de combustible y tecnología moderna para la ciudad.",
+                transmission: "Automático",
+                passengers: "Pasajeros",
+                ac: "Aire Acondicionado",
+                full_safety: "Seguridad Total",
+                trunk: "Baúl Amplio",
+                efficient: "Eficiente",
+                book_corolla: "Reservar Toyota Corolla",
+                book_versa: "Reservar Nissan Versa",
+                discover_title: "Descubra Bogotá, nosotros se lo llevamos",
+                cat_airport: "Aeropuerto",
+                cat_city: "Ciudad",
+                cat_tourism: "Turismo",
+                cat_business: "Negocios",
+                cat_family: "Familia",
+                footer_contact: "Contacto y reservas:",
+                footer_designed: "Diseñado por"
+            },
+            en: {
+                nav_book: "Book Now",
+                hero_badge: "Car Rental in Bogotá",
+                hero_title_1: "Drive Bogotá",
+                hero_title_2: "your own way",
+                hero_desc: "Modern, automatic vehicles in excellent condition. Your destination, our priority. Comfort, safety, and guaranteed trust.",
+                feat_auto: "Automatic Vehicles",
+                feat_lang: "Trilingual Support",
+                feat_pickup: "Pick-up & Delivery in Bogotá",
+                feat_flex: "Flexible Travel Plans",
+                cta_reserve: "Book Now!",
+                cta_cars: "View Vehicles",
+                badge_quick: "Quick Booking",
+                contact_direct: "Direct WhatsApp Contact",
+                whatsapp_label: "Official WhatsApp",
+                experience_note: "More than a rental, a better experience. Move with freedom.",
+                cars_title: "Our Available Fleet",
+                cars_subtitle: "Modern, automatic vehicles maintained under the highest quality standards.",
+                cars_hint: "Tap each card to see the full technical specs",
+                specs_toggle: "View technical specs",
+                premium_tag: "Premium",
+                comfort_tag: "Comfort & Efficiency",
+                corolla_desc: "Elegance, maximum comfort, and ultimate reliability for executive or family trips.",
+                versa_desc: "Spacious interior, excellent fuel economy, and modern technology for the city.",
+                transmission: "Automatic",
+                passengers: "Passengers",
+                ac: "Air Conditioning",
+                full_safety: "Full Safety",
+                trunk: "Large Trunk",
+                efficient: "Efficient",
+                book_corolla: "Book Toyota Corolla",
+                book_versa: "Book Nissan Versa",
+                discover_title: "Discover Bogotá, we take you there",
+                cat_airport: "Airport",
+                cat_city: "City",
+                cat_tourism: "Tourism",
+                cat_business: "Business",
+                cat_family: "Family",
+                footer_contact: "Contact and bookings:",
+                footer_designed: "Designed by"
+            },
+            pt: {
+                nav_book: "Reservar",
+                hero_badge: "Aluguel de Carros em Bogotá",
+                hero_title_1: "Dirija Bogotá",
+                hero_title_2: "ao seu jeito",
+                hero_desc: "Veículos modernos, automáticos e em excelente estado. Seu destino, nossa prioridade. Conforto, segurança e confiança.",
+                feat_auto: "Veículos Automáticos",
+                feat_lang: "Atendimento Trilíngue",
+                feat_pickup: "Retirada e Entrega em Bogotá",
+                feat_flex: "Flexibilidade nos Planos",
+                cta_reserve: "Reserve agora!",
+                cta_cars: "Ver Veículos",
+                badge_quick: "Reserva Rápida",
+                contact_direct: "Contato Direto por WhatsApp",
+                whatsapp_label: "WhatsApp Oficial",
+                experience_note: "Mais que um aluguel, uma melhor experiência. Mova-se com liberdade.",
+                cars_title: "Nossa Frota Disponível",
+                cars_subtitle: "Veículos modernos, automáticos e mantidos sob os mais altos padrões de qualidade.",
+                cars_hint: "Toque em cada ficha para ver os dados técnicos completos",
+                specs_toggle: "Ver dados técnicos",
+                premium_tag: "Premium",
+                comfort_tag: "Conforto & Eficiência",
+                corolla_desc: "Elegância, máximo conforto e a maior confiabilidade para suas viagens executivas ou em família.",
+                versa_desc: "Espaço amplo, excelente rendimento de combustível e tecnologia moderna para a cidade.",
+                transmission: "Automático",
+                passengers: "Passageiros",
+                ac: "Ar Condicionado",
+                full_safety: "Segurança Total",
+                trunk: "Porta-malas Amplo",
+                efficient: "Eficiente",
+                book_corolla: "Reservar Toyota Corolla",
+                book_versa: "Reservar Nissan Versa",
+                discover_title: "Descubra Bogotá, nós te levamos",
+                cat_airport: "Aeroporto",
+                cat_city: "Cidade",
+                cat_tourism: "Turismo",
+                cat_business: "Negócios",
+                cat_family: "Família",
+                footer_contact: "Contato e reservas:",
+                footer_designed: "Desenvolvido por"
+            }
+        };
+
+        function detectLanguage() {
+            const userLang = navigator.language || navigator.userLanguage;
+            if (userLang.startsWith('pt')) return 'pt';
+            if (userLang.startsWith('en')) return 'en';
+            return 'es';
+        }
+
+        function changeLanguage(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('.lang-panel').forEach(el => {
+                el.setAttribute('data-active', el.getAttribute('data-lang') === lang ? 'true' : 'false');
+            });
+
+            document.querySelectorAll('.lang-flag').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+
+            document.documentElement.setAttribute('lang', lang);
+        }
+
+        document.querySelectorAll('.lang-flag').forEach(btn => {
+            btn.addEventListener('click', () => changeLanguage(btn.getAttribute('data-lang')));
+        });
+
+        /* ===== Generador de skyline (silueta de edificios con ventanas) ===== */
+        function buildSkylineSVG(count, minH, maxH, seedOffset) {
+            const width = 900;
+            const height = 300;
+            let x = 0;
+            let rects = '';
+            let windows = '';
+            let i = 0;
+            while (x < width) {
+                const w = 40 + ((i * 37 + seedOffset * 13) % 55);
+                const h = minH + ((i * 53 + seedOffset * 29) % (maxH - minH));
+                const y = height - h;
+                rects += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="currentColor"></rect>`;
+
+                const cols = Math.max(1, Math.floor(w / 14));
+                const rows = Math.max(1, Math.floor(h / 18));
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if ((r + c + i) % 3 === 0) continue;
+                        const wx = x + 5 + c * 13;
+                        const wy = y + 6 + r * 16;
+                        if (wx + 4 > x + w - 3) continue;
+                        const delay = ((r * 3 + c * 2 + i) % 12) * 0.4;
+                        windows += `<rect class="win" x="${wx}" y="${wy}" width="4" height="6" fill="#FFD37A" style="animation-delay:${delay}s"></rect>`;
+                    }
+                }
+                x += w + 6;
+                i++;
+            }
+            return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">${rects}${windows}</svg>`;
+        }
+
+        function mountSkyline(elId, minH, maxH, seedOffset, colorClass) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const svgMarkup = buildSkylineSVG(18, minH, maxH, seedOffset);
+            el.innerHTML = svgMarkup + svgMarkup;
+            el.classList.add(colorClass);
+        }
+
+        mountSkyline('layerBack', 90, 170, 3, 'text-navy-light/60');
+        mountSkyline('layerMid', 120, 230, 11, 'text-navy-light');
+        mountSkyline('layerFront', 150, 300, 19, 'text-brandBlue/25');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialLang = detectLanguage();
+            changeLanguage(initialLang);
+        });
+    </script>
+</body>
+</html>
