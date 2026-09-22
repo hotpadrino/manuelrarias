@@ -490,6 +490,12 @@
             border-color: var(--accent) !important;
             color: var(--accent) !important;
         }
+        
+        #btnSeparador.active{
+            background:#198754 !important;
+            border-color:#198754 !important;
+            color:#ffffff !important;
+        }
 
         #report-editable {
             width: 100%;
@@ -806,7 +812,8 @@
         <div class="report-section">
             <div class="report-header">
                 <span class="report-label">Vista Previa del Reporte</span>
-                <button class="btn-regen" onclick="generateReport()">⟳ REGENERAR</button>
+                <button class="btn-regen" id="btnSeparador" onclick="toggleSeparador()">↕ Espaciado</button>
+                <button class="btn-regen" onclick="generateReport()">⟳ Regenerar</button>
             </div>
             <textarea id="report-editable" spellcheck="false"></textarea>
         </div>
@@ -856,12 +863,14 @@
         novedades: ["FILA", "COMISIÓN", "COMISIÓN DE ESTUDIOS", "COMPENSANDO", "CURSO", "EXCUSA MEDICA", "PERMISO ESPECIAL", "SERVICIO", "TURNO DESCANSO", "VACACIONES", "VUELO", "OTRA"],
         asignaciones: {},
         tituloOficina: "",
-        historial: []
+        historial: [],
+        separarVinetas: false
     };
 
     function init() {
         const saved = localStorage.getItem('parte_v9_full');
         if (saved) state = JSON.parse(saved);
+        if (state.separarVinetas === undefined) {state.separarVinetas = false;}
         document.getElementById('config-personal').value = state.dataRaw;
         document.getElementById('config-novedades').value = state.novedades.join('\n');
         processData();
@@ -918,11 +927,6 @@
                 </div>
                 <div class="form-group form-group-obs">
                     <label>Observaciones</label>
-                    <input type="text" value="${d.obs}" placeholder="Detalle la novedad..." oninput="updateVal('${nombre}', 'obs', this.value)" onblur="this.value=this.value.trim(); updateVal('${nombre}', 'obs', this.value);"/>
-                </div>
-
-                <div class="form-group form-group-obs">
-                    <label>Observaciones</label>
                     <div class="obs-container">
                         <input id="obs-${nombre}" type="text" value="${d.obs}" placeholder="Detalle la novedad..." oninput="updateVal('${nombre}', 'obs', this.value)">
                         <button class="btn-clear-obs" title="Limpiar observación" onclick="clearObs('${nombre}')" type="button">✕</button>
@@ -947,12 +951,26 @@
         generateReport();
     }
     
+    function toggleSeparador() {
+        state.separarVinetas = !state.separarVinetas;
+        document
+            .getElementById("btnSeparador")
+            .classList.toggle("active", state.separarVinetas);
+        generateReport();
+        saveToLocal();
+    }
+
     function generateReport() {
         const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
         const hoy = new Date();
         const f = `${String(hoy.getDate()).padStart(2,'0')}-${meses[hoy.getMonth()]}-${hoy.getFullYear()}`;
-        let total = [0, 0, 0], fila = [0, 0, 0], detalles = "";
-
+    
+        let total = [0, 0, 0];
+        let fila = [0, 0, 0];
+        let detalles = "";
+    
+        const salto = state.separarVinetas ? "\n\n" : "\n";
+    
         Object.keys(state.asignaciones).forEach(nombre => {
             const d = state.asignaciones[nombre];
             const c = d.cat.toLowerCase();
@@ -960,15 +978,25 @@
             if (c.includes("oficial") && !c.includes("suboficial")) i = 0;
             else if (c.includes("suboficial")) i = 1;
             total[i]++;
+    
             if (d.tipo === "FILA") {
                 fila[i]++;
-                if (d.obs) detalles += `- ${nombre}: FILA (${d.obs})\n`;
+                if (d.obs) {
+                    detalles += `- ${nombre}: FILA (${d.obs})${salto}`;
+                }
             } else {
-                detalles += `- ${nombre}: ${d.tipo} ${d.obs ? '(' + d.obs + ')' : ''}\n`;
+                detalles += `- ${nombre}: ${d.tipo}${d.obs ? ` (${d.obs})` : ""}${salto}`;
             }
         });
-
-        const report = `✅ ${state.tituloOficina} del día \n${f}\n\n*Parte Oficina:* ${total.map(v=>String(v).padStart(2,'0')).join('-')}\n*Fila* ${fila.map(v=>String(v).padStart(2,'0')).join('-')}\n*Novedades* ${total.map((v,idx)=>String(v-fila[idx]).padStart(2,'0')).join('-')} \n\n${detalles}`;
+    
+        const report = [
+            `✅ ${state.tituloOficina} del día`,
+            `${f}`,
+            `*Parte Oficina:* ${total.map(v => String(v).padStart(2,'0')).join('-')}`,
+            `*Fila* ${fila.map(v => String(v).padStart(2,'0')).join('-')}`,
+            `*Novedades* ${total.map((v, idx) => String(v - fila[idx]).padStart(2,'0')).join('-')}`,
+            (detalles ? (state.separarVinetas ? '\n' : '') + detalles : detalles)
+        ].join('\n');
         document.getElementById('report-editable').value = report.trim();
         return report;
     }
