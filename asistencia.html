@@ -783,6 +783,34 @@ async function exportarPDF() {
   doc.save(`${nombreArchivo}.pdf`);
 }
 
+/* ===================== Control de Inactividad (2 horas) ===================== */
+const TIEMPO_INACTIVIDAD_MAX = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+
+function actualizarActividad() {
+  if (session) {
+    localStorage.setItem('asist.ultima_actividad', Date.now());
+  }
+}
+
+async function verificarInactividad() {
+  if (!session) return;
+  const ultima = localStorage.getItem('asist.ultima_actividad');
+  if (ultima && (Date.now() - parseInt(ultima, 10) > TIEMPO_INACTIVIDAD_MAX)) {
+    await sb.auth.signOut();
+    localStorage.removeItem('asist.ultima_actividad');
+    toast('La sesión ha expirado por más de 2 horas de inactividad.', 'err');
+    show('auth');
+  }
+}
+
+// Eventos para detectar actividad del usuario
+['click', 'keypress', 'scroll', 'pointermove'].forEach(evento => {
+  window.addEventListener(evento, actualizarActividad, { passive: true });
+});
+
+// Comprobar la inactividad cada minuto
+setInterval(verificarInactividad, 60 * 1000);
+ 
 /* ===================== Exportar Excel ===================== */
 async function exportarExcel() {
   const r=reunion, wb=new ExcelJS.Workbook(); wb.creator='Control de asistencia - Novaelix';
