@@ -123,18 +123,22 @@ dialog h3{margin-bottom:.4rem}
 @keyframes sp{to{transform:rotate(360deg)}}
 #loader{position:fixed;inset:0;background:rgba(255,255,255,.7);display:none;align-items:center;justify-content:center;z-index:90;font-size:2rem;color:var(--navy)}
 #loader.on{display:flex}
-@media print{
- @page{size:A4 landscape;margin:8mm}
- body{background:#fff;display:block}
- .topbar,footer.site,.no-print,.col-acc,#toasts,.toolbar,.hint{display:none!important}
- main{padding:0;max-width:none}
- .view{display:none!important}
- #v-ver{display:block!important}
- #v-ver .card{box-shadow:none;border:0;padding:0}
- .doc-scroll{overflow:visible;border:0;padding:0}
- .doc{min-width:0;font-size:10.5px}
- .doc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
- .doc tr{break-inside:avoid}
+
+/* =====================================================================
+   ESTILOS DE IMPRESIÓN (DISEÑO LIMPIO IDÉNTICO AL PDF, SIN PÁGINAS EXTRAS)
+===================================================================== */
+@media print {
+ @page { size: A4 landscape; margin: 6mm; }
+ body { background: #fff; display: block; font-size: 10px; }
+ .topbar, footer.site, .no-print, .col-acc, #toasts, .toolbar, .hint { display: none !important; }
+ main { padding: 0 !important; max-width: none !important; margin: 0 !important; width: 100% !important; }
+ .view { display: none !important; }
+ #v-ver { display: block !important; }
+ #v-ver .card { box-shadow: none !important; border: 0 !important; padding: 0 !important; margin: 0 !important; }
+ .doc-scroll { overflow: visible !important; border: 0 !important; padding: 0 !important; background: transparent !important; }
+ .doc { min-width: 0 !important; width: 100% !important; font-size: 10px !important; page-break-inside: avoid; }
+ .doc * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+ .doc tr { break-inside: avoid; page-break-inside: avoid; }
 }
 </style>
 </head>
@@ -157,7 +161,6 @@ dialog h3{margin-bottom:.4rem}
       <div class="s6"><label for="hub-fecha">Fecha</label><input type="date" id="hub-fecha" data-persist></div>
       <div class="s6"><label for="hub-codigo">Código de control</label><input type="text" id="hub-codigo" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="Ej: 5847" data-persist></div>
     </div>
-    <!-- Reportar Asistente primero -->
     <div class="tiles">
       <button class="tile" id="go-reportar"><i class="fa-solid fa-signature"></i><b>Reportar Asistente</b><small>Registre sus datos y firme</small></button>
       <button class="tile" id="go-crear"><i class="fa-solid fa-calendar-plus"></i><b>Crear Asistencia</b><small>Genera el código automáticamente</small><span class="lock admin-lock"><i class="fa-solid fa-lock"></i> Requiere ingreso</span></button>
@@ -254,7 +257,7 @@ dialog h3{margin-bottom:.4rem}
       <div class="banner" id="asis-banner"></div>
       <form id="f-asistente" novalidate>
         <div class="grid">
-          <div class="s2"><label for="a-grado">GR</label><input type="text" id="a-grado" list="grados" maxlength="20" data-persist><datalist id="grados"><option>GR</option><option>MG</option><option>BG</option><option>CR</option><option>TC</option><option>MY</option><option>CT</option><option>TE</option><option>ST</option><option>SJ</option><option>SV</option><option>TS</option><option>T1</option><option>T2</option><option>T3</option><option>Ing.</option><option>Dr.</option><option>PD</option></datalist></div>
+          <div class="s2"><label for="a-grado">Grado</label><input type="text" id="a-grado" list="grados" maxlength="20" data-persist><datalist id="grados"><option value="GR"><option value="MG"><option value="BG"><option value="CR"><option value="TC"><option value="MY"><option value="CT"><option value="TE"><option value="ST"><option value="TJ"><option value="TS"><option value="T1"><option value="T2"><option value="T3"><option value="AT"><option value="Ing."><option value="Dr."></datalist></div>
           <div class="s10"><label for="a-nombres">Nombres y apellidos</label><input type="text" id="a-nombres" autocomplete="name" data-persist required></div>
           <div class="s6"><label for="a-cargo">Cargo</label><input type="text" id="a-cargo" data-persist required></div>
           <div class="s6"><label for="a-dep">Unidad o dependencia</label><input type="text" id="a-dep" data-persist required></div>
@@ -560,9 +563,20 @@ $('f-reunion').addEventListener('submit', async e => {
   if (f.fin && f.fin<f.ini) return toast('La hora fin no puede ser menor a la hora inicio.','err');
   await conCarga(e.submitter,'Generando código...', async () => {
     try {
+      const creadorNombre = session?.user?.user_metadata?.display_name || session?.user?.email || 'Sistema';
       for (let intento=0; intento<5; intento++) {
         const codigo = await generarCodigoUnico(f.fecha);
-        const { data, error } = await sb.from('reunion').insert([{ fecha:f.fecha, numero_control:codigo, tema:f.tema, oficina_productora:f.oficina, lugar:f.lugar, hora_inicio:f.ini||null, hora_fin:f.fin||null, observaciones:f.obs||null }]).select().single();
+        const { data, error } = await sb.from('reunion').insert([{ 
+          fecha: f.fecha, 
+          numero_control: codigo, 
+          tema: f.tema, 
+          oficina_productora: f.oficina, 
+          lugar: f.lugar, 
+          hora_inicio: f.ini||null, 
+          hora_fin: f.fin||null, 
+          observaciones: f.obs||null,
+          creador_nombre: creadorNombre
+        }]).select().single();
         if (error && error.code==='23505') continue;
         if (error) throw error;
         ultimaCreada=data; mostrarCreada(data); return;
@@ -589,7 +603,6 @@ $('ok-ver').onclick = () => { ir('ver'); buscarAsistencia(); };$('cancel-reunion
 /* ===================== Reportar asistente ===================== */
 let reunionPublica = null;
 async function verificarReunion(codigo, fecha) {
-  // Consulta directa a la tabla para evitar conflictos de caché RPC en PostgREST
   const { data, error } = await sb.from('reunion').select('id, tema, oficina_productora, lugar, hora_inicio, hora_fin, observaciones').eq('fecha', fecha).eq('numero_control', codigo).maybeSingle();
   if (error) throw error;
   return data;
@@ -600,7 +613,7 @@ async function irReportar(silencioso=false) {
   try {
     const r = await verificarReunion(codigo, fecha);
     if (!r) { if(!silencioso) toast('No se encontró una asistencia con esa fecha y código.','err'); return false; }
-    reunionPublica={fecha,codigo};
+    reunionPublica={id:r.id, fecha, codigo};
     $('asis-banner').innerHTML=`<b>${esc(r.tema||'Reunión')}</b><br>${esc(fmtFechaLarga(fecha))}${r.lugar?' · '+esc(r.lugar):''} · Código <b>${esc(codigo)}</b>`;
     $('asis-form-wrap').classList.remove('hidden');$('asis-ok').classList.add('hidden');
     show('asistente'); return true;
@@ -616,7 +629,16 @@ $('f-asistente').addEventListener('submit', async e => {
   if (v('a-tel') && !/^[0-9+()\-\s]{5,30}$/.test(v('a-tel'))) return toast('El teléfono no es válido.','err');
   if (pad.vacia()) return toast('Por favor firme dentro del recuadro.','err');
   await conCarga(e.submitter,'Guardando...', async () => {
-    const { error } = await sb.rpc('registrar_asistente', { p_fecha:reunionPublica.fecha, p_codigo:reunionPublica.codigo, p_grado:v('a-grado'), p_nombre:v('a-nombres'), p_cargo:v('a-cargo'), p_dependencia:v('a-dep'), p_telefono:v('a-tel'), p_correo:v('a-correo'), p_firma:pad.png() });
+    const { error } = await sb.from('usuario').insert([{
+      reunion_id: reunionPublica.id,
+      grado: v('a-grado') || null,
+      nombre_apellidos: v('a-nombres'),
+      cargo: v('a-cargo'),
+      dependencia: v('a-dep'),
+      telefono: v('a-tel') || null,
+      correo: v('a-correo') || null,
+      firma_base64: pad.png()
+    }]);
     if (error) return toast('Error al guardar: '+error.message,'err');
     limpiarBorrador(ASIS_IDS); pad.limpiar();
     $('asis-form-wrap').classList.add('hidden');$('asis-ok').classList.remove('hidden');
@@ -639,7 +661,7 @@ async function buscarAsistencia(silencioso=false) {
     reunion=r; lista=a||[]; LS.set('consulta',{fecha,codigo}); renderDoc();
   });
 }
-const nombreCreador = r => r.creador_nombre || '—';
+const nombreCreador = r => r.creador_nombre || session?.user?.user_metadata?.display_name || session?.user?.email || '—';
 function renderDoc(editable=true) {
   const r=reunion; if(!r) return;
   $('export-bar').classList.remove('hidden'); $('doc-scroll').classList.remove('hidden');$('drag-hint').classList.remove('hidden');
@@ -665,7 +687,7 @@ function renderDoc(editable=true) {
     <div class="doc-line">CÓDIGO DE CONTROL: <span>${esc(r.numero_control)}</span> &nbsp;&nbsp;|&nbsp;&nbsp; TOTAL ASISTENTES: <span>${lista.length}</span></div>
     <div class="doc-line c">INTERVIENEN Y/O ASISTENTES</div>
     <table><colgroup><col class="col-acc no-print" style="width:42px"><col style="width:4%"><col style="width:5%"><col style="width:21%"><col style="width:15%"><col style="width:15%"><col style="width:10%"><col style="width:17%"><col style="width:13%"><col class="col-acc no-print" style="width:92px"></colgroup>
-    <thead><tr><th class="col-acc no-print"></th><th>No.</th><th>GR</th><th>NOMBRES Y APELLIDOS</th><th>CARGO</th><th>UNIDAD O DEPENDENCIA</th><th>TELÉFONO</th><th>CORREO ELECTRÓNICO</th><th>FIRMA</th><th class="col-acc no-print"></th></tr></thead>
+    <thead><tr><th class="col-acc no-print"></th><th>No.</th><th>Grado</th><th>NOMBRES Y APELLIDOS</th><th>CARGO</th><th>UNIDAD O DEPENDENCIA</th><th>TELÉFONO</th><th>CORREO ELECTRÓNICO</th><th>FIRMA</th><th class="col-acc no-print"></th></tr></thead>
     <tbody id="tbody">${filas}</tbody></table></div>`;
 }
 
@@ -679,13 +701,21 @@ $('doc').addEventListener('click', async e => {
   guardarOrden(true);
 });
 
-/* ===================== Reordenar ===================== */
+/* ===================== Reordenar (Actualización directa) ===================== */
 let drag=null;
 async function guardarOrden(silencioso=false) {
-  lista.forEach((a,i)=>a.consecutivo=i+1);
-  const { error } = await sb.rpc('reordenar_asistentes', { p_reunion:reunion.id, p_ids:lista.map(a=>a.id) });
-  if (error) { toast('No se pudo guardar el orden: '+error.message,'err'); return false; }
-  if (!silencioso) toast('Orden guardado','ok'); return true;
+  try {
+    for (let i = 0; i < lista.length; i++) {
+      lista[i].consecutivo = i + 1;
+      const { error } = await sb.from('usuario').update({ consecutivo: i + 1 }).eq('id', lista[i].id);
+      if (error) throw error;
+    }
+    if (!silencioso) toast('Orden guardado','ok');
+    return true;
+  } catch (err) {
+    toast('No se pudo guardar el orden: '+err.message,'err');
+    return false;
+  }
 }
 function renumerarDOM() { document.querySelectorAll('#tbody tr[data-id]').forEach((tr,i)=>tr.querySelector('.n').textContent=i+1); document.querySelectorAll('#tbody tr.vacia').forEach((tr,i)=>tr.children[1].textContent=lista.length+i+1); }
 async function terminarArrastre() {
@@ -714,7 +744,7 @@ async function exportarPDF() {
   const M=10, PW=297, PH=210, TW=PW-2*M, r=reunion;
   const esc_ = await escudoPNG();
   const firmas = await Promise.all(lista.map(async a => { const s=imgSegura(a.firma_base64); if(!s) return null; try{ const i=await loadImg(s); return {src:s,w:i.naturalWidth,h:i.naturalHeight}; }catch{ return null; } }));
-  const cols=[['No.',10],['GR',14],['NOMBRES Y APELLIDOS',62],['CARGO',44],['UNIDAD O DEPENDENCIA',40],['TELÉFONO',26],['CORREO ELECTRÓNICO',51],['FIRMA',30]];
+  const cols=[['No.',10],['Grado',14],['NOMBRES Y APELLIDOS',62],['CARGO',44],['UNIDAD O DEPENDENCIA',40],['TELÉFONO',26],['CORREO ELECTRÓNICO',51],['FIRMA',30]];
   const GRIS=[231,231,231]; let y=M;
   const box=(x,yy,w,h,fill)=>{ if(fill){doc.setFillColor(...fill);doc.rect(x,yy,w,h,'FD');} else doc.rect(x,yy,w,h); };
   const ctext=(t,x,yy,w,h,size,bold)=>{ doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(size); const ls=doc.splitTextToSize(String(t),w-2); const lh=size*0.36; const y0=yy+(h-ls.length*lh)/2+lh*0.8; doc.text(ls,x+w/2,y0,{align:'center'}); };
@@ -775,7 +805,7 @@ async function exportarExcel() {
   info.forEach((t,i)=>{ const row=5+i; put(`B${row}:J${row}`,t[0],{b:1}); grid(row,2,row,10); ws.getRow(row).height=Math.max(20.25,Math.ceil(t[0].length/120)*16); });
   put('B11:J11','INTERVIENEN Y/O ASISTENTES',{b:1,h:'center',fill:1}); grid(11,2,11,10);
   ws.getRow(12).height=38.25; grid(12,2,12,10);
-  [['B12','No.'],['C12','GR'],['D12','NOMBRES Y APELLIDOS'],['E12','CARGO'],['F12','UNIDAD O DEPENDENCIA'],['G12','TELÉFONO'],['H12:I12','CORREO ELECTRÓNICO'],['J12','FIRMA']].forEach(([a,t])=>put(a,t,{b:1,h:'center',fill:1}));
+  [['B12','No.'],['C12','Grado'],['D12','NOMBRES Y APELLIDOS'],['E12','CARGO'],['F12','UNIDAD O DEPENDENCIA'],['G12','TELÉFONO'],['H12:I12','CORREO ELECTRÓNICO'],['J12','FIRMA']].forEach(([a,t])=>put(a,t,{b:1,h:'center',fill:1}));
   const total=Math.max(lista.length,FORMATO.filasMin), ALTO=45;
   const logo=await escudoPNG();
   if (logo) { const id=wb.addImage({base64:logo.data,extension:'png'}); let w=74,h=w*logo.ratio; if(h>78){h=78;w=h/logo.ratio;} ws.addImage(id,{tl:{col:1+(81-w)/2/41,row:1+(84-h)/2/28},ext:{width:w,height:h},editAs:'oneCell'}); }
@@ -796,7 +826,7 @@ async function exportarExcel() {
 }
 
 $('btn-buscar').onclick = () => buscarAsistencia();$('btn-pdf').onclick = e => conCarga(e.currentTarget,'Generando...', () => exportarPDF().catch(err=>toast('Error al generar PDF: '+err.message,'err')));
-$('btn-xlsx').onclick = e => conCarga(e.currentTarget,'Generando...', () => exportarExcel().catch(err=>toast('Error al generar Excel: '+err.item.message,'err')));$('btn-print').onclick = () => window.print();
+$('btn-xlsx').onclick = e => conCarga(e.currentTarget,'Generando...', () => exportarExcel().catch(err=>toast('Error al generar Excel: '+err.message,'err')));$('btn-print').onclick = () => window.print();
 
 /* ===================== Hub ===================== */
 $('go-reportar').onclick = () => irReportar();$('go-crear').onclick = () => { $('r-fecha').value=$('hub-fecha').value||hoyISO(); LS.set('f.r-fecha',$('r-fecha').value); ir('crear'); };$('go-ver').onclick = () => { $('v-fecha').value=$('hub-fecha').value; $('v-codigo').value=$('hub-codigo').value; ir('ver'); if(session && /^\d{4}$/.test($('v-codigo').value)) buscarAsistencia(true); };
