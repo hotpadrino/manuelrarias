@@ -257,7 +257,7 @@ dialog h3{margin-bottom:.4rem}
           <div class="s10"><label for="a-nombres">Nombres y apellidos</label><input type="text" id="a-nombres" autocomplete="name" data-persist required></div>
           <div class="s6"><label for="a-cargo">Cargo</label><input type="text" id="a-cargo" data-persist required></div>
           <div class="s6"><label for="a-dep">Unidad o dependencia</label><input type="text" id="a-dep" data-persist required></div>
-          <div class="s6"><label for="a-tel">Teléfono</label><input type="tel" id="a-tel" inputmode="tel" autocomplete="tel" maxlength="30" data-persist></div>
+          <div class="s6"><label for="a-tel">Teléfono</label><input type="tel" id="a-tel" inputmode="tel" autocomplete="tel" maxlength="12" data-persist></div>
           <div class="s6"><label for="a-correo">Correo electrónico</label><input type="email" id="a-correo" autocomplete="email" data-persist></div>
           <div><label>Firma (dibuje dentro del recuadro)</label>
             <div class="pad-wrap"><canvas id="firma-pad"></canvas><div class="pad-hint" id="pad-hint"><i class="fa-solid fa-pen-nib"></i>&nbsp;Firme aquí</div></div>
@@ -423,6 +423,22 @@ sb.auth.onAuthStateChange((evento, ses) => {
   if (evento === 'SIGNED_IN' && !recovery && destino) { const d=destino; destino=null; setTimeout(()=>ir(d),0); }
   if (evento === 'SIGNED_OUT') { setTimeout(()=>{ if(ADMIN_VIEWS.some(v=>$('v-'+v).classList.contains('active'))) show('hub'); },0); }
 });
+
+/* ===================== Control de Inactividad (2 horas) ===================== */
+const TIEMPO_INACTIVIDAD_MAX = 2 * 60 * 60 * 1000;
+function actualizarActividad() { if (session) localStorage.setItem('asist.ultima_actividad', Date.now()); }
+async function verificarInactividad() {
+  if (!session) return;
+  const ultima = localStorage.getItem('asist.ultima_actividad');
+  if (ultima && (Date.now() - parseInt(ultima, 10) > TIEMPO_INACTIVIDAD_MAX)) {
+    await sb.auth.signOut(); localStorage.removeItem('asist.ultima_actividad');
+    toast('La sesión ha expirado por más de 2 horas de inactividad.', 'err'); show('hub');
+  }
+}
+['click', 'keypress', 'scroll', 'pointermove'].forEach(evento => {
+  window.addEventListener(evento, actualizarActividad, { passive: true });
+});
+setInterval(verificarInactividad, 60 * 1000);
 
 /* ===================== Autenticación ===================== */
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => tabAuth(b.dataset.tab));
@@ -598,7 +614,8 @@ $('ok-ver').onclick = () => { ir('ver'); buscarAsistencia(); };$('cancel-reunion
 /* ===================== Reportar asistente ===================== */
 let reunionPublica = null;
 async function verificarReunion(codigo, fecha) {
-  const { data, error } = await sb.from('reunion').select('id, tema, oficina_productora, lugar, hora_inicio, hora_fin, observaciones').eq('fecha', fecha).eq('numero_control', codigo).maybeSingle();
+  // Llama a la función actualizada en SQL
+  const { data, error } = await sb.rpc('obtener_id_reunion', { p_fecha: fecha, p_codigo: codigo }).maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -621,7 +638,7 @@ $('f-asistente').addEventListener('submit', async e => {
   if (!reunionPublica) return toast('Primero verifique la reunión.','err');
   if (!v('a-nombres')||!v('a-cargo')||!v('a-dep')) return toast('Complete nombres, cargo y dependencia.','err');
   if (v('a-correo') && !EMAIL_RE.test(v('a-correo'))) return toast('El correo electrónico no es válido.','err');
-  if (v('a-tel') && !/^[0-9+()\-\s]{5,30}$/.test(v('a-tel'))) return toast('El teléfono no es válido.','err');
+  if (v('a-tel') && !/^[0-9+()\-\s]{4,12}$/.test(v('a-tel'))) return toast('El teléfono debe tener entre 4 y 12 caracteres.','err');
   if (pad.vacia()) return toast('Por favor firme dentro del recuadro.','err');
   await conCarga(e.submitter,'Guardando...', async () => {
     const { error } = await sb.from('usuario').insert([{
@@ -783,34 +800,6 @@ async function exportarPDF() {
   doc.save(`${nombreArchivo}.pdf`);
 }
 
-/* ===================== Control de Inactividad (2 horas) ===================== */
-const TIEMPO_INACTIVIDAD_MAX = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
-
-function actualizarActividad() {
-  if (session) {
-    localStorage.setItem('asist.ultima_actividad', Date.now());
-  }
-}
-
-async function verificarInactividad() {
-  if (!session) return;
-  const ultima = localStorage.getItem('asist.ultima_actividad');
-  if (ultima && (Date.now() - parseInt(ultima, 10) > TIEMPO_INACTIVIDAD_MAX)) {
-    await sb.auth.signOut();
-    localStorage.removeItem('asist.ultima_actividad');
-    toast('La sesión ha expirado por más de 2 horas de inactividad.', 'err');
-    show('auth');
-  }
-}
-
-// Eventos para detectar actividad del usuario
-['click', 'keypress', 'scroll', 'pointermove'].forEach(evento => {
-  window.addEventListener(evento, actualizarActividad, { passive: true });
-});
-
-// Comprobar la inactividad cada minuto
-setInterval(verificarInactividad, 60 * 1000);
- 
 /* ===================== Exportar Excel ===================== */
 async function exportarExcel() {
   const r=reunion, wb=new ExcelJS.Workbook(); wb.creator='Control de asistencia - Novaelix';
