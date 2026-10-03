@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Asistencia Institucional</title>
+    <title>Gestión de Asistencia Institucional - FAC</title>
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Librerías Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -35,12 +37,18 @@
             margin: 0 auto;
         }
 
+        .escudo-fac {
+            height: 55px;
+            width: auto;
+            object-fit: contain;
+        }
+
         /* ==========================================
            REGLAS DE IMPRESIÓN
         ========================================== */
         @media print {
             body { background-color: #fff; margin: 0; }
-            .no-print, #auth-section, #hub-section, header { display: none !important; }
+            .no-print, #auth-section, #hub-section, header, footer { display: none !important; }
             #documento-impresion { border: none !important; box-shadow: none !important; width: 100%; margin: 0; padding: 0; }
             .table { width: 100% !important; font-size: 10pt; }
             .table th { background-color: #e9ecef !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
@@ -54,9 +62,10 @@
     <!-- ==========================================
          1. PANEL PRINCIPAL (HUB PÚBLICO)
     =========================================== -->
-    <div id="hub-section" class="container mt-5">
+    <div id="hub-section" class="container mt-4 mb-5">
         <div class="card mx-auto shadow border-0" style="max-width: 500px;">
-            <div class="card-header bg-dark text-white text-center py-3">
+            <div class="card-header bg-dark text-white text-center py-3 d-flex align-items-center justify-content-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
                 <h4 class="m-0 fw-bold">Sistema de Asistencia</h4>
             </div>
             <div class="card-body p-4">
@@ -94,7 +103,10 @@
         <div class="card mx-auto shadow-sm" style="max-width: 450px;">
             <div class="card-body">
                 <button class="btn btn-sm btn-light text-muted mb-3 border" onclick="volverAlHub()">← Volver al inicio</button>
-                <h4 class="card-title text-center mb-4 fw-bold">Acceso Institucional</h4>
+                <div class="text-center mb-3">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac mb-2">
+                    <h4 class="card-title fw-bold">Acceso Institucional</h4>
+                </div>
                 
                 <ul class="nav nav-tabs mb-3" id="authTabs">
                     <li class="nav-item"><a class="nav-link active" href="#" id="tab-login" onclick="toggleAuth('login')">Ingresar</a></li>
@@ -124,7 +136,10 @@
     <div id="main-section" class="container mt-4 d-none">
         
         <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 no-print border-bottom pb-3">
-            <h2 class="m-0 text-dark fw-bold mb-3 mb-md-0">Gestión de Evento</h2>
+            <div class="d-flex align-items-center gap-3 mb-3 mb-md-0">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
+                <h2 class="m-0 text-dark fw-bold">Gestión de Evento</h2>
+            </div>
             <div class="d-flex align-items-center">
                 <span id="user-display-name" class="me-3 fw-bold text-secondary"></span>
                 <button class="btn btn-outline-secondary btn-sm me-2" onclick="volverAlHub()">Inicio</button>
@@ -165,9 +180,9 @@
                             <div class="col-md-6"><label class="form-label">Código de Control</label><input type="text" id="a-codigo" class="form-control text-center fw-bold" maxlength="4" required></div>
                         </div>
                         <div class="row">
-                            <div class="col-md-2 mb-3"><label class="form-label">Grado</label><input type="text" id="a-grado" class="form-control" ></div>
+                            <div class="col-md-2 mb-3"><label class="form-label">Grado (Opcional)</label><input type="text" id="a-grado" class="form-control" placeholder="Ej: Civil"></div>
                             <div class="col-md-10 mb-3"><label class="form-label">Nombres y Apellidos</label><input type="text" id="a-nombres" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Cargo</label><input type="text" id="a-cargo" class="form-control" ></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Cargo</label><input type="text" id="a-cargo" class="form-control" required></div>
                             <div class="col-md-6 mb-3"><label class="form-label">Dependencia</label><input type="text" id="a-dep" class="form-control" required></div>
                             <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label><input type="tel" id="a-tel" class="form-control"></div>
                             <div class="col-md-6 mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="a-correo" class="form-control"></div>
@@ -206,14 +221,28 @@
     </div>
 
     <!-- ==========================================
+         FOOTER INSTITUCIONAL
+    =========================================== -->
+    <footer class="text-center py-3 mt-5 no-print text-muted small border-top bg-light">
+        <div class="container d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
+            <a href="https://novaelix.vercel.app/" target="_blank" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
+                <i class="fa-solid fa-bolt text-warning"></i>
+                <span>Control de asistencia creado por Novaelix</span>
+            </a>
+            <span class="d-none d-md-inline text-muted">|</span>
+            <a href="https://wa.me/573128816469" target="_blank" class="text-decoration-none text-success d-flex align-items-center gap-1 fw-bold">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>+57 312 8816469</span>
+            </a>
+        </div>
+    </footer>
+
+    <!-- ==========================================
          LÓGICA JAVASCRIPT
     =========================================== -->
     <script>
-        // ------------------------------------------
         // 0. CONFIGURACIÓN FECHA POR DEFECTO
-        // ------------------------------------------
         document.addEventListener('DOMContentLoaded', () => {
-            // Obtenemos la fecha actual ajustada a la zona horaria local del navegador
             const tzOffset = (new Date()).getTimezoneOffset() * 60000;
             const hoy = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
             
@@ -223,12 +252,9 @@
             document.getElementById('v-fecha').value = hoy;
         });
 
-        // ------------------------------------------
-        // 1. INICIALIZACIÓN SUPABASE (CORREGIDO)
-        // ------------------------------------------
+        // 1. INICIALIZACIÓN SUPABASE
         const supabaseUrl = 'https://yfbfbywjwslxsrgamqhj.supabase.co'; 
         const supabaseKey = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j'; 
-        // Cambiamos el nombre de la variable para evitar colisión con el CDN global
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey, {
             db: { schema: 'asistencia' }
         });
@@ -238,9 +264,7 @@
         let currentReunion = null;
         let currentAsistentes = [];
 
-        // ------------------------------------------
         // 2. ENRUTAMIENTO Y ESTADO DE SESIÓN
-        // ------------------------------------------
         supabaseClient.auth.onAuthStateChange((event, session) => {
             sessionActiva = session;
             if (session) {
@@ -283,7 +307,6 @@
             }
         }
 
-        // ACCIONES DEL HUB
         async function irARegistrar() {
             const fecha = document.getElementById('hub-fecha').value;
             const codigo = document.getElementById('hub-codigo').value;
@@ -293,34 +316,27 @@
                 return;
             }
             
-            // Simular carga y deshabilitar botón
             const btn = document.getElementById('btn-ir-registrar');
             const txtOriginal = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando Evento...';
             btn.disabled = true;
 
-            // VALIDACIÓN: Consultar a la base de datos si el evento existe
             const { data: reunionId, error: errReunion } = await supabaseClient.rpc('obtener_id_reunion', { p_fecha: fecha, p_codigo: codigo });
             
-            // Restaurar el botón
             btn.innerHTML = txtOriginal;
             btn.disabled = false;
 
-            // Si la base de datos retorna error o un ID nulo, detenemos al usuario
             if (!reunionId || errReunion) {
-                alert('⚠️ No se encontró ninguna asistencia con esa fecha y código. Por favor verifique con el organizador.');
+                alert('⚠️ No se encontró ninguna asistencia con esa fecha y código. Verifique con el organizador.');
                 return;
             }
 
-            // Si existe, prellenamos el formulario real y lo mostramos
             document.getElementById('a-fecha').value = fecha;
             document.getElementById('a-codigo').value = codigo;
             document.getElementById('a-fecha').readOnly = true;
             document.getElementById('a-codigo').readOnly = true;
             
             mostrarPanelApp('reportar-asistente');
-            
-            // Reajustar tamaño interno del canvas al mostrarlo
             setTimeout(ajustarCanvas, 100); 
         }
 
@@ -347,9 +363,7 @@
             }
         }
 
-        // ------------------------------------------
         // 3. AUTENTICACIÓN
-        // ------------------------------------------
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -402,9 +416,7 @@
             else alert('Se ha enviado un enlace de recuperación a su correo.');
         }
 
-        // ------------------------------------------
         // 4. CREAR REUNIÓN
-        // ------------------------------------------
         async function generarCodigoUnico(fecha) {
             let codigo, existe = true;
             while(existe) {
@@ -446,13 +458,11 @@
                 alertBox.innerHTML = `Asistencia creada.<br>Fecha: <strong>${fecha}</strong> | Código de control: <strong>${codigo}</strong>`;
                 alertBox.classList.remove('d-none');
                 document.getElementById('form-reunion').reset();
-                document.getElementById('r-fecha').value = fecha; // Restaurar fecha tras el reset
+                document.getElementById('r-fecha').value = fecha; 
             }
         });
 
-        // ------------------------------------------
         // 5. CANVAS FIRMA DIGITAL
-        // ------------------------------------------
         const canvas = document.getElementById('firma-pad');
         const ctx = canvas.getContext('2d');
         let pintando = false;
@@ -492,9 +502,7 @@
 
         function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        // ------------------------------------------
         // 6. REGISTRAR ASISTENTE
-        // ------------------------------------------
         document.getElementById('form-asistente').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -521,7 +529,7 @@
 
             const asistente = {
                 reunion_id: reunionId,
-                grado: document.getElementById('a-grado').value,
+                grado: document.getElementById('a-grado').value || null,
                 nombre_apellidos: document.getElementById('a-nombres').value,
                 cargo: document.getElementById('a-cargo').value,
                 dependencia: document.getElementById('a-dep').value,
@@ -544,9 +552,7 @@
             }
         });
 
-        // ------------------------------------------
-        // 7. VISUALIZAR Y EXPORTAR
-        // ------------------------------------------
+        // 7. VISUALIZAR, REORDENAR Y EXPORTAR
         async function buscarAsistencia() {
             const fecha = document.getElementById('v-fecha').value;
             const codigo = document.getElementById('v-codigo').value;
@@ -583,8 +589,12 @@
             document.getElementById('export-buttons').classList.remove('d-none');
 
             let html = `
-                <div class="text-center mb-4">
-                    <h4 class="fw-bold">LISTADO DE ASISTENCIA INSTITUCIONAL</h4>
+                <div class="d-flex align-items-center justify-content-center gap-3 mb-3 border-bottom pb-3">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
+                    <div class="text-center">
+                        <h5 class="fw-bold m-0">FUERZA AEREA COLOMBIANA</h5>
+                        <h6 class="text-muted m-0">LISTADO DE ASISTENCIA INSTITUCIONAL</h6>
+                    </div>
                 </div>
                 <div class="row mb-4" style="font-size: 0.9rem;">
                     <div class="col-6"><strong>Código de Control:</strong> ${currentReunion.numero_control}</div>
@@ -595,24 +605,31 @@
                     <div class="col-6"><strong>Hora Inicio:</strong> ${currentReunion.hora_inicio}</div>
                     <div class="col-6"><strong>Hora Fin:</strong> ${currentReunion.hora_fin}</div>
                     <div class="col-12"><strong>Observaciones:</strong> ${currentReunion.observaciones || 'N/A'}</div>
-                    <div class="col-12 mt-2"><strong>Total Asistentes:</strong> ${currentAsistentes.length}</div>
+                    <div class="col-12 mt-2 d-flex justify-content-between align-items-center">
+                        <span><strong>Total Asistentes:</strong> ${currentAsistentes.length}</span>
+                        <button id="btn-guardar-orden" class="btn btn-warning btn-sm fw-bold d-none no-print" onclick="guardarNuevoOrden()">
+                            💾 Guardar Nuevo Orden
+                        </button>
+                    </div>
                 </div>
                 <table class="table table-bordered table-striped align-middle">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 40px;" class="no-print">↕</th>
                             <th>No.</th><th>Grado</th><th>Nombres y Apellidos</th>
                             <th>Cargo / Dependencia</th><th>Contacto</th><th>Firma</th>
                             <th class="col-acciones text-center">Acción</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="sortable-table">
             `;
 
             currentAsistentes.forEach((a, index) => {
                 html += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${a.grado}</td>
+                    <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event, '${a.id}')" data-id="${a.id}" style="cursor: grab;">
+                        <td class="text-center no-print text-muted fs-5" title="Arrastrar para ordenar">☰</td>
+                        <td class="row-num">${index + 1}</td>
+                        <td>${a.grado || '-'}</td>
                         <td>${a.nombre_apellidos}</td>
                         <td>${a.cargo}<br><small class="text-muted">${a.dependencia}</small></td>
                         <td>${a.telefono || '-'}<br><small>${a.correo || '-'}</small></td>
@@ -627,6 +644,73 @@
             html += `</tbody></table>`;
             contenedor.innerHTML = html;
         }
+
+        // LÓGICA DE DRAG AND DROP
+        let draggedRowId = null;
+        window.dragStart = function(e) {
+            draggedRowId = e.currentTarget.getAttribute('data-id');
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        window.dragOver = function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        window.drop = function(e, targetId) {
+            e.preventDefault();
+            if (draggedRowId === targetId) return;
+
+            const tbody = document.getElementById('sortable-table');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            const draggedRow = rows.find(r => r.getAttribute('data-id') === draggedRowId);
+            const targetRow = rows.find(r => r.getAttribute('data-id') === targetId);
+
+            if (!draggedRow || !targetRow) return;
+
+            const allRows = Array.from(tbody.children);
+            const draggedIdx = allRows.indexOf(draggedRow);
+            const targetIdx = allRows.indexOf(targetRow);
+
+            if (draggedIdx < targetIdx) {
+                tbody.insertBefore(draggedRow, targetRow.nextSibling);
+            } else {
+                tbody.insertBefore(draggedRow, targetRow);
+            }
+
+            const updatedRows = tbody.querySelectorAll('tr');
+            updatedRows.forEach((row, idx) => {
+                row.querySelector('.row-num').textContent = idx + 1;
+            });
+
+            const nuevoOrdenIds = Array.from(tbody.querySelectorAll('tr')).map(r => r.getAttribute('data-id'));
+            currentAsistentes.sort((a, b) => nuevoOrdenIds.indexOf(a.id) - nuevoOrdenIds.indexOf(b.id));
+
+            document.getElementById('btn-guardar-orden').classList.remove('d-none');
+        };
+
+        window.guardarNuevoOrden = async function() {
+            const btn = document.getElementById('btn-guardar-orden');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando orden...';
+            btn.disabled = true;
+
+            let errorOcurrido = false;
+            for (let i = 0; i < currentAsistentes.length; i++) {
+                const { error } = await supabaseClient.from('usuario').update({ consecutivo: i + 1 }).eq('id', currentAsistentes[i].id);
+                if (error) errorOcurrido = true;
+            }
+
+            btn.innerHTML = '💾 Guardar Nuevo Orden';
+            btn.disabled = false;
+
+            if (errorOcurrido) alert('Hubo un error al actualizar el orden.');
+            else {
+                alert('✅ El nuevo orden se ha guardado correctamente.');
+                document.getElementById('btn-guardar-orden').classList.add('d-none');
+                buscarAsistencia();
+            }
+        };
 
         window.eliminarAsistente = async function(id) {
             if (confirm('¿Está seguro de eliminar este asistente?')) {
@@ -649,7 +733,6 @@
                 
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Asistencia_${currentReunion.numero_control}.pdf`);
-                
                 botones.forEach(btn => btn.style.display = ''); 
             });
         };
@@ -671,7 +754,7 @@
 
             currentAsistentes.forEach((a, index) => {
                 const row = worksheet.addRow({
-                    no: index + 1, grado: a.grado, nombres: a.nombre_apellidos,
+                    no: index + 1, grado: a.grado || '', nombres: a.nombre_apellidos,
                     cargo: a.cargo, dependencia: a.dependencia, tel: a.telefono, correo: a.correo
                 });
                 row.height = 45;
