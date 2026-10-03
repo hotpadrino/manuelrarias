@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Asistencia Institucional - FAC</title>
     
+    <!-- METADATOS OPEN GRAPH (PREVIEW DE ENLACE / OG IMAGE) -->
+    <meta property="og:title" content="Control de Asistencia Institucional - FAC">
+    <meta property="og:description" content="Sistema oficial de registro y gestión de asistencia institucional de la Fuerza Aeroespacial Colombiana.">
+    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg">
+    <meta property="og:type" content="website">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome para iconos -->
@@ -17,10 +23,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 
     <style>
-        /* ==========================================
-           ESTILOS GENERALES
-        ========================================== */
-        body { background-color: #f4f6f9; }
+        body { background-color: #f4f6f9; font-family: system-ui, -apple-system, sans-serif; }
         
         .view-section { display: none; }
         .view-section.active { display: block; }
@@ -29,6 +32,7 @@
             touch-action: none; 
             border: 2px dashed #adb5bd !important;
             cursor: crosshair;
+            background-color: #fff;
         }
         
         .firma-img {
@@ -43,53 +47,58 @@
             object-fit: contain;
         }
 
-        /* ==========================================
-           REGLAS DE IMPRESIÓN
-        ========================================== */
+        .formato-institucional {
+            border: 1px solid #dee2e6;
+            background: #fff;
+        }
+
         @media print {
             body { background-color: #fff; margin: 0; }
-            .no-print, #auth-section, #hub-section, header, footer { display: none !important; }
+            .no-print, #auth-section, #hub-section, #recovery-section, header, footer { display: none !important; }
             #documento-impresion { border: none !important; box-shadow: none !important; width: 100%; margin: 0; padding: 0; }
-            .table { width: 100% !important; font-size: 10pt; }
+            .table { width: 100% !important; font-size: 9pt; }
             .table th { background-color: #e9ecef !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
             .col-acciones, .btn-eliminar { display: none !important; }
             @page { margin: 1cm; size: landscape; }
         }
     </style>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
     <!-- ==========================================
          1. PANEL PRINCIPAL (HUB PÚBLICO)
     =========================================== -->
-    <div id="hub-section" class="container mt-4 mb-5">
-        <div class="card mx-auto shadow border-0" style="max-width: 500px;">
-            <div class="card-header bg-dark text-white text-center py-3 d-flex align-items-center justify-content-center gap-3">
+    <div id="hub-section" class="container my-auto py-5">
+        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 500px;">
+            <div class="card-header bg-dark text-white text-center py-4 rounded-top-4 d-flex align-items-center justify-content-center gap-3">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                <h4 class="m-0 fw-bold">Sistema de Asistencia</h4>
+                <div class="text-start">
+                    <h5 class="m-0 fw-bold">FUERZA AEROESPACIAL</h5>
+                    <small class="text-white-50">Control de Asistencia</small>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body p-4 p-md-5">
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
-                        <label class="form-label fw-bold">Fecha del Evento</label>
-                        <input type="date" id="hub-fecha" class="form-control form-control-lg">
+                        <label class="form-label fw-bold text-secondary">Fecha del Evento</label>
+                        <input type="date" id="hub-fecha" class="form-control form-control-lg shadow-sm">
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label fw-bold">Código de Control</label>
-                        <input type="text" id="hub-codigo" class="form-control form-control-lg text-center" maxlength="4" placeholder="Ej: 5847">
+                        <label class="form-label fw-bold text-secondary">Código de Control</label>
+                        <input type="text" id="hub-codigo" class="form-control form-control-lg text-center fw-bold text-primary" maxlength="4" placeholder="Ej: 5847">
                     </div>
                 </div>
                 
                 <div class="d-grid gap-3">
-                    <button id="btn-ir-registrar" class="btn btn-info text-white btn-lg fw-bold shadow-sm" onclick="irARegistrar()">
-                        1. Registrar Mi Asistencia
+                    <button id="btn-ir-registrar" class="btn btn-info text-white btn-lg fw-bold shadow-sm py-3" onclick="irARegistrar()">
+                        <i class="fa-solid fa-signature me-2"></i> Registrar Mi Asistencia
                     </button>
                     <hr class="my-2 text-muted">
-                    <button class="btn btn-outline-success fw-bold" onclick="irACrear()">
-                        2. Crear Nueva Asistencia (Admin)
+                    <button class="btn btn-outline-success fw-bold py-2" onclick="irACrear()">
+                        <i class="fa-solid fa-calendar-plus me-2"></i> Crear Nueva Asistencia (Admin)
                     </button>
-                    <button class="btn btn-outline-secondary fw-bold" onclick="irAConsultar()">
-                        3. Consultar / Exportar (Admin)
+                    <button class="btn btn-outline-secondary fw-bold py-2" onclick="irAConsultar()">
+                        <i class="fa-solid fa-table-list me-2"></i> Consultar / Exportar (Admin)
                     </button>
                 </div>
             </div>
@@ -99,71 +108,92 @@
     <!-- ==========================================
          2. MÓDULO DE AUTENTICACIÓN
     =========================================== -->
-    <div id="auth-section" class="container mt-5 d-none">
-        <div class="card mx-auto shadow-sm" style="max-width: 450px;">
-            <div class="card-body">
+    <div id="auth-section" class="container my-auto py-5 d-none">
+        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 450px;">
+            <div class="card-body p-4 p-md-5">
                 <button class="btn btn-sm btn-light text-muted mb-3 border" onclick="volverAlHub()">← Volver al inicio</button>
                 <div class="text-center mb-3">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac mb-2">
-                    <h4 class="card-title fw-bold">Acceso Institucional</h4>
+                    <h4 class="card-title fw-bold">Acceso Administrativo</h4>
                 </div>
                 
-                <ul class="nav nav-tabs mb-3" id="authTabs">
-                    <li class="nav-item"><a class="nav-link active" href="#" id="tab-login" onclick="toggleAuth('login')">Ingresar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#" id="tab-register" onclick="toggleAuth('register')">Nuevo Administrador</a></li>
+                <ul class="nav nav-pills nav-fill mb-4 bg-light p-1 rounded-3" id="authTabs">
+                    <li class="nav-item"><a class="nav-link active rounded-2" href="#" id="tab-login" onclick="toggleAuth('login')">Ingresar</a></li>
+                    <li class="nav-item"><a class="nav-link rounded-2" href="#" id="tab-register" onclick="toggleAuth('register')">Nuevo Admin</a></li>
                 </ul>
 
                 <form id="login-form">
-                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="login-email" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="login-password" class="form-control" required></div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">Iniciar Sesión</button>
-                    <div class="mt-3 text-center"><a href="#" onclick="recuperarPassword(event)">¿Olvidó su contraseña?</a></div>
+                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="login-email" class="form-control shadow-sm" required></div>
+                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="login-password" class="form-control shadow-sm" required></div>
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Iniciar Sesión</button>
+                    <div class="mt-3 text-center"><a href="#" class="text-decoration-none small" onclick="recuperarPassword(event)">¿Olvidó su contraseña?</a></div>
                 </form>
 
                 <form id="register-form" class="d-none">
-                    <div class="mb-3"><label class="form-label">Grado, Nombres y Apellidos</label><input type="text" id="reg-nombre" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="reg-email" class="form-control" required></div>
-                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="reg-password" class="form-control" required minlength="6"></div>
-                    <button type="submit" class="btn btn-success w-100 fw-bold">Crear Cuenta</button>
+                    <div class="mb-3"><label class="form-label">Grado, Nombres y Apellidos</label><input type="text" id="reg-nombre" class="form-control shadow-sm" required></div>
+                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="reg-email" class="form-control shadow-sm" required></div>
+                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="reg-password" class="form-control shadow-sm" required minlength="6"></div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">Crear Cuenta</button>
                 </form>
             </div>
         </div>
     </div>
 
     <!-- ==========================================
-         3. MÓDULO PRINCIPAL DE LA APLICACIÓN
+         3. MÓDULO DE NUEVA CONTRASEÑA (RECOVERY)
     =========================================== -->
-    <div id="main-section" class="container mt-4 d-none">
+    <div id="recovery-section" class="container my-auto py-5 d-none">
+        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 450px;">
+            <div class="card-body p-4 p-md-5 text-center">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac mb-3">
+                <h4 class="fw-bold mb-3">Restablecer Contraseña</h4>
+                <p class="text-muted small mb-4">Ingrese su nueva contraseña de acceso institucional.</p>
+                
+                <form id="recovery-form">
+                    <div class="mb-3 text-start"><label class="form-label">Nueva Contraseña</label><input type="password" id="new-password" class="form-control shadow-sm" required minlength="6"></div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">Actualizar Contraseña</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         4. MÓDULO PRINCIPAL DE LA APLICACIÓN
+    =========================================== -->
+    <div id="main-section" class="container my-4 d-none flex-grow-1">
         
-        <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 no-print border-bottom pb-3">
+        <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 no-print border-bottom pb-3 bg-white p-3 rounded-4 shadow-sm">
             <div class="d-flex align-items-center gap-3 mb-3 mb-md-0">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                <h2 class="m-0 text-dark fw-bold">Gestión de Evento</h2>
+                <div>
+                    <h4 class="m-0 text-dark fw-bold">Módulo de Asistencia</h4>
+                    <small class="text-muted">Fuerza Aeroespacial Colombiana</small>
+                </div>
             </div>
             <div class="d-flex align-items-center">
-                <span id="user-display-name" class="me-3 fw-bold text-secondary"></span>
-                <button class="btn btn-outline-secondary btn-sm me-2" onclick="volverAlHub()">Inicio</button>
-                <button id="btn-logout" class="btn btn-danger btn-sm admin-only d-none">Cerrar Sesión</button>
+                <span id="user-display-name" class="me-3 fw-bold text-secondary small"></span>
+                <button class="btn btn-outline-secondary btn-sm me-2" onclick="volverAlHub()"><i class="fa-solid fa-house"></i> Inicio</button>
+                <button id="btn-logout" class="btn btn-danger btn-sm admin-only d-none"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
             </div>
         </header>
 
         <!-- VISTA: CREAR REUNIÓN -->
         <div id="crear-reunion" class="view-section">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-success text-white fw-bold">Nueva Asistencia Institucional</div>
-                <div class="card-body">
-                    <div class="alert alert-success d-none text-center fs-5" id="codigo-generado-alert"></div>
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-success text-white fw-bold py-3 rounded-top-4">Nueva Asistencia Institucional</div>
+                <div class="card-body p-4">
+                    <div class="alert alert-success d-none text-center fs-5 shadow-sm" id="codigo-generado-alert"></div>
                     <form id="form-reunion">
                         <div class="row">
-                            <div class="col-md-4 mb-3"><label class="form-label">Fecha</label><input type="date" id="r-fecha" class="form-control" required></div>
-                            <div class="col-md-8 mb-3"><label class="form-label">Tema</label><input type="text" id="r-tema" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Oficina Productora</label><input type="text" id="r-oficina" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Lugar</label><input type="text" id="r-lugar" class="form-control" required></div>
-                            <div class="col-md-3 mb-3"><label class="form-label">Hora Inicio</label><input type="time" id="r-inicio" class="form-control" required></div>
-                            <div class="col-md-3 mb-3"><label class="form-label">Hora Fin</label><input type="time" id="r-fin" class="form-control" required></div>
-                            <div class="col-md-12 mb-3"><label class="form-label">Observaciones</label><textarea id="r-obs" class="form-control" rows="2"></textarea></div>
+                            <div class="col-md-4 mb-3"><label class="form-label fw-bold">Fecha</label><input type="date" id="r-fecha" class="form-control" required></div>
+                            <div class="col-md-8 mb-3"><label class="form-label fw-bold">Tema de la Reunión</label><input type="text" id="r-tema" class="form-control" placeholder="Ej: Reunión de Seguimiento..." required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Oficina Productora</label><input type="text" id="r-oficina" class="form-control" placeholder="Ej: AAAES-SECAE" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Lugar</label><input type="text" id="r-lugar" class="form-control" placeholder="Ej: Instalaciones SECAE" required></div>
+                            <div class="col-md-3 mb-3"><label class="form-label fw-bold">Hora Inicio</label><input type="time" id="r-inicio" class="form-control" required></div>
+                            <div class="col-md-3 mb-3"><label class="form-label fw-bold">Hora Fin</label><input type="time" id="r-fin" class="form-control" required></div>
+                            <div class="col-md-12 mb-3"><label class="form-label fw-bold">Observaciones</label><textarea id="r-obs" class="form-control" rows="2"></textarea></div>
                         </div>
-                        <button id="btn-guardar-reunion" type="submit" class="btn btn-success btn-lg mt-2 fw-bold">Guardar y Generar Código</button>
+                        <button id="btn-guardar-reunion" type="submit" class="btn btn-success btn-lg mt-2 fw-bold w-100 shadow-sm">Guardar y Generar Código</button>
                     </form>
                 </div>
             </div>
@@ -171,30 +201,30 @@
 
         <!-- VISTA: REPORTAR ASISTENTE -->
         <div id="reportar-asistente" class="view-section">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-info text-white fw-bold">Registro de Asistente</div>
-                <div class="card-body">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-info text-white fw-bold py-3 rounded-top-4">Registro de Asistente al Evento</div>
+                <div class="card-body p-4">
                     <form id="form-asistente">
-                        <div class="row mb-4 bg-light p-3 rounded border">
-                            <div class="col-md-6 mb-2 mb-md-0"><label class="form-label">Fecha del Evento</label><input type="date" id="a-fecha" class="form-control" required></div>
-                            <div class="col-md-6"><label class="form-label">Código de Control</label><input type="text" id="a-codigo" class="form-control text-center fw-bold" maxlength="4" required></div>
+                        <div class="row mb-4 bg-light p-3 rounded-3 border">
+                            <div class="col-md-6 mb-2 mb-md-0"><label class="form-label fw-bold">Fecha del Evento</label><input type="date" id="a-fecha" class="form-control" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold">Código de Control</label><input type="text" id="a-codigo" class="form-control text-center fw-bold" maxlength="4" required></div>
                         </div>
                         <div class="row">
-                            <div class="col-md-2 mb-3"><label class="form-label">Grado (Opcional)</label><input type="text" id="a-grado" class="form-control" placeholder="Ej: Civil"></div>
-                            <div class="col-md-10 mb-3"><label class="form-label">Nombres y Apellidos</label><input type="text" id="a-nombres" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Cargo</label><input type="text" id="a-cargo" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Dependencia</label><input type="text" id="a-dep" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label><input type="tel" id="a-tel" class="form-control"></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="a-correo" class="form-control"></div>
+                            <div class="col-md-2 mb-3"><label class="form-label">Grado (Opcional)</label><input type="text" id="a-grado" class="form-control" placeholder="Ej: MY"></div>
+                            <div class="col-md-10 mb-3"><label class="form-label fw-bold">Nombres y Apellidos</label><input type="text" id="a-nombres" class="form-control" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Cargo</label><input type="text" id="a-cargo" class="form-control" placeholder="Ej: Especialista de Diseño" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Unidad o Dependencia</label><input type="text" id="a-dep" class="form-control" placeholder="Ej: AAAES-SECAE" required></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label><input type="tel" id="a-tel" class="form-control" placeholder="Ej: 3128816469"></div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="a-correo" class="form-control" placeholder="ejemplo@fac.mil.co"></div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-bold">Firma Digital (Diligencie dentro del recuadro)</label>
-                            <canvas id="firma-pad" class="border rounded d-block bg-white w-100" height="200"></canvas>
+                            <canvas id="firma-pad" class="border rounded-3 d-block w-100 shadow-sm" height="200"></canvas>
                             <div class="mt-2 text-end">
-                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="limpiarFirma()">Borrar Firma</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="limpiarFirma()"><i class="fa-solid fa-eraser"></i> Borrar Firma</button>
                             </div>
                         </div>
-                        <button id="btn-guardar-asistente" type="submit" class="btn btn-info text-white btn-lg w-100 fw-bold">Guardar Asistencia</button>
+                        <button id="btn-guardar-asistente" type="submit" class="btn btn-info text-white btn-lg w-100 fw-bold shadow-sm">Guardar Mi Asistencia</button>
                     </form>
                 </div>
             </div>
@@ -202,28 +232,28 @@
 
         <!-- VISTA: VISUALIZAR Y EXPORTAR -->
         <div id="ver-asistencia" class="view-section">
-            <div class="row mb-4 no-print align-items-end bg-white p-3 rounded shadow-sm border">
-                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label">Fecha de la Reunión</label><input type="date" id="v-fecha" class="form-control"></div>
-                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label">Código de Control</label><input type="text" id="v-codigo" class="form-control text-center fw-bold" maxlength="4"></div>
-                <div class="col-md-4"><button id="btn-buscar" class="btn btn-secondary w-100 fw-bold" onclick="buscarAsistencia()">Buscar Lista</button></div>
+            <div class="row mb-4 no-print align-items-end bg-white p-4 rounded-4 shadow-sm border">
+                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label fw-bold">Fecha de la Reunión</label><input type="date" id="v-fecha" class="form-control"></div>
+                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label fw-bold">Código de Control</label><input type="text" id="v-codigo" class="form-control text-center fw-bold" maxlength="4"></div>
+                <div class="col-md-4"><button id="btn-buscar" class="btn btn-secondary w-100 fw-bold shadow-sm py-2" onclick="buscarAsistencia()"><i class="fa-solid fa-magnifying-glass"></i> Buscar Lista</button></div>
             </div>
             
             <div class="mb-3 no-print text-end d-none" id="export-buttons">
-                <button class="btn btn-danger me-1 fw-bold" onclick="exportarPDF()">PDF</button>
-                <button class="btn btn-success me-1 fw-bold" onclick="exportarExcel()">Excel</button>
-                <button class="btn btn-dark fw-bold" onclick="window.print()">Imprimir</button>
+                <button class="btn btn-danger me-1 fw-bold shadow-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                <button class="btn btn-success me-1 fw-bold shadow-sm" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                <button class="btn btn-dark fw-bold shadow-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
             </div>
 
-            <div id="documento-impresion" class="bg-white p-4 shadow-sm rounded border d-none">
+            <div id="documento-impresion" class="bg-white p-4 shadow-sm rounded-4 border d-none formato-institucional">
                 <div id="reporte-content"></div>
             </div>
         </div>
     </div>
 
     <!-- ==========================================
-         FOOTER INSTITUCIONAL
+         FOOTER INSTITUCIONAL (NOVAELIX)
     =========================================== -->
-    <footer class="text-center py-3 mt-5 no-print text-muted small border-top bg-light">
+    <footer class="text-center py-3 mt-auto no-print text-muted small border-top bg-white shadow-sm">
         <div class="container d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
             <a href="https://novaelix.vercel.app/" target="_blank" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
                 <i class="fa-solid fa-bolt text-warning"></i>
@@ -241,7 +271,6 @@
          LÓGICA JAVASCRIPT
     =========================================== -->
     <script>
-        // 0. CONFIGURACIÓN FECHA POR DEFECTO
         document.addEventListener('DOMContentLoaded', () => {
             const tzOffset = (new Date()).getTimezoneOffset() * 60000;
             const hoy = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
@@ -250,9 +279,13 @@
             document.getElementById('r-fecha').value = hoy;
             document.getElementById('a-fecha').value = hoy;
             document.getElementById('v-fecha').value = hoy;
+
+            if (window.location.hash && window.location.hash.includes('type=recovery')) {
+                document.getElementById('hub-section').classList.add('d-none');
+                document.getElementById('recovery-section').classList.remove('d-none');
+            }
         });
 
-        // 1. INICIALIZACIÓN SUPABASE
         const supabaseUrl = 'https://yfbfbywjwslxsrgamqhj.supabase.co'; 
         const supabaseKey = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j'; 
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey, {
@@ -264,7 +297,6 @@
         let currentReunion = null;
         let currentAsistentes = [];
 
-        // 2. ENRUTAMIENTO Y ESTADO DE SESIÓN
         supabaseClient.auth.onAuthStateChange((event, session) => {
             sessionActiva = session;
             if (session) {
@@ -285,13 +317,16 @@
         function volverAlHub() {
             document.getElementById('main-section').classList.add('d-none');
             document.getElementById('auth-section').classList.add('d-none');
+            document.getElementById('recovery-section').classList.add('d-none');
             document.getElementById('hub-section').classList.remove('d-none');
             destinoPendiente = null;
+            if(window.location.hash) history.pushState("", document.title, window.location.pathname);
         }
 
         function mostrarPanelApp(viewId) {
             document.getElementById('hub-section').classList.add('d-none');
             document.getElementById('auth-section').classList.add('d-none');
+            document.getElementById('recovery-section').classList.add('d-none');
             document.getElementById('main-section').classList.remove('d-none');
             
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
@@ -363,7 +398,6 @@
             }
         }
 
-        // 3. AUTENTICACIÓN
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -401,6 +435,17 @@
             else alert('Cuenta creada exitosamente. Ya puede iniciar sesión.');
         });
 
+        document.getElementById('recovery-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+            if (error) alert('Error al actualizar contraseña: ' + error.message);
+            else {
+                alert('¡Contraseña actualizada con éxito! Ya puede iniciar sesión.');
+                volverAlHub();
+            }
+        });
+
         document.getElementById('btn-logout').addEventListener('click', async () => {
             await supabaseClient.auth.signOut();
             volverAlHub();
@@ -413,10 +458,9 @@
             
             const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
             if (error) alert('Error: ' + error.message);
-            else alert('Se ha enviado un enlace de recuperación a su correo.');
+            else alert('Se ha enviado un enlace de recuperación a su correo electrónico.');
         }
 
-        // 4. CREAR REUNIÓN
         async function generarCodigoUnico(fecha) {
             let codigo, existe = true;
             while(existe) {
@@ -462,7 +506,6 @@
             }
         });
 
-        // 5. CANVAS FIRMA DIGITAL
         const canvas = document.getElementById('firma-pad');
         const ctx = canvas.getContext('2d');
         let pintando = false;
@@ -502,7 +545,6 @@
 
         function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        // 6. REGISTRAR ASISTENTE
         document.getElementById('form-asistente').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -552,7 +594,6 @@
             }
         });
 
-        // 7. VISUALIZAR, REORDENAR Y EXPORTAR
         async function buscarAsistencia() {
             const fecha = document.getElementById('v-fecha').value;
             const codigo = document.getElementById('v-codigo').value;
@@ -589,36 +630,52 @@
             document.getElementById('export-buttons').classList.remove('d-none');
 
             let html = `
-                <div class="d-flex align-items-center justify-content-center gap-3 mb-3 border-bottom pb-3">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                    <div class="text-center">
-                        <h5 class="fw-bold m-0">FUERZA AEREA COLOMBIANA</h5>
-                        <h6 class="text-muted m-0">LISTADO DE ASISTENCIA INSTITUCIONAL</h6>
+                <table class="table table-bordered mb-3 align-middle" style="font-size: 8.5pt;">
+                    <tr>
+                        <td rowspan="2" class="text-center" style="width: 15%;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
+                        </td>
+                        <td class="text-center fw-bold" style="width: 55%;">
+                            FUERZA AEROESPACIAL COLOMBIANA<br>
+                            FORMATO LISTADO DE ASISTENCIA
+                        </td>
+                        <td style="width: 30%;">
+                            <strong>Código:</strong> DE-SEMEP-FR-006<br>
+                            <strong>Versión:</strong> 5<br>
+                            <strong>Vigencia:</strong> 2024-11-14
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="card mb-3 border bg-light p-2" style="font-size: 9pt;">
+                    <div><strong>TEMA REUNIÓN:</strong> ${currentReunion.tema}</div>
+                    <div><strong>OFICINA PRODUCTORA:</strong> ${currentReunion.oficina_productora}</div>
+                    <div class="row">
+                        <div class="col-8"><strong>LUGAR Y FECHA:</strong> ${currentReunion.lugar} - ${currentReunion.fecha}</div>
+                        <div class="col-4"><strong>HORA:</strong> ${currentReunion.hora_inicio} a ${currentReunion.hora_fin}</div>
                     </div>
-                </div>
-                <div class="row mb-4" style="font-size: 0.9rem;">
-                    <div class="col-6"><strong>Código de Control:</strong> ${currentReunion.numero_control}</div>
-                    <div class="col-6"><strong>Fecha:</strong> ${currentReunion.fecha}</div>
-                    <div class="col-12"><strong>Tema:</strong> ${currentReunion.tema}</div>
-                    <div class="col-6"><strong>Lugar:</strong> ${currentReunion.lugar}</div>
-                    <div class="col-6"><strong>Oficina Productora:</strong> ${currentReunion.oficina_productora}</div>
-                    <div class="col-6"><strong>Hora Inicio:</strong> ${currentReunion.hora_inicio}</div>
-                    <div class="col-6"><strong>Hora Fin:</strong> ${currentReunion.hora_fin}</div>
-                    <div class="col-12"><strong>Observaciones:</strong> ${currentReunion.observaciones || 'N/A'}</div>
-                    <div class="col-12 mt-2 d-flex justify-content-between align-items-center">
-                        <span><strong>Total Asistentes:</strong> ${currentAsistentes.length}</span>
-                        <button id="btn-guardar-orden" class="btn btn-warning btn-sm fw-bold d-none no-print" onclick="guardarNuevoOrden()">
-                            💾 Guardar Nuevo Orden
+                    <div><strong>OBSERVACIONES:</strong> ${currentReunion.observaciones || 'N/A'}</div>
+                    <div class="mt-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-primary">Total Asistentes: ${currentAsistentes.length}</span>
+                        <button id="btn-guardar-orden" class="btn btn-warning btn-sm fw-bold d-none no-print shadow-sm" onclick="guardarNuevoOrden()">
+                            💾 Guardar Nuevo Orden de Lista
                         </button>
                     </div>
                 </div>
-                <table class="table table-bordered table-striped align-middle">
-                    <thead class="table-light">
+
+                <table class="table table-bordered table-striped align-middle" style="font-size: 9pt;">
+                    <thead class="table-light text-center">
                         <tr>
-                            <th style="width: 40px;" class="no-print">↕</th>
-                            <th>No.</th><th>Grado</th><th>Nombres y Apellidos</th>
-                            <th>Cargo / Dependencia</th><th>Contacto</th><th>Firma</th>
-                            <th class="col-acciones text-center">Acción</th>
+                            <th style="width: 35px;" class="no-print">↕</th>
+                            <th style="width: 45px;">No.</th>
+                            <th style="width: 60px;">GR</th>
+                            <th>NOMBRES Y APELLIDOS</th>
+                            <th>CARGO</th>
+                            <th>UNIDAD O DEPENDENCIA</th>
+                            <th style="width: 90px;">TELÉFONO</th>
+                            <th>CORREO ELECTRÓNICO</th>
+                            <th style="width: 110px;">FIRMA</th>
+                            <th class="col-acciones text-center" style="width: 50px;">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="sortable-table">
@@ -628,14 +685,16 @@
                 html += `
                     <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event, '${a.id}')" data-id="${a.id}" style="cursor: grab;">
                         <td class="text-center no-print text-muted fs-5" title="Arrastrar para ordenar">☰</td>
-                        <td class="row-num">${index + 1}</td>
-                        <td>${a.grado || '-'}</td>
-                        <td>${a.nombre_apellidos}</td>
-                        <td>${a.cargo}<br><small class="text-muted">${a.dependencia}</small></td>
-                        <td>${a.telefono || '-'}<br><small>${a.correo || '-'}</small></td>
+                        <td class="text-center row-num fw-bold">${index + 1}</td>
+                        <td class="text-center">${a.grado || '-'}</td>
+                        <td class="fw-semibold">${a.nombre_apellidos}</td>
+                        <td>${a.cargo}</td>
+                        <td>${a.dependencia}</td>
+                        <td class="text-center">${a.telefono || '-'}</td>
+                        <td>${a.correo || '-'}</td>
                         <td class="text-center"><img src="${a.firma_base64}" class="firma-img" alt="Firma"></td>
                         <td class="col-acciones text-center">
-                            <button class="btn btn-danger btn-sm btn-eliminar" onclick="eliminarAsistente('${a.id}')">X</button>
+                            <button class="btn btn-danger btn-sm btn-eliminar py-0 px-1" onclick="eliminarAsistente('${a.id}')">X</button>
                         </td>
                     </tr>
                 `;
@@ -645,7 +704,6 @@
             contenedor.innerHTML = html;
         }
 
-        // LÓGICA DE DRAG AND DROP
         let draggedRowId = null;
         window.dragStart = function(e) {
             draggedRowId = e.currentTarget.getAttribute('data-id');
@@ -701,7 +759,7 @@
                 if (error) errorOcurrido = true;
             }
 
-            btn.innerHTML = '💾 Guardar Nuevo Orden';
+            btn.innerHTML = '💾 Guardar Nuevo Orden de Lista';
             btn.disabled = false;
 
             if (errorOcurrido) alert('Hubo un error al actualizar el orden.');
@@ -725,13 +783,13 @@
             const botones = document.querySelectorAll('.col-acciones');
             botones.forEach(btn => btn.style.display = 'none'); 
 
-            html2canvas(elemento, { scale: 2 }).then(canvas => {
+            html2canvas(elemento, { scale: 2, useCORS: true }).then(canvas => {
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
                 pdf.save(`Asistencia_${currentReunion.numero_control}.pdf`);
                 botones.forEach(btn => btn.style.display = ''); 
             });
@@ -739,30 +797,40 @@
 
         window.exportarExcel = async function() {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('Asistencia');
+            const worksheet = workbook.addWorksheet('FORMATO LISTADO', {
+                pageSetup: { orientation: 'landscape', paperSize: 9 }
+            });
             
-            worksheet.columns = [
-                { header: 'No.', key: 'no', width: 5 },
-                { header: 'Grado', key: 'grado', width: 10 },
-                { header: 'Nombres', key: 'nombres', width: 35 },
-                { header: 'Cargo', key: 'cargo', width: 25 },
-                { header: 'Dependencia', key: 'dependencia', width: 25 },
-                { header: 'Teléfono', key: 'tel', width: 15 },
-                { header: 'Correo', key: 'correo', width: 25 },
-                { header: 'Firma', key: 'firma', width: 30 }
-            ];
+            worksheet.addRow(['', 'FUERZA AEROESPACIAL COLOMBIANA', 'Código: DE-SEMEP-FR-006']);
+            worksheet.addRow(['', 'FORMATO LISTADO DE ASISTENCIA', 'Versión: 5']);
+            worksheet.addRow(['', '', 'Vigencia: 2024-11-14']);
+            worksheet.addRow([]);
+            worksheet.addRow([`TEMA REUNIÓN: ${currentReunion.tema}`]);
+            worksheet.addRow([`OFICINA PRODUCTORA: ${currentReunion.oficina_productora}`]);
+            worksheet.addRow([`LUGAR Y FECHA: ${currentReunion.lugar} - ${currentReunion.fecha} | HORA: ${currentReunion.hora_inicio} a ${currentReunion.hora_fin}`]);
+            worksheet.addRow([`OBSERVACIONES: ${currentReunion.observaciones || 'N/A'}`]);
+            worksheet.addRow([]);
 
+            worksheet.addRow(['No.', 'GR', 'NOMBRES Y APELLIDOS', 'CARGO', 'UNIDAD O DEPENDENCIA', 'TELÉFONO', 'CORREO ELECTRÓNICO', 'FIRMA']);
+            
             currentAsistentes.forEach((a, index) => {
-                const row = worksheet.addRow({
-                    no: index + 1, grado: a.grado || '', nombres: a.nombre_apellidos,
-                    cargo: a.cargo, dependencia: a.dependencia, tel: a.telefono, correo: a.correo
-                });
+                const row = worksheet.addRow([
+                    index + 1, 
+                    a.grado || '', 
+                    a.nombre_apellidos,
+                    a.cargo, 
+                    a.dependencia, 
+                    a.telefono || '', 
+                    a.correo || '',
+                    ''
+                ]);
                 row.height = 45;
+                
                 if (a.firma_base64) {
                     const imageId = workbook.addImage({ base64: a.firma_base64, extension: 'png' });
                     worksheet.addImage(imageId, {
                         tl: { col: 7, row: row.number - 1 },
-                        ext: { width: 150, height: 45 }
+                        ext: { width: 130, height: 40 }
                     });
                 }
             });
