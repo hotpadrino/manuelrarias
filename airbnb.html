@@ -1,847 +1,576 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Asistencia Institucional - FAC</title>
-    
-    <!-- METADATOS OPEN GRAPH (PREVIEW DE ENLACE / OG IMAGE) -->
-    <meta property="og:title" content="Control de Asistencia Institucional - FAC">
-    <meta property="og:description" content="Sistema oficial de registro y gestión de asistencia institucional de la Fuerza Aeroespacial Colombiana.">
-    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg">
-    <meta property="og:type" content="website">
+<meta charset="UTF-8">
+<script>
+/* =========================================================
+   CÓDIGO DE ACCESO — Cambia solo aquí para actualizar
+   en todo el archivo (Check-in ES y EN).
+   ========================================================= */
+var Codigo = "1234#";
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unique Mine 315 · Welcome Book</title>
+<link rel="icon" type="image/png" href="https://a0.muscache.com/im/pictures/AirbnbPlatformAssets/AirbnbPlatformAssets-Favicons/original/d1fcc0b3-865f-485a-b28b-43ca0bf7c891.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome para iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Librerías Externas -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<style>
+/* =========================================================
+   FICHA DE ESTILO — Colores, fuentes y espaciados
+   ========================================================= */
+:root{
+  --ink:#211E1A;
+  --cream:#F6F1E6;
+  --card:#FFFFFF;
+  --terracotta:#C1592C;
+  --brass:#A6813C;
+  --muted:#6B655C;
+  --line:rgba(33,30,26,0.10);
+  --radius:18px;
+  --shadow:0 8px 22px rgba(33,30,26,0.08);
+  --serif:'Fraunces', serif;
+  --sans:'Inter', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:var(--sans);}
+body{
+  background:#171410 radial-gradient(circle at 50% 0%, #241E17 0%, #171410 65%);
+  color:var(--ink);
+  display:flex;justify-content:center;
+  min-height:100vh;
+}
+.app{
+  width:100%;max-width:480px;background:var(--cream);
+  min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.35);
+  position:relative;padding-bottom:70px;
+  transition:background-color .3s ease, color .3s ease;
+}
 
-    <style>
-        body { background-color: #f4f6f9; font-family: system-ui, -apple-system, sans-serif; }
-        
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        
-        #firma-pad {
-            touch-action: none; 
-            border: 2px dashed #adb5bd !important;
-            cursor: crosshair;
-            background-color: #fff;
-        }
-        
-        .firma-img {
-            max-height: 45px;
-            display: block;
-            margin: 0 auto;
-        }
+/* ---------- Hero ---------- */
+.hero{
+  position:relative;height:260px;overflow:hidden;
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+  display:flex;align-items:flex-end;padding:20px;
+  text-decoration:none;
+}
+.hero img.hero-bg{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top, rgba(20,18,14,0.82), rgba(20,18,14,0) 60%);
+  border-bottom-left-radius:28px;border-bottom-right-radius:28px;
+}
+.hero-title{position:relative;z-index:1;color:#fff;width:100%;}
+.hero-title .eyebrow{
+  font-size:0.68rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:#F0D9B5;font-weight:600;margin-bottom:4px;
+}
+.hero-title h1{font-family:var(--serif);font-size:1.65rem;font-weight:600;line-height:1.15;}
+.hero-title p{font-size:0.84rem;opacity:0.9;margin-top:5px;}
+.hero-badge{
+  position:absolute;top:16px;right:16px;z-index:2;
+  background:rgba(255,255,255,0.95);color:var(--terracotta);
+  padding:6px 13px;border-radius:20px;font-size:0.72rem;font-weight:700;
+  display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);
+}
 
-        .escudo-fac {
-            height: 55px;
-            width: auto;
-            object-fit: contain;
-        }
+/* ---------- Selector de idioma (Banderas con Imágenes SVG) ---------- */
+.lang-pill{
+  position:absolute;top:18px;left:0;z-index:3;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,0.95);
+  padding:8px 20px 8px 14px;
+  clip-path:polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%);
+  box-shadow:var(--shadow);
+}
+.flag-btn{
+  width:22px;height:16px;
+  object-fit:cover;
+  border-radius:2px;
+  cursor:pointer;
+  user-select:none;
+  opacity:.35;
+  transition:transform .2s, opacity .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.flag-btn.active{
+  opacity:1;
+  transform:scale(1.2);
+}
+.lang-pill .chevron{color:var(--terracotta);font-size:0.75rem;margin-left:-2px;}
 
-        .formato-institucional {
-            border: 1px solid #dee2e6;
-            background: #fff;
-        }
+/* ---------- Barra de temas (6 botones pequeños) ---------- */
+.theme-bar{
+  display:flex;justify-content:center;align-items:center;gap:6px;
+  padding:16px 20px 2px;flex-wrap:wrap;
+}
+.theme-btn{
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  padding:5px 10px;
+  border-radius:14px;
+  font-size:0.68rem;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.04);
+  transition:all .2s ease;
+  user-select:none;
+}
+.theme-btn i{font-size:0.7rem;color:var(--terracotta);}
+.theme-btn:active, .theme-btn.active{
+  border-color:var(--terracotta);
+  background:var(--terracotta);
+  color:#FFFFFF;
+}
+.theme-btn:active i, .theme-btn.active i{
+  color:#FFFFFF;
+}
 
-        @media print {
-            body { background-color: #fff; margin: 0; }
-            .no-print, #auth-section, #hub-section, #recovery-section, header, footer { display: none !important; }
-            #documento-impresion { border: none !important; box-shadow: none !important; width: 100%; margin: 0; padding: 0; }
-            .table { width: 100% !important; font-size: 9pt; }
-            .table th { background-color: #e9ecef !important; -webkit-print-color-adjust: exact; color-adjust: exact; }
-            .col-acciones, .btn-eliminar { display: none !important; }
-            @page { margin: 1cm; size: landscape; }
-        }
-    </style>
+/* ---------- Grid de menú ---------- */
+.grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:13px;padding:14px 20px 6px;
+}
+.grid-item{
+  background:var(--card);border-radius:var(--radius);
+  padding:16px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;box-shadow:var(--shadow);cursor:pointer;
+  border:1px solid var(--line);transition:transform .15s, background-color .3s;
+}
+.grid-item:active{transform:scale(0.95);}
+.grid-item i{font-size:1.6rem;color:var(--terracotta);margin-bottom:8px;}
+.grid-item span{
+  font-size:0.68rem;font-weight:700;color:var(--ink);
+  text-transform:uppercase;letter-spacing:0.4px;
+}
+
+/* ---------- Modal ---------- */
+.modal{
+  display:none;position:fixed;inset:0;background:rgba(20,18,14,0.55);
+  z-index:100;align-items:flex-end;justify-content:center;
+}
+.modal.active{display:flex;}
+.modal-content{
+  background:var(--cream);width:100%;max-width:480px;
+  border-top-left-radius:26px;border-top-right-radius:26px;
+  padding:26px 24px 30px;max-height:82vh;overflow-y:auto;
+  animation:slideUp .3s ease-out;position:relative;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.close-btn{
+  position:absolute;top:16px;right:20px;font-size:1.5rem;color:var(--muted);cursor:pointer;
+}
+.modal-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.modal-header i{font-size:1.4rem;color:var(--terracotta);}
+.modal-header h2{font-family:var(--serif);font-size:1.25rem;font-weight:600;}
+.modal-body p{color:var(--muted);line-height:1.65;font-size:0.93rem;margin-bottom:14px;}
+.modal-body img{width:100%;border-radius:12px;margin-bottom:14px;object-fit:cover;max-height:200px;}
+.modal-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;}
+.modal-gallery img{width:100%;height:70px;object-fit:cover;border-radius:8px;margin:0;}
+.code-box{
+  background:var(--ink);color:#F6F1E6;border-radius:10px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;margin:12px 0;font-family:var(--serif);
+}
+.code-box .code{font-size:1.3rem;font-weight:700;letter-spacing:2px;color:#F0D9B5;}
+.info-box{
+  background:rgba(166,129,60,0.12);border-left:3px solid var(--brass);
+  padding:11px 14px;border-radius:8px;font-size:0.86rem;margin:10px 0;color:var(--muted);
+}
+.host-mini{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.host-mini img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--terracotta);}
+.host-mini strong{font-family:var(--serif);font-size:1rem;}
+.btn-action{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;
+  background:var(--terracotta);color:#fff;text-align:center;border-radius:10px;
+  text-decoration:none;font-weight:600;margin-top:8px;font-size:0.9rem;
+}
+.btn-action.whatsapp{background:#3E5C46;}
+
+/* ---------- Footer fijo ---------- */
+.site-footer{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;justify-content:center;
+}
+.site-footer a{
+  width:100%;max-width:480px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--ink);color:#F6F1E6;text-decoration:none;
+  padding:10px;font-size:0.75rem;font-weight:600;letter-spacing:0.3px;
+}
+.site-footer i{color:var(--brass);}
+</style>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
 
-    <!-- ==========================================
-         1. PANEL PRINCIPAL (HUB PÚBLICO)
-    =========================================== -->
-    <div id="hub-section" class="container my-auto py-5">
-        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 500px;">
-            <div class="card-header bg-dark text-white text-center py-4 rounded-top-4 d-flex align-items-center justify-content-center gap-3">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                <div class="text-start">
-                    <h5 class="m-0 fw-bold">FUERZA AEROESPACIAL</h5>
-                    <small class="text-white-50">Control de Asistencia</small>
-                </div>
-            </div>
-            <div class="card-body p-4 p-md-5">
-                <div class="row mb-4">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <label class="form-label fw-bold text-secondary">Fecha del Evento</label>
-                        <input type="date" id="hub-fecha" class="form-control form-control-lg shadow-sm">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-secondary">Código de Control</label>
-                        <input type="text" id="hub-codigo" class="form-control form-control-lg text-center fw-bold text-primary" maxlength="4" placeholder="Ej: 5847">
-                    </div>
-                </div>
-                
-                <div class="d-grid gap-3">
-                    <button id="btn-ir-registrar" class="btn btn-info text-white btn-lg fw-bold shadow-sm py-3" onclick="irARegistrar()">
-                        <i class="fa-solid fa-signature me-2"></i> Registrar Mi Asistencia
-                    </button>
-                    <hr class="my-2 text-muted">
-                    <button class="btn btn-outline-success fw-bold py-2" onclick="irACrear()">
-                        <i class="fa-solid fa-calendar-plus me-2"></i> Crear Nueva Asistencia (Admin)
-                    </button>
-                    <button class="btn btn-outline-secondary fw-bold py-2" onclick="irAConsultar()">
-                        <i class="fa-solid fa-table-list me-2"></i> Consultar / Exportar (Admin)
-                    </button>
-                </div>
-            </div>
-        </div>
+<div class="app">
+
+  <!-- ============ HERO (enlaza a Airbnb) ============ -->
+  <a href="https://es-l.airbnb.com/rooms/53810802" target="_blank" class="hero">
+    <img src="https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/2199c8c7-cc9b-4ac2-a5eb-eaaa0de26a47.jpeg?im_w=1200" alt="Unique Mine 315" class="hero-bg">
+    <div class="hero-badge"><i class="fa-brands fa-airbnb"></i> Ver en Airbnb</div>
+
+    <!-- Componente con Imágenes de Banderas (SVG) -->
+    <div class="lang-pill" onclick="event.preventDefault()">
+      <img src="https://flagcdn.com/co.svg" class="flag-btn active" onclick="event.preventDefault();event.stopPropagation();setLanguage('es')" id="flag-es" title="Español (Colombia)" alt="Colombia">
+      <img src="https://flagcdn.com/us.svg" class="flag-btn" onclick="event.preventDefault();event.stopPropagation();setLanguage('en')" id="flag-en" title="English (USA)" alt="USA">
+      <i class="fa-solid fa-chevron-right chevron"></i>
     </div>
 
-    <!-- ==========================================
-         2. MÓDULO DE AUTENTICACIÓN
-    =========================================== -->
-    <div id="auth-section" class="container my-auto py-5 d-none">
-        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 450px;">
-            <div class="card-body p-4 p-md-5">
-                <button class="btn btn-sm btn-light text-muted mb-3 border" onclick="volverAlHub()">← Volver al inicio</button>
-                <div class="text-center mb-3">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac mb-2">
-                    <h4 class="card-title fw-bold">Acceso Administrativo</h4>
-                </div>
-                
-                <ul class="nav nav-pills nav-fill mb-4 bg-light p-1 rounded-3" id="authTabs">
-                    <li class="nav-item"><a class="nav-link active rounded-2" href="#" id="tab-login" onclick="toggleAuth('login')">Ingresar</a></li>
-                    <li class="nav-item"><a class="nav-link rounded-2" href="#" id="tab-register" onclick="toggleAuth('register')">Nuevo Admin</a></li>
-                </ul>
-
-                <form id="login-form">
-                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="login-email" class="form-control shadow-sm" required></div>
-                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="login-password" class="form-control shadow-sm" required></div>
-                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Iniciar Sesión</button>
-                    <div class="mt-3 text-center"><a href="#" class="text-decoration-none small" onclick="recuperarPassword(event)">¿Olvidó su contraseña?</a></div>
-                </form>
-
-                <form id="register-form" class="d-none">
-                    <div class="mb-3"><label class="form-label">Grado, Nombres y Apellidos</label><input type="text" id="reg-nombre" class="form-control shadow-sm" required></div>
-                    <div class="mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="reg-email" class="form-control shadow-sm" required></div>
-                    <div class="mb-3"><label class="form-label">Contraseña</label><input type="password" id="reg-password" class="form-control shadow-sm" required minlength="6"></div>
-                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">Crear Cuenta</button>
-                </form>
-            </div>
-        </div>
+    <div class="hero-title">
+      <div class="eyebrow">Edificio Unique Mine · El Chicó</div>
+      <h1 id="hero-h1">Guia interactiva de prueba</h1>
+      <p id="hero-p">Carrera 9 #100-77, Bogotá</p>
     </div>
+  </a>
 
-    <!-- ==========================================
-         3. MÓDULO DE NUEVA CONTRASEÑA (RECOVERY)
-    =========================================== -->
-    <div id="recovery-section" class="container my-auto py-5 d-none">
-        <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 450px;">
-            <div class="card-body p-4 p-md-5 text-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac mb-3">
-                <h4 class="fw-bold mb-3">Restablecer Contraseña</h4>
-                <p class="text-muted small mb-4">Ingrese su nueva contraseña de acceso institucional.</p>
-                
-                <form id="recovery-form">
-                    <div class="mb-3 text-start"><label class="form-label">Nueva Contraseña</label><input type="password" id="new-password" class="form-control shadow-sm" required minlength="6"></div>
-                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">Actualizar Contraseña</button>
-                </form>
-            </div>
-        </div>
+  <!-- ============ BARRA DE 6 TEMAS (3 CLAROS, 3 OSCUROS) ============ -->
+  <div class="theme-bar">
+    <button class="theme-btn active" onclick="setTheme('cream', this)"><i class="fa-solid fa-sun"></i> Crema</button>
+    <button class="theme-btn" onclick="setTheme('botanical', this)"><i class="fa-solid fa-leaf"></i> Oliva</button>
+    <button class="theme-btn" onclick="setTheme('blue', this)"><i class="fa-solid fa-compass"></i> Azul</button>
+    <button class="theme-btn" onclick="setTheme('darkGold', this)"><i class="fa-solid fa-moon"></i> Dorado</button>
+    <button class="theme-btn" onclick="setTheme('emerald', this)"><i class="fa-solid fa-gem"></i> Esmeralda</button>
+    <button class="theme-btn" onclick="setTheme('charcoal', this)"><i class="fa-solid fa-fire-flame-curved"></i> Carbón</button>
+  </div>
+
+  <!-- ============ GRID DE BOTONES ============ -->
+  <div class="grid">
+    <div class="grid-item" onclick="openModal('bienvenido')"><i class="fa-solid fa-house-chimney"></i><span id="btn-bienvenido">Bienvenido</span></div>
+    <div class="grid-item" onclick="openModal('checkin')"><i class="fa-solid fa-key"></i><span id="btn-checkin">Check In</span></div>
+    <div class="grid-item" onclick="openModal('ubicacion')"><i class="fa-solid fa-location-dot"></i><span id="btn-ubicacion">Ubicación</span></div>
+    <div class="grid-item" onclick="openModal('normas')"><i class="fa-solid fa-wifi"></i><span id="btn-normas">Wi-Fi &amp; TV</span></div>
+    <div class="grid-item" onclick="openModal('servicios')"><i class="fa-solid fa-couch"></i><span id="btn-servicios">Servicios</span></div>
+    <div class="grid-item" onclick="openModal('actividades')"><i class="fa-solid fa-camera"></i><span id="btn-actividades">Actividades</span></div>
+    <div class="grid-item" onclick="openModal('informacion')"><i class="fa-solid fa-circle-info"></i><span id="btn-informacion">Información</span></div>
+    <div class="grid-item" onclick="openModal('bares')"><i class="fa-solid fa-martini-glass-citrus"></i><span id="btn-bares">Bares &amp; Rooftop</span></div>
+    <div class="grid-item" onclick="openModal('restaurantes')"><i class="fa-solid fa-utensils"></i><span id="btn-restaurantes">Restaurantes</span></div>
+    <div class="grid-item" onclick="openModal('compras')"><i class="fa-solid fa-cart-shopping"></i><span id="btn-compras">Supermercados</span></div>
+    <div class="grid-item" onclick="openModal('emergencias')"><i class="fa-solid fa-bus"></i><span id="btn-emergencias">Transporte</span></div>
+    <div class="grid-item" onclick="openModal('contacto')"><i class="fa-solid fa-phone"></i><span id="btn-contacto">Contacto</span></div>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div id="modal" class="modal" onclick="closeModalOnOut(event)">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <div class="modal-header">
+      <i id="modal-icon" class="fa-solid"></i>
+      <h2 id="modal-title">Título</h2>
     </div>
-
-    <!-- ==========================================
-         4. MÓDULO PRINCIPAL DE LA APLICACIÓN
-    =========================================== -->
-    <div id="main-section" class="container my-4 d-none flex-grow-1">
-        
-        <header class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 no-print border-bottom pb-3 bg-white p-3 rounded-4 shadow-sm">
-            <div class="d-flex align-items-center gap-3 mb-3 mb-md-0">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                <div>
-                    <h4 class="m-0 text-dark fw-bold">Módulo de Asistencia</h4>
-                    <small class="text-muted">Fuerza Aeroespacial Colombiana</small>
-                </div>
-            </div>
-            <div class="d-flex align-items-center">
-                <span id="user-display-name" class="me-3 fw-bold text-secondary small"></span>
-                <button class="btn btn-outline-secondary btn-sm me-2" onclick="volverAlHub()"><i class="fa-solid fa-house"></i> Inicio</button>
-                <button id="btn-logout" class="btn btn-danger btn-sm admin-only d-none"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-            </div>
-        </header>
-
-        <!-- VISTA: CREAR REUNIÓN -->
-        <div id="crear-reunion" class="view-section">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-success text-white fw-bold py-3 rounded-top-4">Nueva Asistencia Institucional</div>
-                <div class="card-body p-4">
-                    <div class="alert alert-success d-none text-center fs-5 shadow-sm" id="codigo-generado-alert"></div>
-                    <form id="form-reunion">
-                        <div class="row">
-                            <div class="col-md-4 mb-3"><label class="form-label fw-bold">Fecha</label><input type="date" id="r-fecha" class="form-control" required></div>
-                            <div class="col-md-8 mb-3"><label class="form-label fw-bold">Tema de la Reunión</label><input type="text" id="r-tema" class="form-control" placeholder="Ej: Reunión de Seguimiento..." required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Oficina Productora</label><input type="text" id="r-oficina" class="form-control" placeholder="Ej: AAAES-SECAE" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Lugar</label><input type="text" id="r-lugar" class="form-control" placeholder="Ej: Instalaciones SECAE" required></div>
-                            <div class="col-md-3 mb-3"><label class="form-label fw-bold">Hora Inicio</label><input type="time" id="r-inicio" class="form-control" required></div>
-                            <div class="col-md-3 mb-3"><label class="form-label fw-bold">Hora Fin</label><input type="time" id="r-fin" class="form-control" required></div>
-                            <div class="col-md-12 mb-3"><label class="form-label fw-bold">Observaciones</label><textarea id="r-obs" class="form-control" rows="2"></textarea></div>
-                        </div>
-                        <button id="btn-guardar-reunion" type="submit" class="btn btn-success btn-lg mt-2 fw-bold w-100 shadow-sm">Guardar y Generar Código</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTA: REPORTAR ASISTENTE -->
-        <div id="reportar-asistente" class="view-section">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-info text-white fw-bold py-3 rounded-top-4">Registro de Asistente al Evento</div>
-                <div class="card-body p-4">
-                    <form id="form-asistente">
-                        <div class="row mb-4 bg-light p-3 rounded-3 border">
-                            <div class="col-md-6 mb-2 mb-md-0"><label class="form-label fw-bold">Fecha del Evento</label><input type="date" id="a-fecha" class="form-control" required></div>
-                            <div class="col-md-6"><label class="form-label fw-bold">Código de Control</label><input type="text" id="a-codigo" class="form-control text-center fw-bold" maxlength="4" required></div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-2 mb-3"><label class="form-label">Grado (Opcional)</label><input type="text" id="a-grado" class="form-control" placeholder="Ej: MY"></div>
-                            <div class="col-md-10 mb-3"><label class="form-label fw-bold">Nombres y Apellidos</label><input type="text" id="a-nombres" class="form-control" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Cargo</label><input type="text" id="a-cargo" class="form-control" placeholder="Ej: Especialista de Diseño" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label fw-bold">Unidad o Dependencia</label><input type="text" id="a-dep" class="form-control" placeholder="Ej: AAAES-SECAE" required></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label><input type="tel" id="a-tel" class="form-control" placeholder="Ej: 3128816469"></div>
-                            <div class="col-md-6 mb-3"><label class="form-label">Correo Electrónico</label><input type="email" id="a-correo" class="form-control" placeholder="ejemplo@fac.mil.co"></div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Firma Digital (Diligencie dentro del recuadro)</label>
-                            <canvas id="firma-pad" class="border rounded-3 d-block w-100 shadow-sm" height="200"></canvas>
-                            <div class="mt-2 text-end">
-                                <button type="button" class="btn btn-sm btn-outline-warning" onclick="limpiarFirma()"><i class="fa-solid fa-eraser"></i> Borrar Firma</button>
-                            </div>
-                        </div>
-                        <button id="btn-guardar-asistente" type="submit" class="btn btn-info text-white btn-lg w-100 fw-bold shadow-sm">Guardar Mi Asistencia</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTA: VISUALIZAR Y EXPORTAR -->
-        <div id="ver-asistencia" class="view-section">
-            <div class="row mb-4 no-print align-items-end bg-white p-4 rounded-4 shadow-sm border">
-                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label fw-bold">Fecha de la Reunión</label><input type="date" id="v-fecha" class="form-control"></div>
-                <div class="col-md-4 mb-2 mb-md-0"><label class="form-label fw-bold">Código de Control</label><input type="text" id="v-codigo" class="form-control text-center fw-bold" maxlength="4"></div>
-                <div class="col-md-4"><button id="btn-buscar" class="btn btn-secondary w-100 fw-bold shadow-sm py-2" onclick="buscarAsistencia()"><i class="fa-solid fa-magnifying-glass"></i> Buscar Lista</button></div>
-            </div>
-            
-            <div class="mb-3 no-print text-end d-none" id="export-buttons">
-                <button class="btn btn-danger me-1 fw-bold shadow-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-                <button class="btn btn-success me-1 fw-bold shadow-sm" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>
-                <button class="btn btn-dark fw-bold shadow-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir</button>
-            </div>
-
-            <div id="documento-impresion" class="bg-white p-4 shadow-sm rounded-4 border d-none formato-institucional">
-                <div id="reporte-content"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ==========================================
-         FOOTER INSTITUCIONAL (NOVAELIX)
-    =========================================== -->
-    <footer class="text-center py-3 mt-auto no-print text-muted small border-top bg-white shadow-sm">
-        <div class="container d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
-            <a href="https://novaelix.vercel.app/" target="_blank" class="text-decoration-none text-secondary d-flex align-items-center gap-1">
-                <i class="fa-solid fa-bolt text-warning"></i>
-                <span>Control de asistencia creado por Novaelix</span>
-            </a>
-            <span class="d-none d-md-inline text-muted">|</span>
-            <a href="https://wa.me/573128816469" target="_blank" class="text-decoration-none text-success d-flex align-items-center gap-1 fw-bold">
-                <i class="fa-brands fa-whatsapp"></i>
-                <span>+57 312 8816469</span>
-            </a>
-        </div>
-    </footer>
-
-    <!-- ==========================================
-         LÓGICA JAVASCRIPT
-    =========================================== -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-            const hoy = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
-            
-            document.getElementById('hub-fecha').value = hoy;
-            document.getElementById('r-fecha').value = hoy;
-            document.getElementById('a-fecha').value = hoy;
-            document.getElementById('v-fecha').value = hoy;
-
-            if (window.location.hash && window.location.hash.includes('type=recovery')) {
-                document.getElementById('hub-section').classList.add('d-none');
-                document.getElementById('recovery-section').classList.remove('d-none');
-            }
-        });
-
-        const supabaseUrl = 'https://yfbfbywjwslxsrgamqhj.supabase.co'; 
-        const supabaseKey = 'sb_publishable_PXth9Sd24jgQOizXrmk5Tw_YVJh4V6j'; 
-        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey, {
-            db: { schema: 'asistencia' }
-        });
-
-        let sessionActiva = null;
-        let destinoPendiente = null;
-        let currentReunion = null;
-        let currentAsistentes = [];
-
-        supabaseClient.auth.onAuthStateChange((event, session) => {
-            sessionActiva = session;
-            if (session) {
-                const name = session.user.user_metadata.display_name || session.user.email;
-                document.getElementById('user-display-name').textContent = 'Admin: ' + name;
-                document.getElementById('btn-logout').classList.remove('d-none');
-                
-                if (destinoPendiente) {
-                    mostrarPanelApp(destinoPendiente);
-                    destinoPendiente = null;
-                }
-            } else {
-                document.getElementById('user-display-name').textContent = '';
-                document.getElementById('btn-logout').classList.add('d-none');
-            }
-        });
-
-        function volverAlHub() {
-            document.getElementById('main-section').classList.add('d-none');
-            document.getElementById('auth-section').classList.add('d-none');
-            document.getElementById('recovery-section').classList.add('d-none');
-            document.getElementById('hub-section').classList.remove('d-none');
-            destinoPendiente = null;
-            if(window.location.hash) history.pushState("", document.title, window.location.pathname);
-        }
-
-        function mostrarPanelApp(viewId) {
-            document.getElementById('hub-section').classList.add('d-none');
-            document.getElementById('auth-section').classList.add('d-none');
-            document.getElementById('recovery-section').classList.add('d-none');
-            document.getElementById('main-section').classList.remove('d-none');
-            
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-        }
-
-        function requerirLoginPara(viewId) {
-            if (sessionActiva) mostrarPanelApp(viewId);
-            else {
-                destinoPendiente = viewId;
-                document.getElementById('hub-section').classList.add('d-none');
-                document.getElementById('auth-section').classList.remove('d-none');
-            }
-        }
-
-        async function irARegistrar() {
-            const fecha = document.getElementById('hub-fecha').value;
-            const codigo = document.getElementById('hub-codigo').value;
-            
-            if (!fecha || !codigo) {
-                alert('Ingrese la fecha y el código de control para registrar su asistencia.');
-                return;
-            }
-            
-            const btn = document.getElementById('btn-ir-registrar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando Evento...';
-            btn.disabled = true;
-
-            const { data: reunionId, error: errReunion } = await supabaseClient.rpc('obtener_id_reunion', { p_fecha: fecha, p_codigo: codigo });
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-
-            if (!reunionId || errReunion) {
-                alert('⚠️ No se encontró ninguna asistencia con esa fecha y código. Verifique con el organizador.');
-                return;
-            }
-
-            document.getElementById('a-fecha').value = fecha;
-            document.getElementById('a-codigo').value = codigo;
-            document.getElementById('a-fecha').readOnly = true;
-            document.getElementById('a-codigo').readOnly = true;
-            
-            mostrarPanelApp('reportar-asistente');
-            setTimeout(ajustarCanvas, 100); 
-        }
-
-        function irACrear() { requerirLoginPara('crear-reunion'); }
-        function irAConsultar() {
-            const fecha = document.getElementById('hub-fecha').value;
-            const codigo = document.getElementById('hub-codigo').value;
-            if(fecha) document.getElementById('v-fecha').value = fecha;
-            if(codigo) document.getElementById('v-codigo').value = codigo;
-            requerirLoginPara('ver-asistencia');
-        }
-
-        function toggleAuth(type) {
-            if (type === 'login') {
-                document.getElementById('login-form').classList.remove('d-none');
-                document.getElementById('register-form').classList.add('d-none');
-                document.getElementById('tab-login').classList.add('active');
-                document.getElementById('tab-register').classList.remove('active');
-            } else {
-                document.getElementById('login-form').classList.add('d-none');
-                document.getElementById('register-form').classList.remove('d-none');
-                document.getElementById('tab-login').classList.remove('active');
-                document.getElementById('tab-register').classList.add('active');
-            }
-        }
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ingresando...';
-            btn.disabled = true;
-
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            
-            btn.innerHTML = 'Iniciar Sesión';
-            btn.disabled = false;
-            
-            if (error) alert('Error al iniciar sesión: ' + error.message);
-        });
-
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Registrando...';
-            btn.disabled = true;
-
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const name = document.getElementById('reg-nombre').value;
-            
-            const { error } = await supabaseClient.auth.signUp({
-                email, password, options: { data: { display_name: name, schema_origen: 'asistencia' } }
-            });
-            
-            btn.innerHTML = 'Crear Cuenta';
-            btn.disabled = false;
-
-            if (error) alert('Error de registro: ' + error.message);
-            else alert('Cuenta creada exitosamente. Ya puede iniciar sesión.');
-        });
-
-        document.getElementById('recovery-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value;
-            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-            if (error) alert('Error al actualizar contraseña: ' + error.message);
-            else {
-                alert('¡Contraseña actualizada con éxito! Ya puede iniciar sesión.');
-                volverAlHub();
-            }
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            await supabaseClient.auth.signOut();
-            volverAlHub();
-        });
-
-        async function recuperarPassword(e) {
-            if (e) e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            if (!email) return alert('Ingrese su correo en el campo de acceso antes de solicitar la recuperación.');
-            
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
-            if (error) alert('Error: ' + error.message);
-            else alert('Se ha enviado un enlace de recuperación a su correo electrónico.');
-        }
-
-        async function generarCodigoUnico(fecha) {
-            let codigo, existe = true;
-            while(existe) {
-                codigo = Math.floor(1000 + Math.random() * 9000).toString();
-                const { data } = await supabaseClient.from('reunion').select('id').eq('fecha', fecha).eq('numero_control', codigo);
-                if (!data || data.length === 0) existe = false;
-            }
-            return codigo;
-        }
-
-        document.getElementById('form-reunion').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-guardar-reunion');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-            btn.disabled = true;
-
-            const fecha = document.getElementById('r-fecha').value;
-            const codigo = await generarCodigoUnico(fecha);
-            
-            const nuevaReunion = {
-                fecha: fecha, numero_control: codigo,
-                tema: document.getElementById('r-tema').value,
-                oficina_productora: document.getElementById('r-oficina').value,
-                lugar: document.getElementById('r-lugar').value,
-                hora_inicio: document.getElementById('r-inicio').value,
-                hora_fin: document.getElementById('r-fin').value,
-                observaciones: document.getElementById('r-obs').value
-            };
-
-            const { error } = await supabaseClient.from('reunion').insert([nuevaReunion]);
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-
-            if (error) alert('Error al crear reunión: ' + error.message);
-            else {
-                const alertBox = document.getElementById('codigo-generado-alert');
-                alertBox.innerHTML = `Asistencia creada.<br>Fecha: <strong>${fecha}</strong> | Código de control: <strong>${codigo}</strong>`;
-                alertBox.classList.remove('d-none');
-                document.getElementById('form-reunion').reset();
-                document.getElementById('r-fecha').value = fecha; 
-            }
-        });
-
-        const canvas = document.getElementById('firma-pad');
-        const ctx = canvas.getContext('2d');
-        let pintando = false;
-
-        function ajustarCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight || 200;
-        }
-        window.addEventListener('resize', ajustarCanvas);
-
-        function iniciarPosicion(e) { pintando = true; dibujar(e); }
-        function finalizarPosicion() { pintando = false; ctx.beginPath(); }
-        function dibujar(e) {
-            if (!pintando) return;
-            e.preventDefault();
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-            
-            ctx.lineWidth = 2;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = "#000";
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        }
-
-        canvas.addEventListener('mousedown', iniciarPosicion);
-        canvas.addEventListener('mouseup', finalizarPosicion);
-        canvas.addEventListener('mousemove', dibujar);
-        canvas.addEventListener('touchstart', iniciarPosicion, {passive: false});
-        canvas.addEventListener('touchend', finalizarPosicion);
-        canvas.addEventListener('touchmove', dibujar, {passive: false});
-
-        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-        document.getElementById('form-asistente').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const firmaBase64 = canvas.toDataURL('image/png');
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width; blank.height = canvas.height;
-            if (firmaBase64 === blank.toDataURL()) return alert('Por favor, firme en el recuadro antes de guardar.');
-
-            const btn = document.getElementById('btn-guardar-asistente');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando Asistencia...';
-            btn.disabled = true;
-
-            const fecha = document.getElementById('a-fecha').value;
-            const codigo = document.getElementById('a-codigo').value;
-            
-            const { data: reunionId, error: errReunion } = await supabaseClient.rpc('obtener_id_reunion', { p_fecha: fecha, p_codigo: codigo });
-            
-            if (!reunionId || errReunion) {
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-                return alert('Reunión no encontrada. Verifique la fecha y el código.');
-            }
-
-            const asistente = {
-                reunion_id: reunionId,
-                grado: document.getElementById('a-grado').value || null,
-                nombre_apellidos: document.getElementById('a-nombres').value,
-                cargo: document.getElementById('a-cargo').value,
-                dependencia: document.getElementById('a-dep').value,
-                telefono: document.getElementById('a-tel').value,
-                correo: document.getElementById('a-correo').value,
-                firma_base64: firmaBase64
-            };
-
-            const { error } = await supabaseClient.from('usuario').insert([asistente]);
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-
-            if (error) alert('Error al guardar el asistente: ' + error.message);
-            else {
-                alert('Asistente registrado correctamente.');
-                document.getElementById('form-asistente').reset();
-                limpiarFirma();
-                volverAlHub();
-            }
-        });
-
-        async function buscarAsistencia() {
-            const fecha = document.getElementById('v-fecha').value;
-            const codigo = document.getElementById('v-codigo').value;
-            if (!fecha || !codigo) return alert('Ingrese la fecha y el código.');
-
-            const btn = document.getElementById('btn-buscar');
-            const txtOriginal = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Buscando...';
-            btn.disabled = true;
-
-            const { data: reunion, error: errReunion } = await supabaseClient.from('reunion').select('*').eq('fecha', fecha).eq('numero_control', codigo).single();
-            
-            if (errReunion || !reunion) {
-                btn.innerHTML = txtOriginal;
-                btn.disabled = false;
-                return alert('Reunión no encontrada.');
-            }
-
-            const { data: asistentes, error: errAsistentes } = await supabaseClient.from('usuario').select('*').eq('reunion_id', reunion.id).order('consecutivo', { ascending: true });
-            
-            btn.innerHTML = txtOriginal;
-            btn.disabled = false;
-
-            if (errAsistentes) return alert('Error al cargar asistentes.');
-
-            currentReunion = reunion;
-            currentAsistentes = asistentes;
-            renderizarReporte();
-        }
-
-        function renderizarReporte() {
-            const contenedor = document.getElementById('reporte-content');
-            document.getElementById('documento-impresion').classList.remove('d-none');
-            document.getElementById('export-buttons').classList.remove('d-none');
-
-            let html = `
-                <table class="table table-bordered mb-3 align-middle" style="font-size: 8.5pt;">
-                    <tr>
-                        <td rowspan="2" class="text-center" style="width: 15%;">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Escudo_Fuerza_Aerea_Colombiana.svg" alt="Escudo FAC" class="escudo-fac">
-                        </td>
-                        <td class="text-center fw-bold" style="width: 55%;">
-                            FUERZA AEROESPACIAL COLOMBIANA<br>
-                            FORMATO LISTADO DE ASISTENCIA
-                        </td>
-                        <td style="width: 30%;">
-                            <strong>Código:</strong> DE-SEMEP-FR-006<br>
-                            <strong>Versión:</strong> 5<br>
-                            <strong>Vigencia:</strong> 2024-11-14
-                        </td>
-                    </tr>
-                </table>
-
-                <div class="card mb-3 border bg-light p-2" style="font-size: 9pt;">
-                    <div><strong>TEMA REUNIÓN:</strong> ${currentReunion.tema}</div>
-                    <div><strong>OFICINA PRODUCTORA:</strong> ${currentReunion.oficina_productora}</div>
-                    <div class="row">
-                        <div class="col-8"><strong>LUGAR Y FECHA:</strong> ${currentReunion.lugar} - ${currentReunion.fecha}</div>
-                        <div class="col-4"><strong>HORA:</strong> ${currentReunion.hora_inicio} a ${currentReunion.hora_fin}</div>
-                    </div>
-                    <div><strong>OBSERVACIONES:</strong> ${currentReunion.observaciones || 'N/A'}</div>
-                    <div class="mt-2 d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-primary">Total Asistentes: ${currentAsistentes.length}</span>
-                        <button id="btn-guardar-orden" class="btn btn-warning btn-sm fw-bold d-none no-print shadow-sm" onclick="guardarNuevoOrden()">
-                            💾 Guardar Nuevo Orden de Lista
-                        </button>
-                    </div>
-                </div>
-
-                <table class="table table-bordered table-striped align-middle" style="font-size: 9pt;">
-                    <thead class="table-light text-center">
-                        <tr>
-                            <th style="width: 35px;" class="no-print">↕</th>
-                            <th style="width: 45px;">No.</th>
-                            <th style="width: 60px;">GR</th>
-                            <th>NOMBRES Y APELLIDOS</th>
-                            <th>CARGO</th>
-                            <th>UNIDAD O DEPENDENCIA</th>
-                            <th style="width: 90px;">TELÉFONO</th>
-                            <th>CORREO ELECTRÓNICO</th>
-                            <th style="width: 110px;">FIRMA</th>
-                            <th class="col-acciones text-center" style="width: 50px;">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sortable-table">
-            `;
-
-            currentAsistentes.forEach((a, index) => {
-                html += `
-                    <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event, '${a.id}')" data-id="${a.id}" style="cursor: grab;">
-                        <td class="text-center no-print text-muted fs-5" title="Arrastrar para ordenar">☰</td>
-                        <td class="text-center row-num fw-bold">${index + 1}</td>
-                        <td class="text-center">${a.grado || '-'}</td>
-                        <td class="fw-semibold">${a.nombre_apellidos}</td>
-                        <td>${a.cargo}</td>
-                        <td>${a.dependencia}</td>
-                        <td class="text-center">${a.telefono || '-'}</td>
-                        <td>${a.correo || '-'}</td>
-                        <td class="text-center"><img src="${a.firma_base64}" class="firma-img" alt="Firma"></td>
-                        <td class="col-acciones text-center">
-                            <button class="btn btn-danger btn-sm btn-eliminar py-0 px-1" onclick="eliminarAsistente('${a.id}')">X</button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table>`;
-            contenedor.innerHTML = html;
-        }
-
-        let draggedRowId = null;
-        window.dragStart = function(e) {
-            draggedRowId = e.currentTarget.getAttribute('data-id');
-            e.dataTransfer.effectAllowed = 'move';
-        };
-
-        window.dragOver = function(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        };
-
-        window.drop = function(e, targetId) {
-            e.preventDefault();
-            if (draggedRowId === targetId) return;
-
-            const tbody = document.getElementById('sortable-table');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            
-            const draggedRow = rows.find(r => r.getAttribute('data-id') === draggedRowId);
-            const targetRow = rows.find(r => r.getAttribute('data-id') === targetId);
-
-            if (!draggedRow || !targetRow) return;
-
-            const allRows = Array.from(tbody.children);
-            const draggedIdx = allRows.indexOf(draggedRow);
-            const targetIdx = allRows.indexOf(targetRow);
-
-            if (draggedIdx < targetIdx) {
-                tbody.insertBefore(draggedRow, targetRow.nextSibling);
-            } else {
-                tbody.insertBefore(draggedRow, targetRow);
-            }
-
-            const updatedRows = tbody.querySelectorAll('tr');
-            updatedRows.forEach((row, idx) => {
-                row.querySelector('.row-num').textContent = idx + 1;
-            });
-
-            const nuevoOrdenIds = Array.from(tbody.querySelectorAll('tr')).map(r => r.getAttribute('data-id'));
-            currentAsistentes.sort((a, b) => nuevoOrdenIds.indexOf(a.id) - nuevoOrdenIds.indexOf(b.id));
-
-            document.getElementById('btn-guardar-orden').classList.remove('d-none');
-        };
-
-        window.guardarNuevoOrden = async function() {
-            const btn = document.getElementById('btn-guardar-orden');
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando orden...';
-            btn.disabled = true;
-
-            let errorOcurrido = false;
-            for (let i = 0; i < currentAsistentes.length; i++) {
-                const { error } = await supabaseClient.from('usuario').update({ consecutivo: i + 1 }).eq('id', currentAsistentes[i].id);
-                if (error) errorOcurrido = true;
-            }
-
-            btn.innerHTML = '💾 Guardar Nuevo Orden de Lista';
-            btn.disabled = false;
-
-            if (errorOcurrido) alert('Hubo un error al actualizar el orden.');
-            else {
-                alert('✅ El nuevo orden se ha guardado correctamente.');
-                document.getElementById('btn-guardar-orden').classList.add('d-none');
-                buscarAsistencia();
-            }
-        };
-
-        window.eliminarAsistente = async function(id) {
-            if (confirm('¿Está seguro de eliminar este asistente?')) {
-                const { error } = await supabaseClient.from('usuario').delete().eq('id', id);
-                if (error) alert('Error: ' + error.message);
-                else buscarAsistencia(); 
-            }
-        };
-
-        window.exportarPDF = function() {
-            const elemento = document.getElementById('documento-impresion');
-            const botones = document.querySelectorAll('.col-acciones');
-            botones.forEach(btn => btn.style.display = 'none'); 
-
-            html2canvas(elemento, { scale: 2, useCORS: true }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
-                pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-                pdf.save(`Asistencia_${currentReunion.numero_control}.pdf`);
-                botones.forEach(btn => btn.style.display = ''); 
-            });
-        };
-
-        window.exportarExcel = async function() {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('FORMATO LISTADO', {
-                pageSetup: { orientation: 'landscape', paperSize: 9 }
-            });
-            
-            worksheet.addRow(['', 'FUERZA AEROESPACIAL COLOMBIANA', 'Código: DE-SEMEP-FR-006']);
-            worksheet.addRow(['', 'FORMATO LISTADO DE ASISTENCIA', 'Versión: 5']);
-            worksheet.addRow(['', '', 'Vigencia: 2024-11-14']);
-            worksheet.addRow([]);
-            worksheet.addRow([`TEMA REUNIÓN: ${currentReunion.tema}`]);
-            worksheet.addRow([`OFICINA PRODUCTORA: ${currentReunion.oficina_productora}`]);
-            worksheet.addRow([`LUGAR Y FECHA: ${currentReunion.lugar} - ${currentReunion.fecha} | HORA: ${currentReunion.hora_inicio} a ${currentReunion.hora_fin}`]);
-            worksheet.addRow([`OBSERVACIONES: ${currentReunion.observaciones || 'N/A'}`]);
-            worksheet.addRow([]);
-
-            worksheet.addRow(['No.', 'GR', 'NOMBRES Y APELLIDOS', 'CARGO', 'UNIDAD O DEPENDENCIA', 'TELÉFONO', 'CORREO ELECTRÓNICO', 'FIRMA']);
-            
-            currentAsistentes.forEach((a, index) => {
-                const row = worksheet.addRow([
-                    index + 1, 
-                    a.grado || '', 
-                    a.nombre_apellidos,
-                    a.cargo, 
-                    a.dependencia, 
-                    a.telefono || '', 
-                    a.correo || '',
-                    ''
-                ]);
-                row.height = 45;
-                
-                if (a.firma_base64) {
-                    const imageId = workbook.addImage({ base64: a.firma_base64, extension: 'png' });
-                    worksheet.addImage(imageId, {
-                        tl: { col: 7, row: row.number - 1 },
-                        ext: { width: 130, height: 40 }
-                    });
-                }
-            });
-
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Asistencia_${currentReunion.numero_control}.xlsx`;
-            link.click();
-        };
-    </script>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ============ FOOTER FIJO ============ -->
+<div class="site-footer">
+  <a href="https://novaelix.vercel.app/" target="_blank">
+    <i class="fa-solid fa-bolt"></i>
+    <span>Creado por Novaelix</span>
+  </a>
+</div>
+
+<script>
+let currentLang = 'es';
+
+// 3 Temas Claros y 3 Temas Oscuros
+const themes = {
+  cream: {
+    '--cream': '#F6F1E6', '--ink': '#211E1A', '--card': '#FFFFFF',
+    '--terracotta': '#C1592C', '--brass': '#A6813C', '--muted': '#6B655C',
+    '--line': 'rgba(33,30,26,0.10)', bg: '#171410 radial-gradient(circle at 50% 0%, #241E17 0%, #171410 65%)'
+  },
+  botanical: {
+    '--cream': '#F3F5F0', '--ink': '#1C241D', '--card': '#FFFFFF',
+    '--terracotta': '#3F5E4D', '--brass': '#8C734B', '--muted': '#5C665E',
+    '--line': 'rgba(28,36,29,0.10)', bg: '#121913 radial-gradient(circle at 50% 0%, #1C261D 0%, #121913 65%)'
+  },
+  blue: {
+    '--cream': '#F8FAFC', '--ink': '#1F2937', '--card': '#FFFFFF',
+    '--terracotta': '#2563EB', '--brass': '#64748B', '--muted': '#64748B',
+    '--line': 'rgba(31,41,55,0.08)', bg: '#0F172A radial-gradient(circle at 50% 0%, #1E293B 0%, #0F172A 65%)'
+  },
+  darkGold: {
+    '--cream': '#0F172A', '--ink': '#F8FAFC', '--card': '#1E293B',
+    '--terracotta': '#F59E0B', '--brass': '#CBD5E1', '--muted': '#94A3B8',
+    '--line': 'rgba(255,255,255,0.10)', bg: '#020617 radial-gradient(circle at 50% 0%, #0F172A 0%, #020617 65%)'
+  },
+  emerald: {
+    '--cream': '#121212', '--ink': '#F1F5F9', '--card': '#1E1E1E',
+    '--terracotta': '#10B981', '--brass': '#06B6D4', '--muted': '#A1A1AA',
+    '--line': 'rgba(255,255,255,0.12)', bg: '#080808 radial-gradient(circle at 50% 0%, #171717 0%, #080808 65%)'
+  },
+  charcoal: {
+    '--cream': '#1C1917', '--ink': '#F5F5F4', '--card': '#292524',
+    '--terracotta': '#EA580C', '--brass': '#D6D3D1', '--muted': '#A8A29E',
+    '--line': 'rgba(255,255,255,0.08)', bg: '#0C0A09 radial-gradient(circle at 50% 0%, #1C1917 0%, #0C0A09 65%)'
+  }
+};
+
+function setTheme(name, btnElem){
+  const t = themes[name];
+  if (!t) return;
+  const root = document.documentElement;
+  for (const prop in t){
+    if (prop === 'bg'){
+      document.body.style.background = t.bg;
+    } else {
+      root.style.setProperty(prop, t[prop]);
+    }
+  }
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  if (btnElem) btnElem.classList.add('active');
+}
+
+/* =========================================================
+   IMÁGENES UNIFICADAS — Un solo lugar para ES y EN.
+   Corrige aquí y ambos idiomas se actualizan automáticamente.
+   ========================================================= */
+const Imagenes = {
+  bienvenido: "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/b651b33e-568e-44dc-9f1a-14bf78901a8e.jpeg",
+  checkin: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/e0ccdff7-ded7-4f4f-ab68-a710b842a139.jpeg",
+  ubicacion: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/77557398-674d-4c44-83d8-5ec9defe42bd.jpeg",
+  normas: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/c1488b2b-c523-49e1-97a7-9bbc901fc2f2.jpeg",
+  servicios: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/61e4a32d-9c68-438c-8786-269ac7f59e52.jpeg",
+  actividades: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/27ba8624-06c8-4535-9be0-b2fe23724c7a.jpeg",
+  host: "https://a0.muscache.com/im/pictures/user/3fa19daf-21c0-473d-87de-962bfb2bc088.jpg?im_w=240",
+  galeriaBienvenido: [
+    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/a9445e50-86f1-451e-8c69-82d9e33772f8.jpeg",
+    "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTM4MTA4MDI=/original/d62f2655-ac03-4e39-8ded-caf051623a13.jpeg",
+    "https://a0.muscache.com/im/pictures/miso/Hosting-53810802/original/874db146-e34b-4ddb-8f8a-a2479e395f54.jpeg"
+  ]
+};
+
+function hostHtml(nombre, subtitulo){
+  return `<div class="host-mini">
+      <img src="${Imagenes.host}" alt="${nombre}">
+      <div><strong>${nombre}</strong><br><span style="font-size:0.8rem;color:var(--muted)">${subtitulo}</span></div>
+    </div>`;
+}
+
+const translations = {
+  es: {
+    buttons: {
+      bienvenido:"Bienvenido", checkin:"Check In", ubicacion:"Ubicación", normas:"Wi-Fi & TV",
+      servicios:"Servicios", actividades:"Actividades", informacion:"Información",
+      bares:"Bares & Rooftop", restaurantes:"Restaurantes", compras:"Supermercados",
+      emergencias:"Transporte", contacto:"Contacto"
+    },
+    content: {
+      bienvenido: {
+        title: "¡Bienvenido a tu alojamiento!",
+        icon: "fa-house-chimney",
+        image: Imagenes.bienvenido,
+        hostHtml: hostHtml("Manuel Arias", "Tu anfitrión · 15 años recibiendo huéspedes"),
+        text: "¡Prepara las maletas! ✈️ Este apartamento en el Chicó, Edificio Unique Mine, no es solo un lugar para dormir: es una experiencia completa. Piscina climatizada, spa y baño turco, gimnasio, cocina equipada, coworking, mesa de billar y un restaurante-gastrobar en la azotea con vistas 360° de Bogotá — con room service incluido.<br><br>Ubicación TOP: a pasos del Parque de la 93, la Zona T y los principales centros comerciales.",
+        gallery: Imagenes.galeriaBienvenido,
+        btnText: "Ver anuncio completo en Airbnb",
+        btnLink: "https://es-l.airbnb.com/rooms/53810802"
+      },
+      checkin: {
+        title: "Instrucciones de Ingreso",
+        icon: "fa-key",
+        image: Imagenes.checkin,
+        text: `1. Anúnciate en la recepción principal (Carrera 9 #100-77).<br>2. Toma el ascensor hacia el <strong>3er piso</strong>.<br>3. Al salir, avanza a mano izquierda hasta el <strong>apartamento 315</strong>.<br>4. La puerta tiene cerradura digital.<br><br>🔐 <strong>Clave de acceso:</strong><div class='code-box'><span>Código</span><span class='code'>${Codigo}</span></div><div class='info-box'>📌 <em>Aviso de Recepción:</em> Si comentan sobre un cobro de $2 USD por áreas comunes, no debes pagarlo por tratarse de una estancia superior a 30 días.</div><div class='info-box'>🕒 Check-in desde las 3:00 p.m. · Check-out antes de las 11:00 a.m. · Máximo 3 huéspedes.</div>`,
+        btnText: "Ver Video Guía de Ingreso",
+        btnLink: "https://youtube.com/shorts/X3Pt_7nisyw"
+      },
+      ubicacion: {
+        title: "Ubicación & Dirección",
+        icon: "fa-location-dot",
+        image: Imagenes.ubicacion,
+        text: "<strong>Edificio Unique Mine</strong><br>Carrera 9 #100-77, El Chicó, Bogotá.<br><br>Ubicación TOP junto al <strong>Hotel Dan Carlton</strong> y el <strong>Parque de la calle 106</strong>. A pocos minutos del Parque de la 93 y Zona T.",
+        btnText: "Ver Ubicación en Google Maps",
+        btnLink: "https://maps.app.goo.gl/mN9GuGNn69jabEru5"
+      },
+      normas: {
+        title: "Wi-Fi & Entretenimiento",
+        icon: "fa-wifi",
+        image: Imagenes.normas,
+        text: "📶 <strong>Red Wi-Fi:</strong> Nombre_Red<br>🔑 <strong>Contraseña:</strong> Clave_Red<br><br>📺 <strong>Televisor:</strong> Conecta tus dispositivos a la red para controlar YouTube desde tu celular. Incluye la app <strong>Xuper</strong> con cientos de canales y películas en vivo."
+      },
+      servicios: {
+        title: "Zonas Comunes & Amenidades",
+        icon: "fa-couch",
+        image: Imagenes.servicios,
+        text: "• <strong>Piso 1 (Gratuito):</strong> Piscina climatizada, Gimnasio, Sauna y Spa / Baño Turco.<br>• <strong>Piso 3:</strong> Lavadoras de autoservicio (funcionan con efectivo o app).<br>• <strong>Piso 11:</strong> Restaurante & Gastrobar en la azotea (¡con Room Service!), Coworking y Mesa de Billar.<br>• <strong>Depósito (Gratuito):</strong> Almacenamiento privado en sótano S1.<br>"
+      },
+      actividades: {
+        title: "Sitios de Interés Cercanos",
+        icon: "fa-camera",
+        image: Imagenes.actividades,
+        text: "• <strong>Parque del Chicó & Museo de la Mercedes Sierra de Pérez:</strong> Hermoso parque histórico a pocas cuadras, ideal para caminar y picnic.<br>• <strong>Parque de la 93 & Zona T:</strong> Epicentro de vida nocturna, compras de diseño y gastronomía.<br>• <strong>Parque Calle 106:</strong> Excelente zona verde a pasos del edificio para salir a correr.<br>• <strong>Centros Comerciales:</strong> Unicentro (Cl 127), Andino, El Retiro y Atlantis (Zona Rosa).",
+        btnText: "Ver Guía de Puntos de Interés",
+        btnLink: "https://maps.app.goo.gl/XXBS1SnESGHs8bmv7?g_st=ac"
+      },
+      informacion: {
+        title: "Servicios Adicionales & Guía del Huésped",
+        icon: "fa-circle-info",
+        text: "• <strong>Servicio de Aseo Extra:</strong> Para coordinar jornadas de limpieza adicionales o cambio de lencería, la Sra. <strong>Maribel</strong> te colabora directamente.<br>• <strong>Salud & Farmacias:</strong> Droguerías Cruz Verde y Farmatodo 24/7 sobre la Cra 15 y Cl 100.<br>• <strong>Cajeros & Bancos:</strong> Centros bancarios disponibles sobre la Cl 100 y C.C. Unicentro.<br>• <strong>Gestión de Basuras:</strong> Consulta en recepción para la disposición del shut en el piso S1."
+      },
+      bares: {
+        title: "Bares, Coctelería & Vida Nocturna",
+        icon: "fa-martini-glass-citrus",
+        text: "• <strong>Roof 360° Gastrobar (Piso 11):</strong> Coctelería de autor y vista panorámica dentro del mismo edificio.<br>• <strong>BBC Cervecería (Parque de la 93):</strong> Cerveza artesanal local en ambiente relajado.<br>• <strong>Apache Rooftop (Hotel Click Clack):</strong> Sofisticada terraza con hamburguesas gourmet y cócteles en la Cra 11.<br>• <strong>Zona T / Calle 85:</strong> Bares icónicos y discotecas a 5-10 minutos en taxi."
+      },
+      restaurantes: {
+        title: "Gastronomía Recomendada en El Chicó",
+        icon: "fa-utensils",
+        text: "• <strong>La Brasserie:</strong> Cocina francesa clásica en un ambiente elegante (Zona T).<br>• <strong>Osaki Chicó:</strong> Exquisita fusión asiática y sushi a minutos del apto.<br>• <strong>Crepes & Waffles (Cra 15):</strong> Un clásico colombiano ideal para almuerzo o postres.<br>• <strong>Central Cevicheria (Parque 93):</strong> Los mejores mariscos y ceviches de la ciudad.<br>• <strong>Massa (Calle 81 / Cra 9):</strong> Excelente opción para desayuno, panadería de masa madre y brunch."
+      },
+      compras: {
+        title: "Supermercados & Mercados Cercanos",
+        icon: "fa-cart-shopping",
+        text: "• <strong>De La Sabana:</strong> Víveres y productos frescos a solo una cuadra.<br>• <strong>Carulla FreshMarket (P. 93 / Cl 102):</strong> Supermercado premium con panadería, licores y delicatessen.<br>• <strong>D1 & ARA:</strong> Opciones económicas para víveres básicos a pocas calles.<br>• <strong>Éxito Express:</strong> Compras rápidas e insumos de aseo sobre la Cra 15."
+      },
+      emergencias: {
+        title: "Opciones de Transporte",
+        icon: "fa-bus",
+        text: "• <strong>Transmilenio:</strong> Estaciones <em>Autonorte Calle 100</em> y <em>Calle 106</em> a pocas cuadras.<br>• <strong>Apps de Transporte:</strong> Uber, Cabify y Didi funcionan excelentemente en la portería.<br>• <strong>Transporte Privado:</strong> Mi tío <strong>Luis</strong> ofrece servicio de transfer privado (aeropuerto o viajes dentro/fuera de Bogotá). Escríbeme para coordinar."
+      },
+      contacto: {
+        title: "Contacto con el Anfitrión",
+        icon: "fa-phone",
+        text: "¡Estoy para ayudarte en todo momento!<br><br><strong>Anfitrión:</strong> Manuel Arias<br>📱 <strong>WhatsApp / Tel:</strong> 312 881 6469<br><br><div class='info-box'>🚨 <strong>Números de Emergencia en Colombia:</strong><br>• <strong>123:</strong> Línea Única de Emergencias Nacional<br>• <strong>156:</strong> Policía de Turismo<br>• <strong>125:</strong> Urgencias Médicas y Ambulancias<br>• <strong>#767:</strong> Policía de Tránsito y Transporte</div>",
+        btnText: "Escribir a Manuel por WhatsApp",
+        btnLink: "https://wa.me/573128816469",
+        whatsapp: true
+      }
+    }
+  },
+  en: {
+    buttons: {
+      bienvenido:"Welcome", checkin:"Check In", ubicacion:"Location", normas:"Wi-Fi & TV",
+      servicios:"Amenities", actividades:"Activities", informacion:"Information",
+      bares:"Bars & Rooftop", restaurantes:"Restaurants", compras:"Groceries",
+      emergencias:"Transport", contacto:"Contact"
+    },
+    content: {
+      bienvenido: {
+        title: "Welcome to your stay!",
+        icon: "fa-house-chimney",
+        image: Imagenes.bienvenido,
+        hostHtml: hostHtml("Manuel Arias", "Your host · 15 years hosting"),
+        text: "Pack your bags! ✈️ This apartment in El Chicó, Unique Mine Building, is more than a place to sleep: it's a full experience. Heated pool, spa and steam room, gym, equipped kitchen, coworking, pool table, and a rooftop gastrobar with 360° views of Bogotá — with room service included.<br><br>TOP location: steps from Parque de la 93, Zona T, and the city's main malls.",
+        gallery: Imagenes.galeriaBienvenido,
+        btnText: "View full Airbnb listing",
+        btnLink: "https://es-l.airbnb.com/rooms/53810802"
+      },
+      checkin: {
+        title: "Check-In Instructions",
+        icon: "fa-key",
+        image: Imagenes.checkin,
+        text: `1. Announce yourself at the front desk (Carrera 9 #100-77).<br>2. Take the elevator to the <strong>3rd floor</strong>.<br>3. Turn left until apartment <strong>315</strong>.<br>4. Enter using the smart door lock.<br><br>🔐 <strong>Door code:</strong><div class='code-box'><span>Code</span><span class='code'>${Codigo}</span></div><div class='info-box'>📌 <em>Front Desk Note:</em> If they mention a $2 USD common area fee, you do NOT pay it since your stay is over 30 days.</div><div class='info-box'>🕒 Check-in from 3:00 p.m. · Check-out before 11:00 a.m. · Maximum 3 guests.</div>`,
+        btnText: "Watch Access Video Guide",
+        btnLink: "https://youtube.com/shorts/X3Pt_7nisyw"
+      },
+      ubicacion: {
+        title: "Location & Address",
+        icon: "fa-location-dot",
+        image: Imagenes.ubicacion,
+        text: "<strong>Unique Mine Building</strong><br>Carrera 9 #100-77, El Chicó, Bogotá.<br><br>TOP location right next to <strong>Dan Carlton Hotel</strong> and <strong>106th St Park</strong>. Just minutes from Parque de la 93 and Zona T.",
+        btnText: "Open in Google Maps",
+        btnLink: "https://maps.app.goo.gl/mN9GuGNn69jabEru5"
+      },
+      normas: {
+        title: "Wi-Fi & Entertainment",
+        icon: "fa-wifi",
+        text: "📶 <strong>Wi-Fi Name:</strong> Nombre_Red<br>🔑 <strong>Password:</strong> Clave_Red<br><br>📺 <strong>TV:</strong> Connect to Wi-Fi to control YouTube directly from your phone. Includes the <strong>Xuper</strong> app with live channels and movies."
+      },
+      servicios: {
+        title: "Building Amenities",
+        icon: "fa-couch",
+        text: "• <strong>1st Floor (Free):</strong> Heated Pool, Gym, Sauna & Steam Room.<br>• <strong>3rd Floor:</strong> Self-service washers (paid cash and app).<br>• <strong>11th Floor:</strong> Rooftop Bar & Restaurant (with Room Service!), Coworking Area, and Pool Table.<br>• <strong>Storage Unit (Free):</strong> Private storage in basement level S1.<br>"
+      },
+      actividades: {
+        title: "Things to Do Nearby",
+        icon: "fa-camera",
+        text: "• <strong>Parque del Chicó & Mercedes Sierra Museum:</strong> Beautiful historic park nearby, perfect for walks and picnics.<br>• <strong>Parque de la 93 & Zona T:</strong> Epicenter for nightlife, boutique shopping, and dining.<br>• <strong>106th St Park:</strong> Great green park right next door for outdoor jogging.<br>• <strong>Shopping Malls:</strong> Unicentro (127th St), Andino, El Retiro, and Atlantis (Zona Rosa).",
+        btnText: "View Points of Interest Map",
+        btnLink: "https://maps.app.goo.gl/XXBS1SnESGHs8bmv7?g_st=ac"
+      },
+      informacion: {
+        title: "Extra Services & Guest Guide",
+        icon: "fa-circle-info",
+        text: "• <strong>Extra Cleaning Service:</strong> For extra housekeeping or linen changes, Ms. <strong>Maribel</strong> can assist you directly.<br>• <strong>Health & Pharmacies:</strong> Cruz Verde and 24/7 Farmatodo along 15th Ave & 100th St.<br>• <strong>ATMs & Banking:</strong> Bank branches available on 100th St and inside Unicentro Mall.<br>• <strong>Trash Disposal:</strong> Ask front desk staff regarding trash chute access on floor S1."
+      },
+      bares: {
+        title: "Bars, Cocktails & Nightlife",
+        icon: "fa-martini-glass-citrus",
+        text: "• <strong>Roof 360° Gastrobar (11th floor):</strong> Signature cocktails and rooftop panoramic views inside the building.<br>• <strong>BBC Craft Beer (Parque 93):</strong> Popular local craft brewery with great vibe.<br>• <strong>Apache Rooftop (Click Clack Hotel):</strong> Stylish rooftop burger & cocktail bar on 11th Ave.<br>• <strong>Zona T / 85th St:</strong> Iconic bars and night clubs 5-10 minutes away by taxi."
+      },
+      restaurantes: {
+        title: "Recommended Dining in El Chicó",
+        icon: "fa-utensils",
+        text: "• <strong>La Brasserie:</strong> Classic French bistro cuisine in an upscale setting (Zona T).<br>• <strong>Osaki Chicó:</strong> Asian fusion and sushi just minutes from the apartment.<br>• <strong>Crepes & Waffles (15th Ave):</strong> Famous Colombian casual restaurant for lunch or dessert.<br>• <strong>Central Cevicheria (Parque 93):</strong> Top fresh seafood and ceviche spot in the city.<br>• <strong>Massa (81st St / 9th Ave):</strong> Fantastic bakery, sourdough bread, and brunch menu."
+      },
+      compras: {
+        title: "Supermarkets & Groceries",
+        icon: "fa-cart-shopping",
+        text: "• <strong>De La Sabana:</strong> Groceries and fresh fruits just one block away.<br>• <strong>Carulla FreshMarket (P. 93 / 102nd St):</strong> Premium supermarket with bakery, wines, and gourmet foods.<br>• <strong>D1 & ARA:</strong> Affordable discount groceries a few blocks away.<br>• <strong>Éxito Express:</strong> Quick shopping items on 15th Ave."
+      },
+      emergencias: {
+        title: "Transportation",
+        icon: "fa-bus",
+        text: "• <strong>Transmilenio:</strong> Stations <em>Autonorte Calle 100</em> and <em>Calle 106</em> within walking distance.<br>• <strong>Rideshare Apps:</strong> Uber, Cabify, and Didi pick up easily at the front entrance.<br>• <strong>Private Transport:</strong> My uncle <strong>Luis</strong> offers private rides (airport pickups or regional trips). Message me to arrange."
+      },
+      contacto: {
+        title: "Contact Your Host",
+        icon: "fa-phone",
+        text: "Feel free to message me anytime!<br><br><strong>Host:</strong> Manuel Arias<br>📱 <strong>WhatsApp:</strong> +57 312 881 6469<br><br><div class='info-box'>🚨 <strong>Emergency Numbers in Colombia:</strong><br>• <strong>123:</strong> National Emergency Hotline<br>• <strong>156:</strong> Tourism Police<br>• <strong>125:</strong> Medical Emergencies & Ambulance<br>• <strong>#767:</strong> Traffic & Highway Police</div>",
+        btnText: "Chat on WhatsApp",
+        btnLink: "https://wa.me/573128816469",
+        whatsapp: true
+      }
+    }
+  }
+};
+
+function setLanguage(lang){
+  currentLang = lang;
+  document.querySelectorAll('.flag-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`flag-${lang}`).classList.add('active');
+  const btns = translations[lang].buttons;
+  for (const key in btns){
+    const elem = document.getElementById(`btn-${key}`);
+    if (elem) elem.innerText = btns[key];
+  }
+}
+
+function openModal(key){
+  const data = translations[currentLang].content[key];
+  if (!data) return;
+
+  document.getElementById('modal-title').innerText = data.title;
+  const iconElem = document.getElementById('modal-icon');
+  iconElem.className = 'fa-solid ' + data.icon;
+
+  let bodyHtml = '';
+  if (data.image) bodyHtml += `<img src="${data.image}" alt="${data.title}">`;
+  if (data.hostHtml) bodyHtml += data.hostHtml;
+  bodyHtml += `<p>${data.text}</p>`;
+  if (data.gallery){
+    bodyHtml += `<div class="modal-gallery">${data.gallery.map(src => `<img src="${src}">`).join('')}</div>`;
+  }
+  if (data.btnText && data.btnLink){
+    bodyHtml += `<a href="${data.btnLink}" target="_blank" class="btn-action${data.whatsapp ? ' whatsapp' : ''}">${data.btnText}</a>`;
+  }
+
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('active');
+}
+function closeModalOnOut(event){
+  if (event.target.id === 'modal') closeModal();
+}
+</script>
 </body>
 </html>
