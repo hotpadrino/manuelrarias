@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -27,7 +23,6 @@
     <meta name="twitter:title" content="🌟 Tablas de Multiplicar - Aripar">
     <meta name="twitter:image" content="https://hotpadrino.github.io/manuelrarias/manolo.jpg">
  
-<title>🌟 Tablas de Multiplicar</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -194,6 +189,8 @@ header { text-align: center; margin-bottom: 20px; }
 .btn:active { transform: scale(0.96); }
 .btn-clear { background: linear-gradient(135deg, #ff6b6b, #c0392b); color: #fff; box-shadow: 0 4px 14px var(--glow1); }
 .btn-show  { background: linear-gradient(135deg, var(--accent4), #7048e8); color: #fff; box-shadow: 0 4px 14px var(--glow4); }
+.btn-start { background: linear-gradient(135deg, var(--accent3), #1e8449); color: #fff; box-shadow: 0 4px 14px var(--glow3); }
+.btn-start.timer-active { background: linear-gradient(135deg, var(--accent2), #d35400); color: var(--bg); box-shadow: 0 4px 14px var(--glow2); }
 
 /* TABLE */
 .table-wrapper {
@@ -238,18 +235,6 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 
 .answer-num { font-family: 'Fredoka One', cursive; font-size: 1rem; }
 
-/* flash tooltip */
-.flash-tooltip {
-  position: absolute; bottom: calc(100% + 6px); left: 50%;
-  transform: translateX(-50%) scale(0.8);
-  background: var(--card); border: 2px solid var(--accent5); border-radius: 10px;
-  padding: 4px 10px; font-family: 'Fredoka One', cursive; font-size: 1.1rem;
-  color: var(--accent5); white-space: nowrap; pointer-events: none; z-index: 20;
-  opacity: 0; transition: opacity 0.15s, transform 0.2s;
-  box-shadow: 0 4px 14px var(--glow5);
-}
-.flash-tooltip.visible { opacity: 1; transform: translateX(-50%) scale(1); }
-
 @keyframes popIn  { 0%{transform:scale(0.6);opacity:0.4} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
 @keyframes shake  { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
 @keyframes slideUp { from{transform:translateY(22px) scale(0.95);opacity:0} to{transform:translateY(0) scale(1);opacity:1} }
@@ -279,6 +264,38 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 }
 .input-field:focus { border-color: var(--accent2); box-shadow: 0 0 14px var(--glow2); }
 .input-hint { color: var(--muted); font-size: 0.76rem; margin-top: 10px; }
+
+/* BOMB TIMER */
+.bomb-timer-container {
+  display: none; align-items: center; margin-top: 18px;
+  background: rgba(0,0,0,0.25); border-radius: 20px; padding: 4px;
+  height: 24px; position: relative; width: 100%;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.bomb-fuse {
+  height: 100%; background: linear-gradient(90deg, #f1c40f, #e74c3c);
+  border-radius: 14px; width: 100%;
+  box-shadow: 0 0 12px rgba(231,76,60,0.8);
+}
+.bomb-icon {
+  position: absolute; right: -8px; font-size: 1.6rem;
+  animation: shake 0.3s infinite; text-shadow: 0 0 10px #e74c3c;
+}
+
+/* EXPLOSION OVERLAY */
+.explosion-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 400;
+  display: none; justify-content: center; align-items: center;
+  background: rgba(231, 76, 60, 0.5);
+}
+.explosion-overlay.show {
+  display: flex; animation: flashRed 0.6s ease-out;
+}
+.explosion-emoji {
+  font-size: 8rem; animation: blastGrow 0.5s ease-out forwards;
+}
+@keyframes flashRed { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes blastGrow { 0% { transform: scale(0.2); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
 
 /* MODAL */
 .modal-overlay {
@@ -568,6 +585,12 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 </head>
 <body>
 <canvas id="confetti-canvas"></canvas>
+
+<!-- Overlay de Explosión -->
+<div class="explosion-overlay" id="explosion-overlay">
+  <div class="explosion-emoji">💥</div>
+</div>
+
 <div class="container">
   <header>
     <div class="title">🌟 Tablas de Multiplicar</div>
@@ -612,7 +635,8 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
 
   <!-- FILL BUTTONS -->
   <div class="btn-row" id="fill-btns">
-    <button class="btn btn-clear" onclick="confirmClear()">🗑️ Limpiar todo</button>
+    <button class="btn btn-start" id="btn-auto-start" onclick="toggleAutoFill()">⏱️ Empezar</button>
+    <button class="btn btn-clear" onclick="confirmClear()">🗑️️ Limpiar todo</button>
     <button class="btn btn-show"  onclick="toggleAnswers()">👁️ <span id="toggle-label">Ver respuestas</span></button>
   </div>
 
@@ -640,7 +664,6 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
         <div class="pro-help-table" id="pro-help-table">Toca "Nuevo reto" para comenzar.</div>
       </div>
     </div>
-    <!-- Free submode controls and result (hidden by default) -->
     <div id="free-controls" style="display:none; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:4px; margin-bottom:16px;">
       <button class="btn-pro btn-pro-verify" id="free-verify-btn" onclick="freeVerificar()">✅ Verificar</button>
       <button class="btn-pro btn-pro-reset"  id="free-reset-btn"  onclick="freeReset()" style="display:none">🔄 Reintentar</button>
@@ -658,7 +681,13 @@ td.hunt-disabled  { opacity: 0.38; cursor: default; pointer-events: none; }
   <div class="input-box">
     <div class="input-question" id="input-question">2 × 3 = ?</div>
     <input class="input-field" id="input-field" type="number" min="0" max="999" autocomplete="off" inputmode="numeric">
-    <div class="input-hint">Enter para confirmar · Esc para cancelar · ↑↓←→ navegar</div>
+    <div class="input-hint">Enter para confirmar · Esc para cancelar</div>
+    
+    <!-- Barra de bomba -->
+    <div class="bomb-timer-container" id="bomb-timer-container">
+      <div class="bomb-fuse" id="bomb-fuse"></div>
+      <div class="bomb-icon">💣</div>
+    </div>
   </div>
 </div>
 
@@ -693,11 +722,18 @@ let answers = {}, streak = 0, maxStreak = 0;
 let showingAnswers = false, activeCell = null;
 let currentMode = 'fill';
 
+// Auto-fill (Bomb)
+let isAutoMode = false;
+let autoNextTimer = null;
+let bombAnimFrame = null;
+let bombStart = 0;
+const BOMB_TIME = 5000;
+
 // Flash
 let flashTimer = null;
 
 // Hunt
-let huntQ        = null;   // { value, pairs:[{r,c}], found, wrongTaps }
+let huntQ        = null; 
 let huntAnswered = false;
 let huntCorrect  = 0, huntErrors = 0, huntStreak = 0;
 let huntUsed     = new Set();
@@ -782,6 +818,88 @@ function cellClick(r,c) {
 }
 
 // ══════════════════════════════════════════
+// AUTO-FILL TIMER (BOMB)
+// ══════════════════════════════════════════
+function toggleAutoFill() {
+  const btn = document.getElementById('btn-auto-start');
+  if (isAutoMode) {
+    isAutoMode = false;
+    btn.innerHTML = '⏱️️ Empezar';
+    btn.classList.remove('timer-active');
+    stopBombTimer();
+    clearTimeout(autoNextTimer);
+    closeInput();
+  } else {
+    isAutoMode = true;
+    btn.innerHTML = '🛑 Detener';
+    btn.classList.add('timer-active');
+    triggerNextAutoCell();
+  }
+}
+
+function triggerNextAutoCell() {
+  if (!isAutoMode || currentMode !== 'fill' || showingAnswers) return;
+
+  let emptyCells = [];
+  for (let r = 1; r <= 10; r++) {
+    for (let c = 1; c <= 10; c++) {
+      if (answers[r + '_' + c] === undefined) {
+         emptyCells.push({r, c});
+      }
+    }
+  }
+
+  if (emptyCells.length === 0) {
+    toggleAutoFill();
+    return;
+  }
+
+  const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  openInput(randomCell.r, randomCell.c);
+}
+
+function startBombTimer() {
+  const container = document.getElementById('bomb-timer-container');
+  const fuse = document.getElementById('bomb-fuse');
+  container.style.display = 'flex';
+  fuse.style.width = '100%';
+  bombStart = performance.now();
+
+  cancelAnimationFrame(bombAnimFrame);
+  function step(now) {
+     const elapsed = now - bombStart;
+     let pct = 100 - ((elapsed / BOMB_TIME) * 100);
+     if (pct <= 0) {
+        pct = 0;
+        fuse.style.width = '0%';
+        bombExplode();
+        return;
+     }
+     fuse.style.width = pct + '%';
+     bombAnimFrame = requestAnimationFrame(step);
+  }
+  bombAnimFrame = requestAnimationFrame(step);
+}
+
+function stopBombTimer() {
+  cancelAnimationFrame(bombAnimFrame);
+  const container = document.getElementById('bomb-timer-container');
+  if (container) container.style.display = 'none';
+}
+
+function bombExplode() {
+   const f = document.getElementById('input-field');
+   if (f.value === '') f.value = '0'; 
+   submitAnswer(true); 
+}
+
+function triggerExplosion() {
+  const el = document.getElementById('explosion-overlay');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 600);
+}
+
+// ══════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════
 function renderAll() {
@@ -795,9 +913,8 @@ function renderCell(r,c) {
   td.classList.remove('correct-cell','wrong-cell','active-cell','flash-show','hunt-correct','hunt-wrong','hunt-reveal','hunt-candidate','hunt-disabled');
   td.innerHTML='';
 
-  if(currentMode==='flash'||currentMode==='hunt') return; // managed separately
+  if(currentMode==='flash'||currentMode==='hunt') return; 
 
-  // fill mode
   if(showingAnswers){
     const sp=document.createElement('span'); sp.className='answer-num';
     sp.style.color='var(--accent2)'; sp.textContent=r*c; td.appendChild(sp); return;
@@ -817,6 +934,8 @@ function renderCell(r,c) {
 // MODE SWITCHER
 // ══════════════════════════════════════════
 function switchMode(mode) {
+  if (isAutoMode) toggleAutoFill();
+
   if(currentMode==='flash') clearFlash();
   if(currentMode==='hunt')  cleanHuntCells();
   currentMode=mode;
@@ -852,6 +971,8 @@ function openInput(r,c) {
   f.value=answers[r+'_'+c]!==undefined?answers[r+'_'+c]:'';
   document.getElementById('input-overlay').classList.add('show');
   setTimeout(()=>{f.focus();f.select();},50);
+
+  if (isAutoMode) startBombTimer();
 }
 
 document.getElementById('input-field').addEventListener('keydown',e=>{
@@ -868,19 +989,45 @@ document.getElementById('input-field').addEventListener('keydown',e=>{
 });
 
 function submitAnswer(close=true) {
-  const f=document.getElementById('input-field'), val=f.value.trim();
-  if(val===''||isNaN(val)){if(close)closeInput();return;}
+  const f=document.getElementById('input-field');
+  let val=f.value.trim();
+  
+  if(val===''||isNaN(val)){
+    if(close) closeInput();
+    if(isAutoMode) toggleAutoFill();
+    return;
+  }
+  
+  stopBombTimer();
+  
   const num=parseInt(val,10), {r,c}=activeCell, key=r+'_'+c, correct=r*c;
   const wasOk=answers[key]===correct;
   answers[key]=num;
-  if(num===correct&&!wasOk){ streak++; if(streak>maxStreak)maxStreak=streak; celebrate(streak); }
-  else if(num!==correct) streak=0;
+  
+  if (num === correct) {
+    launchConfetti(800); // Ráfaga corta de confeti por cada buena
+    if (!wasOk) { 
+      streak++; 
+      if(streak>maxStreak)maxStreak=streak; 
+      celebrate(streak); 
+    }
+  } else {
+    triggerExplosion(); // Pantallazo de explosión por error o tiempo
+    streak = 0;
+  }
+  
   saveState(); renderCell(r,c); updateFillStats();
   if(close) closeInput();
+  
+  if (isAutoMode) {
+    // Dar un breve momento para ver el efecto visual antes de la próxima
+    autoNextTimer = setTimeout(triggerNextAutoCell, 1000); 
+  }
 }
 
 function closeInput() {
   document.getElementById('input-overlay').classList.remove('show');
+  stopBombTimer();
   if(activeCell){const p=activeCell;activeCell=null;renderCell(p.r,p.c);}
 }
 function closeInputIfOutside(e){if(e.target.id==='input-overlay')submitAnswer();}
@@ -945,7 +1092,6 @@ function nextHunt() {
   document.getElementById('hunt-sub').textContent=
     `Toca ${n===1?'la casilla':'las '+n+' casillas'} cuya multiplicación da ${value}`;
 
-  // paint all cells as candidates
   for(let r=1;r<=10;r++) for(let c=1;c<=10;c++){
     const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
     if(td){ td.className='answer-cell hunt-candidate'; td.innerHTML=''; }
@@ -967,7 +1113,6 @@ function huntClick(r,c) {
     sp.style.color='var(--correct)'; td.classList.add('hunt-correct','hunt-disabled');
     huntQ.found++;
     if(huntQ.found===huntQ.pairs.length){
-      // round won
       huntCorrect++; huntStreak++;
       revealHuntResult(true);
       celebrate(huntStreak, true);
@@ -979,7 +1124,6 @@ function huntClick(r,c) {
     sp.style.color='var(--wrong)'; td.classList.add('hunt-wrong');
     huntQ.wrongTaps++; huntErrors++; huntStreak=0; updateHuntUI();
     setTimeout(()=>td.classList.add('hunt-disabled'),400);
-    // after 2 wrong taps, reveal
     if(huntQ.wrongTaps>=2||(huntQ.pairs.length===1&&huntQ.wrongTaps>=1)){
       setTimeout(()=>{
         revealHuntResult(false);
@@ -991,7 +1135,6 @@ function huntClick(r,c) {
 }
 
 function revealHuntResult(won) {
-  // reveal unfound correct cells
   huntQ.pairs.forEach(({r,c})=>{
     const td=document.querySelector(`td[data-r="${r}"][data-c="${c}"]`);
     if(!td||td.classList.contains('hunt-correct')) return;
@@ -1000,7 +1143,6 @@ function revealHuntResult(won) {
     const sp=document.createElement('span'); sp.className='answer-num';
     sp.style.color='var(--correct)'; sp.textContent=r*c; td.innerHTML=''; td.appendChild(sp);
   });
-  // dim remaining candidates
   document.querySelectorAll('td.hunt-candidate').forEach(td=>{
     td.classList.remove('hunt-candidate'); td.classList.add('hunt-disabled');
     const r=+td.dataset.r, c=+td.dataset.c;
@@ -1083,6 +1225,8 @@ function toggleAnswers(){
 function confirmClear(){ document.getElementById('modal-overlay').classList.add('show'); }
 function closeModal()  { document.getElementById('modal-overlay').classList.remove('show'); }
 function doClear(){
+  if (isAutoMode) toggleAutoFill();
+
   answers={}; streak=0; maxStreak=0; saveState();
   showingAnswers=false; document.getElementById('toggle-label').textContent='Ver respuestas';
   document.getElementById('complete-banner').classList.remove('show');
@@ -1144,42 +1288,32 @@ function proConstruirTablero() {
   const board = document.getElementById('pro-board');
   board.innerHTML = '';
 
-  // Rows 1-3: carry rows aligned over A's hundreds(col5) and tens(col6)
-  // _1 = carry into tens position (above col6), _2 = carry into hundreds (above col5)
-  // Row 1 = hundreds digit of B (top), Row 2 = tens, Row 3 = units (bottom, closest to A)
   proCrearCelda(board, 1, 5, 'c_2_2', 'carry-input'); proCrearCelda(board, 1, 6, 'c_2_1', 'carry-input');
   proCrearCelda(board, 2, 5, 'c_1_2', 'carry-input'); proCrearCelda(board, 2, 6, 'c_1_1', 'carry-input');
   proCrearCelda(board, 3, 5, 'c_0_2', 'carry-input'); proCrearCelda(board, 3, 6, 'c_0_1', 'carry-input');
 
-  // Row 4: factor A
   proCrearTexto(board, 4, 5, proA[0]);
   proCrearTexto(board, 4, 6, proA[1]);
   proCrearTexto(board, 4, 7, proA[2]);
 
-  // Row 5: × and factor B with IDs for highlight
   proCrearTexto(board, 5, 4, '×');
   proCrearTexto(board, 5, 5, proB[0], 'mb_0');
   proCrearTexto(board, 5, 6, proB[1], 'mb_1');
   proCrearTexto(board, 5, 7, proB[2], 'mb_2');
 
-  // Line after factors
   const l1 = document.createElement('div');
   l1.className = 'math-line'; l1.style.gridRow = '6'; board.appendChild(l1);
 
-  // Row 7: carry sum inputs
   for (let i=1; i<=5; i++) proCrearCelda(board, 7, 7-i, `cs_${i}`, 'carry-input carry-sum');
 
-  // Rows 8-10: partial products
   proCrearCelda(board,8,4,'p0_3'); proCrearCelda(board,8,5,'p0_2'); proCrearCelda(board,8,6,'p0_1'); proCrearCelda(board,8,7,'p0_0');
   proCrearCelda(board,9,3,'p1_4'); proCrearCelda(board,9,4,'p1_3'); proCrearCelda(board,9,5,'p1_2'); proCrearCelda(board,9,6,'p1_1');
   proCrearCelda(board,10,2,'p2_5'); proCrearCelda(board,10,3,'p2_4'); proCrearCelda(board,10,4,'p2_3'); proCrearCelda(board,10,5,'p2_2');
 
-  // Row 11: + and line
   proCrearTexto(board, 11, 1, '+');
   const l2 = document.createElement('div');
   l2.className = 'math-line'; l2.style.gridRow = '11'; board.appendChild(l2);
 
-  // Row 12: result
   for (let i=6; i>=1; i--) proCrearCelda(board, 12, 8-i, `r_${i-1}`);
 }
 
@@ -1253,7 +1387,6 @@ function proActivarSiguiente() {
   }
 
   if (paso.accion === 'limpiar_acarreos') {
-    // clear only the carry row for this digit (j)
     const j = paso.digitoJ;
     const c1=document.getElementById(`c_${j}_1`), c2=document.getElementById(`c_${j}_2`);
     if(c1){c1.value='';c1.classList.remove('pro-correct');}
@@ -1315,9 +1448,7 @@ function proActualizarAyuda(digitoBase, resaltado) {
 // ══════════════════════════════════════════
 let freeA='', freeB='', freeVerified=false;
 
-// Re-use proCalcularSecuencia's answer map: build expected values for every cell ID
 function freeCalcularEsperados(a, b) {
-  // Run the same logic as pro but just collect {id: expectedValue}
   const expected = {};
   const A=a, B=b;
   const pps=[[],[],[]];
@@ -1367,7 +1498,7 @@ function freeConstruirTablero(a, b) {
     if(claseExtra) claseExtra.split(' ').forEach(c=>{if(c)i.classList.add(c);});
     i.addEventListener('input', e=>{
       if(e.target.value.length>1) e.target.value=e.target.value.slice(-1);
-      e.target.classList.remove('free-bad'); // clear red when student corrects
+      e.target.classList.remove('free-bad'); 
       const hasAny=[...document.querySelectorAll('#pro-board input')].some(x=>x.value!=='');
       document.getElementById('free-verify-btn').style.display=hasAny&&!freeVerified?'flex':'none';
     });
@@ -1378,26 +1509,18 @@ function freeConstruirTablero(a, b) {
     d.className='math-line'; d.style.gridRow=fila; board.appendChild(d);
   }
 
-  // Rows 1-3: carry rows aligned over A's hundreds(col5) and tens(col6)
-  // _2 = carry into hundreds (col5), _1 = carry into tens (col6)
-  // Row 1 = hundreds digit of B (top), Row 2 = tens, Row 3 = units (bottom, closest to A)
   inp(1,5,'f_c_2_2','carry-input'); inp(1,6,'f_c_2_1','carry-input');
   inp(2,5,'f_c_1_2','carry-input'); inp(2,6,'f_c_1_1','carry-input');
   inp(3,5,'f_c_0_2','carry-input'); inp(3,6,'f_c_0_1','carry-input');
 
-  // Row 4: factor A
   txt(4,5,a[0]); txt(4,6,a[1]); txt(4,7,a[2]);
-  // Row 5: × and factor B
   txt(5,4,'×'); txt(5,5,b[0]); txt(5,6,b[1]); txt(5,7,b[2]);
   line(6);
-  // Row 7: carry-sum inputs
   for(let i=1;i<=5;i++) inp(7,7-i,`f_cs_${i}`,'carry-input carry-sum');
-  // Rows 8-10: partial products (all open)
   inp(8,4,'f_p0_3'); inp(8,5,'f_p0_2'); inp(8,6,'f_p0_1'); inp(8,7,'f_p0_0');
   inp(9,3,'f_p1_4'); inp(9,4,'f_p1_3'); inp(9,5,'f_p1_2'); inp(9,6,'f_p1_1');
   inp(10,2,'f_p2_5'); inp(10,3,'f_p2_4'); inp(10,4,'f_p2_3'); inp(10,5,'f_p2_2');
   txt(11,1,'+'); line(11);
-  // Row 12: result
   for(let i=6;i>=1;i--) inp(12,8-i,`f_r_${i-1}`);
 }
 
@@ -1425,7 +1548,6 @@ function freeIniciar(a, b) {
   freeVerified = false;
   freeA = (a || (Math.floor(Math.random()*899)+100)).toString();
   freeB = (b || (Math.floor(Math.random()*899)+100)).toString();
-  // keep proA/proB in sync so "Con ayuda" returns to same numbers
   proA = freeA; proB = freeB;
   freeConstruirTablero(freeA, freeB);
   document.getElementById('free-result-banner').classList.remove('show');
@@ -1462,13 +1584,12 @@ function freeVerificar() {
     else          { inp.classList.add('free-bad'); }
   });
 
-  // Lock correct cells; wrong cells stay editable so student can fix them
   inputs.forEach(inp => {
     if (inp.classList.contains('free-ok')) {
       inp.disabled = true;
     } else {
       inp.disabled = false;
-      inp.classList.remove('free-ok'); // safety clean
+      inp.classList.remove('free-ok');
     }
   });
 
@@ -1510,17 +1631,14 @@ function highlightCross(r, c) {
   if (litR === r && litC === c) return;
   clearHighlight();
   litR = r; litC = c;
-  // highlight entire row
   for (let cc = 1; cc <= 10; cc++) {
     const td = document.querySelector(`td[data-r="${r}"][data-c="${cc}"]`);
     if (td) td.classList.add(cc === c ? 'cross-lit' : 'row-lit');
   }
-  // highlight entire col
   for (let rr = 1; rr <= 10; rr++) {
     const td = document.querySelector(`td[data-r="${rr}"][data-c="${c}"]`);
     if (td) td.classList.add(rr === r ? 'cross-lit' : 'col-lit');
   }
-  // header cells
   const colH = document.querySelector(`th.col-header[data-c="${c}"]`);
   if (colH) colH.classList.add('col-lit');
   const rowH = document.querySelector(`td.row-header[data-r="${r}"]`);
