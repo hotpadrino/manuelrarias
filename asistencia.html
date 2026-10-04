@@ -468,7 +468,7 @@ $('f-register').addEventListener('submit', async e => {
   if (p.length<6) return toast('La contraseña debe tener mínimo 6 caracteres.','err');
   if (p!==p2) return toast('Las contraseñas no coinciden.','err');
   await conCarga(e.submitter,'Registrando...', async () => {
-    const { data, error } = await sb.auth.signUp({ email, password:p, options:{ data:{ display_name:nombre }, emailRedirectTo: location.origin+location.pathname } });
+    const { data, error } = await sb.auth.signUp({ email, password:p, options:{ data: { display_name: nombre, schema: 'Asistencia' }, emailRedirectTo: location.origin+location.pathname } });
     if (error) return toast('Error de registro: '+error.message,'err');
     if (data.session) toast('Cuenta creada. Sesión iniciada.','ok');
     else { toast('Cuenta creada. Revise su correo para confirmarla e ingrese.','ok'); tabAuth('login'); }
