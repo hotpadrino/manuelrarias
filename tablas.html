@@ -818,6 +818,98 @@ function cellClick(r,c) {
 }
 
 // ══════════════════════════════════════════
+// SONIDOS (Web Audio, sin archivos externos)
+// ══════════════════════════════════════════
+let audioCtx = null;
+function getAudio() {
+  try {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      audioCtx = new AC();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  } catch (e) { return null; }
+}
+
+function playTone(freq, start, dur, type, vol, freqEnd) {
+  const ctx = getAudio(); if (!ctx) return;
+  const t0 = ctx.currentTime + start;
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t0 + dur);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.05);
+}
+
+// ✅ Acierto: sonido de moneda estilo Mario Bros (Si5 corto + Mi6 largo, onda cuadrada)
+function playCorrectSound() {
+  playTone(987.77,  0.00, 0.09, 'square', 0.14);
+  playTone(1318.51, 0.08, 0.50, 'square', 0.14);
+}
+
+// ❌ Error / bomba: zumbido grave descendente + estallido de ruido
+function playWrongSound() {
+  const ctx = getAudio(); if (!ctx) return;
+  playTone(220, 0.00, 0.35, 'sawtooth', 0.28, 80);
+  playTone(165, 0.12, 0.40, 'square',   0.18, 55);
+  const len = Math.floor(ctx.sampleRate * 0.35);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+  const noise = ctx.createBufferSource(), g = ctx.createGain();
+  noise.buffer = buf; g.gain.value = 0.35;
+  noise.connect(g); g.connect(ctx.destination); noise.start();
+}
+
+// 🧨 Mecha consumiéndose: siseo con chispazos que se intensifica al acabarse el tiempo
+let fuseNodes = null;
+function startFuseSound() {
+  stopFuseSound();
+  const ctx = getAudio(); if (!ctx) return;
+  const len = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 3000; filter.Q.value = 0.8;
+  const gain = ctx.createGain(); gain.gain.value = 0.0001;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.start();
+  fuseNodes = { src, filter, gain, intensity: 0, crackle: null };
+  // chispazos: el volumen salta al azar
+  fuseNodes.crackle = setInterval(() => {
+    if (!fuseNodes) return;
+    const base = 0.05 + fuseNodes.intensity * 0.10;
+    const v = base + Math.random() * (0.08 + fuseNodes.intensity * 0.10);
+    gain.gain.setTargetAtTime(v, ctx.currentTime, 0.01);
+  }, 55);
+}
+function updateFuseSound(remainingPct) {
+  if (!fuseNodes) return;
+  const ctx = audioCtx; if (!ctx) return;
+  const k = 1 - remainingPct / 100; // 0 al inicio, 1 al final
+  fuseNodes.intensity = k;
+  fuseNodes.filter.frequency.setTargetAtTime(2500 + k * 4500, ctx.currentTime, 0.05);
+}
+function stopFuseSound() {
+  if (!fuseNodes) return;
+  const n = fuseNodes; fuseNodes = null;
+  clearInterval(n.crackle);
+  try {
+    n.gain.gain.cancelScheduledValues(0);
+    n.gain.gain.value = 0;
+    n.src.stop();
+  } catch (e) {}
+}
+
+// ══════════════════════════════════════════
 // AUTO-FILL TIMER (BOMB)
 // ══════════════════════════════════════════
 function toggleAutoFill() {
@@ -831,6 +923,7 @@ function toggleAutoFill() {
     closeInput();
   } else {
     isAutoMode = true;
+    getAudio(); // desbloquea el audio con el clic del usuario
     btn.innerHTML = '🛑 Detener';
     btn.classList.add('timer-active');
     triggerNextAutoCell();
@@ -864,6 +957,7 @@ function startBombTimer() {
   container.style.display = 'flex';
   fuse.style.width = '100%';
   bombStart = performance.now();
+  startFuseSound();
 
   cancelAnimationFrame(bombAnimFrame);
   function step(now) {
@@ -876,6 +970,7 @@ function startBombTimer() {
         return;
      }
      fuse.style.width = pct + '%';
+     updateFuseSound(pct);
      bombAnimFrame = requestAnimationFrame(step);
   }
   bombAnimFrame = requestAnimationFrame(step);
@@ -883,6 +978,7 @@ function startBombTimer() {
 
 function stopBombTimer() {
   cancelAnimationFrame(bombAnimFrame);
+  stopFuseSound();
   const container = document.getElementById('bomb-timer-container');
   if (container) container.style.display = 'none';
 }
@@ -1006,6 +1102,7 @@ function submitAnswer(close=true) {
   
   if (num === correct) {
     launchConfetti(800); // Ráfaga corta de confeti por cada buena
+    if (isAutoMode) playCorrectSound();
     if (!wasOk) { 
       streak++; 
       if(streak>maxStreak)maxStreak=streak; 
@@ -1013,6 +1110,7 @@ function submitAnswer(close=true) {
     }
   } else {
     triggerExplosion(); // Pantallazo de explosión por error o tiempo
+    if (isAutoMode) playWrongSound();
     streak = 0;
   }
   
