@@ -1,918 +1,336 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Dilema del Prisionero Interactivo</title>
-    <style>
-        :root {
-            --bg-color: #f5f5f5;
-            --container-bg: white;
-            --text-color: #333;
-            --border-color: #333;
-            --card-shadow: rgba(0,0,0,0.1);
-            --status-bg: #e8f4fd;
-            --status-border: #2196F3;
-            --status-text: #1976D2;
-            --payoff-bg: #fff3cd;
-            --payoff-border: #ffeaa7;
-            --summary-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --container-bg: #2d2d2d;
-            --text-color: #e0e0e0;
-            --border-color: #555;
-            --card-shadow: rgba(0,0,0,0.3);
-            --status-bg: #1e3a5f;
-            --status-border: #4a90e2;
-            --status-text: #87ceeb;
-            --payoff-bg: #3d3520;
-            --payoff-border: #8b7355;
-            --summary-bg: linear-gradient(135deg, #2d2d2d 0%, #404040 100%);
-        }
-
-        body { 
-            font-family: Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 20px; 
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-
-        #theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 12px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 8px var(--card-shadow);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        #theme-toggle:hover {
-            transform: scale(1.05);
-        }
-        
-        #game-container { 
-            display: flex; 
-            justify-content: space-around; 
-            width: 900px; 
-            margin-bottom: 30px; 
-            background: var(--container-bg);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px var(--card-shadow);
-        }
-        
-        .player-panel { 
-            text-align: center; 
-            border: 2px solid var(--border-color); 
-            padding: 20px; 
-            border-radius: 12px; 
-            width: 38%; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .player-panel h2 {
-            margin-top: 0;
-            font-size: 1.5em;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            position: relative;
-        }
-
-        .selection-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #FFD700;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-            animation: pulse-indicator 1s infinite;
-        }
-
-        @keyframes pulse-indicator {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        
-        .score-box { 
-            font-size: 3.5em; 
-            font-weight: bold; 
-            margin: 15px 0; 
-            border: 3px solid #fff; 
-            padding: 15px; 
-            border-radius: 10px; 
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            min-width: 120px;
-            display: inline-block;
-        }
-        
-        .controls, .actions { 
-            margin: 15px 0; 
-        }
-        
-        .controls select {
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            width: 200px;
-            font-size: 14px;
-            background: white;
-            color: #333;
-        }
-        
-        .btn-action { 
-            padding: 12px 18px; 
-            font-weight: bold; 
-            border: none; 
-            cursor: pointer; 
-            border-radius: 8px; 
-            margin: 8px; 
-            width: 120px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .btn-action:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        
-        .btn-green { 
-            background-color: #4CAF50; 
-            color: white; 
-        }
-        
-        .btn-red { 
-            background-color: #F44336; 
-            color: white; 
-        }
-        
-        .btn-action:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-action.selected {
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            border: 3px solid gold;
-        }
-
-        .btn-action.hidden-selection {
-            opacity: 0.7;
-        }
-
-        .btn-action.waiting {
-            animation: pulse-gold 1s infinite;
-        }
-
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); }
-            100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-        }
-
-        .keyboard-hint {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 5px;
-        }
-
-        #center-controls { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            width: 20%; 
-        }
-        
-        #center-controls button {
-            padding: 12px 16px;
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px 0;
-            transition: all 0.3s ease;
-        }
-        
-        #center-controls button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .control-group {
-            margin: 10px 0;
-            text-align: center;
-        }
-        
-        .control-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .control-group input, .control-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 80px;
-            text-align: center;
-        }
-
-        #game-status {
-            margin: 20px 0;
-            padding: 15px;
-            background: var(--status-bg);
-            border: 2px solid var(--status-border);
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            color: var(--status-text);
-            min-height: 20px;
-            text-align: center;
-        }
-
-        #current-round {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 10px 0;
-            color: var(--text-color);
-        }
-
-        #visual-history-container { 
-            width: 900px; 
-            margin-top: 20px; 
-            border-top: 3px solid var(--border-color); 
-            padding-top: 20px; 
-            background: var(--container-bg);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 4px var(--card-shadow);
-        }
-        
-        .history-row { 
-            display: flex; 
-            flex-wrap: nowrap; 
-            overflow-x: auto; 
-            margin-bottom: 10px; 
-            padding: 8px 0; 
-            border-bottom: 1px dashed #ddd; 
-        }
-        
-        .history-row-label { 
-            font-weight: bold; 
-            margin-right: 10px; 
-            min-width: 50px; 
-            color: var(--text-color);
-        }
-        
-        .round-indicator { 
-            width: 18px; 
-            height: 18px; 
-            border-radius: 50%; 
-            margin-right: 4px; 
-            display: inline-block; 
-            flex-shrink: 0;
-            border: 2px solid var(--border-color);
-        }
-        
-        .cooperate { 
-            background-color: #4CAF50; 
-        }
-        
-        .betray { 
-            background-color: #F44336; 
-        }
-
-        #summary-history { 
-            width: 900px; 
-            margin-top: 30px; 
-        }
-        
-        #summary-list { 
-            list-style: none; 
-            padding: 0; 
-        }
-        
-        .match-summary-item { 
-            padding: 15px; 
-            border-bottom: 1px solid #ddd; 
-            background: var(--summary-bg);
-            margin-bottom: 8px; 
-            border-radius: 8px;
-            box-shadow: 0 2px 4px var(--card-shadow);
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        .payoff-info {
-            margin: 20px 0;
-            padding: 15px;
-            background: var(--payoff-bg);
-            border: 1px solid var(--payoff-border);
-            border-radius: 8px;
-            font-size: 14px;
-            color: var(--text-color);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dilema del prisionero (Copy)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e9ecf1;--card:#fbfbfd;--ink:#161a23;--mute:#5b6577;--line:#cdd3de;--c:#0e8a58;--t:#cf3a35;--mix:#b8790a;--on-c:#fff;--on-t:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1219;--card:#181d27;--ink:#e8ecf3;--mute:#8f9bb0;--line:#2a3242;--c:#3ddc97;--t:#ff6b64;--mix:#f2b84b;--on-c:#07140d;--on-t:#1a0605}}
+:root[data-theme="dark"]{--bg:#0f1219;--card:#181d27;--ink:#e8ecf3;--mute:#8f9bb0;--line:#2a3242;--c:#3ddc97;--t:#ff6b64;--mix:#f2b84b;--on-c:#07140d;--on-t:#1a0605}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 'Bricolage Grotesque',system-ui,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800;letter-spacing:-.025em;margin:0}
+h3{margin:0 0 10px;font-size:1.05rem}
+.tools{display:flex;gap:8px}
+button{font:inherit;cursor:pointer}
+.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:600}
+:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+#status{margin:16px 0 8px;padding:12px 16px;background:var(--card);border-left:5px solid var(--ink);border-radius:10px;font-weight:600;min-height:48px}
+.prog{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--ink);transition:width .3s}
+#board{display:grid;grid-template-columns:1fr 270px 1fr;gap:16px;margin-top:16px}
+@media(max-width:860px){#board{grid-template-columns:1fr}#center{order:3}}
+.panel{--edge:var(--line);background:var(--card);border:3px solid var(--edge);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;transition:border-color .3s}
+.panel[data-m=C]{--edge:var(--c)}.panel[data-m=T]{--edge:var(--t)}
+.ph{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:1.15rem}
+.ready{font-size:.85rem;font-weight:600;color:var(--mute)}
+.sw{position:relative}
+.score{font-size:clamp(3.6rem,9vw,5.6rem);font-weight:800;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.gain{position:absolute;left:0;top:0;font-weight:800;font-size:1.4rem;opacity:0;pointer-events:none}
+.gain.rise{animation:rise 1s ease-out}
+.lamp{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--mute)}
+.lamp b{width:14px;height:14px;border-radius:50%;background:var(--line)}
+.lamp.c b{background:var(--c)}.lamp.t b{background:var(--t)}
+.lamp.c,.lamp.t{color:var(--ink)}
+select,input{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%}
+select:disabled{opacity:.6}
+.moves{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mv{font-weight:800;border:0;border-radius:14px;padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .12s}
+.mv.c{background:var(--c);color:var(--on-c)}.mv.t{background:var(--t);color:var(--on-t)}
+.mv kbd{font:inherit;font-size:.75rem;font-weight:600;border:1px solid currentColor;border-radius:5px;padding:1px 7px;opacity:.85}
+.mv:hover:not(:disabled){transform:translateY(-2px)}
+.mv:disabled{opacity:.35;cursor:not-allowed}
+.hit{animation:hit .35s ease-out}
+#center{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border-radius:20px;padding:16px}
+table{width:100%;border-collapse:separate;border-spacing:4px;font-size:.8rem}
+th{font-weight:600;color:var(--mute);padding:2px;line-height:1.2}
+td{text-align:center;padding:12px 2px;border-radius:10px;background:var(--bg);font-weight:800;font-size:1rem;transition:background .3s}
+td.on[data-k=cc]{background:color-mix(in srgb,var(--c) 40%,var(--card))}
+td.on[data-k=tt]{background:color-mix(in srgb,var(--t) 40%,var(--card))}
+td.on[data-k=mix]{background:color-mix(in srgb,var(--mix) 45%,var(--card))}
+.dg{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px}
+.dg.c{background:var(--c)}.dg.t{background:var(--t)}
+label{display:block;font-size:.85rem;font-weight:600;margin-bottom:4px}
+.btn{border:0;border-radius:12px;padding:13px;font-weight:800;background:var(--ink);color:var(--bg)}
+.btn.sec{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.row{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:8px 0;border-bottom:1px dashed var(--line)}
+.row span:first-child{font-weight:800;min-width:30px}
+.dot{width:18px;height:18px;border-radius:50%;flex-shrink:0}
+.dot.c{background:var(--c)}.dot.t{background:var(--t)}
+#sum{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+#sum li{background:var(--bg);border-radius:10px;padding:10px 14px;font-weight:600}
+.empty{color:var(--mute)}
+@keyframes rise{0%{opacity:0;transform:translateY(14px)}20%{opacity:1}100%{opacity:0;transform:translateY(-28px)}}
+@keyframes hit{from{transform:scale(1.03)}to{transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<main>
+<header class="top">
+  <h1>Dilema del prisionero</h1>
+  <div class="tools">
+    <button id="mute" class="ghost">🔊 Sonido</button>
+    <button id="theme" class="ghost">Cambiar tema</button>
+  </div>
+</header>
 
-    <button id="theme-toggle">🌙 Tema Oscuro</button>
+<div id="status" role="status">Elige las estrategias y pulsa Iniciar.</div>
+<div class="prog"><i id="bar"></i></div>
 
-    <h1>🎭 Simulador del Dilema del Prisionero</h1>
-
-    <div class="payoff-info">
-        <strong>Matriz de Pagos:</strong> Ambos Cooperan: +3/+3 | Traición vs Cooperación: +5/+0 | Ambos Traicionan: +1/+1
+<section id="board">
+  <div class="panel" id="p1"></div>
+  <div id="center">
+    <div class="card">
+      <table aria-label="Matriz de pagos">
+        <tr><th></th><th><i class="dg c"></i>J2 coopera</th><th><i class="dg t"></i>J2 traiciona</th></tr>
+        <tr><th><i class="dg c"></i>J1 coopera</th><td id="m-CC" data-k="cc">3 · 3</td><td id="m-CT" data-k="mix">0 · 5</td></tr>
+        <tr><th><i class="dg t"></i>J1 traiciona</th><td id="m-TC" data-k="mix">5 · 0</td><td id="m-TT" data-k="tt">1 · 1</td></tr>
+      </table>
     </div>
-
-    <div id="game-status">Selecciona las estrategias y presiona INICIAR JUEGO</div>
-    
-    <div id="current-round"></div>
-
-    <div id="game-container">
-        <div id="player-1-panel" class="player-panel">
-            <h2>🎮 Jugador 1</h2>
-            <div id="score-1" class="score-box">000</div>
-
-            <div class="controls">
-                <label for="strategy-1">Estrategia:</label>
-                <select id="strategy-1">
-                    <option value="Human" selected>🧑 Humano</option>
-                    <option value="TitForTat">🔄 Tit-for-Tat</option>
-                    <option value="TitForTwoTats">🔄🔄 Tit-for-Two-Tats</option>
-                    <option value="GrimTrigger">⚡ Gatillo Siniestro</option>
-                    <option value="Pavlov">🧠 Pavlov</option>
-                    <option value="Majority">📊 Mayoría</option>
-                    <option value="AlwaysCooperate">😇 Siempre Coopera</option>
-                    <option value="AlwaysBetray">😈 Siempre Traiciona</option>
-                    <option value="Random">🎲 Aleatoria (50/50)</option>
-                    <option value="Random70">🎲 Aleatoria (70/30)</option>
-                    <option value="Random30">🎲 Aleatoria (30/70)</option>
-                </select>
-            </div>
-
-            <div id="actions-1" class="actions">
-                <button class="btn-action btn-green" id="coop-btn-1">Cooperar (C)</button>
-                <button class="btn-action btn-red" id="betray-btn-1">Traicionar (T)</button>
-                <div class="keyboard-hint">Teclas: A (Cooperar) - D (Traicionar)</div>
-            </div>
-        </div>
-
-        <div id="center-controls">
-            <div class="control-group">
-                <label for="max-rounds">Máx. Rondas:</label>
-                <input type="number" id="max-rounds" value="10" min="5" max="100">
-            </div>
-            
-            <div class="control-group">
-                <label for="machine-delay">Velocidad IA:</label>
-                <select id="machine-delay">
-                    <option value="2000">Lenta (2s)</option>
-                    <option value="1000" selected>Normal (1s)</option>
-                    <option value="500">Rápida (0.5s)</option>
-                    <option value="200">Muy Rápida (0.2s)</option>
-                    <option value="50">Ultra Rápida (0.05s)</option>
-                </select>
-            </div>
-            
-            <button id="start-btn">🚀 INICIAR JUEGO</button>
-            <button id="pause-btn" style="display:none;">⏸️ PAUSAR</button>
-            <button id="reset-btn">🔄 REINICIAR</button>
-        </div>
-
-        <div id="player-2-panel" class="player-panel">
-            <h2>🎮 Jugador 2</h2>
-            <div id="score-2" class="score-box">000</div>
-
-            <div class="controls">
-                <label for="strategy-2">Estrategia:</label>
-                <select id="strategy-2">
-                    <option value="Human">🧑 Humano</option>
-                    <option value="TitForTat" selected>🔄 Tit-for-Tat</option>
-                    <option value="TitForTwoTats">🔄🔄 Tit-for-Two-Tats</option>
-                    <option value="GrimTrigger">⚡ Gatillo Siniestro</option>
-                    <option value="Pavlov">🧠 Pavlov</option>
-                    <option value="Majority">📊 Mayoría</option>
-                    <option value="AlwaysCooperate">😇 Siempre Coopera</option>
-                    <option value="AlwaysBetray">😈 Siempre Traiciona</option>
-                    <option value="Random">🎲 Aleatoria (50/50)</option>
-                    <option value="Random70">🎲 Aleatoria (70/30)</option>
-                    <option value="Random30">🎲 Aleatoria (30/70)</option>
-                </select>
-            </div>
-
-            <div id="actions-2" class="actions">
-                <button class="btn-action btn-green" id="coop-btn-2">Cooperar (C)</button>
-                <button class="btn-action btn-red" id="betray-btn-2">Traicionar (T)</button>
-                <div class="keyboard-hint">Teclas: J (Cooperar) - L (Traicionar)</div>
-            </div>
-        </div>
+    <div class="card">
+      <label for="max">Rondas</label>
+      <input type="number" id="max" value="10" min="5" max="100">
+      <label for="delay" style="margin-top:10px">Velocidad entre máquinas</label>
+      <select id="delay">
+        <option value="2000">Lenta (2 s)</option>
+        <option value="1000" selected>Normal (1 s)</option>
+        <option value="500">Rápida (0,5 s)</option>
+        <option value="200">Muy rápida (0,2 s)</option>
+        <option value="50">Ultra rápida (sin sonido)</option>
+      </select>
     </div>
+    <button class="btn" id="start">Iniciar juego</button>
+    <button class="btn sec" id="pause" hidden>Pausar</button>
+    <button class="btn sec" id="reset">Reiniciar</button>
+  </div>
+  <div class="panel" id="p2"></div>
+</section>
 
-    <div id="visual-history-container">
-        <h3>📈 Historial de Jugadas</h3>
-        <div id="p1-history-row" class="history-row">
-            <span class="history-row-label">J1:</span>
-        </div>
-        <div id="p2-history-row" class="history-row">
-            <span class="history-row-label">J2:</span>
-        </div>
-    </div>
+<section class="card" style="margin-top:16px">
+  <h3>Historial de jugadas</h3>
+  <div class="row" id="h1"><span>J1</span></div>
+  <div class="row" id="h2"><span>J2</span></div>
+</section>
 
-    <div id="summary-history">
-        <h3>📋 Historial de Partidas</h3>
-        <ul id="summary-list"></ul>
-    </div>
+<section class="card" style="margin-top:16px">
+  <h3>Partidas terminadas</h3>
+  <ul id="sum"><li class="empty">Aún no has terminado ninguna partida.</li></ul>
+</section>
+</main>
 
-    <script>
-        let currentRound = 0;
-        let maxRounds = 10;
-        let scores = [0, 0];
-        let history = [];
-        let gameActive = false;
-        let gamePaused = false;
-        let machineGameLoop = null;
-        let pendingMoves = {};
-        let selectedButtons = {};
-        let completedGames = [];
-        let processingRound = false; // Para evitar múltiples entradas simultáneas
+<script>
+const $=id=>document.getElementById(id);
+const PAY={CC:[3,3],CT:[0,5],TC:[5,0],TT:[1,1]};
+const STRATS=[['Human','🧑 Humano'],['TitForTat','🔄 Tit-for-Tat'],['TitForTwoTats','🔄🔄 Tit-for-Two-Tats'],['GrimTrigger','⚡ Gatillo siniestro'],['Pavlov','🧠 Pavlov'],['Majority','📊 Mayoría'],['AlwaysCooperate','😇 Siempre coopera'],['AlwaysBetray','😈 Siempre traiciona'],['Random','🎲 Aleatoria 50/50'],['Random70','🎲 Aleatoria 70/30'],['Random30','🎲 Aleatoria 30/70']];
+let round=0,max=10,scores=[0,0],log=[],active=false,paused=false,loop=null,pending={},busy=false,token=0,muted=false,ac=null;
 
-        const PAYOFF_MATRIX = {
-            'CC': [3, 3],
-            'CT': [0, 5],
-            'TC': [5, 0],
-            'TT': [1, 1]
-        };
+/* ---------- Sonido (sintetizado, sin archivos) ---------- */
+function audio(){
+  if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}
+  if(ac&&ac.state==='suspended')ac.resume();
+  return ac;
+}
+function tone(f,t0,d,type,v,f2){
+  const a=audio();if(!a||muted)return;
+  const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+t0;
+  o.type=type||'sine';o.frequency.setValueAtTime(f,t);
+  if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v||.12,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05);
+}
+const SND={
+  // dos verdes: acorde mayor ascendente, cálido
+  CC:()=>[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,i*.08,.55,'triangle',.13)),
+  // dos rojas: zumbido grave y disonante
+  TT:()=>{tone(110,0,.6,'sawtooth',.09);tone(116.5,0,.6,'sawtooth',.09);tone(55,0,.6,'square',.07)},
+  // una y una: golpe agudo y caída tensa
+  MIX:()=>{tone(988,0,.1,'square',.06);tone(520,.1,.5,'sawtooth',.09,240);tone(392,.1,.4,'triangle',.08)},
+  tick:()=>tone(620,0,.07,'sine',.08),
+  win:()=>[392,494,587,784].forEach((f,i)=>tone(f,i*.11,.5,'triangle',.12)),
+  tie:()=>{tone(440,0,.4,'triangle',.1);tone(440,.18,.5,'triangle',.1)}
+};
 
-        function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.getElementById('theme-toggle');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                themeToggle.textContent = '🌙 Tema Oscuro';
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = '☀️ Tema Claro';
-            }
-        }
+/* ---------- Interfaz ---------- */
+const keys={A:'D',J:'L'};
+const panel=n=>`<div class="ph"><span>Jugador ${n}</span><span class="ready" id="rd${n}" hidden>✓ ya eligió</span></div>
+<div class="sw"><div class="score" id="sc${n}">000</div><span class="gain" id="gn${n}"></span></div>
+<div class="lamp" id="lp${n}"><b></b><span>Sin jugadas todavía</span></div>
+<select id="st${n}" aria-label="Estrategia del jugador ${n}">${STRATS.map(([v,l])=>`<option value="${v}"${v===(n==1?'Human':'TitForTat')?' selected':''}>${l}</option>`).join('')}</select>
+<div class="moves" id="mv${n}"><button class="mv c" id="c${n}">Cooperar<kbd>${n==1?'A':'J'}</kbd></button><button class="mv t" id="t${n}">Traicionar<kbd>${n==1?'D':'L'}</kbd></button></div>`;
+$('p1').innerHTML=panel(1);$('p2').innerHTML=panel(2);
 
-        function startGame() {
-            currentRound = 0;
-            scores = [0, 0];
-            history = [];
-            pendingMoves = {};
-            selectedButtons = {};
-            processingRound = false;
-            maxRounds = parseInt(document.getElementById('max-rounds').value);
-            gameActive = true;
-            gamePaused = false;
+const setStatus=s=>$('status').textContent=s;
+const pad=n=>String(n).padStart(3,'0');
+const pop=(el,cls)=>{el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls)};
+const isHuman=n=>$('st'+n).value==='Human';
+const label=n=>$('st'+n).selectedOptions[0].textContent.replace(/^[^\p{L}]+/u,'');
 
-            updateGameStatus("🎮 Juego iniciado");
-            updateCurrentRound();
-            updateScores(0, 0);
-            clearButtonStyles();
-            
-            document.getElementById('p1-history-row').innerHTML = '<span class="history-row-label">J1:</span>';
-            document.getElementById('p2-history-row').innerHTML = '<span class="history-row-label">J2:</span>';
+function sync(){
+  [1,2].forEach(n=>{
+    $('mv'+n).hidden=!isHuman(n);
+    $('c'+n).disabled=$('t'+n).disabled=!(active&&!busy);
+    $('st'+n).disabled=active;
+  });
+  $('max').disabled=active;
+  $('pause').hidden=!(active&&!isHuman(1)&&!isHuman(2));
+}
 
-            if (machineGameLoop) {
-                clearTimeout(machineGameLoop);
-                machineGameLoop = null;
-            }
+function fresh(){
+  token++;clearTimeout(loop);loop=null;
+  pending={};busy=false;round=0;scores=[0,0];log=[];paused=false;
+  [1,2].forEach(n=>{
+    $('sc'+n).textContent='000';$('gn'+n).textContent='';$('rd'+n).hidden=true;
+    $('p'+n).removeAttribute('data-m');
+    $('lp'+n).className='lamp';$('lp'+n).lastChild.textContent='Sin jugadas todavía';
+    $('h'+n).innerHTML=`<span>J${n}</span>`;
+  });
+  document.querySelectorAll('td').forEach(td=>td.classList.remove('on'));
+  $('bar').style.width='0';$('pause').textContent='Pausar';
+}
 
-            const strategy1 = document.getElementById('strategy-1').value;
-            const strategy2 = document.getElementById('strategy-2').value;
+function startGame(){
+  audio();
+  fresh();
+  max=Math.min(100,Math.max(5,parseInt($('max').value)||10));$('max').value=max;
+  active=true;sync();
+  if(!isHuman(1)&&!isHuman(2)){setStatus('Las máquinas están jugando…');runMachines()}
+  else if(isHuman(1)&&isHuman(2))setStatus('Elijan en secreto: cada uno con sus teclas.');
+  else setStatus('Tu turno: elige cooperar o traicionar.');
+}
+function resetGame(){fresh();active=false;sync();setStatus('Partida reiniciada. Pulsa Iniciar.')}
+function pauseGame(){
+  paused=!paused;
+  $('pause').textContent=paused?'Reanudar':'Pausar';
+  if(paused){clearTimeout(loop);loop=null;setStatus('Partida en pausa.')}
+  else{setStatus('Las máquinas están jugando…');runMachines()}
+}
 
-            toggleHumanControls(1);
-            toggleHumanControls(2);
+/* ---------- Lógica ---------- */
+function runMachines(){
+  if(!active||paused)return;
+  if(round>=max){endGame();return}
+  processMoves(machine(1),machine(2));
+  if(round<max)loop=setTimeout(runMachines,parseInt($('delay').value));
+}
 
-            if (strategy1 !== 'Human' && strategy2 !== 'Human') {
-                updateGameStatus("🤖 Máquinas jugando automáticamente...");
-                document.getElementById('pause-btn').style.display = 'inline-block';
-                runMachineVsMachine();
-            } else if (strategy1 === 'Human' && strategy2 === 'Human') {
-                updateGameStatus("👥 Esperando jugadas de ambos jugadores...");
-            } else {
-                updateGameStatus("🎯 Esperando jugada del humano...");
-            }
-        }
+function play(p,m){
+  if(!active||busy||round>=max)return;
+  if(isHuman(1)&&isHuman(2)){
+    pending[p]=m;$('rd'+p).hidden=false;SND.tick();
+    if(pending[1]&&pending[2]){
+      busy=true;sync();setStatus('Revelando jugadas…');
+      const tk=token,a=pending[1],b=pending[2];
+      setTimeout(()=>{
+        if(tk!==token)return;
+        pending={};busy=false;[1,2].forEach(n=>$('rd'+n).hidden=true);
+        processMoves(a,b);sync();
+      },900);
+    }else setStatus(`El jugador ${p} ya eligió. Falta el jugador ${p==1?2:1}.`);
+    return;
+  }
+  SND.tick();
+  if(p===1&&isHuman(1))processMoves(m,machine(2));
+  else if(p===2&&isHuman(2))processMoves(machine(1),m);
+}
 
-        function pauseGame() {
-            if (gamePaused) {
-                gamePaused = false;
-                document.getElementById('pause-btn').textContent = "⏸️ PAUSAR";
-                runMachineVsMachine();
-                updateGameStatus("🎮 Juego reanudado");
-            } else {
-                gamePaused = true;
-                document.getElementById('pause-btn').textContent = "▶️ REANUDAR";
-                if (machineGameLoop) {
-                    clearTimeout(machineGameLoop);
-                    machineGameLoop = null;
-                }
-                updateGameStatus("⏸️ Juego pausado");
-            }
-        }
+function processMoves(a,b){
+  const [x,y]=PAY[a+b],kind=a===b?a+b:'MIX';
+  scores[0]+=x;scores[1]+=y;
+  log.push({p1:a,p2:b,s1:x,s2:y});round++;
+  const names={C:'cooperó',T:'traicionó'};
+  [[1,a,x],[2,b,y]].forEach(([n,m,g])=>{
+    $('sc'+n).textContent=pad(scores[n-1]);
+    const P=$('p'+n);P.dataset.m=m;pop(P,'hit');
+    $('lp'+n).className='lamp '+(m==='C'?'c':'t');
+    $('lp'+n).lastChild.textContent=m==='C'?'Cooperó':'Traicionó';
+    const gn=$('gn'+n);gn.textContent='+'+g;pop(gn,'rise');
+    const d=document.createElement('span');
+    d.className='dot '+(m==='C'?'c':'t');d.title=`Ronda ${round}: ${names[m]}`;
+    $('h'+n).appendChild(d);
+  });
+  document.querySelectorAll('td').forEach(td=>td.classList.remove('on'));
+  $('m-'+a+b).classList.add('on');
+  const machinesOnly=!isHuman(1)&&!isHuman(2);
+  if(!(machinesOnly&&parseInt($('delay').value)<200))SND[kind]();
+  $('bar').style.width=(round/max*100)+'%';
+  setStatus(`Ronda ${round} de ${max}: J1 ${names[a]} (+${x}), J2 ${names[b]} (+${y})`);
+  if(round>=max){const tk=token;setTimeout(()=>{if(tk===token)endGame()},700)}
+}
 
-        function resetGame() {
-            gameActive = false;
-            gamePaused = false;
-            pendingMoves = {};
-            selectedButtons = {};
-            processingRound = false;
-            if (machineGameLoop) {
-                clearTimeout(machineGameLoop);
-                machineGameLoop = null;
-            }
-            document.getElementById('pause-btn').style.display = 'none';
-            updateGameStatus("🔄 Juego reiniciado - Presiona INICIAR JUEGO");
-            updateCurrentRound();
-            updateScores(0, 0);
-            clearButtonStyles();
-            
-            document.getElementById('p1-history-row').innerHTML = '<span class="history-row-label">J1:</span>';
-            document.getElementById('p2-history-row').innerHTML = '<span class="history-row-label">J2:</span>';
-            
-            toggleHumanControls(1);
-            toggleHumanControls(2);
-        }
+function endGame(){
+  if(!active)return;
+  active=false;paused=false;clearTimeout(loop);loop=null;
+  const [s1,s2]=scores;
+  const w=s1>s2?'ganó el jugador 1':s2>s1?'ganó el jugador 2':'empate';
+  setStatus(`Fin de la partida: ${w} (${s1} a ${s2}).`);
+  (s1===s2?SND.tie:SND.win)();
+  const sum=$('sum');
+  if(sum.firstChild&&sum.firstChild.className==='empty')sum.innerHTML='';
+  const li=document.createElement('li');
+  li.textContent=`${label(1)} vs ${label(2)}: ${s1} a ${s2}, ${w}`;
+  sum.prepend(li);
+  sync();
+}
 
-        function toggleHumanControls(playerNum) {
-            const strategy = document.getElementById(`strategy-${playerNum}`).value;
-            const actionsDiv = document.getElementById(`actions-${playerNum}`);
-            const buttons = actionsDiv.querySelectorAll('button');
-            
-            if (strategy === 'Human') {
-                actionsDiv.style.display = 'block';
-                if (gameActive) {
-                    buttons.forEach(btn => btn.disabled = false);
-                } else {
-                    buttons.forEach(btn => btn.disabled = true);
-                }
-            } else {
-                actionsDiv.style.display = 'none';
-            }
-        }
+function machine(n){
+  const o=n===1?2:1,key=k=>log.map(r=>r[k]);
+  const opp=key('p'+o),me=key('p'+n),mine=key('s'+n);
+  switch($('st'+n).value){
+    case 'AlwaysCooperate':return 'C';
+    case 'AlwaysBetray':return 'T';
+    case 'Random':return Math.random()<.5?'C':'T';
+    case 'Random70':return Math.random()<.7?'C':'T';
+    case 'Random30':return Math.random()<.3?'C':'T';
+    case 'TitForTat':return log.length?opp[opp.length-1]:'C';
+    case 'GrimTrigger':return opp.includes('T')?'T':'C';
+    case 'TitForTwoTats':return opp.slice(-2).length===2&&opp.slice(-2).every(m=>m==='T')?'T':'C';
+    case 'Pavlov':{
+      if(!log.length)return 'C';
+      const last=me[me.length-1];
+      return mine[mine.length-1]>=3?last:(last==='C'?'T':'C');
+    }
+    case 'Majority':{
+      const t=opp.filter(m=>m==='T').length;
+      return opp.length-t>=t?'C':'T';
+    }
+    default:return 'C';
+  }
+}
 
-        function runMachineVsMachine() {
-            if (!gameActive || gamePaused) {
-                return;
-            }
-            
-            if (currentRound >= maxRounds) {
-                endGame();
-                return;
-            }
+/* ---------- Eventos ---------- */
+$('start').onclick=startGame;$('pause').onclick=pauseGame;$('reset').onclick=resetGame;
+['st1','st2'].forEach(id=>$(id).onchange=sync);
+$('c1').onclick=()=>play(1,'C');$('t1').onclick=()=>play(1,'T');
+$('c2').onclick=()=>play(2,'C');$('t2').onclick=()=>play(2,'T');
+const KEYS={a:[1,'C'],d:[1,'T'],j:[2,'C'],l:[2,'T']};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.ctrlKey||e.metaKey)return;
+  const k=KEYS[e.key.toLowerCase()];
+  if(k&&isHuman(k[0])&&active&&!busy){play(k[0],k[1]);e.preventDefault()}
+});
 
-            const move1 = getMachineMove(1);
-            const move2 = getMachineMove(2);
-            
-            processMoves(move1, move2);
-            
-            // Solo continuar si no hemos alcanzado el máximo
-            if (currentRound < maxRounds) {
-                const delay = parseInt(document.getElementById('machine-delay').value);
-                machineGameLoop = setTimeout(runMachineVsMachine, delay);
-            }
-        }
+function paintMute(){$('mute').textContent=muted?'🔇 Silencio':'🔊 Sonido'}
+try{muted=localStorage.getItem('pd-muted')==='1'}catch(e){}
+paintMute();
+$('mute').onclick=()=>{muted=!muted;paintMute();try{localStorage.setItem('pd-muted',muted?'1':'0')}catch(e){}if(!muted){audio();SND.tick()}};
 
-        function playRound(playerWhoClicked, move) {
-            if (!gameActive || currentRound >= maxRounds) return;
-            
-            // Si estamos procesando una ronda, ignorar nuevas entradas
-            if (processingRound) return;
-
-            const strategy1 = document.getElementById('strategy-1').value;
-            const strategy2 = document.getElementById('strategy-2').value;
-
-            let move1, move2;
-
-            if (strategy1 === 'Human' && strategy2 === 'Human') {
-                // Permitir cambiar selección si el otro jugador no ha elegido aún
-                const otherPlayer = playerWhoClicked === 1 ? 2 : 1;
-                
-                // Si este jugador ya había elegido, limpiar su selección anterior
-                if (pendingMoves[playerWhoClicked]) {
-                    clearPlayerButtonStyles(playerWhoClicked);
-                }
-                
-                // Registrar la nueva selección
-                pendingMoves[playerWhoClicked] = move;
-                selectedButtons[playerWhoClicked] = move;
-                
-                // Mostrar indicador visual sutil de que seleccionó (sin revelar qué eligió)
-                updatePlayerSelectionIndicator(playerWhoClicked, true);
-                
-                if (pendingMoves[1] && pendingMoves[2]) {
-                    // Ambos han elegido - procesar la ronda
-                    processingRound = true;
-                    showBothSelections();
-                    move1 = pendingMoves[1];
-                    move2 = pendingMoves[2];
-                    
-                    setTimeout(() => {
-                        processMoves(move1, move2);
-                        clearButtonStyles();
-                        clearPlayerSelectionIndicators();
-                        pendingMoves = {};
-                        selectedButtons = {};
-                        processingRound = false;
-                    }, 1500);
-                } else {
-                    const waitingPlayer = pendingMoves[1] ? 2 : 1;
-                    updateGameStatus(`⏳ Jugador ${playerWhoClicked} ha elegido. Esperando al Jugador ${waitingPlayer}...`);
-                }
-                return;
-
-            } else if (strategy1 === 'Human' || strategy2 === 'Human') {
-                if (strategy1 === 'Human' && playerWhoClicked === 1) {
-                    move1 = move;
-                    move2 = getMachineMove(2);
-                } else if (strategy2 === 'Human' && playerWhoClicked === 2) {
-                    move1 = getMachineMove(1);
-                    move2 = move;
-                } else {
-                    return;
-                }
-                processMoves(move1, move2);
-            }
-        }
-
-        function processMoves(move1, move2) {
-            const payoff = PAYOFF_MATRIX[move1 + move2];
-            const score1 = payoff[0];
-            const score2 = payoff[1];
-
-            scores[0] += score1;
-            scores[1] += score2;
-
-            history.push({ 
-                round: currentRound + 1,
-                p1: move1, 
-                p2: move2, 
-                score1: score1, 
-                score2: score2,
-                totalScore1: scores[0],
-                totalScore2: scores[1]
-            });
-
-            currentRound++;
-
-            updateScores(scores[0], scores[1]);
-            updateVisualHistory(move1, move2);
-            updateCurrentRound();
-            
-            const moveNames = {'C': 'Cooperó', 'T': 'Traicionó'};
-            updateGameStatus(`🎯 Ronda ${currentRound}: J1 ${moveNames[move1]} (+${score1}), J2 ${moveNames[move2]} (+${score2})`);
-
-            // Verificar fin del juego SOLO una vez
-            if (currentRound >= maxRounds && !gamePaused) {
-                setTimeout(() => endGame(), 100);
-            }
-        }
-
-        function highlightSelectedButton(playerNum, move) {
-            clearPlayerButtonStyles(playerNum);
-            
-            const buttonId = move === 'C' ? `coop-btn-${playerNum}` : `betray-btn-${playerNum}`;
-            const button = document.getElementById(buttonId);
-            button.classList.add('waiting');
-        }
-
-        function showBothSelections() {
-            document.querySelectorAll('.btn-action').forEach(btn => {
-                btn.classList.remove('waiting');
-            });
-            
-            for (let player = 1; player <= 2; player++) {
-                if (selectedButtons[player]) {
-                    const move = selectedButtons[player];
-                    const buttonId = move === 'C' ? `coop-btn-${player}` : `betray-btn-${player}`;
-                    const button = document.getElementById(buttonId);
-                    button.classList.add('selected');
-                }
-            }
-            
-            updateGameStatus("✨ ¡Ambos jugadores han elegido! Procesando...");
-        }
-
-        function clearPlayerButtonStyles(playerNum) {
-            document.getElementById(`coop-btn-${playerNum}`).classList.remove('selected', 'waiting');
-            document.getElementById(`betray-btn-${playerNum}`).classList.remove('selected', 'waiting');
-        }
-
-        function clearButtonStyles() {
-            document.querySelectorAll('.btn-action').forEach(btn => {
-                btn.classList.remove('selected', 'waiting');
-            });
-        }
-
-        function updatePlayerSelectionIndicator(playerNum, hasSelected) {
-            const header = document.querySelector(`#player-${playerNum}-panel h2`);
-            const existingIndicator = header.querySelector('.selection-indicator');
-            
-            if (hasSelected && !existingIndicator) {
-                const indicator = document.createElement('span');
-                indicator.className = 'selection-indicator';
-                indicator.title = 'Ha realizado su selección';
-                header.appendChild(indicator);
-            } else if (!hasSelected && existingIndicator) {
-                existingIndicator.remove();
-            }
-        }
-
-        function clearPlayerSelectionIndicators() {
-            document.querySelectorAll('.selection-indicator').forEach(indicator => {
-                indicator.remove();
-            });
-        }
-
-        function getMachineMove(playerNum) {
-            const strategy = document.getElementById(`strategy-${playerNum}`).value;
-            const opponentNum = playerNum === 1 ? 2 : 1;
-            
-            const playerHistory = history.map(r => r[`p${playerNum}`]);
-            const opponentHistory = history.map(r => r[`p${opponentNum}`]);
-            const playerScores = history.map(r => r[`score${playerNum}`]);
-
-            switch (strategy) {
-                case 'AlwaysCooperate':
-                    return 'C';
-                case 'AlwaysBetray':
-                    return 'T';
-                case 'Random':
-                    return Math.random() < 0.5 ? 'C' : 'T';
-                case 'Random70':
-                    return Math.random() < 0.7 ? 'C' : 'T';
-                case 'Random30':
-                    return Math.random() < 0.3 ? 'C' : 'T';
-                case 'TitForTat':
-                    if (history.length === 0) return 'C';
-                    return opponentHistory[opponentHistory.length - 1];
-                case 'GrimTrigger':
-                    if (opponentHistory.includes('T')) return 'T';
-                    return 'C';
-                case 'TitForTwoTats':
-                    if (history.length < 2) return 'C';
-                    const lastTwo = opponentHistory.slice(-2);
-                    if (lastTwo.every(move => move === 'T')) return 'T';
-                    return 'C';
-                case 'Pavlov':
-                    if (history.length === 0) return 'C';
-                    const lastScore = playerScores[playerScores.length - 1];
-                    const lastMove = playerHistory[playerHistory.length - 1];
-                    if (lastScore >= 3) return lastMove;
-                    return lastMove === 'C' ? 'T' : 'C';
-                case 'Majority':
-                    if (history.length === 0) return 'C';
-                    const betrayals = opponentHistory.filter(m => m === 'T').length;
-                    const cooperations = opponentHistory.filter(m => m === 'C').length;
-                    return cooperations >= betrayals ? 'C' : 'T';
-                default:
-                    return 'C';
-            }
-        }
-
-        function updateScores(score1, score2) {
-            document.getElementById('score-1').textContent = String(score1).padStart(3, '0');
-            document.getElementById('score-2').textContent = String(score2).padStart(3, '0');
-        }
-
-        function updateVisualHistory(move1, move2) {
-            const circle1 = document.createElement('span');
-            circle1.className = 'round-indicator ' + (move1 === 'C' ? 'cooperate' : 'betray');
-            circle1.title = `Ronda ${currentRound}: ${move1 === 'C' ? 'Cooperó' : 'Traicionó'}`;
-            document.getElementById('p1-history-row').appendChild(circle1);
-
-            const circle2 = document.createElement('span');
-            circle2.className = 'round-indicator ' + (move2 === 'C' ? 'cooperate' : 'betray');
-            circle2.title = `Ronda ${currentRound}: ${move2 === 'C' ? 'Cooperó' : 'Traicionó'}`;
-            document.getElementById('p2-history-row').appendChild(circle2);
-        }
-
-        function updateGameStatus(message) {
-            document.getElementById('game-status').textContent = message;
-        }
-
-        function updateCurrentRound() {
-            const roundDisplay = gameActive ? `Ronda: ${currentRound}/${maxRounds}` : '';
-            document.getElementById('current-round').textContent = roundDisplay;
-        }
-
-        function endGame() {
-            // Prevenir múltiples llamadas
-            if (!gameActive) return;
-            
-            gameActive = false;
-            gamePaused = false;
-            if (machineGameLoop) {
-                clearTimeout(machineGameLoop);
-                machineGameLoop = null;
-            }
-            document.getElementById('pause-btn').style.display = 'none';
-
-            const finalScore1 = scores[0];
-            const finalScore2 = scores[1];
-            const strategy1 = document.getElementById('strategy-1').value;
-            const strategy2 = document.getElementById('strategy-2').value;
-
-            let winner = '';
-            if (finalScore1 > finalScore2) {
-                winner = '🏆 Ganó Jugador 1';
-            } else if (finalScore2 > finalScore1) {
-                winner = '🏆 Ganó Jugador 2';
-            } else {
-                winner = '🤝 Empate';
-            }
-
-            updateGameStatus(`🎊 Juego terminado - ${winner}`);
-
-            // Crear identificador único para este juego basado en timestamp
-            const gameId = `game-${Date.now()}`;
-            
-            // Solo agregar si no existe
-            if (!completedGames.includes(gameId)) {
-                completedGames.push(gameId);
-                const summaryText = `${strategy1} vs ${strategy2} | ${finalScore1} - ${finalScore2} | ${winner}`;
-                const summaryItem = document.createElement('li');
-                summaryItem.className = 'match-summary-item';
-                summaryItem.textContent = summaryText;
-                document.getElementById('summary-list').prepend(summaryItem);
-            }
-
-            toggleHumanControls(1);
-            toggleHumanControls(2);
-        }
-
-        // Event Listeners
-        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-        document.getElementById('start-btn').addEventListener('click', startGame);
-        document.getElementById('pause-btn').addEventListener('click', pauseGame);
-        document.getElementById('reset-btn').addEventListener('click', resetGame);
-
-        document.getElementById('strategy-1').addEventListener('change', () => toggleHumanControls(1));
-        document.getElementById('strategy-2').addEventListener('change', () => toggleHumanControls(2));
-
-        document.getElementById('coop-btn-1').addEventListener('click', () => playRound(1, 'C'));
-        document.getElementById('betray-btn-1').addEventListener('click', () => playRound(1, 'T'));
-        document.getElementById('coop-btn-2').addEventListener('click', () => playRound(2, 'C'));
-        document.getElementById('betray-btn-2').addEventListener('click', () => playRound(2, 'T'));
-
-        document.addEventListener('keydown', function(event) {
-            if (!gameActive || processingRound) return;
-            
-            const key = event.key.toLowerCase();
-            const strategy1 = document.getElementById('strategy-1').value;
-            const strategy2 = document.getElementById('strategy-2').value;
-            
-            if (strategy1 === 'Human') {
-                if (key === 'a') {
-                    playRound(1, 'C');
-                    event.preventDefault();
-                } else if (key === 'd') {
-                    playRound(1, 'T');
-                    event.preventDefault();
-                }
-            }
-            
-            if (strategy2 === 'Human') {
-                if (key === 'j') {
-                    playRound(2, 'C');
-                    event.preventDefault();
-                } else if (key === 'l') {
-                    playRound(2, 'T');
-                    event.preventDefault();
-                }
-            }
-        });
-
-        // Inicialización
-        window.addEventListener('DOMContentLoaded', function() {
-            toggleHumanControls(1);
-            toggleHumanControls(2);
-        });
-    </script>
+try{const th=localStorage.getItem('pd-theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
+$('theme').onclick=()=>{
+  const r=document.documentElement;
+  const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  r.dataset.theme=cur==='dark'?'light':'dark';
+  try{localStorage.setItem('pd-theme',r.dataset.theme)}catch(e){}
+};
+sync();
+</script>
 </body>
 </html>
