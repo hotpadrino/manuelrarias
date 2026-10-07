@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perspektiva Pro - Corrector y Guía</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        guide: { 500: '#f59e0b', 600: '#d97706' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); }
+        .dark .glass { background: rgba(15, 23, 42, 0.9); }
+        
+        /* Perspective Handles */
+        .handle-src {
+            width: 24px; height: 24px; border-radius: 50%;
+            background-color: #6366f1; border: 3px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: absolute; transform: translate(-50%, -50%);
+            cursor: pointer; z-index: 30; touch-action: none;
+        }
+        .handle-src:hover, .handle-src.active { transform: translate(-50%, -50%) scale(1.2); background-color: #4f46e5; }
+        
+        /* Guide Rect Handles */
+        .handle-guide {
+            width: 20px; height: 20px;
+            background-color: #f59e0b; border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: absolute; transform: translate(-50%, -50%);
+            cursor: pointer; z-index: 40; touch-action: none;
+        }
+        .handle-guide:hover, .handle-guide.active { background-color: #d97706; transform: translate(-50%, -50%) scale(1.2); }
+        .handle-guide[data-corner="tl"], .handle-guide[data-corner="br"] { cursor: nwse-resize; }
+        .handle-guide[data-corner="tr"], .handle-guide[data-corner="bl"] { cursor: nesw-resize; }
+
+        .checkerboard {
+            background-color: #e5e5f7;
+            opacity: 0.8;
+            background-size: 20px 20px;
+            background-image:  repeating-linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1), repeating-linear-gradient(45deg, #cbd5e1 25%, #e5e5f7 25%, #e5e5f7 75%, #cbd5e1 75%, #cbd5e1);
+            background-position: 0 0, 10px 10px;
+        }
+        .dark .checkerboard {
+            background-color: #0f172a;
+            background-image:  repeating-linear-gradient(45deg, #1e293b 25%, transparent 25%, transparent 75%, #1e293b 75%, #1e293b), repeating-linear-gradient(45deg, #1e293b 25%, #0f172a 25%, #0f172a 75%, #1e293b 75%, #1e293b);
+        }
+
+        #result-canvas {
+            max-width: 100%; max-height: 100%; object-fit: contain;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans overflow-hidden select-none">
+
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shrink-0 shadow-sm z-20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-brand-600 text-white p-2 rounded-lg shadow-md"><i class="fa-solid fa-crop-simple text-lg"></i></div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">Perspektiva Pro</h1>
+                <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Escáner & Guía</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition-colors">
+                <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- Left Pane: Source Image & Perspective Setup -->
+        <section class="flex-1 border-r border-slate-200 dark:border-slate-700 flex flex-col relative bg-slate-50 dark:bg-slate-950 overflow-hidden">
+            <div class="p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0 z-10">
+                <h2 class="font-semibold text-sm flex items-center"><span class="w-6 h-6 rounded bg-brand-100 dark:bg-brand-900/50 text-brand-600 flex items-center justify-center mr-2 text-xs">1</span> Origen y Perspectiva</h2>
+                <div class="flex space-x-2">
+                    <label class="cursor-pointer bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        <i class="fa-solid fa-upload mr-1"></i> Abrir
+                        <input type="file" id="fileInput" accept="image/*" class="hidden">
+                    </label>
+                    <button id="btnPaste" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        <i class="fa-solid fa-paste mr-1"></i> Pegar
+                    </button>
+                </div>
+            </div>
+
+            <div id="source-workspace" class="flex-1 relative flex items-center justify-center overflow-hidden p-4 checkerboard">
+                
+                <div id="drop-zone" class="absolute inset-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 backdrop-blur z-40 transition-colors">
+                    <i class="fa-solid fa-file-import text-4xl text-slate-400 mb-3"></i>
+                    <p class="font-medium text-slate-600 dark:text-slate-300">Arrastra una imagen o usa Ctrl+V</p>
+                </div>
+
+                <!-- Image Wrapper strictly fitting the image to map coordinates accurately -->
+                <div id="source-wrapper" class="relative hidden inline-block shadow-lg ring-1 ring-slate-900/5">
+                    <img id="source-image" class="block max-w-full max-h-[calc(100vh-160px)] pointer-events-none select-none" />
+                    
+                    <svg id="source-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+                        <polygon id="src-poly" points="" class="fill-brand-500/20 stroke-brand-500 stroke-[2px]" stroke-linejoin="round"></polygon>
+                    </svg>
+
+                    <div id="src-tl" class="handle-src" data-id="tl"></div>
+                    <div id="src-tr" class="handle-src" data-id="tr"></div>
+                    <div id="src-br" class="handle-src" data-id="br"></div>
+                    <div id="src-bl" class="handle-src" data-id="bl"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="lg:w-16 bg-white dark:bg-slate-800 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-700 flex lg:flex-col items-center justify-center p-2 shrink-0 z-20 shadow-sm">
+            <button id="btnApply" class="w-full lg:h-24 bg-brand-600 hover:bg-brand-500 text-white rounded-lg flex flex-col items-center justify-center p-2 shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
+                <i class="fa-solid fa-play text-xl mb-1 lg:rotate-0 rotate-90"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-center">Aplicar</span>
+            </button>
+        </div>
+
+        <section class="flex-1 flex flex-col relative bg-slate-50 dark:bg-slate-950 overflow-hidden">
+            <div class="p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0 z-10">
+                <h2 class="font-semibold text-sm flex items-center"><span class="w-6 h-6 rounded bg-guide-100 dark:bg-guide-900/50 text-guide-600 flex items-center justify-center mr-2 text-xs">2</span> Resultado y Guía</h2>
+                <div class="flex items-center space-x-2 text-xs font-medium">
+                    <label for="guideToggle" class="cursor-pointer flex items-center text-slate-600 dark:text-slate-300">
+                        <input type="checkbox" id="guideToggle" class="mr-1.5 accent-guide-500" checked> Guía Visible
+                    </label>
+                </div>
+            </div>
+
+            <!-- Result Workspace -->
+            <div id="result-workspace" class="flex-1 relative flex items-center justify-center overflow-hidden p-4 checkerboard">
+                <div id="result-placeholder" class="text-slate-400 dark:text-slate-600 text-sm flex flex-col items-center">
+                    <i class="fa-solid fa-image text-3xl mb-2 opacity-50"></i>
+                    Aplica la corrección para ver el resultado
+                </div>
+
+                <div id="result-wrapper" class="relative hidden inline-block">
+                    <canvas id="result-canvas" class="block pointer-events-none"></canvas>
+                    
+                    <!-- Guide Overlay -->
+                    <svg id="guide-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+                        <!-- Translucent backdrop outside the guide -->
+                        <path id="guide-backdrop" d="" class="fill-slate-900/30 dark:fill-slate-900/50" fill-rule="evenodd"></path>
+                        <rect id="guide-rect" x="0" y="0" width="0" height="0" class="fill-transparent stroke-guide-500 stroke-[2px]"></rect>
+                        <!-- Grid lines -->
+                        <line id="guide-grid-v" x1="0" y1="0" x2="0" y2="0" class="stroke-guide-500/50 stroke-1 stroke-dasharray-[4,4]"></line>
+                        <line id="guide-grid-h" x1="0" y1="0" x2="0" y2="0" class="stroke-guide-500/50 stroke-1 stroke-dasharray-[4,4]"></line>
+                    </svg>
+
+                    <div id="guide-tl" class="handle-guide" data-corner="tl"></div>
+                    <div id="guide-tr" class="handle-guide" data-corner="tr"></div>
+                    <div id="guide-br" class="handle-guide" data-corner="br"></div>
+                    <div id="guide-bl" class="handle-guide" data-corner="bl"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-3 shrink-0 z-20">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    
+                    <!-- Numerics for Guide -->
+                    <div class="flex items-center space-x-3 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 pl-1"><i class="fa-solid fa-crop mr-1"></i> Guía</span>
+                        <div class="flex items-center space-x-1">
+                            <label class="text-xs text-slate-600 dark:text-slate-300">W:</label>
+                            <input type="number" id="inputGuideW" class="w-16 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-1 text-xs text-center focus:outline-none focus:border-guide-500 disabled:opacity-50" disabled>
+                        </div>
+                        <span class="text-slate-300 dark:text-slate-600">×</span>
+                        <div class="flex items-center space-x-1">
+                            <label class="text-xs text-slate-600 dark:text-slate-300">H:</label>
+                            <input type="number" id="inputGuideH" class="w-16 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-1 text-xs text-center focus:outline-none focus:border-guide-500 disabled:opacity-50" disabled>
+                        </div>
+                        <span class="text-xs text-slate-400 ml-1">px</span>
+                    </div>
+
+                    <!-- Export Actions -->
+                    <div class="flex space-x-2 w-full sm:w-auto">
+                        <button id="btnCopy" class="flex-1 sm:flex-none bg-slate-800 dark:bg-slate-100 hover:bg-slate-700 dark:hover:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center shadow-sm" disabled>
+                            <i class="fa-solid fa-copy mr-1.5"></i> Copiar
+                        </button>
+                        <button id="btnDownload" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center shadow-sm shadow-emerald-500/20" disabled>
+                            <i class="fa-solid fa-download mr-1.5"></i> Descargar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="fixed top-4 right-4 z-50 transform translate-x-full opacity-0 transition-all duration-300 bg-white dark:bg-slate-800 border-l-4 border-emerald-500 shadow-lg rounded-r p-3 flex items-start max-w-xs">
+        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 mr-2"></i>
+        <div>
+            <p id="toastMsg" class="text-sm font-medium text-slate-700 dark:text-slate-200"></p>
+        </div>
+    </div>
+
+    <!-- Hidden canvas for processing full resolution logic -->
+    <canvas id="offscreenCanvas" class="hidden"></canvas>
+
+    <script>
+        // Data Models
+        const state = {
+            imageFile: null,
+            imageObj: null,
+            imgNaturalW: 0,
+            imgNaturalH: 0,
+            
+            // Perspective Corners (in Percentage 0-1 relative to image dimensions)
+            srcPoints: {
+                tl: { x: 0.1, y: 0.1 },
+                tr: { x: 0.9, y: 0.1 },
+                br: { x: 0.9, y: 0.9 },
+                bl: { x: 0.1, y: 0.9 }
+            },
+            activeSrcHandle: null,
+
+            // Result Image Info
+            resultCanvasW: 0,
+            resultCanvasH: 0,
+
+            // Guide Rectangle (in actual target image pixels)
+            guideActive: true,
+            guide: { x: 0, y: 0, w: 0, h: 0 },
+            activeGuideHandle: null, // tl, tr, br, bl
+            guideFixedCorner: { x: 0, y: 0 } // Used during dragging to keep opposite corner anchored
+        };
+
+        // DOM Elements - Source
+        const elDropZone = document.getElementById('drop-zone');
+        const elFileInput = document.getElementById('fileInput');
+        const elSourceWrapper = document.getElementById('source-wrapper');
+        const elSourceImage = document.getElementById('source-image');
+        const elSourceSvg = document.getElementById('source-svg');
+        const elSrcPoly = document.getElementById('src-poly');
+        const elHandlesSrc = {
+            tl: document.getElementById('src-tl'),
+            tr: document.getElementById('src-tr'),
+            br: document.getElementById('src-br'),
+            bl: document.getElementById('src-bl')
+        };
+        const elBtnApply = document.getElementById('btnApply');
+
+        // DOM Elements - Result & Guide
+        const elResultPlaceholder = document.getElementById('result-placeholder');
+        const elResultWrapper = document.getElementById('result-wrapper');
+        const elResultCanvas = document.getElementById('result-canvas');
+        const ctxResult = elResultCanvas.getContext('2d', { willReadFrequently: true });
+        
+        const elGuideSvg = document.getElementById('guide-svg');
+        const elGuideRect = document.getElementById('guide-rect');
+        const elGuideBackdrop = document.getElementById('guide-backdrop');
+        const elGuideGridV = document.getElementById('guide-grid-v');
+        const elGuideGridH = document.getElementById('guide-grid-h');
+        const elHandlesGuide = {
+            tl: document.getElementById('guide-tl'),
+            tr: document.getElementById('guide-tr'),
+            br: document.getElementById('guide-br'),
+            bl: document.getElementById('guide-bl')
+        };
+        const elGuideToggle = document.getElementById('guideToggle');
+        
+        // DOM Elements - Controls
+        const elInputGuideW = document.getElementById('inputGuideW');
+        const elInputGuideH = document.getElementById('inputGuideH');
+        const elBtnCopy = document.getElementById('btnCopy');
+        const elBtnDownload = document.getElementById('btnDownload');
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Theme setup
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
+            document.getElementById('themeToggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
+            // File Uploads
+            elFileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+            document.getElementById('btnPaste').addEventListener('click', handlePasteClick);
+            window.addEventListener('paste', handlePasteEvent);
+
+            // Drag & Drop
+            const workspace = document.getElementById('source-workspace');
+            ['dragenter', 'dragover'].forEach(eName => workspace.addEventListener(eName, e => {
+                e.preventDefault(); elDropZone.classList.add('bg-brand-50', 'dark:bg-brand-900/50', 'border-brand-500');
+            }));
+            ['dragleave', 'drop'].forEach(eName => workspace.addEventListener(eName, e => {
+                e.preventDefault(); elDropZone.classList.remove('bg-brand-50', 'dark:bg-brand-900/50', 'border-brand-500');
+            }));
+            workspace.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+            // Buttons
+            elBtnApply.addEventListener('click', runPerspectiveCorrection);
+            elGuideToggle.addEventListener('change', (e) => { state.guideActive = e.target.checked; renderGuide(); });
+            elBtnCopy.addEventListener('click', copyToClipboard);
+            elBtnDownload.addEventListener('click', downloadImage);
+
+            // Inputs
+            elInputGuideW.addEventListener('change', onGuideInput);
+            elInputGuideH.addEventListener('change', onGuideInput);
+
+            // Resizing window updates DOM overlays
+            window.addEventListener('resize', () => {
+                if (state.imageObj) renderSourceOverlay();
+                if (state.resultCanvasW > 0) renderGuide();
+            });
+
+            // Initialize Drag Behaviors
+            initSourceDrags();
+            initGuideDrags();
+        });
+
+        async function handlePasteClick() {
+            try {
+                const items = await navigator.clipboard.read();
+                for (let item of items) {
+                    const imgType = item.types.find(t => t.startsWith('image/'));
+                    if (imgType) { handleFile(await item.getType(imgType)); return; }
+                }
+                showToast('No se encontró imagen en el portapapeles', 'error');
+            } catch (e) {
+                showToast('Usa Ctrl+V para pegar', 'error');
+            }
+        }
+
+        function handlePasteEvent(e) {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    handleFile(items[i].getAsFile());
+                    break;
+                }
+            }
+        }
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.imageObj = img;
+                    state.imgNaturalW = img.naturalWidth;
+                    state.imgNaturalH = img.naturalHeight;
+                    
+                    elSourceImage.src = img.src;
+                    elDropZone.classList.add('hidden');
+                    elSourceWrapper.classList.remove('hidden');
+                    elBtnApply.disabled = false;
+
+                    // Reset points to 10% padding
+                    state.srcPoints = {
+                        tl: { x: 0.1, y: 0.1 }, tr: { x: 0.9, y: 0.1 },
+                        br: { x: 0.9, y: 0.9 }, bl: { x: 0.1, y: 0.9 }
+                    };
+                    renderSourceOverlay();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function initSourceDrags() {
+            Object.keys(elHandlesSrc).forEach(key => {
+                const el = elHandlesSrc[key];
+                
+                const onStart = (e) => {
+                    state.activeSrcHandle = key;
+                    el.classList.add('active');
+                    e.stopPropagation(); e.preventDefault();
+                };
+                el.addEventListener('mousedown', onStart);
+                el.addEventListener('touchstart', onStart, {passive: false});
+            });
+
+            const onMove = (e) => {
+                if (!state.activeSrcHandle) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const rect = elSourceImage.getBoundingClientRect();
+                // Calculate percentage relative to the rendered image box
+                let px = (clientX - rect.left) / rect.width;
+                let py = (clientY - rect.top) / rect.height;
+                
+                // Clamp 0 to 1
+                px = Math.max(0, Math.min(1, px));
+                py = Math.max(0, Math.min(1, py));
+
+                state.srcPoints[state.activeSrcHandle] = { x: px, y: py };
+                renderSourceOverlay();
+            };
+
+            const onEnd = () => {
+                if (state.activeSrcHandle) {
+                    elHandlesSrc[state.activeSrcHandle].classList.remove('active');
+                    state.activeSrcHandle = null;
+                }
+            };
+
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('touchmove', onMove, {passive: false});
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function renderSourceOverlay() {
+            if (!state.imageObj) return;
+            const w = elSourceImage.clientWidth;
+            const h = elSourceImage.clientHeight;
+
+            // Map 0-1 percentages to visual pixels
+            const pts = {};
+            Object.keys(state.srcPoints).forEach(k => {
+                pts[k] = { x: state.srcPoints[k].x * w, y: state.srcPoints[k].y * h };
+                elHandlesSrc[k].style.left = `${pts[k].x}px`;
+                elHandlesSrc[k].style.top = `${pts[k].y}px`;
+            });
+
+            elSrcPoly.setAttribute('points', `${pts.tl.x},${pts.tl.y} ${pts.tr.x},${pts.tr.y} ${pts.br.x},${pts.br.y} ${pts.bl.x},${pts.bl.y}`);
+        }
+
+        function initGuideDrags() {
+            Object.keys(elHandlesGuide).forEach(key => {
+                const el = elHandlesGuide[key];
+                
+                const onStart = (e) => {
+                    if (!state.guideActive) return;
+                    state.activeGuideHandle = key;
+                    el.classList.add('active');
+                    
+                    // Determine anchored opposite corner based on current rect
+                    const g = state.guide;
+                    if (key === 'tl') state.guideFixedCorner = { x: g.x + g.w, y: g.y + g.h };
+                    if (key === 'tr') state.guideFixedCorner = { x: g.x, y: g.y + g.h };
+                    if (key === 'br') state.guideFixedCorner = { x: g.x, y: g.y };
+                    if (key === 'bl') state.guideFixedCorner = { x: g.x + g.w, y: g.y };
+
+                    e.stopPropagation(); e.preventDefault();
+                };
+                el.addEventListener('mousedown', onStart);
+                el.addEventListener('touchstart', onStart, {passive: false});
+            });
+
+            const onMove = (e) => {
+                if (!state.activeGuideHandle || !state.guideActive) return;
+                e.preventDefault();
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const rect = elResultCanvas.getBoundingClientRect();
+                
+                // Map visual mouse position to internal canvas dimensions
+                const scaleX = state.resultCanvasW / rect.width;
+                const scaleY = state.resultCanvasH / rect.height;
+                
+                let cx = (clientX - rect.left) * scaleX;
+                let cy = (clientY - rect.top) * scaleY;
+
+                // Restrict mouse to canvas bounds
+                cx = Math.max(0, Math.min(state.resultCanvasW, cx));
+                cy = Math.max(0, Math.min(state.resultCanvasH, cy));
+
+                const fixed = state.guideFixedCorner;
+                
+                // Construct new rect based on fixed opposite corner and new dragged point
+                const newX = Math.min(fixed.x, cx);
+                const newY = Math.min(fixed.y, cy);
+                const newW = Math.abs(fixed.x - cx);
+                const newH = Math.abs(fixed.y - cy);
+
+                // Enforce minimum size
+                if (newW >= 20) { state.guide.x = newX; state.guide.w = newW; }
+                if (newH >= 20) { state.guide.y = newY; state.guide.h = newH; }
+
+                renderGuide();
+                updateGuideInputs();
+            };
+
+            const onEnd = () => {
+                if (state.activeGuideHandle) {
+                    elHandlesGuide[state.activeGuideHandle].classList.remove('active');
+                    state.activeGuideHandle = null;
+                }
+            };
+
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('touchmove', onMove, {passive: false});
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function renderGuide() {
+            const wrapperDisp = state.guideActive ? 'block' : 'none';
+            elGuideSvg.style.display = wrapperDisp;
+            Object.values(elHandlesGuide).forEach(el => el.style.display = wrapperDisp);
+
+            if (!state.guideActive || state.resultCanvasW === 0) return;
+
+            // Math to map internal canvas coordinates to visual CSS coordinates
+            const rect = elResultCanvas.getBoundingClientRect();
+            const scaleX = rect.width / state.resultCanvasW;
+            const scaleY = rect.height / state.resultCanvasH;
+
+            const g = state.guide;
+            const vx = g.x * scaleX;
+            const vy = g.y * scaleY;
+            const vw = g.w * scaleX;
+            const vh = g.h * scaleY;
+
+            elGuideRect.setAttribute('x', vx);
+            elGuideRect.setAttribute('y', vy);
+            elGuideRect.setAttribute('width', vw);
+            elGuideRect.setAttribute('height', vh);
+
+            // Update handles
+            elHandlesGuide.tl.style.left = `${vx}px`; elHandlesGuide.tl.style.top = `${vy}px`;
+            elHandlesGuide.tr.style.left = `${vx + vw}px`; elHandlesGuide.tr.style.top = `${vy}px`;
+            elHandlesGuide.br.style.left = `${vx + vw}px`; elHandlesGuide.br.style.top = `${vy + vh}px`;
+            elHandlesGuide.bl.style.left = `${vx}px`; elHandlesGuide.bl.style.top = `${vy + vh}px`;
+
+            // Draw Grid Lines (Crosshair inside rect)
+            elGuideGridV.setAttribute('x1', vx + vw/2); elGuideGridV.setAttribute('y1', vy);
+            elGuideGridV.setAttribute('x2', vx + vw/2); elGuideGridV.setAttribute('y2', vy + vh);
+            
+            elGuideGridH.setAttribute('x1', vx); elGuideGridH.setAttribute('y1', vy + vh/2);
+            elGuideGridH.setAttribute('x2', vx + vw); elGuideGridH.setAttribute('y2', vy + vh/2);
+
+            // Backdrop mask (everything outside the rect is slightly darkened)
+            // Path structure: Outer bounding box (canvas), then Inner cut-out hole (guide rect) with opposite winding
+            const cw = rect.width; const ch = rect.height;
+            const pathData = `M 0 0 L ${cw} 0 L ${cw} ${ch} L 0 ${ch} Z M ${vx} ${vy} L ${vx} ${vy+vh} L ${vx+vw} ${vy+vh} L ${vx+vw} ${vy} Z`;
+            elGuideBackdrop.setAttribute('d', pathData);
+        }
+
+        function onGuideInput() {
+            let nw = parseInt(elInputGuideW.value) || state.guide.w;
+            let nh = parseInt(elInputGuideH.value) || state.guide.h;
+            
+            // Constrain
+            nw = Math.max(20, Math.min(nw, state.resultCanvasW));
+            nh = Math.max(20, Math.min(nh, state.resultCanvasH));
+
+            // Recenter based on old center if possible, otherwise keep x,y
+            const cx = state.guide.x + state.guide.w / 2;
+            const cy = state.guide.y + state.guide.h / 2;
+            
+            let nx = cx - nw / 2;
+            let ny = cy - nh / 2;
+
+            // Clamp to bounds
+            nx = Math.max(0, Math.min(state.resultCanvasW - nw, nx));
+            ny = Math.max(0, Math.min(state.resultCanvasH - nh, ny));
+
+            state.guide = { x: nx, y: ny, w: nw, h: nh };
+            renderGuide();
+            updateGuideInputs();
+        }
+
+        function updateGuideInputs() {
+            elInputGuideW.value = Math.round(state.guide.w);
+            elInputGuideH.value = Math.round(state.guide.h);
+        }
+
+        // Solves Ah = B for 8 parameters of homography matrix
+        function computeHomography(src, dst) {
+            const A = [];
+            for (let i = 0; i < 4; i++) {
+                const x = src[i].x, y = src[i].y;
+                const u = dst[i].x, v = dst[i].y;
+                A.push([x, y, 1, 0, 0, 0, -u*x, -u*y, u]);
+                A.push([0, 0, 0, x, y, 1, -v*x, -v*y, v]);
+            }
+            return gaussianElimination(A);
+        }
+
+        // Standard Gaussian elimination
+        function gaussianElimination(M) {
+            const n = 8;
+            for (let i = 0; i < n; i++) {
+                // Find pivot
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
+                
+                // Swap
+                const tmp = M[i]; M[i] = M[maxRow]; M[maxRow] = tmp;
+                
+                // Eliminate
+                for (let k = i + 1; k < n; k++) {
+                    const c = -M[k][i] / M[i][i];
+                    for (let j = i; j <= n; j++) {
+                        if (i === j) M[k][j] = 0;
+                        else M[k][j] += c * M[i][j];
+                    }
+                }
+            }
+            // Back substitute
+            const x = new Array(n);
+            for (let i = n - 1; i >= 0; i--) {
+                x[i] = M[i][n] / M[i][i];
+                for (let k = i - 1; k >= 0; k--) M[k][n] -= M[k][i] * x[i];
+            }
+            return [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], 1];
+        }
+
+        function runPerspectiveCorrection() {
+            if (!state.imageObj) return;
+            
+            // Add loading effect
+            elBtnApply.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl mb-1"></i><span class="text-[10px] font-bold uppercase">Procesando</span>`;
+            
+            // Timeout to allow UI to render the spinner before blocking thread
+            setTimeout(() => {
+                executeCorrection();
+                elBtnApply.innerHTML = `<i class="fa-solid fa-play text-xl mb-1 lg:rotate-0 rotate-90"></i><span class="text-[10px] font-bold uppercase tracking-wider text-center">Aplicar</span>`;
+            }, 50);
+        }
+
+        function executeCorrection() {
+            const natW = state.imgNaturalW;
+            const natH = state.imgNaturalH;
+
+            // Actual source points in pixels
+            const pts = [
+                { x: state.srcPoints.tl.x * natW, y: state.srcPoints.tl.y * natH },
+                { x: state.srcPoints.tr.x * natW, y: state.srcPoints.tr.y * natH },
+                { x: state.srcPoints.br.x * natW, y: state.srcPoints.br.y * natH },
+                { x: state.srcPoints.bl.x * natW, y: state.srcPoints.bl.y * natH }
+            ];
+
+            // Estimate target dimensions based on euclidean distances of the polygon sides
+            const wTop = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+            const wBot = Math.hypot(pts[2].x - pts[3].x, pts[2].y - pts[3].y);
+            const hLeft = Math.hypot(pts[3].x - pts[0].x, pts[3].y - pts[0].y);
+            const hRight = Math.hypot(pts[2].x - pts[1].x, pts[2].y - pts[1].y);
+            
+            const outW = Math.round(Math.max(wTop, wBot));
+            const outH = Math.round(Math.max(hLeft, hRight));
+
+            // Validate dimensions
+            if(outW === 0 || outH === 0) { showToast("Área seleccionada no válida", "error"); return; }
+
+            const dstPts = [
+                {x: 0, y: 0}, {x: outW, y: 0}, 
+                {x: outW, y: outH}, {x: 0, y: outH}
+            ];
+
+            // We compute Homography from Destination TO Source (Inverse mapping for dense pixel fill)
+            const H = computeHomography(dstPts, pts);
+
+            // Draw original image to an offscreen canvas to extract pixel data
+            const osc = document.getElementById('offscreenCanvas');
+            osc.width = natW; osc.height = natH;
+            const osCtx = osc.getContext('2d', { willReadFrequently: true });
+            osCtx.drawImage(state.imageObj, 0, 0, natW, natH);
+            const srcData = osCtx.getImageData(0, 0, natW, natH).data;
+
+            // Setup destination image data
+            elResultCanvas.width = outW;
+            elResultCanvas.height = outH;
+            const dstImgData = ctxResult.createImageData(outW, outH);
+            const dstData = dstImgData.data;
+
+            // Iterate through every pixel of the destination
+            for (let y = 0; y < outH; y++) {
+                for (let x = 0; x < outW; x++) {
+                    // Apply Homography (dst -> src)
+                    const w = H[6]*x + H[7]*y + H[8];
+                    const sx = (H[0]*x + H[1]*y + H[2]) / w;
+                    const sy = (H[3]*x + H[4]*y + H[5]) / w;
+
+                    const dstIdx = (y * outW + x) * 4;
+
+                    // Bounds check and Bilinear Interpolation
+                    if (sx >= 0 && sx < natW - 1 && sy >= 0 && sy < natH - 1) {
+                        const x0 = Math.floor(sx), x1 = x0 + 1;
+                        const y0 = Math.floor(sy), y1 = y0 + 1;
+                        const fx = sx - x0, fy = sy - y0;
+                        const fxi = 1 - fx, fyi = 1 - fy;
+
+                        const i00 = (y0 * natW + x0) * 4;
+                        const i10 = (y0 * natW + x1) * 4;
+                        const i01 = (y1 * natW + x0) * 4;
+                        const i11 = (y1 * natW + x1) * 4;
+
+                        for (let c = 0; c < 3; c++) { // RGB
+                            const p00 = srcData[i00 + c], p10 = srcData[i10 + c];
+                            const p01 = srcData[i01 + c], p11 = srcData[i11 + c];
+                            const val = (p00 * fxi + p10 * fx) * fyi + (p01 * fxi + p11 * fx) * fy;
+                            dstData[dstIdx + c] = val;
+                        }
+                        dstData[dstIdx + 3] = 255; // Alpha
+                    } else {
+                        // Transparent out-of-bounds
+                        dstData[dstIdx + 3] = 0;
+                    }
+                }
+            }
+
+            // Paint result
+            ctxResult.putImageData(dstImgData, 0, 0);
+            
+            // Update State
+            state.resultCanvasW = outW;
+            state.resultCanvasH = outH;
+            
+            // Setup Guide Box default sizes (if first time or larger than canvas)
+            if(state.guide.w === 0 || state.guide.w > outW || state.guide.h > outH) {
+                const gw = Math.round(outW * 0.6);
+                const gh = Math.round(outH * 0.6);
+                state.guide = {
+                    x: Math.round((outW - gw) / 2),
+                    y: Math.round((outH - gh) / 2),
+                    w: gw, h: gh
+                };
+            }
+
+            // Update UI
+            elResultPlaceholder.classList.add('hidden');
+            elResultWrapper.classList.remove('hidden');
+            elInputGuideW.disabled = false;
+            elInputGuideH.disabled = false;
+            elBtnCopy.disabled = false;
+            elBtnDownload.disabled = false;
+            
+            updateGuideInputs();
+            renderGuide();
+            showToast('Corrección aplicada con éxito');
+        }
+
+        // The export ALWAYS uses `elResultCanvas` inherently bypassing the overlay SVG Guide
+        function downloadImage() {
+            if (state.resultCanvasW === 0) return;
+            const link = document.createElement('a');
+            link.download = `perspektiva_${Date.now()}.png`;
+            link.href = elResultCanvas.toDataURL('image/png');
+            link.click();
+            showToast('Imagen descargada');
+        }
+
+        function copyToClipboard() {
+            if (state.resultCanvasW === 0) return;
+            elResultCanvas.toBlob(async (blob) => {
+                try {
+                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                    showToast('Imagen copiada al portapapeles');
+                } catch (e) {
+                    showToast('Error al copiar. El navegador puede requerir HTTPS o permisos.', 'error');
+                }
+            }, 'image/png');
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            const m = document.getElementById('toastMsg');
+            const i = t.querySelector('i');
+            m.innerText = msg;
+            
+            if (type === 'error') {
+                i.className = 'fa-solid fa-circle-xmark text-rose-500 mt-0.5 mr-2';
+                t.classList.replace('border-emerald-500', 'border-rose-500');
+            } else {
+                i.className = 'fa-solid fa-circle-check text-emerald-500 mt-0.5 mr-2';
+                t.classList.replace('border-rose-500', 'border-emerald-500');
+            }
+
+            t.classList.remove('translate-x-full', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-x-full', 'opacity-0'), 3000);
+        }
+    </script>
+</body>
+</html>
