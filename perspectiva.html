@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perspektiva Pro - Corrector y Guía</title>
+    <title>Perspektiva - Corrector de Perspectiva y Recorte</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
@@ -12,767 +14,949 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
-                        guide: { 500: '#f59e0b', 600: '#d97706' }
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            950: '#1e1b4b',
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); }
-        .dark .glass { background: rgba(15, 23, 42, 0.9); }
-        
-        /* Perspective Handles */
-        .handle-src {
-            width: 24px; height: 24px; border-radius: 50%;
-            background-color: #6366f1; border: 3px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            position: absolute; transform: translate(-50%, -50%);
-            cursor: pointer; z-index: 30; touch-action: none;
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
-        .handle-src:hover, .handle-src.active { transform: translate(-50%, -50%) scale(1.2); background-color: #4f46e5; }
-        
-        /* Guide Rect Handles */
-        .handle-guide {
-            width: 20px; height: 20px;
-            background-color: #f59e0b; border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            position: absolute; transform: translate(-50%, -50%);
-            cursor: pointer; z-index: 40; touch-action: none;
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
         }
-        .handle-guide:hover, .handle-guide.active { background-color: #d97706; transform: translate(-50%, -50%) scale(1.2); }
-        .handle-guide[data-corner="tl"], .handle-guide[data-corner="br"] { cursor: nwse-resize; }
-        .handle-guide[data-corner="tr"], .handle-guide[data-corner="bl"] { cursor: nesw-resize; }
-
-        .checkerboard {
-            background-color: #e5e5f7;
-            opacity: 0.8;
-            background-size: 20px 20px;
-            background-image:  repeating-linear-gradient(45deg, #cbd5e1 25%, transparent 25%, transparent 75%, #cbd5e1 75%, #cbd5e1), repeating-linear-gradient(45deg, #cbd5e1 25%, #e5e5f7 25%, #e5e5f7 75%, #cbd5e1 75%, #cbd5e1);
-            background-position: 0 0, 10px 10px;
+        .handle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #6366f1;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            touch-action: none;
+            transition: transform 0.1s ease, background-color 0.1s ease;
         }
-        .dark .checkerboard {
-            background-color: #0f172a;
-            background-image:  repeating-linear-gradient(45deg, #1e293b 25%, transparent 25%, transparent 75%, #1e293b 75%, #1e293b), repeating-linear-gradient(45deg, #1e293b 25%, #0f172a 25%, #0f172a 75%, #1e293b 75%, #1e293b);
+        .handle:hover, .handle.active {
+            transform: translate(-50%, -50%) scale(1.25);
+            background-color: #4f46e5;
         }
-
-        #result-canvas {
-            max-width: 100%; max-height: 100%; object-fit: contain;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        #guideBox { position:absolute; border:2px dashed #f59e0b; background:rgba(245,158,11,.10); cursor:move; touch-action:none; z-index:25; }
+        .ghandle { position:absolute; width:18px; height:18px; background:#f59e0b; border:2px solid #fff; border-radius:4px; box-shadow:0 2px 4px rgba(0,0,0,.35); touch-action:none; }
+        .ghandle[data-c=tl] { left:-11px; top:-11px; cursor:nwse-resize; }
+        .ghandle[data-c=br] { right:-11px; bottom:-11px; cursor:nwse-resize; }
+        .ghandle[data-c=tr] { right:-11px; top:-11px; cursor:nesw-resize; }
+        .ghandle[data-c=bl] { left:-11px; bottom:-11px; cursor:nesw-resize; }
+        @media print { .no-print { display: none !important; } }
+        footer.site a { color: inherit; text-decoration: none; transition: color .15s; }
+        footer.site a:hover { color: #6366f1; }
+        footer.site i { margin-right: 4px; }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="h-full bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans overflow-hidden select-none">
+<body class="h-full bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans overflow-hidden select-none">
 
-    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between shrink-0 shadow-sm z-20">
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between shrink-0 shadow-sm z-20">
         <div class="flex items-center space-x-3">
-            <div class="bg-brand-600 text-white p-2 rounded-lg shadow-md"><i class="fa-solid fa-crop-simple text-lg"></i></div>
+            <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md shadow-brand-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+            </div>
             <div>
-                <h1 class="font-bold text-lg leading-tight">Perspektiva Pro</h1>
-                <p class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Escáner & Guía</p>
+                <h1 class="font-bold text-lg tracking-tight leading-tight">Perspektiva</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Corrección de perspectiva y geometría</p>
             </div>
         </div>
-        <div class="flex items-center space-x-3">
-            <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition-colors">
-                <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i>
+        <div class="flex items-center space-x-2">
+            <button id="btnNewImage" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 transition-colors"><i class="fa-solid fa-image mr-1.5"></i>Nueva imagen</button>
+            <button id="themeToggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors" title="Cambiar tema">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:inline"></i>
             </button>
         </div>
     </header>
 
     <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        
-        <!-- Left Pane: Source Image & Perspective Setup -->
-        <section class="flex-1 border-r border-slate-200 dark:border-slate-700 flex flex-col relative bg-slate-50 dark:bg-slate-950 overflow-hidden">
-            <div class="p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0 z-10">
-                <h2 class="font-semibold text-sm flex items-center"><span class="w-6 h-6 rounded bg-brand-100 dark:bg-brand-900/50 text-brand-600 flex items-center justify-center mr-2 text-xs">1</span> Origen y Perspectiva</h2>
-                <div class="flex space-x-2">
-                    <label class="cursor-pointer bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                        <i class="fa-solid fa-upload mr-1"></i> Abrir
+
+        <!-- Dropzone / Estado Inicial (Oculto cuando hay imagen) -->
+        <div id="dropZone" class="absolute inset-0 z-40 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center p-6 transition-opacity duration-300">
+            <div class="glass-panel max-w-xl w-full rounded-3xl p-8 border border-slate-200/50 dark:border-slate-700/50 shadow-2xl text-center flex flex-col items-center">
+                <div class="w-20 h-20 rounded-2xl bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 flex items-center justify-center text-3xl mb-6 shadow-inner">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">Sube una imagen para comenzar</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mb-8 max-w-md">
+                    Arrastra una imagen aquí, selecciónala desde tu equipo, o pégala directamente desde el portapapeles (<kbd class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded text-xs font-mono">Ctrl+V</kbd>).
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                    <label class="cursor-pointer bg-brand-600 hover:bg-brand-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <span>Examinar archivo</span>
                         <input type="file" id="fileInput" accept="image/*" class="hidden">
                     </label>
-                    <button id="btnPaste" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                        <i class="fa-solid fa-paste mr-1"></i> Pegar
+                    <button id="btnPastePrompt" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-medium px-6 py-3 rounded-xl transition-all flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-paste"></i>
+                        <span>Pegar desde portapapeles</span>
                     </button>
                 </div>
             </div>
-
-            <div id="source-workspace" class="flex-1 relative flex items-center justify-center overflow-hidden p-4 checkerboard">
-                
-                <div id="drop-zone" class="absolute inset-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl flex flex-col items-center justify-center bg-white/50 dark:bg-slate-800/50 backdrop-blur z-40 transition-colors">
-                    <i class="fa-solid fa-file-import text-4xl text-slate-400 mb-3"></i>
-                    <p class="font-medium text-slate-600 dark:text-slate-300">Arrastra una imagen o usa Ctrl+V</p>
-                </div>
-
-                <!-- Image Wrapper strictly fitting the image to map coordinates accurately -->
-                <div id="source-wrapper" class="relative hidden inline-block shadow-lg ring-1 ring-slate-900/5">
-                    <img id="source-image" class="block max-w-full max-h-[calc(100vh-160px)] pointer-events-none select-none" />
-                    
-                    <svg id="source-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
-                        <polygon id="src-poly" points="" class="fill-brand-500/20 stroke-brand-500 stroke-[2px]" stroke-linejoin="round"></polygon>
-                    </svg>
-
-                    <div id="src-tl" class="handle-src" data-id="tl"></div>
-                    <div id="src-tr" class="handle-src" data-id="tr"></div>
-                    <div id="src-br" class="handle-src" data-id="br"></div>
-                    <div id="src-bl" class="handle-src" data-id="bl"></div>
-                </div>
-            </div>
-        </section>
-
-        <div class="lg:w-16 bg-white dark:bg-slate-800 border-b lg:border-b-0 lg:border-r border-slate-200 dark:border-slate-700 flex lg:flex-col items-center justify-center p-2 shrink-0 z-20 shadow-sm">
-            <button id="btnApply" class="w-full lg:h-24 bg-brand-600 hover:bg-brand-500 text-white rounded-lg flex flex-col items-center justify-center p-2 shadow-md transition-transform active:scale-95 disabled:opacity-50 disabled:pointer-events-none" disabled>
-                <i class="fa-solid fa-play text-xl mb-1 lg:rotate-0 rotate-90"></i>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-center">Aplicar</span>
-            </button>
         </div>
 
-        <section class="flex-1 flex flex-col relative bg-slate-50 dark:bg-slate-950 overflow-hidden">
-            <div class="p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center shrink-0 z-10">
-                <h2 class="font-semibold text-sm flex items-center"><span class="w-6 h-6 rounded bg-guide-100 dark:bg-guide-900/50 text-guide-600 flex items-center justify-center mr-2 text-xs">2</span> Resultado y Guía</h2>
-                <div class="flex items-center space-x-2 text-xs font-medium">
-                    <label for="guideToggle" class="cursor-pointer flex items-center text-slate-600 dark:text-slate-300">
-                        <input type="checkbox" id="guideToggle" class="mr-1.5 accent-guide-500" checked> Guía Visible
-                    </label>
+        <div id="workspace" class="flex-1 min-h-0 min-w-0 flex flex-col relative bg-slate-50 dark:bg-slate-950">
+            <div class="flex flex-wrap items-center justify-between gap-2 px-4 pt-3 shrink-0 text-xs">
+                <div class="inline-flex rounded-lg bg-slate-200 dark:bg-slate-800 p-0.5">
+                    <button data-view="split">Comparar</button>
+                    <button data-view="source">Original</button>
+                    <button data-view="result">Corregida</button>
                 </div>
+                <div class="inline-flex items-center gap-1 rounded-lg bg-slate-200 dark:bg-slate-800 p-0.5 text-slate-600 dark:text-slate-300">
+                    <button id="btnPadMinus" title="Alejar: añade margen blanco para mover vértices fuera de la imagen" class="px-2.5 py-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <span id="padInfo" class="px-1 font-mono min-w-[2.5rem] text-center">0%</span>
+                    <button id="btnPadPlus" title="Acercar: reduce el margen blanco" class="px-2.5 py-1.5 rounded-md hover:bg-white dark:hover:bg-slate-700"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                </div>
+                <span id="resultInfo" class="font-mono text-slate-500 dark:text-slate-400"></span>
             </div>
-
-            <!-- Result Workspace -->
-            <div id="result-workspace" class="flex-1 relative flex items-center justify-center overflow-hidden p-4 checkerboard">
-                <div id="result-placeholder" class="text-slate-400 dark:text-slate-600 text-sm flex flex-col items-center">
-                    <i class="fa-solid fa-image text-3xl mb-2 opacity-50"></i>
-                    Aplica la corrección para ver el resultado
-                </div>
-
-                <div id="result-wrapper" class="relative hidden inline-block">
-                    <canvas id="result-canvas" class="block pointer-events-none"></canvas>
-                    
-                    <!-- Guide Overlay -->
-                    <svg id="guide-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
-                        <!-- Translucent backdrop outside the guide -->
-                        <path id="guide-backdrop" d="" class="fill-slate-900/30 dark:fill-slate-900/50" fill-rule="evenodd"></path>
-                        <rect id="guide-rect" x="0" y="0" width="0" height="0" class="fill-transparent stroke-guide-500 stroke-[2px]"></rect>
-                        <!-- Grid lines -->
-                        <line id="guide-grid-v" x1="0" y1="0" x2="0" y2="0" class="stroke-guide-500/50 stroke-1 stroke-dasharray-[4,4]"></line>
-                        <line id="guide-grid-h" x1="0" y1="0" x2="0" y2="0" class="stroke-guide-500/50 stroke-1 stroke-dasharray-[4,4]"></line>
-                    </svg>
-
-                    <div id="guide-tl" class="handle-guide" data-corner="tl"></div>
-                    <div id="guide-tr" class="handle-guide" data-corner="tr"></div>
-                    <div id="guide-br" class="handle-guide" data-corner="br"></div>
-                    <div id="guide-bl" class="handle-guide" data-corner="bl"></div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-3 shrink-0 z-20">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    
-                    <!-- Numerics for Guide -->
-                    <div class="flex items-center space-x-3 bg-slate-50 dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 pl-1"><i class="fa-solid fa-crop mr-1"></i> Guía</span>
-                        <div class="flex items-center space-x-1">
-                            <label class="text-xs text-slate-600 dark:text-slate-300">W:</label>
-                            <input type="number" id="inputGuideW" class="w-16 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-1 text-xs text-center focus:outline-none focus:border-guide-500 disabled:opacity-50" disabled>
-                        </div>
-                        <span class="text-slate-300 dark:text-slate-600">×</span>
-                        <div class="flex items-center space-x-1">
-                            <label class="text-xs text-slate-600 dark:text-slate-300">H:</label>
-                            <input type="number" id="inputGuideH" class="w-16 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-1 text-xs text-center focus:outline-none focus:border-guide-500 disabled:opacity-50" disabled>
-                        </div>
-                        <span class="text-xs text-slate-400 ml-1">px</span>
+            <div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-3 p-3">
+                <!-- Original con esquinas de perspectiva -->
+                <div id="paneSource" class="flex-1 min-h-0 min-w-0 relative rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">
+                    <span class="absolute top-1.5 left-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 pointer-events-none">Original</span>
+                    <div id="imageContainer" class="absolute hidden bg-white rounded-lg shadow-2xl">
+                        <img id="sourceImage" class="block object-fill pointer-events-none" alt="Imagen fuente">
+                        <svg id="overlaySvg" class="absolute inset-0 w-full h-full pointer-events-none z-20" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <polygon id="perspectivePolygon" points="" class="fill-brand-500/10 stroke-brand-500 stroke-2" stroke-dasharray="6,4" vector-effect="non-scaling-stroke"></polygon>
+                        </svg>
+                        <div id="handleTL" class="handle" title="Superior Izquierda"></div>
+                        <div id="handleTR" class="handle" title="Superior Derecha"></div>
+                        <div id="handleBR" class="handle" title="Inferior Derecha"></div>
+                        <div id="handleBL" class="handle" title="Inferior Izquierda"></div>
                     </div>
-
-                    <!-- Export Actions -->
-                    <div class="flex space-x-2 w-full sm:w-auto">
-                        <button id="btnCopy" class="flex-1 sm:flex-none bg-slate-800 dark:bg-slate-100 hover:bg-slate-700 dark:hover:bg-white text-white dark:text-slate-900 px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center shadow-sm" disabled>
-                            <i class="fa-solid fa-copy mr-1.5"></i> Copiar
-                        </button>
-                        <button id="btnDownload" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center shadow-sm shadow-emerald-500/20" disabled>
-                            <i class="fa-solid fa-download mr-1.5"></i> Descargar
-                        </button>
+                </div>
+                <!-- Imagen corregida (vista previa en vivo) + rectángulo guía (no exportable) -->
+                <div id="paneResult" class="flex-1 min-h-0 min-w-0 relative rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">
+                    <span class="absolute top-1.5 left-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 pointer-events-none">Corregida</span>
+                    <div id="resultContainer" class="absolute hidden">
+                        <canvas id="resultCanvas" class="block w-full h-full rounded-lg shadow-2xl"></canvas>
+                        <div id="guideBox">
+                            <span class="ghandle" data-c="tl"></span><span class="ghandle" data-c="tr"></span>
+                            <span class="ghandle" data-c="br"></span><span class="ghandle" data-c="bl"></span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+            <div id="floatingHint" class="absolute bottom-4 left-1/2 -translate-x-1/2 glass-panel px-4 py-2 rounded-full shadow-lg border border-slate-200/50 dark:border-slate-700/50 text-xs font-medium flex items-center space-x-2 z-30 hidden pointer-events-none">
+                <i class="fa-solid fa-info-circle text-brand-500"></i>
+                <span>Esquinas moradas: perspectiva · Esquinas naranjas: tamaño de la guía</span>
+            </div>
+        </div>
+
+        <aside class="w-full lg:w-96 max-h-[40vh] lg:max-h-none bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 flex flex-col shrink-0 z-30 shadow-xl">
+            <!-- Pestañas de control -->
+            <div class="flex border-b border-slate-200 dark:border-slate-800">
+                <button onclick="switchTab('perspective')" id="tabPerspective" class="flex-1 py-3.5 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400 bg-brand-50/50 dark:bg-brand-950/20 transition-all">
+                    <i class="fa-solid fa-draw-polygon mr-1.5"></i> Perspectiva
+                </button>
+                <button onclick="switchTab('guide')" id="tabGuide" class="flex-1 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                    <i class="fa-solid fa-vector-square mr-1.5"></i> Rectángulo Guía
+                </button>
+                <button onclick="switchTab('enhance')" id="tabEnhance" class="flex-1 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-slate-700 dark:hover:text-slate-200 transition-all">
+                    <i class="fa-solid fa-sliders mr-1.5"></i> Mejora
+                </button>
+            </div>
+
+            <!-- Contenido de pestañas -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                
+                <!-- SECCIÓN PERSPECTIVA -->
+                <div id="panelPerspective" class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-sm text-slate-700 dark:text-slate-200">Vértices de Corrección</h3>
+                        <button id="btnResetPerspective" class="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Restablecer
+                        </button>
+                    </div>
+
+                    <!-- Controles deslizantes para esquinas -->
+                    <div class="space-y-4 text-xs">
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-2">
+                            <div class="font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                                <span>Esquina Superior Izquierda (TL)</span>
+                                <span id="valTL" class="font-mono text-brand-600 dark:text-brand-400">0, 0</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] text-slate-400">X</label>
+                                    <input type="range" id="rangeTL_X" min="0" max="100" value="0" class="w-full accent-brand-600">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400">Y</label>
+                                    <input type="range" id="rangeTL_Y" min="0" max="100" value="0" class="w-full accent-brand-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-2">
+                            <div class="font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                                <span>Esquina Superior Derecha (TR)</span>
+                                <span id="valTR" class="font-mono text-brand-600 dark:text-brand-400">100, 0</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] text-slate-400">X</label>
+                                    <input type="range" id="rangeTR_X" min="0" max="100" value="100" class="w-full accent-brand-600">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400">Y</label>
+                                    <input type="range" id="rangeTR_Y" min="0" max="100" value="0" class="w-full accent-brand-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-2">
+                            <div class="font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                                <span>Esquina Inferior Derecha (BR)</span>
+                                <span id="valBR" class="font-mono text-brand-600 dark:text-brand-400">100, 100</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] text-slate-400">X</label>
+                                    <input type="range" id="rangeBR_X" min="0" max="100" value="100" class="w-full accent-brand-600">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400">Y</label>
+                                    <input type="range" id="rangeBR_Y" min="0" max="100" value="100" class="w-full accent-brand-600">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 space-y-2">
+                            <div class="font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                                <span>Esquina Inferior Izquierda (BL)</span>
+                                <span id="valBL" class="font-mono text-brand-600 dark:text-brand-400">0, 100</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] text-slate-400">X</label>
+                                    <input type="range" id="rangeBL_X" min="0" max="100" value="0" class="w-full accent-brand-600">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-400">Y</label>
+                                    <input type="range" id="rangeBL_Y" min="0" max="100" value="100" class="w-full accent-brand-600">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calidad de salida -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Resolución de Salida</label>
+                        <select id="outputResolution" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="auto">Automática (Basada en esquinas)</option>
+                            <option value="1080">Alta Calidad (~1080p)</option>
+                            <option value="original">Original de la Imagen</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="panelEnhance" class="space-y-5 hidden"></div>
+
+                <!-- SECCIÓN RECTÁNGULO GUÍA -->
+                <div id="panelGuide" class="space-y-6 hidden">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-semibold text-sm text-slate-700 dark:text-slate-200">Rectángulo Guía Visual</h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="toggleGuide" class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600"></div>
+                        </label>
+                    </div>
+
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        Esta herramienta sirve como referencia geométrica para proporciones (ej. tarjetas, documentos, hojas). <strong class="text-amber-500">No se incluirá</strong> en la imagen exportada. Se dibuja sobre la imagen corregida: arrastra el cuerpo para moverla y las esquinas para cambiar su tamaño.
+                    </p>
+
+                    <div id="guideControlsContainer" class="space-y-4 opacity-50 pointer-events-none transition-opacity">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Ancho (px)</label>
+                                <input type="number" id="guideWidthInput" value="300" class="w-full mt-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Alto (px)</label>
+                                <input type="number" id="guideHeightInput" value="200" class="w-full mt-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Posición X</label>
+                                <input type="number" id="guideXInput" value="50" class="w-full mt-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-slate-600 dark:text-slate-400">Posición Y</label>
+                                <input type="number" id="guideYInput" value="50" class="w-full mt-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                        </div>
+
+                        <label class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                            <input type="checkbox" id="guideLock" checked class="accent-amber-500"> Mantener proporción al redimensionar <span class="text-slate-400">(Shift la invierte)</span>
+                        </label>
+                        <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300">
+                            <span>Proporción guía: <b id="guideRatio" class="font-mono"></b></span>
+                            <button id="btnGuideFit" class="text-amber-600 hover:underline font-medium">Ajustar a la imagen</button>
+                        </div>
+                        <div class="pt-2">
+                            <label class="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2 block">Proporciones Predefinidas</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="setGuideAspect(4, 3)" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium">4:3</button>
+                                <button onclick="setGuideAspect(16, 9)" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium">16:9</button>
+                                <button onclick="setGuideAspect(1, 1)" class="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium">1:1</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones de Acción / Exportación -->
+            <div class="p-5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 grid grid-cols-2 gap-3">
+                <button id="btnClipboard" class="flex items-center justify-center space-x-2 py-3 px-4 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-medium text-xs rounded-xl transition-all shadow-sm">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Copiar</span>
+                </button>
+                <button id="btnDownload" class="flex items-center justify-center space-x-2 py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-medium text-xs rounded-xl transition-all shadow-lg shadow-brand-500/25">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Descargar</span>
+                </button>
+            </div>
+        </aside>
+
     </main>
 
-    <div id="toast" class="fixed top-4 right-4 z-50 transform translate-x-full opacity-0 transition-all duration-300 bg-white dark:bg-slate-800 border-l-4 border-emerald-500 shadow-lg rounded-r p-3 flex items-start max-w-xs">
-        <i class="fa-solid fa-circle-check text-emerald-500 mt-0.5 mr-2"></i>
+    <footer class="site no-print shrink-0 text-center text-xs py-2 px-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 z-30">
+        <a href="https://novaelix.vercel.app/" target="_blank">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Creado por Novaelix</span>
+        </a> &nbsp;|&nbsp; <a href="https://wa.me/573128816469" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Whatsapp</a>
+    </footer>
+
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full opacity-0 transition-all duration-300 flex items-center space-x-3 glass-panel border border-slate-200 dark:border-slate-700 px-4 py-3 rounded-2xl shadow-xl">
+        <div id="toastIcon" class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm">
+            <i class="fa-solid fa-check"></i>
+        </div>
         <div>
-            <p id="toastMsg" class="text-sm font-medium text-slate-700 dark:text-slate-200"></p>
+            <h4 id="toastTitle" class="text-xs font-bold">Éxito</h4>
+            <p id="toastMsg" class="text-[11px] text-slate-500 dark:text-slate-400">Operación realizada correctamente.</p>
         </div>
     </div>
 
-    <!-- Hidden canvas for processing full resolution logic -->
-    <canvas id="offscreenCanvas" class="hidden"></canvas>
+    <!-- Oculto: Canvas de Procesamiento Homográfico -->
+    <canvas id="processingCanvas" class="hidden"></canvas>
 
     <script>
-        // Data Models
+        const $ = id => document.getElementById(id);
+        const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+        const KEYS = ['tl', 'tr', 'br', 'bl'];
+        const MIN_G = 8;
         const state = {
-            imageFile: null,
-            imageObj: null,
-            imgNaturalW: 0,
-            imgNaturalH: 0,
-            
-            // Perspective Corners (in Percentage 0-1 relative to image dimensions)
-            srcPoints: {
-                tl: { x: 0.1, y: 0.1 },
-                tr: { x: 0.9, y: 0.1 },
-                br: { x: 0.9, y: 0.9 },
-                bl: { x: 0.1, y: 0.9 }
-            },
-            activeSrcHandle: null,
-
-            // Result Image Info
-            resultCanvasW: 0,
-            resultCanvasH: 0,
-
-            // Guide Rectangle (in actual target image pixels)
-            guideActive: true,
-            guide: { x: 0, y: 0, w: 0, h: 0 },
-            activeGuideHandle: null, // tl, tr, br, bl
-            guideFixedCorner: { x: 0, y: 0 } // Used during dragging to keep opposite corner anchored
+            loaded: false, natW: 0, natH: 0,
+            corners: { tl: { x: 15, y: 15 }, tr: { x: 85, y: 15 }, br: { x: 85, y: 85 }, bl: { x: 15, y: 85 } },
+            // Guía en píxeles de la imagen corregida (tamaño de exportación). ON por defecto.
+            guide: { active: false, lock: true, x: 0, y: 0, w: 100, h: 100 },
+            out: { w: 1, h: 1 }, pad: 0, view: 'split', pvSrc: null, fullSrc: null, raf: 0
         };
+        const dropZone = $('dropZone'), fileInput = $('fileInput'), sourceImage = $('sourceImage');
+        const imageContainer = $('imageContainer'), resultContainer = $('resultContainer'), resultCanvas = $('resultCanvas');
+        const guideBox = $('guideBox'), paneSource = $('paneSource'), paneResult = $('paneResult');
+        const perspectivePolygon = $('perspectivePolygon');
+        const HND = { tl: $('handleTL'), tr: $('handleTR'), br: $('handleBR'), bl: $('handleBL') };
+        let gs = null; // estado temporal de arrastre de la guía
 
-        // DOM Elements - Source
-        const elDropZone = document.getElementById('drop-zone');
-        const elFileInput = document.getElementById('fileInput');
-        const elSourceWrapper = document.getElementById('source-wrapper');
-        const elSourceImage = document.getElementById('source-image');
-        const elSourceSvg = document.getElementById('source-svg');
-        const elSrcPoly = document.getElementById('src-poly');
-        const elHandlesSrc = {
-            tl: document.getElementById('src-tl'),
-            tr: document.getElementById('src-tr'),
-            br: document.getElementById('src-br'),
-            bl: document.getElementById('src-bl')
-        };
-        const elBtnApply = document.getElementById('btnApply');
+        window.addEventListener('DOMContentLoaded', () => { initTheme(); setupEvents(); });
 
-        // DOM Elements - Result & Guide
-        const elResultPlaceholder = document.getElementById('result-placeholder');
-        const elResultWrapper = document.getElementById('result-wrapper');
-        const elResultCanvas = document.getElementById('result-canvas');
-        const ctxResult = elResultCanvas.getContext('2d', { willReadFrequently: true });
-        
-        const elGuideSvg = document.getElementById('guide-svg');
-        const elGuideRect = document.getElementById('guide-rect');
-        const elGuideBackdrop = document.getElementById('guide-backdrop');
-        const elGuideGridV = document.getElementById('guide-grid-v');
-        const elGuideGridH = document.getElementById('guide-grid-h');
-        const elHandlesGuide = {
-            tl: document.getElementById('guide-tl'),
-            tr: document.getElementById('guide-tr'),
-            br: document.getElementById('guide-br'),
-            bl: document.getElementById('guide-bl')
-        };
-        const elGuideToggle = document.getElementById('guideToggle');
-        
-        // DOM Elements - Controls
-        const elInputGuideW = document.getElementById('inputGuideW');
-        const elInputGuideH = document.getElementById('inputGuideH');
-        const elBtnCopy = document.getElementById('btnCopy');
-        const elBtnDownload = document.getElementById('btnDownload');
-
-        window.addEventListener('DOMContentLoaded', () => {
-            // Theme setup
+        function initTheme() {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('dark');
-            document.getElementById('themeToggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
-
-            // File Uploads
-            elFileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-            document.getElementById('btnPaste').addEventListener('click', handlePasteClick);
-            window.addEventListener('paste', handlePasteEvent);
-
-            // Drag & Drop
-            const workspace = document.getElementById('source-workspace');
-            ['dragenter', 'dragover'].forEach(eName => workspace.addEventListener(eName, e => {
-                e.preventDefault(); elDropZone.classList.add('bg-brand-50', 'dark:bg-brand-900/50', 'border-brand-500');
-            }));
-            ['dragleave', 'drop'].forEach(eName => workspace.addEventListener(eName, e => {
-                e.preventDefault(); elDropZone.classList.remove('bg-brand-50', 'dark:bg-brand-900/50', 'border-brand-500');
-            }));
-            workspace.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
-
-            // Buttons
-            elBtnApply.addEventListener('click', runPerspectiveCorrection);
-            elGuideToggle.addEventListener('change', (e) => { state.guideActive = e.target.checked; renderGuide(); });
-            elBtnCopy.addEventListener('click', copyToClipboard);
-            elBtnDownload.addEventListener('click', downloadImage);
-
-            // Inputs
-            elInputGuideW.addEventListener('change', onGuideInput);
-            elInputGuideH.addEventListener('change', onGuideInput);
-
-            // Resizing window updates DOM overlays
-            window.addEventListener('resize', () => {
-                if (state.imageObj) renderSourceOverlay();
-                if (state.resultCanvasW > 0) renderGuide();
-            });
-
-            // Initialize Drag Behaviors
-            initSourceDrags();
-            initGuideDrags();
-        });
-
-        async function handlePasteClick() {
-            try {
-                const items = await navigator.clipboard.read();
-                for (let item of items) {
-                    const imgType = item.types.find(t => t.startsWith('image/'));
-                    if (imgType) { handleFile(await item.getType(imgType)); return; }
-                }
-                showToast('No se encontró imagen en el portapapeles', 'error');
-            } catch (e) {
-                showToast('Usa Ctrl+V para pegar', 'error');
-            }
+            $('themeToggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
         }
 
-        function handlePasteEvent(e) {
-            const items = e.clipboardData.items;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    handleFile(items[i].getAsFile());
-                    break;
-                }
-            }
-        }
-
-        function handleFile(file) {
-            if (!file || !file.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    state.imageObj = img;
-                    state.imgNaturalW = img.naturalWidth;
-                    state.imgNaturalH = img.naturalHeight;
-                    
-                    elSourceImage.src = img.src;
-                    elDropZone.classList.add('hidden');
-                    elSourceWrapper.classList.remove('hidden');
-                    elBtnApply.disabled = false;
-
-                    // Reset points to 10% padding
-                    state.srcPoints = {
-                        tl: { x: 0.1, y: 0.1 }, tr: { x: 0.9, y: 0.1 },
-                        br: { x: 0.9, y: 0.9 }, bl: { x: 0.1, y: 0.9 }
-                    };
-                    renderSourceOverlay();
+        // Arrastre unificado (mouse + touch) con Pointer Events
+        function drag(el, onMove, onStart) {
+            el.addEventListener('pointerdown', e => {
+                e.preventDefault(); e.stopPropagation();
+                el.setPointerCapture(e.pointerId); el.classList.add('active');
+                if (onStart) onStart(e);
+                const up = () => {
+                    el.classList.remove('active');
+                    el.removeEventListener('pointermove', onMove);
+                    el.removeEventListener('pointerup', up);
+                    el.removeEventListener('pointercancel', up);
                 };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                el.addEventListener('pointermove', onMove);
+                el.addEventListener('pointerup', up);
+                el.addEventListener('pointercancel', up);
+            });
         }
 
-        function initSourceDrags() {
-            Object.keys(elHandlesSrc).forEach(key => {
-                const el = elHandlesSrc[key];
-                
-                const onStart = (e) => {
-                    state.activeSrcHandle = key;
-                    el.classList.add('active');
-                    e.stopPropagation(); e.preventDefault();
-                };
-                el.addEventListener('mousedown', onStart);
-                el.addEventListener('touchstart', onStart, {passive: false});
-            });
-
-            const onMove = (e) => {
-                if (!state.activeSrcHandle) return;
+        function setupEvents() {
+            window.addEventListener('dragover', e => e.preventDefault());
+            window.addEventListener('drop', e => {
                 e.preventDefault();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const rect = elSourceImage.getBoundingClientRect();
-                // Calculate percentage relative to the rendered image box
-                let px = (clientX - rect.left) / rect.width;
-                let py = (clientY - rect.top) / rect.height;
-                
-                // Clamp 0 to 1
-                px = Math.max(0, Math.min(1, px));
-                py = Math.max(0, Math.min(1, py));
-
-                state.srcPoints[state.activeSrcHandle] = { x: px, y: py };
-                renderSourceOverlay();
-            };
-
-            const onEnd = () => {
-                if (state.activeSrcHandle) {
-                    elHandlesSrc[state.activeSrcHandle].classList.remove('active');
-                    state.activeSrcHandle = null;
+                const f = e.dataTransfer.files[0];
+                if (f && f.type.startsWith('image/')) loadImageFromFile(f);
+            });
+            fileInput.addEventListener('change', e => { if (e.target.files[0]) loadImageFromFile(e.target.files[0]); });
+            window.addEventListener('paste', e => {
+                for (const it of (e.clipboardData ? e.clipboardData.items : [])) {
+                    if (it.type.indexOf('image') !== -1) {
+                        loadImageFromFile(it.getAsFile());
+                        showToast('Imagen cargada', 'Imagen pegada desde el portapapeles con éxito.', 'success');
+                        break;
+                    }
                 }
-            };
+            });
+            $('btnPastePrompt').addEventListener('click', async () => {
+                try {
+                    for (const item of await navigator.clipboard.read()) {
+                        const type = item.types.find(x => x.startsWith('image/'));
+                        if (type) { loadImageFromFile(await item.getType(type)); showToast('Imagen cargada', 'Imagen obtenida del portapapeles.', 'success'); return; }
+                    }
+                    showToast('Aviso', 'No se encontró ninguna imagen en el portapapeles.', 'info');
+                } catch (err) { showToast('Nota', 'Usa Ctrl+V para pegar la imagen directamente.', 'info'); }
+            });
+            $('btnNewImage').addEventListener('click', () => dropZone.classList.remove('opacity-0', 'pointer-events-none'));
+            dropZone.addEventListener('click', e => { if (e.target === dropZone && state.loaded) dropZone.classList.add('opacity-0', 'pointer-events-none'); });
 
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('touchmove', onMove, {passive: false});
-            window.addEventListener('mouseup', onEnd);
-            window.addEventListener('touchend', onEnd);
-        }
+            const ro = new ResizeObserver(() => { layout(); schedule(); });
+            ro.observe(paneSource); ro.observe(paneResult);
 
-        function renderSourceOverlay() {
-            if (!state.imageObj) return;
-            const w = elSourceImage.clientWidth;
-            const h = elSourceImage.clientHeight;
-
-            // Map 0-1 percentages to visual pixels
-            const pts = {};
-            Object.keys(state.srcPoints).forEach(k => {
-                pts[k] = { x: state.srcPoints[k].x * w, y: state.srcPoints[k].y * h };
-                elHandlesSrc[k].style.left = `${pts[k].x}px`;
-                elHandlesSrc[k].style.top = `${pts[k].y}px`;
+            // Esquinas de perspectiva
+            KEYS.forEach(k => drag(HND[k], e => {
+                const r = imageContainer.getBoundingClientRect();
+                state.corners[k] = { x: fromDisp(clamp((e.clientX - r.left) / r.width * 100, 0, 100)), y: fromDisp(clamp((e.clientY - r.top) / r.height * 100, 0, 100)) };
+                cornersChanged();
+            }));
+            KEYS.forEach(k => {
+                const K = k.toUpperCase();
+                ['X', 'Y'].forEach(ax => $(`range${K}_${ax}`).addEventListener('input', ev => {
+                    state.corners[k][ax.toLowerCase()] = parseFloat(ev.target.value);
+                    cornersChanged();
+                }));
+            });
+            $('btnResetPerspective').addEventListener('click', () => { resetCorners(); showToast('Restablecido', 'Vértices devueltos al estado inicial.', 'info'); });
+            $('outputResolution').addEventListener('change', () => {
+                if (!state.loaded) return;
+                const ow = state.out.w; commitGuide(); computeOut();
+                const f = state.out.w / ow, g = state.guide;
+                g.x *= f; g.y *= f; g.w *= f; g.h *= f;
+                schedule();
             });
 
-            elSrcPoly.setAttribute('points', `${pts.tl.x},${pts.tl.y} ${pts.tr.x},${pts.tr.y} ${pts.br.x},${pts.br.y} ${pts.bl.x},${pts.bl.y}`);
-        }
+            // Guía: mover con el cuerpo
+            drag(guideBox, e => {
+                const sc = resultContainer.getBoundingClientRect().width / state.out.w, r = gs.r;
+                state.guide.x = clamp(r.x + (e.clientX - gs.cx) / sc, 0, state.out.w - r.w);
+                state.guide.y = clamp(r.y + (e.clientY - gs.cy) / sc, 0, state.out.h - r.h);
+                updateGuideUI();
+            }, e => { commitGuide(); gs = { cx: e.clientX, cy: e.clientY, r: { ...state.guide } }; });
 
-        function initGuideDrags() {
-            Object.keys(elHandlesGuide).forEach(key => {
-                const el = elHandlesGuide[key];
-                
-                const onStart = (e) => {
-                    if (!state.guideActive) return;
-                    state.activeGuideHandle = key;
-                    el.classList.add('active');
-                    
-                    // Determine anchored opposite corner based on current rect
-                    const g = state.guide;
-                    if (key === 'tl') state.guideFixedCorner = { x: g.x + g.w, y: g.y + g.h };
-                    if (key === 'tr') state.guideFixedCorner = { x: g.x, y: g.y + g.h };
-                    if (key === 'br') state.guideFixedCorner = { x: g.x, y: g.y };
-                    if (key === 'bl') state.guideFixedCorner = { x: g.x + g.w, y: g.y };
-
-                    e.stopPropagation(); e.preventDefault();
-                };
-                el.addEventListener('mousedown', onStart);
-                el.addEventListener('touchstart', onStart, {passive: false});
+            // Guía: redimensionar desde las esquinas (siempre rectangular)
+            guideBox.querySelectorAll('.ghandle').forEach(el => {
+                const c = el.dataset.c;
+                drag(el, e => {
+                    const rc = resultContainer.getBoundingClientRect(), W = state.out.w, H = state.out.h;
+                    const px = clamp((e.clientX - rc.left) / rc.width * W, 0, W);
+                    const py = clamp((e.clientY - rc.top) / rc.height * H, 0, H);
+                    Object.assign(state.guide, resizeFromCorner(gs.r, c, px, py, W, H, state.guide.lock !== e.shiftKey));
+                    updateGuideUI();
+                }, () => { commitGuide(); gs = { r: { ...state.guide } }; });
             });
 
-            const onMove = (e) => {
-                if (!state.activeGuideHandle || !state.guideActive) return;
-                e.preventDefault();
-                
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                
-                const rect = elResultCanvas.getBoundingClientRect();
-                
-                // Map visual mouse position to internal canvas dimensions
-                const scaleX = state.resultCanvasW / rect.width;
-                const scaleY = state.resultCanvasH / rect.height;
-                
-                let cx = (clientX - rect.left) * scaleX;
-                let cy = (clientY - rect.top) * scaleY;
+            $('toggleGuide').addEventListener('change', e => {
+                state.guide.active = e.target.checked;
+                $('guideControlsContainer').classList.toggle('opacity-50', !state.guide.active);
+                $('guideControlsContainer').classList.toggle('pointer-events-none', !state.guide.active);
+                updateGuideUI();
+            });
+            $('guideLock').addEventListener('change', e => { state.guide.lock = e.target.checked; });
+            $('btnGuideFit').addEventListener('click', fitGuide);
+            ['guideWidthInput', 'guideHeightInput', 'guideXInput', 'guideYInput'].forEach(id => $(id).addEventListener('input', () => {
+                if (!state.loaded) return;
+                commitGuide();
+                const g = state.guide, v = parseFloat($(id).value), ratio = g.w / g.h;
+                if (isNaN(v)) return;
+                if (id === 'guideWidthInput' && v > 0) { g.w = v; if (g.lock) g.h = v / ratio; }
+                else if (id === 'guideHeightInput' && v > 0) { g.h = v; if (g.lock) g.w = v * ratio; }
+                else if (id === 'guideXInput') g.x = v;
+                else if (id === 'guideYInput') g.y = v;
+                updateGuideUI();
+            }));
 
-                // Restrict mouse to canvas bounds
-                cx = Math.max(0, Math.min(state.resultCanvasW, cx));
-                cy = Math.max(0, Math.min(state.resultCanvasH, cy));
+            document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+            $('btnPadMinus').addEventListener('click', () => setPad(state.pad + 10));
+            $('btnPadPlus').addEventListener('click', () => setPad(state.pad - 10));
+            setView(window.innerWidth < 1024 ? 'source' : 'split');
+            buildEnhancePanel();
+            $('btnDownload').addEventListener('click', exportProcessedImage);
+            $('btnClipboard').addEventListener('click', copyProcessedImageToClipboard);
+        }
 
-                const fixed = state.guideFixedCorner;
-                
-                // Construct new rect based on fixed opposite corner and new dragged point
-                const newX = Math.min(fixed.x, cx);
-                const newY = Math.min(fixed.y, cy);
-                const newW = Math.abs(fixed.x - cx);
-                const newH = Math.abs(fixed.y - cy);
-
-                // Enforce minimum size
-                if (newW >= 20) { state.guide.x = newX; state.guide.w = newW; }
-                if (newH >= 20) { state.guide.y = newY; state.guide.h = newH; }
-
-                renderGuide();
-                updateGuideInputs();
+        // --- Carga de imagen ---
+        function loadImageFromFile(file) {
+            sourceImage.onload = () => {
+                state.natW = sourceImage.naturalWidth; state.natH = sourceImage.naturalHeight;
+                state.fullSrc = null;
+                // Copia reducida para la vista previa en vivo
+                const s = Math.min(1, 1400 / Math.max(state.natW, state.natH));
+                const c = document.createElement('canvas');
+                c.width = Math.max(1, Math.round(state.natW * s)); c.height = Math.max(1, Math.round(state.natH * s));
+                const cx = c.getContext('2d', { willReadFrequently: true });
+                cx.drawImage(sourceImage, 0, 0, c.width, c.height);
+                state.pvSrc = cx.getImageData(0, 0, c.width, c.height);
+                state.loaded = true;
+                dropZone.classList.add('opacity-0', 'pointer-events-none');
+                imageContainer.classList.remove('hidden'); resultContainer.classList.remove('hidden');
+                $('floatingHint').classList.remove('hidden');
+                fileInput.value = '';
+                setPad(0);
+                resetCorners(true);
+                computeOut();
+                const { w: W, h: H } = state.out;
+                Object.assign(state.guide, { w: W * 0.7, h: H * 0.7, x: W * 0.15, y: H * 0.15 });
+                layout(); render();
             };
-
-            const onEnd = () => {
-                if (state.activeGuideHandle) {
-                    elHandlesGuide[state.activeGuideHandle].classList.remove('active');
-                    state.activeGuideHandle = null;
-                }
-            };
-
-            window.addEventListener('mousemove', onMove);
-            window.addEventListener('touchmove', onMove, {passive: false});
-            window.addEventListener('mouseup', onEnd);
-            window.addEventListener('touchend', onEnd);
+            sourceImage.src = URL.createObjectURL(file);
         }
 
-        function renderGuide() {
-            const wrapperDisp = state.guideActive ? 'block' : 'none';
-            elGuideSvg.style.display = wrapperDisp;
-            Object.values(elHandlesGuide).forEach(el => el.style.display = wrapperDisp);
-
-            if (!state.guideActive || state.resultCanvasW === 0) return;
-
-            // Math to map internal canvas coordinates to visual CSS coordinates
-            const rect = elResultCanvas.getBoundingClientRect();
-            const scaleX = rect.width / state.resultCanvasW;
-            const scaleY = rect.height / state.resultCanvasH;
-
-            const g = state.guide;
-            const vx = g.x * scaleX;
-            const vy = g.y * scaleY;
-            const vw = g.w * scaleX;
-            const vh = g.h * scaleY;
-
-            elGuideRect.setAttribute('x', vx);
-            elGuideRect.setAttribute('y', vy);
-            elGuideRect.setAttribute('width', vw);
-            elGuideRect.setAttribute('height', vh);
-
-            // Update handles
-            elHandlesGuide.tl.style.left = `${vx}px`; elHandlesGuide.tl.style.top = `${vy}px`;
-            elHandlesGuide.tr.style.left = `${vx + vw}px`; elHandlesGuide.tr.style.top = `${vy}px`;
-            elHandlesGuide.br.style.left = `${vx + vw}px`; elHandlesGuide.br.style.top = `${vy + vh}px`;
-            elHandlesGuide.bl.style.left = `${vx}px`; elHandlesGuide.bl.style.top = `${vy + vh}px`;
-
-            // Draw Grid Lines (Crosshair inside rect)
-            elGuideGridV.setAttribute('x1', vx + vw/2); elGuideGridV.setAttribute('y1', vy);
-            elGuideGridV.setAttribute('x2', vx + vw/2); elGuideGridV.setAttribute('y2', vy + vh);
-            
-            elGuideGridH.setAttribute('x1', vx); elGuideGridH.setAttribute('y1', vy + vh/2);
-            elGuideGridH.setAttribute('x2', vx + vw); elGuideGridH.setAttribute('y2', vy + vh/2);
-
-            // Backdrop mask (everything outside the rect is slightly darkened)
-            // Path structure: Outer bounding box (canvas), then Inner cut-out hole (guide rect) with opposite winding
-            const cw = rect.width; const ch = rect.height;
-            const pathData = `M 0 0 L ${cw} 0 L ${cw} ${ch} L 0 ${ch} Z M ${vx} ${vy} L ${vx} ${vy+vh} L ${vx+vw} ${vy+vh} L ${vx+vw} ${vy} Z`;
-            elGuideBackdrop.setAttribute('d', pathData);
+        function resetCorners(silent) {
+            state.corners = { tl: { x: 3, y: 3 }, tr: { x: 97, y: 3 }, br: { x: 97, y: 97 }, bl: { x: 3, y: 97 } };
+            cornersChanged();
         }
 
-        function onGuideInput() {
-            let nw = parseInt(elInputGuideW.value) || state.guide.w;
-            let nh = parseInt(elInputGuideH.value) || state.guide.h;
-            
-            // Constrain
-            nw = Math.max(20, Math.min(nw, state.resultCanvasW));
-            nh = Math.max(20, Math.min(nh, state.resultCanvasH));
-
-            // Recenter based on old center if possible, otherwise keep x,y
-            const cx = state.guide.x + state.guide.w / 2;
-            const cy = state.guide.y + state.guide.h / 2;
-            
-            let nx = cx - nw / 2;
-            let ny = cy - nh / 2;
-
-            // Clamp to bounds
-            nx = Math.max(0, Math.min(state.resultCanvasW - nw, nx));
-            ny = Math.max(0, Math.min(state.resultCanvasH - nh, ny));
-
-            state.guide = { x: nx, y: ny, w: nw, h: nh };
-            renderGuide();
-            updateGuideInputs();
+        // --- Margen blanco: permite colocar vértices fuera de la imagen ---
+        // Las esquinas se guardan en % de la imagen (pueden ser <0 o >100); el contenedor muestra imagen + margen.
+        const padP = () => state.pad / 100;
+        const toDisp = c => (padP() + c / 100) / (1 + 2 * padP()) * 100;
+        const fromDisp = d => (d / 100 * (1 + 2 * padP()) - padP()) * 100;
+        function applyPad() {
+            const p = padP(), k = 1 + 2 * p;
+            Object.assign(sourceImage.style, { position: 'absolute', left: p / k * 100 + '%', top: p / k * 100 + '%', width: 100 / k + '%', height: 100 / k + '%', outline: p > 0 ? '1px solid rgba(148,163,184,.7)' : 'none' });
+        }
+        function setPad(v) {
+            state.pad = clamp(v, 0, 100);
+            const p = padP(), lo = -p * 100, hi = 100 + p * 100;
+            KEYS.forEach(k => {
+                const K = k.toUpperCase();
+                ['X', 'Y'].forEach(ax => { const s = $(`range${K}_${ax}`); s.min = lo; s.max = hi; });
+                ['x', 'y'].forEach(a => state.corners[k][a] = clamp(state.corners[k][a], lo, hi));
+            });
+            $('padInfo').textContent = state.pad + '%';
+            applyPad(); cornersChanged();
         }
 
-        function updateGuideInputs() {
-            elInputGuideW.value = Math.round(state.guide.w);
-            elInputGuideH.value = Math.round(state.guide.h);
+        function cornersChanged() { updateHandles(); schedule(); }
+
+        function updateHandles() {
+            KEYS.forEach(k => {
+                const c = state.corners[k], K = k.toUpperCase();
+                HND[k].style.left = toDisp(c.x) + '%'; HND[k].style.top = toDisp(c.y) + '%';
+                $(`range${K}_X`).value = Math.round(c.x); $(`range${K}_Y`).value = Math.round(c.y);
+                $(`val${K}`).innerText = `${Math.round(c.x)}%, ${Math.round(c.y)}%`;
+            });
+            perspectivePolygon.setAttribute('points', KEYS.map(k => `${toDisp(state.corners[k].x)},${toDisp(state.corners[k].y)}`).join(' '));
         }
 
-        // Solves Ah = B for 8 parameters of homography matrix
-        function computeHomography(src, dst) {
-            const A = [];
-            for (let i = 0; i < 4; i++) {
-                const x = src[i].x, y = src[i].y;
-                const u = dst[i].x, v = dst[i].y;
-                A.push([x, y, 1, 0, 0, 0, -u*x, -u*y, u]);
-                A.push([0, 0, 0, x, y, 1, -v*x, -v*y, v]);
-            }
-            return gaussianElimination(A);
+        // --- Layout: ajusta cada imagen a su panel manteniendo proporción ---
+        function fit(pane, box, aw, ah) {
+            const pw = pane.clientWidth, ph = pane.clientHeight;
+            if (!pw || !ph) return;
+            const s = Math.min((pw - 24) / aw, (ph - 24) / ah);
+            const w = Math.max(1, Math.floor(aw * s)), h = Math.max(1, Math.floor(ah * s));
+            Object.assign(box.style, { width: w + 'px', height: h + 'px', left: Math.round((pw - w) / 2) + 'px', top: Math.round((ph - h) / 2) + 'px' });
+        }
+        function layout() {
+            if (!state.loaded) return;
+            fit(paneSource, imageContainer, state.natW, state.natH);
+            fit(paneResult, resultContainer, state.out.w, state.out.h);
         }
 
-        // Standard Gaussian elimination
-        function gaussianElimination(M) {
+        function setView(v) {
+            state.view = v;
+            paneSource.classList.toggle('hidden', v === 'result');
+            paneResult.classList.toggle('hidden', v === 'source');
+            document.querySelectorAll('[data-view]').forEach(b => {
+                b.className = 'px-3 py-1.5 rounded-md ' + (b.dataset.view === v
+                    ? 'font-semibold bg-white dark:bg-slate-700 shadow text-brand-600 dark:text-brand-400'
+                    : 'font-medium text-slate-500 dark:text-slate-400');
+            });
+            requestAnimationFrame(() => { layout(); schedule(); });
+        }
+
+        // --- Geometría de salida ---
+        function quadPx(w, h) {
+            const q = {};
+            KEYS.forEach(k => q[k] = { x: state.corners[k].x / 100 * w, y: state.corners[k].y / 100 * h });
+            return q;
+        }
+        function computeOut() {
+            const q = quadPx(state.natW, state.natH), d = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+            let w = Math.max(d(q.tl, q.tr), d(q.bl, q.br)), h = Math.max(d(q.tl, q.bl), d(q.tr, q.br));
+            const mode = $('outputResolution').value;
+            if (mode === '1080') { const s = 1920 / Math.max(w, h, 1); w *= s; h *= s; }
+            else if (mode === 'original') { const s = Math.min(state.natW / Math.max(w, 1), state.natH / Math.max(h, 1)); w *= s; h *= s; }
+            state.out = { w: Math.max(1, Math.round(w)), h: Math.max(1, Math.round(h)) };
+        }
+
+        // --- Guía ---
+        function guideRect() { // versión visible: siempre dentro de la imagen, sin perder el valor guardado
+            const g = state.guide, { w: W, h: H } = state.out;
+            const s = Math.min(1, W / g.w, H / g.h), w = g.w * s, h = g.h * s;
+            return { x: clamp(g.x, 0, W - w), y: clamp(g.y, 0, H - h), w, h };
+        }
+        function commitGuide() { Object.assign(state.guide, guideRect()); }
+
+        function resizeFromCorner(r, c, px, py, W, H, lock) {
+            const left = c.includes('l'), top = c.includes('t');
+            const ax = left ? r.x + r.w : r.x, ay = top ? r.y + r.h : r.y; // esquina opuesta fija
+            let w = clamp(left ? ax - px : px - ax, MIN_G, left ? ax : W - ax);
+            let h = clamp(top ? ay - py : py - ay, MIN_G, top ? ay : H - ay);
+            if (lock) { const k = r.w / r.h; if (w / k <= h) h = w / k; else w = h * k; }
+            return { x: left ? ax - w : ax, y: top ? ay - h : ay, w, h };
+        }
+
+        function setVal(id, v) { const el = $(id); if (document.activeElement !== el) el.value = Math.round(v); }
+
+        function updateGuideUI() {
+            if (!state.loaded) return;
+            const { w: W, h: H } = state.out, r = guideRect(), on = state.guide.active;
+            guideBox.style.display = on ? 'block' : 'none';
+            Object.assign(guideBox.style, { left: r.x / W * 100 + '%', top: r.y / H * 100 + '%', width: r.w / W * 100 + '%', height: r.h / H * 100 + '%' });
+            setVal('guideWidthInput', r.w); setVal('guideHeightInput', r.h); setVal('guideXInput', r.x); setVal('guideYInput', r.y);
+            $('guideRatio').textContent = (r.w / r.h).toFixed(3);
+            $('resultInfo').textContent = `Resultado ${W}×${H}px · ${(W / H).toFixed(3)}` + (on ? ` · Guía ${(r.w / r.h).toFixed(3)}` : '');
+        }
+
+        function fitGuide() {
+            if (!state.loaded) return;
+            const g = state.guide, { w: W, h: H } = state.out, ratio = g.w / g.h;
+            g.w = Math.min(W, H * ratio); g.h = g.w / ratio;
+            g.x = (W - g.w) / 2; g.y = (H - g.h) / 2;
+            updateGuideUI();
+        }
+
+        function setGuideAspect(a, b) {
+            if (!state.loaded) return;
+            commitGuide();
+            state.guide.h = state.guide.w * b / a;
+            updateGuideUI();
+        }
+
+        function switchTab(tab) {
+            const on = "flex-1 py-3.5 text-xs font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 dark:border-brand-400 bg-brand-50/50 dark:bg-brand-950/20 transition-all";
+            const off = "flex-1 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-slate-700 dark:hover:text-slate-200 transition-all";
+            [['perspective', 'Perspective'], ['guide', 'Guide'], ['enhance', 'Enhance']].forEach(([k, K]) => {
+                $('tab' + K).className = tab === k ? on : off;
+                $('panel' + K).classList.toggle('hidden', tab !== k);
+            });
+        }
+
+        // --- Homografía ---
+        function gaussianElimination(A) {
             const n = 8;
             for (let i = 0; i < n; i++) {
-                // Find pivot
-                let maxRow = i;
-                for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[maxRow][i])) maxRow = k;
-                
-                // Swap
-                const tmp = M[i]; M[i] = M[maxRow]; M[maxRow] = tmp;
-                
-                // Eliminate
+                let maxEl = Math.abs(A[i][i]), maxRow = i;
+                for (let k = i + 1; k < n; k++) if (Math.abs(A[k][i]) > maxEl) { maxEl = Math.abs(A[k][i]); maxRow = k; }
+                for (let k = i; k < n + 1; k++) { const tmp = A[maxRow][k]; A[maxRow][k] = A[i][k]; A[i][k] = tmp; }
                 for (let k = i + 1; k < n; k++) {
-                    const c = -M[k][i] / M[i][i];
-                    for (let j = i; j <= n; j++) {
-                        if (i === j) M[k][j] = 0;
-                        else M[k][j] += c * M[i][j];
-                    }
+                    const c = -A[k][i] / A[i][i];
+                    for (let j = i; j < n + 1; j++) A[k][j] = (i === j) ? 0 : A[k][j] + c * A[i][j];
                 }
             }
-            // Back substitute
             const x = new Array(n);
             for (let i = n - 1; i >= 0; i--) {
-                x[i] = M[i][n] / M[i][i];
-                for (let k = i - 1; k >= 0; k--) M[k][n] -= M[k][i] * x[i];
+                x[i] = A[i][n] / A[i][i];
+                for (let k = i - 1; k >= 0; k--) A[k][n] -= A[k][i] * x[i];
             }
-            return [x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], 1];
+            return x;
         }
 
-        function runPerspectiveCorrection() {
-            if (!state.imageObj) return;
-            
-            // Add loading effect
-            elBtnApply.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl mb-1"></i><span class="text-[10px] font-bold uppercase">Procesando</span>`;
-            
-            // Timeout to allow UI to render the spinner before blocking thread
-            setTimeout(() => {
-                executeCorrection();
-                elBtnApply.innerHTML = `<i class="fa-solid fa-play text-xl mb-1 lg:rotate-0 rotate-90"></i><span class="text-[10px] font-bold uppercase tracking-wider text-center">Aplicar</span>`;
-            }, 50);
+        // Devuelve h0..h7 (h8 = 1) que lleva los puntos src a dst
+        function solveH(src, dst) {
+            const A = [];
+            for (let i = 0; i < 4; i++) {
+                const { x, y } = src[i], X = dst[i].x, Y = dst[i].y;
+                A.push([x, y, 1, 0, 0, 0, -x * X, -y * X, X]);
+                A.push([0, 0, 0, x, y, 1, -x * Y, -y * Y, Y]);
+            }
+            const h = gaussianElimination(A);
+            return h.every(Number.isFinite) ? h : null;
         }
 
-        function executeCorrection() {
-            const natW = state.imgNaturalW;
-            const natH = state.imgNaturalH;
-
-            // Actual source points in pixels
-            const pts = [
-                { x: state.srcPoints.tl.x * natW, y: state.srcPoints.tl.y * natH },
-                { x: state.srcPoints.tr.x * natW, y: state.srcPoints.tr.y * natH },
-                { x: state.srcPoints.br.x * natW, y: state.srcPoints.br.y * natH },
-                { x: state.srcPoints.bl.x * natW, y: state.srcPoints.bl.y * natH }
-            ];
-
-            // Estimate target dimensions based on euclidean distances of the polygon sides
-            const wTop = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-            const wBot = Math.hypot(pts[2].x - pts[3].x, pts[2].y - pts[3].y);
-            const hLeft = Math.hypot(pts[3].x - pts[0].x, pts[3].y - pts[0].y);
-            const hRight = Math.hypot(pts[2].x - pts[1].x, pts[2].y - pts[1].y);
-            
-            const outW = Math.round(Math.max(wTop, wBot));
-            const outH = Math.round(Math.max(hLeft, hRight));
-
-            // Validate dimensions
-            if(outW === 0 || outH === 0) { showToast("Área seleccionada no válida", "error"); return; }
-
-            const dstPts = [
-                {x: 0, y: 0}, {x: outW, y: 0}, 
-                {x: outW, y: outH}, {x: 0, y: outH}
-            ];
-
-            // We compute Homography from Destination TO Source (Inverse mapping for dense pixel fill)
-            const H = computeHomography(dstPts, pts);
-
-            // Draw original image to an offscreen canvas to extract pixel data
-            const osc = document.getElementById('offscreenCanvas');
-            osc.width = natW; osc.height = natH;
-            const osCtx = osc.getContext('2d', { willReadFrequently: true });
-            osCtx.drawImage(state.imageObj, 0, 0, natW, natH);
-            const srcData = osCtx.getImageData(0, 0, natW, natH).data;
-
-            // Setup destination image data
-            elResultCanvas.width = outW;
-            elResultCanvas.height = outH;
-            const dstImgData = ctxResult.createImageData(outW, outH);
-            const dstData = dstImgData.data;
-
-            // Iterate through every pixel of the destination
-            for (let y = 0; y < outH; y++) {
-                for (let x = 0; x < outW; x++) {
-                    // Apply Homography (dst -> src)
-                    const w = H[6]*x + H[7]*y + H[8];
-                    const sx = (H[0]*x + H[1]*y + H[2]) / w;
-                    const sy = (H[3]*x + H[4]*y + H[5]) / w;
-
-                    const dstIdx = (y * outW + x) * 4;
-
-                    // Bounds check and Bilinear Interpolation
-                    if (sx >= 0 && sx < natW - 1 && sy >= 0 && sy < natH - 1) {
-                        const x0 = Math.floor(sx), x1 = x0 + 1;
-                        const y0 = Math.floor(sy), y1 = y0 + 1;
-                        const fx = sx - x0, fy = sy - y0;
-                        const fxi = 1 - fx, fyi = 1 - fy;
-
-                        const i00 = (y0 * natW + x0) * 4;
-                        const i10 = (y0 * natW + x1) * 4;
-                        const i01 = (y1 * natW + x0) * 4;
-                        const i11 = (y1 * natW + x1) * 4;
-
-                        for (let c = 0; c < 3; c++) { // RGB
-                            const p00 = srcData[i00 + c], p10 = srcData[i10 + c];
-                            const p01 = srcData[i01 + c], p11 = srcData[i11 + c];
-                            const val = (p00 * fxi + p10 * fx) * fyi + (p01 * fxi + p11 * fx) * fy;
-                            dstData[dstIdx + c] = val;
-                        }
-                        dstData[dstIdx + 3] = 255; // Alpha
-                    } else {
-                        // Transparent out-of-bounds
-                        dstData[dstIdx + 3] = 0;
-                    }
+        // Rectifica el cuadrilátero `quad` (px de `img`) a un canvas W×H con interpolación bilineal
+        function warp(img, quad, W, H, canvas) {
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d'), out = ctx.createImageData(W, H);
+            const h = solveH([{ x: 0, y: 0 }, { x: W, y: 0 }, { x: W, y: H }, { x: 0, y: H }], quad);
+            if (!h) { ctx.putImageData(out, 0, 0); return false; }
+            const sw = img.width, sh = img.height, s = img.data, d = out.data;
+            for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+                const px = x + 0.5, py = y + 0.5, den = h[6] * px + h[7] * py + 1;
+                const sx = (h[0] * px + h[1] * py + h[2]) / den, sy = (h[3] * px + h[4] * py + h[5]) / den;
+                if (!(sx >= 0 && sx <= sw && sy >= 0 && sy <= sh)) { const q = (y * W + x) * 4; d[q] = d[q + 1] = d[q + 2] = d[q + 3] = 255; continue; }
+                const fx = clamp(sx - 0.5, 0, sw - 1), fy = clamp(sy - 0.5, 0, sh - 1);
+                const x0 = Math.floor(fx), y0 = Math.floor(fy), x1 = Math.min(x0 + 1, sw - 1), y1 = Math.min(y0 + 1, sh - 1);
+                const dx = fx - x0, dy = fy - y0, o = (y * W + x) * 4;
+                const i00 = (y0 * sw + x0) * 4, i10 = (y0 * sw + x1) * 4, i01 = (y1 * sw + x0) * 4, i11 = (y1 * sw + x1) * 4;
+                for (let c = 0; c < 4; c++) {
+                    const t = s[i00 + c] * (1 - dx) + s[i10 + c] * dx, b = s[i01 + c] * (1 - dx) + s[i11 + c] * dx;
+                    d[o + c] = t * (1 - dy) + b * dy;
                 }
             }
-
-            // Paint result
-            ctxResult.putImageData(dstImgData, 0, 0);
-            
-            // Update State
-            state.resultCanvasW = outW;
-            state.resultCanvasH = outH;
-            
-            // Setup Guide Box default sizes (if first time or larger than canvas)
-            if(state.guide.w === 0 || state.guide.w > outW || state.guide.h > outH) {
-                const gw = Math.round(outW * 0.6);
-                const gh = Math.round(outH * 0.6);
-                state.guide = {
-                    x: Math.round((outW - gw) / 2),
-                    y: Math.round((outH - gh) / 2),
-                    w: gw, h: gh
-                };
-            }
-
-            // Update UI
-            elResultPlaceholder.classList.add('hidden');
-            elResultWrapper.classList.remove('hidden');
-            elInputGuideW.disabled = false;
-            elInputGuideH.disabled = false;
-            elBtnCopy.disabled = false;
-            elBtnDownload.disabled = false;
-            
-            updateGuideInputs();
-            renderGuide();
-            showToast('Corrección aplicada con éxito');
+            ctx.putImageData(out, 0, 0);
+            return true;
         }
 
-        // The export ALWAYS uses `elResultCanvas` inherently bypassing the overlay SVG Guide
-        function downloadImage() {
-            if (state.resultCanvasW === 0) return;
+        // --- Vista previa en vivo ---
+        function schedule() { if (!state.raf) state.raf = requestAnimationFrame(() => { state.raf = 0; render(); }); }
+        function render() {
+            if (!state.loaded) return;
+            computeOut();
+            const { w, h } = state.out, rc = resultContainer.getBoundingClientRect();
+            const disp = Math.max(rc.width, rc.height) * (window.devicePixelRatio || 1);
+            const ps = Math.min(1, (disp > 50 ? Math.min(disp, 2400) : 900) / Math.max(w, h));
+            const q = quadPx(state.pvSrc.width, state.pvSrc.height);
+            if (warp(state.pvSrc, [q.tl, q.tr, q.br, q.bl], Math.max(1, Math.round(w * ps)), Math.max(1, Math.round(h * ps)), resultCanvas)) enhance(resultCanvas, resultCanvas.width / w);
+            layout(); updateGuideUI();
+        }
+
+        // --- Exportación (resolución completa, sin la guía) ---
+        function buildExportCanvas() {
+            computeOut();
+            if (!state.fullSrc) {
+                const c = document.createElement('canvas'); c.width = state.natW; c.height = state.natH;
+                const x = c.getContext('2d', { willReadFrequently: true });
+                x.drawImage(sourceImage, 0, 0);
+                state.fullSrc = x.getImageData(0, 0, c.width, c.height);
+            }
+            const q = quadPx(state.natW, state.natH), cv = document.createElement('canvas');
+            if (!warp(state.fullSrc, [q.tl, q.tr, q.br, q.bl], state.out.w, state.out.h, cv)) return null;
+            enhance(cv, 1);
+            return cv;
+        }
+        function exportProcessedImage() {
+            if (!state.loaded) return;
+            const cv = buildExportCanvas();
+            if (!cv) { showToast('Error', 'Las esquinas forman un cuadrilátero inválido.', 'error'); return; }
             const link = document.createElement('a');
             link.download = `perspektiva_${Date.now()}.png`;
-            link.href = elResultCanvas.toDataURL('image/png');
+            link.href = cv.toDataURL('image/png');
             link.click();
-            showToast('Imagen descargada');
+            showToast('Descarga iniciada', 'La imagen corregida se ha descargado correctamente.', 'success');
         }
-
-        function copyToClipboard() {
-            if (state.resultCanvasW === 0) return;
-            elResultCanvas.toBlob(async (blob) => {
+        async function copyProcessedImageToClipboard() {
+            if (!state.loaded) return;
+            const cv = buildExportCanvas();
+            if (!cv) { showToast('Error', 'Las esquinas forman un cuadrilátero inválido.', 'error'); return; }
+            cv.toBlob(async blob => {
                 try {
                     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-                    showToast('Imagen copiada al portapapeles');
-                } catch (e) {
-                    showToast('Error al copiar. El navegador puede requerir HTTPS o permisos.', 'error');
-                }
-            }, 'image/png');
+                    showToast('Copiado', 'Imagen copiada al portapapeles con éxito.', 'success');
+                } catch (err) { showToast('Error', 'No se pudo copiar al portapapeles debido a restricciones del navegador.', 'error'); }
+            });
         }
 
-        function showToast(msg, type = 'success') {
-            const t = document.getElementById('toast');
-            const m = document.getElementById('toastMsg');
-            const i = t.querySelector('i');
-            m.innerText = msg;
-            
-            if (type === 'error') {
-                i.className = 'fa-solid fa-circle-xmark text-rose-500 mt-0.5 mr-2';
-                t.classList.replace('border-emerald-500', 'border-rose-500');
-            } else {
-                i.className = 'fa-solid fa-circle-check text-emerald-500 mt-0.5 mr-2';
-                t.classList.replace('border-rose-500', 'border-emerald-500');
-            }
+        // --- Mejora de documento ---
+        const ENH = [
+            ['illum', 'Normalizar iluminación / sombras', '%', 0, 100, 1],
+            ['white', 'Punto blanco (recorte de claros)', '%', 0, 5, 0.1],
+            ['bright', 'Brillo', '', -50, 50, 1],
+            ['contrast', 'Contraste', '%', -50, 100, 1],
+            ['sharp', 'Nitidez (cantidad)', '%', 0, 300, 5],
+            ['radius', 'Nitidez (radio)', 'px', 0.5, 3, 0.1],
+            ['thresh', 'Sensibilidad B/N', '%', 0, 30, 1]
+        ];
+        const PRESETS = {
+            original:  { label: 'Original',  illum: 0,  white: 0, bright: 0, contrast: 0,  sharp: 0,   radius: 1.2, thresh: 12, mode: 'color' },
+            documento: { label: 'Documento', illum: 80, white: 1, bright: 0, contrast: 25, sharp: 100, radius: 1.2, thresh: 12, mode: 'color' },
+            grises:    { label: 'Grises',    illum: 80, white: 1, bright: 0, contrast: 25, sharp: 100, radius: 1.2, thresh: 12, mode: 'gray' },
+            bn:        { label: 'B/N',       illum: 80, white: 1, bright: 0, contrast: 20, sharp: 80,  radius: 1.2, thresh: 12, mode: 'bn' }
+        };
 
-            t.classList.remove('translate-x-full', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-x-full', 'opacity-0'), 3000);
+        function buildEnhancePanel() {
+            const btn = "py-2 px-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-medium";
+            $('panelEnhance').innerHTML = `
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-sm text-slate-700 dark:text-slate-200">Mejora de documento</h3>
+                    <button id="btnEnhReset" class="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium"><i class="fa-solid fa-rotate-right mr-1"></i> Restablecer</button>
+                </div>
+                <div class="grid grid-cols-4 gap-2">${Object.entries(PRESETS).map(([k, v]) => `<button data-preset="${k}" class="${btn}">${v.label}</button>`).join('')}</div>
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Modo de salida</label>
+                    <select id="enhMode" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="color">Color</option><option value="gray">Escala de grises</option><option value="bn">Blanco y negro (umbral adaptativo)</option>
+                    </select>
+                </div>
+                ${ENH.map(([id, l, u, mn, mx, st]) => `
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs"><span class="text-slate-600 dark:text-slate-300">${l}</span><span id="enhV_${id}" class="font-mono text-brand-600 dark:text-brand-400"></span></div>
+                    <input type="range" id="enh_${id}" min="${mn}" max="${mx}" step="${st}" class="w-full accent-brand-600">
+                </div>`).join('')}
+                <p class="text-[11px] text-slate-400">Orden: iluminación → punto blanco, brillo y contraste → modo → nitidez → B/N. La normalización también neutraliza tintes de color del papel. Se aplica en la vista previa y en la exportación.</p>`;
+            const upd = () => {
+                ENH.forEach(([id, , u]) => $('enhV_' + id).textContent = $('enh_' + id).value + u);
+                schedule();
+            };
+            const set = k => {
+                const p = PRESETS[k];
+                ENH.forEach(([id]) => $('enh_' + id).value = p[id]);
+                $('enhMode').value = p.mode; upd();
+            };
+            ENH.forEach(([id]) => $('enh_' + id).addEventListener('input', upd));
+            $('enhMode').addEventListener('change', upd);
+            $('panelEnhance').querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => set(b.dataset.preset)));
+            $('btnEnhReset').addEventListener('click', () => set('original'));
+            set('original');
+        }
+
+        function enhParams() {
+            const P = { mode: $('enhMode').value };
+            ENH.forEach(([id]) => P[id] = parseFloat($('enh_' + id).value));
+            return P;
+        }
+
+        // Desenfoque de caja (1 pasada H+V) sobre canal Float32
+        function boxBlur1(a, w, h, r) {
+            const t = new Float32Array(Math.max(w, h)), n = 2 * r + 1;
+            for (let y = 0; y < h; y++) {
+                const o = y * w; let s = 0;
+                for (let i = -r; i <= r; i++) s += a[o + clamp(i, 0, w - 1)];
+                for (let x = 0; x < w; x++) { t[x] = s / n; s += a[o + Math.min(x + r + 1, w - 1)] - a[o + Math.max(x - r, 0)]; }
+                for (let x = 0; x < w; x++) a[o + x] = t[x];
+            }
+            for (let x = 0; x < w; x++) {
+                let s = 0;
+                for (let i = -r; i <= r; i++) s += a[clamp(i, 0, h - 1) * w + x];
+                for (let y = 0; y < h; y++) { t[y] = s / n; s += a[Math.min(y + r + 1, h - 1) * w + x] - a[Math.max(y - r, 0) * w + x]; }
+                for (let y = 0; y < h; y++) a[y * w + x] = t[y];
+            }
+        }
+        function maxFilt(a, w, h, r) { // dilatación: elimina el texto oscuro al estimar el fondo
+            const t = new Float32Array(a.length);
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                let m = 0;
+                for (let i = -r; i <= r; i++) m = Math.max(m, a[y * w + clamp(x + i, 0, w - 1)]);
+                t[y * w + x] = m;
+            }
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                let m = 0;
+                for (let i = -r; i <= r; i++) m = Math.max(m, t[clamp(y + i, 0, h - 1) * w + x]);
+                a[y * w + x] = m;
+            }
+        }
+        function background(cv) { // fondo (papel) estimado, RGBA al tamaño de cv
+            const w = cv.width, h = cv.height, s = Math.min(1, 200 / Math.max(w, h));
+            const sw = Math.max(1, Math.round(w * s)), sh = Math.max(1, Math.round(h * s));
+            const sc = document.createElement('canvas'); sc.width = sw; sc.height = sh;
+            const sx = sc.getContext('2d', { willReadFrequently: true });
+            sx.drawImage(cv, 0, 0, sw, sh);
+            const img = sx.getImageData(0, 0, sw, sh), sd = img.data;
+            for (let c = 0; c < 3; c++) {
+                const a = new Float32Array(sw * sh);
+                for (let i = 0; i < a.length; i++) a[i] = sd[i * 4 + c];
+                maxFilt(a, sw, sh, 3); boxBlur1(a, sw, sh, 5); boxBlur1(a, sw, sh, 5);
+                for (let i = 0; i < a.length; i++) sd[i * 4 + c] = a[i];
+            }
+            for (let i = 0; i < sw * sh; i++) sd[i * 4 + 3] = 255;
+            sx.putImageData(img, 0, 0);
+            const bc = document.createElement('canvas'); bc.width = w; bc.height = h;
+            const bx = bc.getContext('2d', { willReadFrequently: true });
+            bx.imageSmoothingQuality = 'high';
+            bx.drawImage(sc, 0, 0, w, h);
+            return bx.getImageData(0, 0, w, h).data;
+        }
+
+        // f = escala del canvas respecto al tamaño de exportación (para que el radio de nitidez sea coherente)
+        function enhance(cv, f) {
+            const P = enhParams();
+            if (!P.illum && !P.white && !P.bright && !P.contrast && !P.sharp && P.mode === 'color') return;
+            const w = cv.width, h = cv.height, n = w * h, ctx = cv.getContext('2d', { willReadFrequently: true });
+            const img = ctx.getImageData(0, 0, w, h), d = img.data;
+            const lum = i => 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+
+            if (P.illum > 0) { // dividir por el fondo: quita sombras y tintes
+                const bg = background(cv), k = P.illum / 100;
+                for (let i = 0; i < n * 4; i += 4) for (let c = 0; c < 3; c++) {
+                    const v = d[i + c], nv = Math.min(255, v * 255 / Math.max(bg[i + c], 16));
+                    d[i + c] = v + (nv - v) * k;
+                }
+            }
+            let L = 255; // punto blanco: percentil de claros
+            if (P.white > 0) {
+                const hist = new Uint32Array(256);
+                for (let i = 0; i < n * 4; i += 4) hist[Math.round(lum(i))]++;
+                let acc = 0; const lim = n * P.white / 100;
+                for (L = 255; L > 128; L--) { acc += hist[L]; if (acc > lim) break; }
+            }
+            const sc = 255 / Math.max(L, 128), ct = 1 + P.contrast / 100, lut = new Uint8ClampedArray(256);
+            for (let v = 0; v < 256; v++) lut[v] = (v * sc + P.bright * 2.55 - 128) * ct + 128;
+            for (let i = 0; i < n * 4; i += 4) { d[i] = lut[d[i]]; d[i + 1] = lut[d[i + 1]]; d[i + 2] = lut[d[i + 2]]; }
+
+            if (P.mode !== 'color') for (let i = 0; i < n * 4; i += 4) d[i] = d[i + 1] = d[i + 2] = lum(i);
+
+            if (P.sharp > 0) { // máscara de enfoque sobre la luminancia
+                const a = new Float32Array(n);
+                for (let i = 0; i < n; i++) a[i] = lum(i * 4);
+                const b = a.slice(), r = Math.max(1, Math.round(P.radius * f * 0.9)), k = P.sharp / 100;
+                boxBlur1(b, w, h, r); boxBlur1(b, w, h, r);
+                for (let i = 0; i < n; i++) { const dl = k * (a[i] - b[i]), o = i * 4; d[o] += dl; d[o + 1] += dl; d[o + 2] += dl; }
+            }
+            if (P.mode === 'bn') { // umbral adaptativo local (imagen integral)
+                const W1 = w + 1, I = new Uint32Array(W1 * (h + 1));
+                for (let y = 0; y < h; y++) {
+                    let row = 0;
+                    for (let x = 0; x < w; x++) { row += d[(y * w + x) * 4]; I[(y + 1) * W1 + x + 1] = I[y * W1 + x + 1] + row; }
+                }
+                const r = Math.max(8, Math.round(Math.max(w, h) / 40)), t = 1 - P.thresh / 100;
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    const x0 = Math.max(x - r, 0), x1 = Math.min(x + r + 1, w), y0 = Math.max(y - r, 0), y1 = Math.min(y + r + 1, h);
+                    const sum = I[y1 * W1 + x1] - I[y0 * W1 + x1] - I[y1 * W1 + x0] + I[y0 * W1 + x0];
+                    const o = (y * w + x) * 4, v = d[o] * (x1 - x0) * (y1 - y0) < sum * t ? 0 : 255;
+                    d[o] = d[o + 1] = d[o + 2] = v;
+                }
+            }
+            ctx.putImageData(img, 0, 0);
+        }
+
+        // --- Toast ---
+        function showToast(title, message, type = 'success') {
+            const toast = $('toast');
+            $('toastTitle').innerText = title; $('toastMsg').innerText = message;
+            const ic = $('toastIcon'), base = "w-8 h-8 rounded-full text-white flex items-center justify-center text-sm ";
+            if (type === 'success') { ic.className = base + 'bg-emerald-500'; ic.innerHTML = '<i class="fa-solid fa-check"></i>'; }
+            else if (type === 'error') { ic.className = base + 'bg-rose-500'; ic.innerHTML = '<i class="fa-solid fa-xmark"></i>'; }
+            else { ic.className = base + 'bg-brand-500'; ic.innerHTML = '<i class="fa-solid fa-info"></i>'; }
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-x-full', 'opacity-0'), 3500);
         }
     </script>
 </body>
