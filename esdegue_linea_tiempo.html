@@ -401,17 +401,10 @@ titulo:"Guerra Rusia-Ucrania"
 ];
 const gantt=document.getElementById('gantt'), board=document.getElementById('board');
 let eventos = [];
-// Busca exclusivamente esdegue_linea_tiempo.csv: primero junto al HTML y
-// después en la raíz del dominio para permitir su uso en distintas rutas.
+// Busca exclusivamente esdegue_linea_tiempo.csv en la misma carpeta del HTML.
+// Al estar la página en /manuelrarias/, la ruta resultante conserva esa carpeta.
 function obtenerURLsCsv(){
- const pagina=new URL(window.location.href);
- const ruta=pagina.pathname;
- const carpeta=ruta.endsWith('/')?ruta:ruta.slice(0,ruta.lastIndexOf('/')+1);
- const candidatos=[
-  new URL('esdegue_linea_tiempo.csv',pagina.origin+carpeta).href,
-  new URL('/esdegue_linea_tiempo.csv',pagina.origin).href
- ];
- return [...new Set(candidatos)];
+ return [new URL('esdegue_linea_tiempo.csv', window.location.href).href];
 }
 const categoryNames={guerra:'Guerra y conflicto',politica:'Política e institucional',internacional:'Relaciones internacionales',economia:'Economía y sociedad',ciencia:'Ciencia y tecnología'};
 let yearHeight=54, activeChip='todas';
@@ -459,22 +452,20 @@ function parsearCSV(texto){
  return salida;
 }
 async function cargarEventos(){
- let ultimoError='No se encontró un CSV válido.';
- for(const csvURL of obtenerURLsCsv()){
-  try{
-   const respuesta=await fetch(csvURL,{cache:'no-store'});
-   if(!respuesta.ok){ultimoError=`${csvURL} (${respuesta.status})`;continue;}
-   const texto=await respuesta.text();
-   const cargados=parsearCSV(texto);
-   eventos=cargados;
-   console.info(`Línea de tiempo: ${eventos.length} eventos cargados desde ${csvURL}.`);
-   ultimoError='';
-   break;
-  }catch(error){ultimoError=`${csvURL}: ${error.message}`;}
- }
- if(!eventos.length){
+ const csvURL=obtenerURLsCsv()[0];
+ try{
+  const respuesta=await fetch(csvURL,{cache:'no-store'});
+  if(!respuesta.ok)throw new Error(`Error HTTP ${respuesta.status} al cargar ${csvURL}`);
+  // El archivo publicado puede estar codificado en UTF-8 o Windows-1252.
+  const bytes=await respuesta.arrayBuffer();
+  let texto=new TextDecoder('utf-8').decode(bytes);
+  if(texto.includes('\uFFFD'))texto=new TextDecoder('windows-1252').decode(bytes);
+  const cargados=parsearCSV(texto);
+  eventos=cargados;
+  console.info(`Línea de tiempo: ${eventos.length} eventos cargados desde ${csvURL}.`);
+ }catch(error){
   eventos=eventosPorDefecto;
-  console.info(`Se usarán los eventos incluidos por defecto. Motivo: ${ultimoError}`);
+  console.error(`No se pudo cargar el CSV ${csvURL}. Se usarán los eventos incluidos por defecto. Motivo: ${error.message}`);
  }
  document.getElementById('totalStat').textContent=eventos.length;
  render();
