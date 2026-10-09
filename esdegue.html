@@ -3,21 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Vista previa al compartir: Open Graph y Twitter Cards -->
-<meta property="og:type" content="website">
-<meta property="og:locale" content="es_CO">
-<meta property="og:site_name" content="Preparación Examen ESDEGUE">
-<meta property="og:title" content="Preparación Examen ESDEGUE | Simulador de estudio">
-<meta property="og:description" content="Practica y evalúa tus conocimientos para el examen ESDEGUE. Selecciona una materia, responde preguntas y consulta tus resultados, tiempos y progreso.">
-<meta property="og:url" content="REEMPLAZAR_URL_PUBLICA">
-<meta property="og:image" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
-<meta property="og:image:secure_url" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
-<meta property="og:image:alt" content="Escudo de ESDEGUE">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Preparación Examen ESDEGUE | Simulador de estudio">
-<meta name="twitter:description" content="Practica por materias y consulta tus resultados, tiempos y progreso en el simulador de preparación ESDEGUE.">
-<meta name="twitter:image" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
-<meta name="twitter:image:alt" content="Escudo de ESDEGUE">
 <title>Preparación Examen ESDEGUE</title>
 
 <script>
@@ -716,7 +701,7 @@ function renderBank(){
     `<div class="bank-row"><span>${m.icono} ${esc(m.nombre)}</span><b>${cacheMaterias.has(m.key)?cacheMaterias.get(m.key).length:'Sin cargar'}</b></div>`).join('');
 }
 function primeraLinea(texto){
-  return limpiar(texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/)[0].replace(/^\s*#{1,6}\s*/,''));
+  return texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/)[0].trim();
 }
 function parseMateria(texto){
   const lines = texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/).slice(1)
@@ -741,6 +726,7 @@ function parseMateria(texto){
   return out;
 }
 function activarEjemplos(){
+  cacheMaterias.clear();
   MATERIAS = MATERIAS_EJEMPLO.map(m=>({...m}));
   MATERIAS.forEach(m=>{
     const banco=JSON.parse(JSON.stringify(BANCO_EJEMPLO[m.key]));
@@ -749,43 +735,61 @@ function activarEjemplos(){
   });
   bankSource='Preguntas de ejemplo (3 por tema)';
 }
+// Raíz pública de la aplicación: carpeta del HTML, sin dominio fijo.
+const RAIZ_APP = new URL('.', location.href);
+const urlApp = nombre => new URL(nombre, RAIZ_APP).href;
 const ARCHIVOS_BASE = [
-  '/esdegue_estado_mayor.md','/esdegue_estrategia.md',
-  '/esdegue_geografia.md','/esdegue_historia.md','/esdegue_bienes.md'
-];
+  'esdegue_estado_mayor.md','esdegue_estrategia.md',
+  'esdegue_geografia.md','esdegue_historia.md','esdegue_bienes.md'
+].map(urlApp);
 function rutaValida(valor){
   try{
-    const u=new URL(valor,location.origin+'/');
-    return u.origin===location.origin && /^\/esdegue_[a-z0-9_-]+\.md$/i.test(u.pathname)
-      && !u.search && !u.hash ? u.pathname : null;
+    if(typeof valor!=='string') return null;
+    // El manifiesto admite nombres y /nombres relativos a la raíz de la app.
+    const entrada=/^\/esdegue_[a-z0-9_-]+\.md$/i.test(valor)?valor.slice(1):valor;
+    const u=new URL(entrada,RAIZ_APP);
+    const nombre=u.pathname.slice(RAIZ_APP.pathname.length);
+    return u.origin===RAIZ_APP.origin && u.pathname.startsWith(RAIZ_APP.pathname)
+      && /^esdegue_[a-z0-9_-]+\.md$/i.test(nombre) && !u.search && !u.hash ? u.href : null;
   }catch(e){return null;}
+}
+async function consultarIndice(url, procesar){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),5000);
+  try{
+    const r=await fetch(url,{cache:'no-store',signal:controller.signal});
+    if(r.ok) await procesar(r);
+  }catch(e){}finally{clearTimeout(timer);}
 }
 async function descubrirRutas(){
   const rutas=new Set(ARCHIVOS_BASE);
-  await Promise.all([
-    (async()=>{
-      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),5000);
-      try{
-        const r=await fetch('/esdegue_manifest.json',{cache:'no-store',signal:controller.signal});
-        if(!r.ok) return;
-        const data=await r.json();
-        const files=Array.isArray(data)?data:data.archivos;
-        if(Array.isArray(files)) files.forEach(v=>{const p=rutaValida(v);if(p) rutas.add(p);});
-      }catch(e){}finally{clearTimeout(timer);}
-    })(),
-    (async()=>{
-      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),5000);
-      try{
-        const r=await fetch('/',{cache:'no-store',signal:controller.signal});
-        if(!r.ok) return;
-        const doc=new DOMParser().parseFromString(await r.text(),'text/html');
-        doc.querySelectorAll('a[href]').forEach(a=>{
-          const p=rutaValida(a.getAttribute('href'));if(p) rutas.add(p);
-        });
-      }catch(e){}finally{clearTimeout(timer);}
-    })()
-  ]);
-  return [...rutas];
+  const agregar=v=>{const p=rutaValida(v);if(p) rutas.add(p);};
+  const tareas=[
+    consultarIndice(urlApp('esdegue_manifest.json'),async r=>{
+      const data=await r.json();
+      const files=Array.isArray(data)?data:data.archivos;
+      if(Array.isArray(files)) files.forEach(agregar);
+    }),
+    consultarIndice(RAIZ_APP.href,async r=>{
+      const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+      doc.querySelectorAll('a[href]').forEach(a=>agregar(a.getAttribute('href')));
+    })
+  ];
+  // GitHub Pages: descubre archivos nuevos sin modificar el HTML ni un manifiesto.
+  if(/^[a-z0-9-]+\.github\.io$/i.test(location.hostname)){
+    const usuario=location.hostname.split('.')[0];
+    const segmentos=RAIZ_APP.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    const repo=segmentos.shift() || usuario+'.github.io';
+    const carpeta=segmentos.map(encodeURIComponent).join('/');
+    const endpoint='https://api.github.com/repos/'+encodeURIComponent(usuario)+'/'+encodeURIComponent(repo)+'/contents/'+carpeta;
+    tareas.push(consultarIndice(endpoint,async r=>{
+      const files=await r.json();
+      if(Array.isArray(files)) files.filter(f=>f.type==='file').forEach(f=>agregar(f.name));
+    }));
+  }
+  await Promise.all(tareas);
+  const base=new Set(ARCHIVOS_BASE);
+  return [...ARCHIVOS_BASE,...[...rutas].filter(p=>!base.has(p)).sort()];
 }
 async function leerTitulo(ruta){
   const controller=new AbortController();
@@ -793,7 +797,8 @@ async function leerTitulo(ruta){
   let reader;
   try{
     const r=await fetch(ruta,{headers:{Range:'bytes=0-4095'},cache:'no-store',signal:controller.signal});
-    if(!r.ok || !r.body || /text\/html/i.test(r.headers.get('content-type')||'')) return null;
+    if(!r.ok || /text\/html/i.test(r.headers.get('content-type')||'')) return null;
+    if(!r.body) return null;
     reader=r.body.getReader();
     const decoder=new TextDecoder(); let texto='';
     while(true){
@@ -803,7 +808,7 @@ async function leerTitulo(ruta){
     }
     const nombre=primeraLinea(texto);
     if(!nombre || nombre.length>500 || /[<>]/.test(nombre)) return null;
-    const slug=ruta.slice('/esdegue_'.length,-3);
+    const slug=new URL(ruta).pathname.split('/').pop().slice('esdegue_'.length,-3);
     const key=slug==='estado_mayor'?'estadoMayor':slug;
     return {key,nombre,icono:'',ruta};
   }catch(e){return null;}
@@ -1007,8 +1012,8 @@ async function finalizar(){
 /* ---------------- Renderizado ---------------- */
 function renderTabs(){
   const activa = S ? S.materia : (R ? R.materia : null);
-  $('#tabs').innerHTML = MATERIAS.map(m=>`
-    <button type="button" class="tab-btn${m.key===activa?' active':''}" data-tab="${m.key}" aria-pressed="${m.key===activa}">
+  $('#tabs').innerHTML = `<a class="tab-btn" href="${esc(urlApp('esdegue_linea_tiempo.html'))}" style="text-decoration:none;color:inherit"><span class="ico" aria-hidden="true">🕰️</span><span class="t">Línea de Tiempo</span></a>` + MATERIAS.map(m=>`
+    <button type="button" class="tab-btn${m.key===activa?' active':''}" data-tab="${esc(m.key)}" aria-pressed="${m.key===activa}">
       <span class="ico" aria-hidden="true">${m.icono}</span>
       <span><span class="t">${esc(m.nombre)}</span><span class="n">${cacheMaterias.has(m.key) ? cacheMaterias.get(m.key).length : 'Sin cargar'} preguntas</span></span>
     </button>`).join('');
