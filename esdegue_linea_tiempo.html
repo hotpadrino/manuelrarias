@@ -401,21 +401,16 @@ titulo:"Guerra Rusia-Ucrania"
 ];
 const gantt=document.getElementById('gantt'), board=document.getElementById('board');
 let eventos = [];
-// Busca primero un CSV con el mismo nombre que el HTML (por ejemplo,
-// esdegue_linea_tiempo.html -> esdegue_linea_tiempo.csv). Así funciona
-// en GitHub Pages, subcarpetas y sitios con cualquier dominio/ruta.
-// Si no existe, prueba nombres comunes como respaldo.
+// Busca exclusivamente esdegue_linea_tiempo.csv: primero junto al HTML y
+// después en la raíz del dominio para permitir su uso en distintas rutas.
 function obtenerURLsCsv(){
  const pagina=new URL(window.location.href);
  const ruta=pagina.pathname;
  const carpeta=ruta.endsWith('/')?ruta:ruta.slice(0,ruta.lastIndexOf('/')+1);
- const nombre=ruta.slice(ruta.lastIndexOf('/')+1);
- const base=nombre.replace(/\.html?$/i,'');
- const candidatos=[];
- if(base && base!==nombre)candidatos.push(new URL(encodeURIComponent(base)+'.csv',pagina.origin+carpeta).href);
- candidatos.push(new URL('eventos.csv',pagina.origin+carpeta).href);
- // Como último recurso, prueba en la raíz del sitio manteniendo el nombre del HTML.
- if(base && base!==nombre)candidatos.push(new URL('/'+encodeURIComponent(base)+'.csv',pagina.origin).href);
+ const candidatos=[
+  new URL('esdegue_linea_tiempo.csv',pagina.origin+carpeta).href,
+  new URL('/esdegue_linea_tiempo.csv',pagina.origin).href
+ ];
  return [...new Set(candidatos)];
 }
 const categoryNames={guerra:'Guerra y conflicto',politica:'Política e institucional',internacional:'Relaciones internacionales',economia:'Economía y sociedad',ciencia:'Ciencia y tecnología'};
