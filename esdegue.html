@@ -3,6 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Vista previa al compartir: Open Graph y Twitter Cards -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CO">
+<meta property="og:site_name" content="Preparación Examen ESDEGUE">
+<meta property="og:title" content="Preparación Examen ESDEGUE | Simulador de estudio">
+<meta property="og:description" content="Practica y evalúa tus conocimientos para el examen ESDEGUE. Selecciona una materia, responde preguntas y consulta tus resultados, tiempos y progreso.">
+<meta property="og:url" content="REEMPLAZAR_URL_PUBLICA">
+<meta property="og:image" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
+<meta property="og:image:secure_url" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
+<meta property="og:image:alt" content="Escudo de ESDEGUE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Preparación Examen ESDEGUE | Simulador de estudio">
+<meta name="twitter:description" content="Practica por materias y consulta tus resultados, tiempos y progreso en el simulador de preparación ESDEGUE.">
+<meta name="twitter:image" content="https://esdegue.edu.co/sites/default/files/inline-images/escudo%20solo.png">
+<meta name="twitter:image:alt" content="Escudo de ESDEGUE">
 <title>Preparación Examen ESDEGUE</title>
 
 <script>
@@ -384,7 +399,7 @@ footer a:hover{text-decoration:underline}
         <div class="bank-src" id="bankSrc"></div>
         <div id="bankList"></div>
         <div class="side-actions">
-          <button class="btn" type="button" data-global="loadFile">📂 Cargar esdegue.md</button>
+          <button class="btn" type="button" data-global="loadFile">📂 Cargar Markdown</button>
           <button class="btn" type="button" data-global="resetBank">↩ Restaurar preguntas de ejemplo</button>
           <input type="file" id="fileInput" accept=".md,.txt,text/markdown,text/plain" hidden>
         </div>
@@ -414,8 +429,8 @@ footer a:hover{text-decoration:underline}
 <script>
 /* =====================================================================
    BANCOS DE PREGUNTAS (3 por tema por defecto).
-   Para cargar el banco completo use el botón "Cargar esdegue.md"
-   o coloque esdegue.md junto a este archivo (si lo abre desde un servidor).
+   Los bancos públicos se descubren en la raíz y se cargan al seleccionar.
+   La importación manual y las preguntas de ejemplo siguen disponibles.
    ===================================================================== */
 const bancosPreguntas = {
   estadoMayor: [
@@ -465,17 +480,21 @@ const bancosPreguntas = {
 };
 const BANCO_EJEMPLO = JSON.parse(JSON.stringify(bancosPreguntas));
 
-const MATERIAS = [
+const MATERIAS_EJEMPLO = [
   { key:'estadoMayor', nombre:'Estado Mayor Conjunto', icono:'📘' },
   { key:'estrategia',  nombre:'Estrategia',            icono:'🎯' },
   { key:'geografia',   nombre:'Geografía',             icono:'🌎' },
   { key:'historia',    nombre:'Historia',              icono:'📜' }
 ];
+let MATERIAS = [];
+const cacheMaterias = new Map();
+const cargasPendientes = new Map();
+let seleccionando = false;
 const KEYS = {
   theme:'esdegue_theme',
   session:'esdegue_session',
   stats:'esdegue_stats',
-  bank:'esdegue_bank'          // copia del banco cargado desde esdegue.md
+  bank:'esdegue_bank'          // importaciones manuales; caché pública solo en memoria
 };
 
 /* ---------------- Utilidades ---------------- */
@@ -595,7 +614,7 @@ function sesionValida(s){
   return s && Array.isArray(s.preguntas) && s.preguntas.length>0 &&
     Array.isArray(s.resp) && s.resp.length===s.preguntas.length &&
     Array.isArray(s.marks) && s.marks.length===s.preguntas.length &&
-    bancosPreguntas[s.materia] && (s.modo==='practica'||s.modo==='simulacro');
+    MATERIAS.some(m=>m.key===s.materia) && (s.modo==='practica'||s.modo==='simulacro');
 }
 
 /* ---------------- Estadísticas ---------------- */
@@ -627,7 +646,7 @@ function renderStats(){
   $('#statsBody').innerHTML = h;
 }
 
-/* ---------------- Banco: análisis de esdegue.md ---------------- */
+/* ---------------- Banco: importación compatible del formato anterior ---------------- */
 const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
   .replace(/[\s.;:,]+$/,'').replace(/\s+/g,' ').trim();
 const limpiar = s => String(s).replace(/\*\*|__|`/g,'').trim();
@@ -694,27 +713,170 @@ function aplicarBanco(out, origen, guardar){
 function renderBank(){
   $('#bankSrc').textContent = 'Origen: ' + bankSource;
   $('#bankList').innerHTML = MATERIAS.map(m =>
-    `<div class="bank-row"><span>${m.icono} ${esc(m.nombre)}</span><b>${bancosPreguntas[m.key].length}</b></div>`).join('');
+    `<div class="bank-row"><span>${m.icono} ${esc(m.nombre)}</span><b>${cacheMaterias.has(m.key)?cacheMaterias.get(m.key).length:'Sin cargar'}</b></div>`).join('');
+}
+function primeraLinea(texto){
+  return limpiar(texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/)[0].replace(/^\s*#{1,6}\s*/,''));
+}
+function parseMateria(texto){
+  const lines = texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/).slice(1)
+    .map(l=>l.trim()).filter(Boolean);
+  const out=[];
+  const marker = l=> /^(?:#{1,6}\s*)?PREGUNTA\s*$/i.test(l);
+  const cleanOption = l=>limpiar(l.replace(/^(?:[-*+]\s+|[A-D][.)]\s+)/i,''));
+  for(let i=0;i<lines.length;i++){
+    if(!marker(lines[i])) continue;
+    const block=[];
+    while(i+1<lines.length && !marker(lines[i+1])) block.push(lines[++i]);
+    if(block.length!==6) throw new Error('Formato de pregunta inválido');
+    const match=block[5].match(/^RESPUESTA\s*:\s*(.+)$/i);
+    const opciones=block.slice(1,5).map(cleanOption);
+    const respuesta=match && limpiar(match[1]);
+    const correcta=opciones.find(o=>norm(o)===norm(respuesta||''));
+    if(!match || !correcta || opciones.some(o=>!o) || new Set(opciones.map(norm)).size!==4)
+      throw new Error('Respuesta u opciones inválidas');
+    out.push({pregunta:limpiar(block[0]),opciones,correcta});
+  }
+  if(!out.length) throw new Error('Banco vacío');
+  return out;
+}
+function activarEjemplos(){
+  MATERIAS = MATERIAS_EJEMPLO.map(m=>({...m}));
+  MATERIAS.forEach(m=>{
+    const banco=JSON.parse(JSON.stringify(BANCO_EJEMPLO[m.key]));
+    bancosPreguntas[m.key]=banco;
+    cacheMaterias.set(m.key,banco);
+  });
+  bankSource='Preguntas de ejemplo (3 por tema)';
+}
+const ARCHIVOS_BASE = [
+  '/esdegue_estado_mayor.md','/esdegue_estrategia.md',
+  '/esdegue_geografia.md','/esdegue_historia.md','/esdegue_bienes.md'
+];
+function rutaValida(valor){
+  try{
+    const u=new URL(valor,location.origin+'/');
+    return u.origin===location.origin && /^\/esdegue_[a-z0-9_-]+\.md$/i.test(u.pathname)
+      && !u.search && !u.hash ? u.pathname : null;
+  }catch(e){return null;}
+}
+async function descubrirRutas(){
+  const rutas=new Set(ARCHIVOS_BASE);
+  await Promise.all([
+    (async()=>{
+      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),5000);
+      try{
+        const r=await fetch('/esdegue_manifest.json',{cache:'no-store',signal:controller.signal});
+        if(!r.ok) return;
+        const data=await r.json();
+        const files=Array.isArray(data)?data:data.archivos;
+        if(Array.isArray(files)) files.forEach(v=>{const p=rutaValida(v);if(p) rutas.add(p);});
+      }catch(e){}finally{clearTimeout(timer);}
+    })(),
+    (async()=>{
+      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),5000);
+      try{
+        const r=await fetch('/',{cache:'no-store',signal:controller.signal});
+        if(!r.ok) return;
+        const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+        doc.querySelectorAll('a[href]').forEach(a=>{
+          const p=rutaValida(a.getAttribute('href'));if(p) rutas.add(p);
+        });
+      }catch(e){}finally{clearTimeout(timer);}
+    })()
+  ]);
+  return [...rutas];
+}
+async function leerTitulo(ruta){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+  let reader;
+  try{
+    const r=await fetch(ruta,{headers:{Range:'bytes=0-4095'},cache:'no-store',signal:controller.signal});
+    if(!r.ok || !r.body || /text\/html/i.test(r.headers.get('content-type')||'')) return null;
+    reader=r.body.getReader();
+    const decoder=new TextDecoder(); let texto='';
+    while(true){
+      const {value,done}=await reader.read();
+      texto+=done?decoder.decode():decoder.decode(value,{stream:true});
+      if(/[\r\n]/.test(texto) || done || texto.length>4096) break;
+    }
+    const nombre=primeraLinea(texto);
+    if(!nombre || nombre.length>500 || /[<>]/.test(nombre)) return null;
+    const slug=ruta.slice('/esdegue_'.length,-3);
+    const key=slug==='estado_mayor'?'estadoMayor':slug;
+    return {key,nombre,icono:'',ruta};
+  }catch(e){return null;}
+  finally{
+    if(reader) try{await reader.cancel();}catch(e){}
+    controller.abort();clearTimeout(timer);
+  }
+}
+async function detectarMaterias(){
+  bankSource='Buscando archivos Markdown en la raíz';
+  render();
+  const rutas=await descubrirRutas();
+  const materias=(await Promise.all(rutas.map(leerTitulo))).filter(Boolean);
+  if(materias.length){
+    MATERIAS=materias;
+    bankSource='Archivos independientes en la raíz · carga al seleccionar';
+  }else activarEjemplos();
+  render();
+}
+async function cargarMateria(key){
+  if(cacheMaterias.has(key)) return cacheMaterias.get(key);
+  if(cargasPendientes.has(key)) return cargasPendientes.get(key);
+  const materia=MATERIAS.find(m=>m.key===key);
+  if(!materia || !materia.ruta) throw new Error('Materia no disponible');
+  const trabajo=(async()=>{
+    const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),15000);
+    try{
+      const r=await fetch(materia.ruta,{cache:'no-store',signal:controller.signal});
+      if(!r.ok || /text\/html/i.test(r.headers.get('content-type')||'')) throw new Error('Archivo no disponible');
+      const texto=await r.text();
+      const preguntas=parseMateria(texto);
+      cacheMaterias.set(key,preguntas);
+      bancosPreguntas[key]=preguntas;
+      materia.nombre=primeraLinea(texto);
+      return preguntas;
+    }finally{clearTimeout(timer);}
+  })();
+  cargasPendientes.set(key,trabajo);
+  try{return await trabajo;}finally{cargasPendientes.delete(key);}
 }
 async function cargarArchivo(file){
+  if(seleccionando) return;
   try{
-    const texto = await file.text();
-    const r = parseBanco(texto);
-    if(!r.total){ toast('No se encontraron preguntas válidas. Revise el formato del archivo.'); return; }
-    aplicarBanco(r.out, 'Archivo «'+file.name+'»', true);
-    toast(`Banco cargado: ${r.total} preguntas`+(r.omitidas?` (${r.omitidas} omitidas por formato)`:'')+'.');
-    render();
-  }catch(e){ toast('No se pudo leer el archivo.'); }
-}
-async function intentarFetchMd(){
-  try{
-    const resp = await fetch('esdegue.md', {cache:'no-store'});
-    if(!resp.ok) return;
-    const r = parseBanco(await resp.text());
-    if(r.total && aplicarBanco(r.out, 'esdegue.md (junto a esta página)', true)){
-      renderBank(); renderTabs();
+    const texto=await file.text();
+    let entries;
+    // Conserva la importación manual del formato anterior con varios temas.
+    if((texto.match(/^##\s*PREGUNTA/gmi)||[]).length && (texto.match(/^#\s+/gm)||[]).length>1){
+      const r=parseBanco(texto);
+      if(!r.total) throw new Error('Banco vacío');
+      entries=Object.entries(r.out).filter(([,qs])=>qs.length).map(([key,qs])=>({
+        materia:{...MATERIAS_EJEMPLO.find(m=>m.key===key)},qs
+      }));
+    }else{
+      const nombre=primeraLinea(texto);
+      if(!nombre) throw new Error('Título vacío');
+      const ruta=rutaValida('/'+file.name);
+      const slug=ruta?file.name.slice(8,-3):null;
+      const key=slug?(slug==='estado_mayor'?'estadoMayor':slug):'local_'+norm(nombre).replace(/[^a-z0-9]+/g,'_');
+      entries=[{materia:{key,nombre,icono:''},qs:parseMateria(texto)}];
     }
-  }catch(e){ /* abierto como archivo local: se usa el botón de carga */ }
+    if(view==='exam'){
+      const ok=await confirmar('¿Cargar otro banco?','Se cerrará el examen actual. Las estadísticas se conservan.','Cargar','Cancelar');
+      if(!ok)return;
+      stopTimer();S=null;lsDel(KEYS.session);view='home';resetTimer();
+    }
+    entries.forEach(({materia,qs})=>{
+      MATERIAS=MATERIAS.filter(m=>m.key!==materia.key);MATERIAS.push(materia);
+      bancosPreguntas[materia.key]=qs;cacheMaterias.set(materia.key,qs);
+    });
+    R=null;bankSource='Archivo «'+file.name+'»';
+    lsSet(KEYS.bank,{v:2,materias:MATERIAS.filter(m=>!m.ruta).map(m=>({...m,preguntas:cacheMaterias.get(m.key)}))});
+    toast('Banco cargado.');render();
+  }catch(e){toast('No se pudo cargar el archivo. Revise su formato.');}
 }
 
 /* ---------------- Exámenes ---------------- */
@@ -731,7 +893,8 @@ function matches(E,i,f){
 }
 const visibles = E => E.preguntas.map((_,i)=>i).filter(i=>matches(E,i,filtro));
 
-function iniciarExamen(materia, modo){
+async function iniciarExamen(materia, modo){
+  try{ await cargarMateria(materia); }catch(e){ toast('No se pudo cargar esta materia. Inténtelo de nuevo.'); return; }
   const banco = bancosPreguntas[materia];
   if(!banco || !banco.length){ toast('Este tema no tiene preguntas.'); return; }
   const preguntas = shuffle(banco).map(q=>({
@@ -748,18 +911,23 @@ function iniciarExamen(materia, modo){
 }
 
 async function elegirTema(key){
-  if(view==='exam'){
-    if(S.materia===key) return;
-    if(hayProgreso(S)){
-      const ok = await confirmar('¿Cambiar de tema?','Perderá el progreso del examen en curso.','Cambiar de tema','Seguir aquí');
+  if(seleccionando) return;
+  seleccionando=true;
+  try{
+    if(view==='exam' && S.materia===key) return;
+    if(view==='exam' && hayProgreso(S)){
+      const ok=await confirmar('¿Cambiar de tema?','Perderá el progreso del examen en curso.','Cambiar de tema','Seguir aquí');
       if(!ok) return;
     }
-    stopTimer();
-  }
-  iniciarExamen(key, uiMode);
+    $('#tabs').setAttribute('aria-busy','true');
+    try{await cargarMateria(key);}catch(e){toast('No se pudo cargar esta materia. Inténtelo de nuevo.');return;}
+    if(view==='exam') stopTimer();
+    await iniciarExamen(key,uiMode);
+  }finally{seleccionando=false;$('#tabs').removeAttribute('aria-busy');}
 }
 
 async function nuevoExamen(){
+  if(seleccionando) return;
   const materia = S ? S.materia : (R ? R.materia : null);
   if(!materia){ toast('Seleccione un tema para empezar.'); return; }
   if(view==='exam' && hayProgreso(S)){
@@ -842,7 +1010,7 @@ function renderTabs(){
   $('#tabs').innerHTML = MATERIAS.map(m=>`
     <button type="button" class="tab-btn${m.key===activa?' active':''}" data-tab="${m.key}" aria-pressed="${m.key===activa}">
       <span class="ico" aria-hidden="true">${m.icono}</span>
-      <span><span class="t">${esc(m.nombre)}</span><span class="n">${bancosPreguntas[m.key].length} preguntas</span></span>
+      <span><span class="t">${esc(m.nombre)}</span><span class="n">${cacheMaterias.has(m.key) ? cacheMaterias.get(m.key).length : 'Sin cargar'} preguntas</span></span>
     </button>`).join('');
 }
 function renderModes(){
@@ -865,7 +1033,7 @@ function renderHome(){
   $('#stage').innerHTML = `
     <div class="card hero fade">
       <div class="big" aria-hidden="true">🎖️</div>
-      <h2>Seleccione un tema para empezar</h2>
+      <h2>Seleccione un tema para comenzar</h2>
       <p>Elija primero el modo (Práctica o Simulacro) y luego pulse un tema. El examen y el temporizador comienzan en ese momento.</p>
     </div>`;
 }
@@ -1145,10 +1313,11 @@ document.addEventListener('click', async e=>{
   if(a==='newExam') nuevoExamen();
   else if(a==='loadFile') $('#fileInput').click();
   else if(a==='resetBank'){
-    const ok = await confirmar('¿Restaurar preguntas de ejemplo?','Se descartará el banco cargado desde esdegue.md en este navegador. Sus estadísticas no se tocan.','Restaurar','Cancelar');
+    const ok = await confirmar('¿Restaurar preguntas de ejemplo?','Se cerrará el examen actual y se activarán las preguntas de ejemplo. Sus estadísticas no se tocan.','Restaurar','Cancelar');
     if(!ok) return;
-    MATERIAS.forEach(m=>{ bancosPreguntas[m.key] = JSON.parse(JSON.stringify(BANCO_EJEMPLO[m.key])); });
-    lsDel(KEYS.bank); bankSource = 'Preguntas de ejemplo (3 por tema)';
+    if(seleccionando) return;
+    stopTimer(); S=null; R=null; view='home'; lsDel(KEYS.session); resetTimer();
+    activarEjemplos(); lsDel(KEYS.bank);
     toast('Banco de ejemplo restaurado.'); render();
   }
   else if(a==='clearStats'){
@@ -1204,11 +1373,19 @@ $('#logo').addEventListener('error', function(){
 async function init(){
   aplicarTema(document.documentElement.getAttribute('data-theme')||'light', false);
 
-  const guardado = lsGet(KEYS.bank, null);
-  if(guardado && typeof guardado==='object') aplicarBanco(guardado, 'esdegue.md (guardado en este navegador)', false);
-
-  render();
   resetTimer();
+  await detectarMaterias();
+  // Solo restaura importaciones manuales cuando no hay bancos públicos.
+  const guardado=lsGet(KEYS.bank,null);
+  if(!MATERIAS.some(m=>m.ruta) && guardado && guardado.v===2 && Array.isArray(guardado.materias)){
+    guardado.materias.forEach(m=>{
+      if(!m.key || !m.nombre || !Array.isArray(m.preguntas) || !m.preguntas.length) return;
+      MATERIAS=MATERIAS.filter(x=>x.key!==m.key);
+      MATERIAS.push({key:m.key,nombre:m.nombre,icono:m.icono||''});
+      bancosPreguntas[m.key]=m.preguntas;cacheMaterias.set(m.key,m.preguntas);
+    });
+    bankSource='Importación manual guardada';render();
+  }
 
   const s = lsGet(KEYS.session, null);
   if(sesionValida(s)){
@@ -1224,11 +1401,11 @@ async function init(){
       render('#qTitle', true);
     }else{
       uiMode = s.modo;
-      iniciarExamen(s.materia, s.modo);
+      await iniciarExamen(s.materia, s.modo);
     }
   }else if(s){ lsDel(KEYS.session); }
 
-  intentarFetchMd();
+
 }
 init();
 </script>
