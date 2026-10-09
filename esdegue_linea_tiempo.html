@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101b35">
+<title>Línea de tiempo | Colombia y el mundo</title>
+<style>
+:root{--navy:#101b35;--navy2:#19294b;--ink:#1c2740;--muted:#68748b;--paper:#f4f6fb;--line:#dce2ee;--war:#d94752;--politics:#3478df;--intl:#8957c8;--economy:#d88718;--science:#27966c;--year-h:54px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.hero{background:radial-gradient(ellipse at 85% 10%,#314c7d 0,transparent 38%),linear-gradient(125deg,#101b35,#1b2e53);color:#fff;padding:32px clamp(18px,4vw,58px) 28px}
+.hero-inner{max-width:1600px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.17em;font-size:11px;font-weight:800;color:#b6c8ed}.hero h1{font-size:clamp(27px,4vw,44px);line-height:1.08;letter-spacing:-.035em;margin:9px 0 10px}.hero p{max-width:650px;margin:0;color:#d2dbeb;font-size:15px}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.stat{padding:10px 14px;border:1px solid #ffffff25;background:#ffffff0d;border-radius:12px;min-width:120px}.stat strong{display:block;font-size:20px}.stat span{font-size:11px;color:#c3cfe3}
+main{max-width:1600px;margin:auto;padding:20px clamp(12px,2.5vw,34px) 32px}.toolbar{position:sticky;top:0;z-index:20;background:#f4f6fbeb;backdrop-filter:blur(14px);padding:12px 0 14px;border-bottom:1px solid var(--line)}
+.controls{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(3,minmax(130px,.7fr)) auto;gap:9px}.field{min-width:0}.field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:var(--muted);margin:0 0 5px 3px}.field input,.field select{width:100%;height:42px;border:1px solid #d7deeb;border-radius:11px;background:#fff;color:var(--ink);padding:0 12px;font:inherit;outline:none}.field input:focus,.field select:focus{border-color:#6588d7;box-shadow:0 0 0 3px #3478df1a}.reset{align-self:end;height:42px;border:0;border-radius:11px;padding:0 15px;background:var(--navy);color:#fff;font-weight:750;cursor:pointer}.reset:hover{background:#263d68}
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.chip{border:1px solid #d9e0ec;background:#fff;color:#42506b;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px}.chip[aria-pressed=true]{background:#e7edfb;border-color:#9db4e9;color:#203f82}.dot{width:8px;height:8px;border-radius:50%;display:inline-block}.summary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 10px;color:var(--muted);font-size:12px}.summary strong{color:var(--ink)}.zoom{display:flex;align-items:center;gap:5px}.zoom button{width:32px;height:30px;border:1px solid var(--line);border-radius:8px;background:white;cursor:pointer;font-weight:bold}.board{overflow:auto;border:1px solid #dce2ee;border-radius:16px;background:#fff;box-shadow:0 8px 28px #1828490a;max-height:calc(100vh - 235px);min-height:380px}
+.wrapper{display:grid;grid-template-columns:68px minmax(300px,1fr) minmax(300px,1fr);min-width:740px;position:relative}
+.column-head{position:sticky;top:0;z-index:10;padding:14px 16px;background:#fff;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.12em;font-weight:900;text-transform:uppercase;color:#273958}.column-head span{display:inline-flex;align-items:center;gap:8px}.flag{width:9px;height:9px;border-radius:3px;background:#3478df}.world .flag{background:#8957c8}.year-axis{position:relative;border-right:1px solid var(--line);background:#f8f9fc}.year-label{position:absolute;left:0;right:0;height:var(--year-h);display:flex;justify-content:center;padding-top:5px;font-size:11px;font-weight:750;color:#6c7890;border-bottom:1px solid #edf0f6}.year-label.major{color:#263958;background:#eef2fa;font-size:12px;font-weight:900}.year-label.century{font-size:11px;writing-mode:horizontal-tb;align-items:flex-start;padding-top:2px}
+.timeline{position:relative;border-right:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--year-h) - 1px),#edf0f6 calc(var(--year-h) - 1px),#edf0f6 var(--year-h));background-color:#fff}.timeline:last-child{border-right:0}.event{position:absolute;border:0;border-left:4px solid var(--event-color);border-radius:8px;background:var(--event-bg);padding:7px 9px 6px;color:#202b42;box-shadow:0 2px 6px #1726470d;overflow:hidden;cursor:pointer;text-align:left;transition:box-shadow .15s,transform .15s;min-height:35px}.event.search-hit{outline:3px solid #172e5c;outline-offset:2px;z-index:8;box-shadow:0 0 0 5px #3478df35}.event:hover,.event:focus-visible{z-index:5;box-shadow:0 5px 16px #17264722;transform:translateY(-1px);outline:2px solid var(--event-color);outline-offset:1px}.event .title{font-size:11px;line-height:1.25;font-weight:800;display:block}.event .date{display:block;margin-top:3px;color:#58657b;font-size:9px;line-height:1.25}.event.guerra{--event-color:var(--war);--event-bg:#fff0f1}.event.politica{--event-color:var(--politics);--event-bg:#edf4ff}.event.internacional{--event-color:var(--intl);--event-bg:#f4efff}.event.economia{--event-color:var(--economy);--event-bg:#fff5e5}.event.ciencia{--event-color:var(--science);--event-bg:#eaf8f1}.event[hidden]{display:none}
+.empty{display:none;text-align:center;padding:40px 20px;color:var(--muted)}.empty.show{display:block}
+footer{background:var(--navy);color:#c8d2e5;padding:22px;text-align:center;font-size:13px}footer a{color:#fff;text-decoration:none;font-weight:850;border-bottom:1px solid #8ca7dc;padding-bottom:2px}footer a:hover{color:#b8ccff}
+dialog{border:0;border-radius:18px;padding:0;width:min(520px,calc(100% - 28px));box-shadow:0 20px 70px #0b173855;color:var(--ink)}dialog::backdrop{background:#0d1835a6;backdrop-filter:blur(3px)}.modal-head{padding:22px 24px 16px;background:var(--navy);color:white}.modal-head small{color:#b9c9e6;text-transform:uppercase;letter-spacing:.12em;font-weight:800}.modal-head h2{margin:7px 0 0;font-size:24px;line-height:1.2}.modal-body{padding:20px 24px}.modal-body p{margin:0 0 10px}.modal-actions{display:flex;justify-content:flex-end;padding:0 24px 22px}.modal-actions button{background:var(--navy);color:white;border:0;border-radius:9px;padding:10px 16px;font-weight:750;cursor:pointer}
+@media(max-width:850px){.controls{grid-template-columns:1fr 1fr}.field.search{grid-column:1/-1}.reset{width:100%}.board{max-height:calc(100vh - 300px)}.hero{padding-top:25px}.stats{gap:7px}.stat{min-width:100px;flex:1}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="hero-inner">
+<div class="eyebrow">Explorador histórico · 1490—2035</div>
+<h1>Colombia y el mundo<br>en perspectiva</h1>
+<p>Explora los acontecimientos que marcaron la historia. Busca, filtra por categoría y lugar, y selecciona un evento para consultar sus fechas.</p>
+<div class="stats"><div class="stat"><strong id="totalStat">—</strong><span>acontecimientos</span></div><div class="stat"><strong>545 años</strong><span>de recorrido histórico</span></div><div class="stat"><strong>2 ámbitos</strong><span>Colombia y mundo</span></div></div>
+</div></header>
+<main>
+<section class="toolbar" aria-label="Filtros de la línea de tiempo">
+<div class="controls">
+<div class="field search"><label for="search">Buscar acontecimiento</label><input id="search" type="search" placeholder="Ej. Independencia, guerra, Luna…" autocomplete="off"></div>
+<div class="field"><label for="place">Ámbito</label><select id="place"><option value="todos">Colombia y mundo</option><option value="colombia">Colombia</option><option value="mundo">Mundo</option></select></div>
+<div class="field"><label for="year">Año</label><select id="year"><option value="todos">Todos los años</option></select></div>
+<div class="field"><label for="category">Categoría</label><select id="category"><option value="todas">Todas</option><option value="guerra">Guerra y conflicto</option><option value="politica">Política e institucional</option><option value="internacional">Relaciones internacionales</option><option value="economia">Economía y sociedad</option><option value="ciencia">Ciencia y tecnología</option></select></div>
+<button class="reset" id="reset" type="button">Restablecer</button>
+</div>
+<div class="legend" aria-label="Filtrar por categoría">
+<button class="chip" data-cat="guerra" aria-pressed="false"><i class="dot" style="background:var(--war)"></i> Guerra y conflicto</button>
+<button class="chip" data-cat="politica" aria-pressed="false"><i class="dot" style="background:var(--politics)"></i> Política e institucional</button>
+<button class="chip" data-cat="internacional" aria-pressed="false"><i class="dot" style="background:var(--intl)"></i> Relaciones internacionales</button>
+<button class="chip" data-cat="economia" aria-pressed="false"><i class="dot" style="background:var(--economy)"></i> Economía y sociedad</button>
+<button class="chip" data-cat="ciencia" aria-pressed="false"><i class="dot" style="background:var(--science)"></i> Ciencia y tecnología</button>
+</div>
+</section>
+<div class="summary"><div><strong id="resultCount">—</strong> <span id="resultLabel">acontecimientos visibles</span></div><div class="zoom"><span>Escala</span><button id="zoomOut" type="button" aria-label="Reducir escala">−</button><button id="zoomIn" type="button" aria-label="Ampliar escala">+</button></div></div>
+<div class="board" id="board" tabindex="0" aria-label="Línea de tiempo desplazable">
+<div class="wrapper" id="gantt">
+<div class="column-head">Año</div><div class="column-head"><span><i class="flag"></i> Colombia</span></div><div class="column-head world"><span><i class="flag"></i> Mundo</span></div>
+</div></div>
+<div class="empty" id="empty">No se encontraron acontecimientos con esos filtros. Prueba otra búsqueda.</div>
+</main>
+<footer>Desarrollado por <a href="https://novaelix.vercel.app/" target="_blank" rel="noopener noreferrer">NovaElix</a></footer>
+<dialog id="detail"><div class="modal-head"><small id="modalMeta">Acontecimiento histórico</small><h2 id="modalTitle"></h2></div><div class="modal-body"><p id="modalDates"></p><p id="modalDuration"></p></div><div class="modal-actions"><button id="closeModal" type="button">Cerrar</button></div></dialog>
+<script>
+const START_YEAR=1490,END_YEAR=2035;
+const eventosPorDefecto = [
+
+{
+inicio:"1550-01-01",
+fin:"1810-07-20",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Época Colonial"
+},
+
+{
+inicio:"1739-10-23",
+fin:"1748-10-18",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Guerra de la Oreja de Jenkins"
+},
+
+{
+inicio:"1776-07-04",
+fin:"1783-09-03",
+categoria:"internacional",
+lugar:"mundo",
+titulo:"Independencia de EE.UU."
+},
+
+{
+inicio:"1781-03-16",
+fin:"1781-10-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Comuneros"
+},
+
+{
+inicio:"1789-05-05",
+fin:"1799-11-09",
+categoria:"politica",
+lugar:"mundo",
+titulo:"Revolución Francesa"
+},
+
+{
+inicio:"1804-01-01",
+fin:"1804-01-01",
+categoria:"politica",
+lugar:"mundo",
+titulo:"Independencia de Haití"
+},
+
+{
+inicio:"1808-05-02",
+fin:"1814-04-11",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Invasión Napoleónica a España"
+},
+
+{
+inicio:"1810-07-20",
+fin:"1810-07-20",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Grito de Independencia"
+},
+
+{
+inicio:"1810-07-20",
+fin:"1816-05-06",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Patria Boba"
+},
+
+{
+inicio:"1815-01-01",
+fin:"1819-08-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Reconquista Española"
+},
+
+{
+inicio:"1819-05-01",
+fin:"1819-08-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Campaña Libertadora"
+},
+
+{
+inicio:"1819-08-07",
+fin:"1819-08-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Batalla de Boyacá"
+},
+
+{
+inicio:"1819-12-17",
+fin:"1831-11-21",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Gran Colombia"
+},
+
+{
+inicio:"1839-06-30",
+fin:"1842-01-29",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Guerra de los Supremos"
+},
+
+{
+inicio:"1846-04-25",
+fin:"1848-02-02",
+categoria:"internacional",
+lugar:"mundo",
+titulo:"Guerra México-EE.UU."
+},
+
+{
+inicio:"1861-04-25",
+fin:"1865-05-09",
+categoria:"internacional",
+lugar:"mundo",
+titulo:"Guerra Civil Estadounidense"
+},
+
+{
+inicio:"1899-10-17",
+fin:"1902-11-21",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Guerra de los Mil Días"
+},
+
+{
+inicio:"1903-11-03",
+fin:"1903-11-03",
+categoria:"internacional",
+lugar:"colombia",
+titulo:"Separación de Panamá"
+},
+
+{
+inicio:"1911-07-10",
+fin:"1911-07-12",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Combate de La Pedrera"
+},
+
+{
+inicio:"1914-07-28",
+fin:"1918-11-11",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Primera Guerra Mundial"
+},
+
+{
+inicio:"1929-10-24",
+fin:"1939-09-01",
+categoria:"economia",
+lugar:"mundo",
+titulo:"Gran Depresión"
+},
+
+{
+inicio:"1932-09-01",
+fin:"1933-05-25",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Guerra Colombo-Peruana"
+},
+
+{
+inicio:"1939-09-01",
+fin:"1945-09-02",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Segunda Guerra Mundial"
+},
+
+{
+inicio:"1948-04-09",
+fin:"1948-04-09",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Bogotazo"
+},
+
+{
+inicio:"1948-04-09",
+fin:"1958-12-01",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"La Violencia"
+},
+
+{
+inicio:"1950-06-25",
+fin:"1953-07-27",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra de Corea"
+},
+
+{
+inicio:"1958-08-07",
+fin:"1974-08-07",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Frente Nacional"
+},
+
+{
+inicio:"1962-10-16",
+fin:"1962-10-28",
+categoria:"internacional",
+lugar:"mundo",
+titulo:"Crisis de los Misiles"
+},
+
+{
+inicio:"1964-05-27",
+fin:"1964-05-27",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Operación Marquetalia"
+},
+
+{
+inicio:"1967-06-05",
+fin:"1967-06-10",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra de los Seis Días"
+},
+
+{
+inicio:"1969-07-20",
+fin:"1969-07-20",
+categoria:"ciencia",
+lugar:"mundo",
+titulo:"Llegada a la Luna"
+},
+
+{
+inicio:"1973-10-06",
+fin:"1973-10-25",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra del Yom Kippur"
+},
+
+{
+inicio:"1982-04-02",
+fin:"1982-06-14",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra de las Malvinas"
+},
+
+{
+inicio:"1985-11-06",
+fin:"1985-11-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Palacio de Justicia"
+},
+
+{
+inicio:"1989-11-09",
+fin:"1989-11-09",
+categoria:"politica",
+lugar:"mundo",
+titulo:"Caída del Muro de Berlín"
+},
+
+{
+inicio:"1991-07-04",
+fin:"1991-07-04",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Constitución de 1991"
+},
+
+{
+inicio:"2001-09-11",
+fin:"2001-09-11",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Atentados 11-S"
+},
+
+{
+inicio:"2001-10-07",
+fin:"2021-08-30",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra de Afganistán"
+},
+
+{
+inicio:"2002-08-07",
+fin:"2010-08-07",
+categoria:"guerra",
+lugar:"colombia",
+titulo:"Seguridad Democrática"
+},
+
+{
+inicio:"2012-09-04",
+fin:"2016-11-24",
+categoria:"politica",
+lugar:"colombia",
+titulo:"Proceso de Paz FARC"
+},
+
+{
+inicio:"2020-03-11",
+fin:"2023-05-05",
+categoria:"economia",
+lugar:"mundo",
+titulo:"COVID-19"
+},
+
+{
+inicio:"2022-02-24",
+fin:"2030-01-01",
+categoria:"guerra",
+lugar:"mundo",
+titulo:"Guerra Rusia-Ucrania"
+}
+
+];
+const gantt=document.getElementById('gantt'), board=document.getElementById('board');
+let eventos = [];
+const CSV_FILENAME = 'eventos.csv';
+const categoryNames={guerra:'Guerra y conflicto',politica:'Política e institucional',internacional:'Relaciones internacionales',economia:'Economía y sociedad',ciencia:'Ciencia y tecnología'};
+let yearHeight=54, activeChip='todas';
+const INITIAL_YEAR=1900;
+const yearSelect=document.getElementById('year');
+for(let y=START_YEAR;y<=END_YEAR;y++){const o=document.createElement('option');o.value=String(y);o.textContent=y;yearSelect.append(o)}
+const parseDate=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const yPosition=s=>{const d=parseDate(s);return ((d.getFullYear()-START_YEAR)+(d.getMonth()/12)+(d.getDate()-1)/(365.25))*yearHeight};
+function jumpToYear(year){const top=47+(year-START_YEAR)*yearHeight;board.scrollTo({top:Math.max(0,top-board.clientHeight*.12),behavior:'smooth'})}
+function jumpToFirstMatch(){const first=[...gantt.querySelectorAll('.event:not([hidden])')].sort((a,b)=>a.dataset.start.localeCompare(b.dataset.start))[0];if(!first)return;const br=board.getBoundingClientRect(),er=first.getBoundingClientRect();board.scrollTo({top:board.scrollTop+er.top-br.top-board.clientHeight/2+er.height/2,behavior:'smooth'});first.classList.add('search-hit');setTimeout(()=>first.classList.remove('search-hit'),1300)}
+const fmt=s=>parseDate(s).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+function duration(a,b){const days=Math.max(0,Math.round((parseDate(b)-parseDate(a))/86400000));if(days===0)return 'Hito de un día';const years=Math.floor(days/365.2425),months=Math.floor((days-years*365.2425)/30.44);if(years)return `Duración aproximada: ${years} año${years===1?'':'s'}${months?` y ${months} mes${months===1?'':'es'}`:''}`;if(months)return `Duración aproximada: ${months} mes${months===1?'':'es'}`;return `Duración aproximada: ${days} días`}
+function normalizarCategoria(valor){
+ const s=String(valor||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ if(s.includes('guerra')||s.includes('conflicto'))return 'guerra';
+ if(s.includes('politica')||s.includes('institucional'))return 'politica';
+ if(s.includes('internacional')||s.includes('relaciones'))return 'internacional';
+ if(s.includes('economia')||s.includes('sociedad'))return 'economia';
+ if(s.includes('ciencia')||s.includes('tecnologia'))return 'ciencia';
+ return 'politica';
+}
+function fechaCSV(valor){
+ const v=String(valor||'').trim();
+ const m=v.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+ if(!m)return '';
+ return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+}
+function parsearCSV(texto){
+ const lineas=texto.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
+ if(lineas.length<2)throw new Error('El CSV no contiene filas de eventos.');
+ const dividir=linea=>{const out=[];let campo='',comillas=false;for(let i=0;i<linea.length;i++){const ch=linea[i];if(ch==='"'&&linea[i+1]==='"'&&comillas){campo+='"';i++}else if(ch==='"'){comillas=!comillas}else if(ch===';'&&!comillas){out.push(campo.trim());campo=''}else campo+=ch}out.push(campo.trim());return out};
+ const encabezados=dividir(lineas[0]).map(x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+ const idx={inicio:encabezados.indexOf('fecha inicio'),fin:encabezados.indexOf('fecha fin'),categoria:encabezados.indexOf('categoria'),colombia:encabezados.indexOf('colombia'),mundo:encabezados.indexOf('mundo')};
+ if(Object.values(idx).some(i=>i<0))throw new Error('Faltan columnas requeridas en el CSV.');
+ const salida=[];
+ for(const linea of lineas.slice(1)){
+  const c=dividir(linea),inicio=fechaCSV(c[idx.inicio]),fin=fechaCSV(c[idx.fin]);
+  if(!inicio||!fin)continue;
+  const categoria=normalizarCategoria(c[idx.categoria]);
+  for(const [lugar,col] of [['colombia',idx.colombia],['mundo',idx.mundo]]){
+   const titulo=(c[col]||'').trim();if(titulo)salida.push({inicio,fin,categoria,lugar,titulo});
+  }
+ }
+ if(!salida.length)throw new Error('No se encontraron eventos válidos en el CSV.');
+ return salida;
+}
+async function cargarEventos(){
+ try{
+  const respuesta=await fetch(CSV_FILENAME,{cache:'no-store'});
+  if(!respuesta.ok)throw new Error(`No se pudo cargar ${CSV_FILENAME} (${respuesta.status}).`);
+  eventos=parsearCSV(await respuesta.text());
+  console.info(`Línea de tiempo: ${eventos.length} eventos cargados desde ${CSV_FILENAME}.`);
+ }catch(error){
+  eventos=eventosPorDefecto;
+  console.info(`Se usarán los eventos incluidos por defecto. Motivo: ${error.message}`);
+ }
+ document.getElementById('totalStat').textContent=eventos.length;
+ render();
+ requestAnimationFrame(()=>jumpToYear(INITIAL_YEAR));
+}
+function makeEvent(ev){const b=document.createElement('button');b.type='button';b.className=`event ${ev.categoria}`;b.dataset.place=ev.lugar;b.dataset.category=ev.categoria;b.dataset.title=ev.titulo.toLocaleLowerCase('es');b.dataset.start=ev.inicio;b.dataset.end=ev.fin;b.innerHTML=`<span class="title"></span><span class="date"></span>`;b.querySelector('.title').textContent=ev.titulo;b.querySelector('.date').textContent=ev.inicio===ev.fin?fmt(ev.inicio):`${fmt(ev.inicio)} – ${fmt(ev.fin)}`;b.setAttribute('aria-label',`${ev.titulo}, ${fmt(ev.inicio)}${ev.inicio!==ev.fin?' hasta '+fmt(ev.fin):''}. Ver detalles`);b.addEventListener('click',()=>openDetail(ev));return b}
+const axis=document.createElement('div');axis.className='year-axis';
+const columns={colombia:document.createElement('div'),mundo:document.createElement('div')};
+for(const key of Object.keys(columns)){columns[key].className='timeline';columns[key].dataset.place=key}
+function render(){document.documentElement.style.setProperty('--year-h',yearHeight+'px');axis.innerHTML='';gantt.querySelectorAll('.year-axis,.timeline').forEach(n=>n.remove());const totalHeight=(END_YEAR-START_YEAR+1)*yearHeight;
+axis.style.height=totalHeight+'px';for(let y=START_YEAR;y<=END_YEAR;y++){const n=document.createElement('div');n.className='year-label';n.style.top=((y-START_YEAR)*yearHeight)+'px';if(yearHeight<=5){if(y%100!==0)continue;n.classList.add('century','major');n.textContent=(Math.floor(y/100)*100)+'s'}else if(yearHeight<=14){if(y%10!==0)continue;n.classList.add('major');n.textContent=y+'s'}else{n.textContent=y;if(y%10===0)n.classList.add('major')}axis.append(n)}gantt.append(axis);
+for(const key of Object.keys(columns)){const c=columns[key];c.innerHTML='';c.style.height=totalHeight+'px';gantt.append(c)}
+// Place events into non-overlapping horizontal lanes within each geographic column.
+for(const key of Object.keys(columns)){const items=eventos.filter(e=>e.lugar===key).sort((a,b)=>a.inicio.localeCompare(b.inicio)||b.fin.localeCompare(a.fin));const lanes=[];
+for(const ev of items){const top=yPosition(ev.inicio), bottom=Math.max(yPosition(ev.fin),top+Math.max(yearHeight<=5?7:yearHeight<=14?13:35,yearHeight*.72));let lane=lanes.findIndex(end=>end<=top+2);if(lane<0){lane=lanes.length;lanes.push(0)}lanes[lane]=bottom+3;ev.__lane=lane;ev.__top=top;ev.__bottom=bottom}
+const laneCount=Math.max(1,lanes.length);items.forEach(ev=>{const b=makeEvent(ev);b.style.top=ev.__top+'px';b.style.height=Math.max(yearHeight<=5?8:yearHeight<=14?14:35,ev.__bottom-ev.__top)+'px';b.style.left=`calc(${ev.__lane} * (100% / ${laneCount}) + 4px)`;b.style.width=`calc(100% / ${laneCount} - 8px)`;b.style.minWidth='0';columns[key].append(b)})}
+applyFilters()}
+function applyFilters(shouldJump=false){const q=document.getElementById('search').value.trim().toLocaleLowerCase('es'),place=document.getElementById('place').value,year=document.getElementById('year').value,cat=document.getElementById('category').value;let count=0;
+gantt.querySelectorAll('.event').forEach(b=>{const matchQ=!q||b.dataset.title.includes(q)||b.dataset.start.includes(q)||b.dataset.end.includes(q),matchP=place==='todos'||b.dataset.place===place,matchY=year==='todos'||(Number(b.dataset.start.slice(0,4))<=Number(year)&&Number(b.dataset.end.slice(0,4))>=Number(year)),matchC=(cat==='todas'||b.dataset.category===cat)&&(activeChip==='todas'||b.dataset.category===activeChip);b.hidden=!(matchQ&&matchP&&matchY&&matchC);if(!b.hidden)count++});
+document.getElementById('resultCount').textContent=count;document.getElementById('resultLabel').textContent=count===1?'acontecimiento visible':'acontecimientos visibles';document.getElementById('empty').classList.toggle('show',count===0);document.getElementById('board').style.display=count?'':'none';if(shouldJump&&q&&count)requestAnimationFrame(jumpToFirstMatch)}
+function openDetail(ev){document.getElementById('modalMeta').textContent=`${ev.lugar==='colombia'?'Colombia':'Mundo'} · ${categoryNames[ev.categoria]}`;document.getElementById('modalTitle').textContent=ev.titulo;document.getElementById('modalDates').textContent=ev.inicio===ev.fin?`Fecha: ${fmt(ev.inicio)}`:`Periodo: ${fmt(ev.inicio)} — ${fmt(ev.fin)}`;document.getElementById('modalDuration').textContent=duration(ev.inicio,ev.fin);document.getElementById('detail').showModal()}
+['search','place','year','category'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',()=>{if(id==='category')activeChip='todas';document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.cat===activeChip)));applyFilters(id==='search')}));
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{activeChip=activeChip===c.dataset.cat?'todas':c.dataset.cat;document.getElementById('category').value='todas';document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.cat===activeChip)));applyFilters()}));
+document.getElementById('reset').addEventListener('click',()=>{document.getElementById('search').value='';document.getElementById('place').value='todos';document.getElementById('year').value='todos';document.getElementById('category').value='todas';activeChip='todas';document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed','false'));applyFilters()});
+document.getElementById('zoomIn').addEventListener('click',()=>{yearHeight=yearHeight<10?14:yearHeight<24?30:Math.min(100,yearHeight+10);render()});document.getElementById('zoomOut').addEventListener('click',()=>{yearHeight=yearHeight>30?yearHeight-10:yearHeight>14?14:yearHeight>5?5:5;render()});document.getElementById('closeModal').addEventListener('click',()=>document.getElementById('detail').close());document.getElementById('detail').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+cargarEventos();
+</script>
+</body></html>
