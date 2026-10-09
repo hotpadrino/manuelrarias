@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101b35">
+<link rel="icon" href="data:,">
 <title>Línea de tiempo | Colombia y el mundo</title>
 <style>
 :root{--navy:#101b35;--navy2:#19294b;--ink:#1c2740;--muted:#68748b;--paper:#f4f6fb;--line:#dce2ee;--war:#d94752;--politics:#3478df;--intl:#8957c8;--economy:#d88718;--science:#27966c;--year-h:54px}
@@ -400,7 +401,23 @@ titulo:"Guerra Rusia-Ucrania"
 ];
 const gantt=document.getElementById('gantt'), board=document.getElementById('board');
 let eventos = [];
-const CSV_FILENAME = 'esdegue_linea_tiempo.csv';
+// Busca primero un CSV con el mismo nombre que el HTML (por ejemplo,
+// esdegue_linea_tiempo.html -> esdegue_linea_tiempo.csv). Así funciona
+// en GitHub Pages, subcarpetas y sitios con cualquier dominio/ruta.
+// Si no existe, prueba nombres comunes como respaldo.
+function obtenerURLsCsv(){
+ const pagina=new URL(window.location.href);
+ const ruta=pagina.pathname;
+ const carpeta=ruta.endsWith('/')?ruta:ruta.slice(0,ruta.lastIndexOf('/')+1);
+ const nombre=ruta.slice(ruta.lastIndexOf('/')+1);
+ const base=nombre.replace(/\.html?$/i,'');
+ const candidatos=[];
+ if(base && base!==nombre)candidatos.push(new URL(encodeURIComponent(base)+'.csv',pagina.origin+carpeta).href);
+ candidatos.push(new URL('eventos.csv',pagina.origin+carpeta).href);
+ // Como último recurso, prueba en la raíz del sitio manteniendo el nombre del HTML.
+ if(base && base!==nombre)candidatos.push(new URL('/'+encodeURIComponent(base)+'.csv',pagina.origin).href);
+ return [...new Set(candidatos)];
+}
 const categoryNames={guerra:'Guerra y conflicto',politica:'Política e institucional',internacional:'Relaciones internacionales',economia:'Economía y sociedad',ciencia:'Ciencia y tecnología'};
 let yearHeight=54, activeChip='todas';
 const INITIAL_YEAR=1900;
@@ -431,7 +448,7 @@ function parsearCSV(texto){
  const lineas=texto.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim());
  if(lineas.length<2)throw new Error('El CSV no contiene filas de eventos.');
  const dividir=linea=>{const out=[];let campo='',comillas=false;for(let i=0;i<linea.length;i++){const ch=linea[i];if(ch==='"'&&linea[i+1]==='"'&&comillas){campo+='"';i++}else if(ch==='"'){comillas=!comillas}else if(ch===';'&&!comillas){out.push(campo.trim());campo=''}else campo+=ch}out.push(campo.trim());return out};
- const encabezados=dividir(lineas[0]).map(x=>x.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+ const encabezados=dividir(lineas[0]).map(x=>x.replace(/^\uFEFF/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim());
  const idx={inicio:encabezados.indexOf('fecha inicio'),fin:encabezados.indexOf('fecha fin'),categoria:encabezados.indexOf('categoria'),colombia:encabezados.indexOf('colombia'),mundo:encabezados.indexOf('mundo')};
  if(Object.values(idx).some(i=>i<0))throw new Error('Faltan columnas requeridas en el CSV.');
  const salida=[];
@@ -447,14 +464,22 @@ function parsearCSV(texto){
  return salida;
 }
 async function cargarEventos(){
- try{
-  const respuesta=await fetch(CSV_FILENAME,{cache:'no-store'});
-  if(!respuesta.ok)throw new Error(`No se pudo cargar ${CSV_FILENAME} (${respuesta.status}).`);
-  eventos=parsearCSV(await respuesta.text());
-  console.info(`Línea de tiempo: ${eventos.length} eventos cargados desde ${CSV_FILENAME}.`);
- }catch(error){
+ let ultimoError='No se encontró un CSV válido.';
+ for(const csvURL of obtenerURLsCsv()){
+  try{
+   const respuesta=await fetch(csvURL,{cache:'no-store'});
+   if(!respuesta.ok){ultimoError=`${csvURL} (${respuesta.status})`;continue;}
+   const texto=await respuesta.text();
+   const cargados=parsearCSV(texto);
+   eventos=cargados;
+   console.info(`Línea de tiempo: ${eventos.length} eventos cargados desde ${csvURL}.`);
+   ultimoError='';
+   break;
+  }catch(error){ultimoError=`${csvURL}: ${error.message}`;}
+ }
+ if(!eventos.length){
   eventos=eventosPorDefecto;
-  console.info(`Se usarán los eventos incluidos por defecto. Motivo: ${error.message}`);
+  console.info(`Se usarán los eventos incluidos por defecto. Motivo: ${ultimoError}`);
  }
  document.getElementById('totalStat').textContent=eventos.length;
  render();
