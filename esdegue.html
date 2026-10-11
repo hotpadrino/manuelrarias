@@ -119,6 +119,7 @@ button{font-family:inherit;font-size:1rem;color:inherit;cursor:pointer;border:no
 }
 .card h2{font-size:1.15rem}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;margin-top:20px;align-items:start}
+#stage{scroll-margin-top:92px}
 aside{display:grid;gap:20px}
 .stack{display:grid;gap:18px}
 
@@ -910,6 +911,12 @@ function matches(E,i,f){
 }
 const visibles = E => E.preguntas.map((_,i)=>i).filter(i=>matches(E,i,filtro));
 
+/* Lleva la vista al inicio de la tarjeta del examen (no al inicio de la página) */
+function irAlEscenario(){
+  const st = $('#stage');
+  if(st) st.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 async function iniciarExamen(materia, modo){
   try{ await cargarMateria(materia); }catch(e){ toast('No se pudo cargar esta materia. Inténtelo de nuevo.'); return; }
   const banco = bancosPreguntas[materia];
@@ -924,7 +931,8 @@ async function iniciarExamen(materia, modo){
   R = null; filtro = 'todas'; view = 'exam';
   startTimer(0);
   saveSession();
-  render('#qTitle');
+  render('#qTitle', true);
+  irAlEscenario();
 }
 
 async function elegirTema(key){
@@ -971,8 +979,8 @@ function irA(i){
   if(view!=='exam') return;
   S.idx = Math.max(0, Math.min(S.preguntas.length-1, i));
   saveSession();
-  render('#qTitle');
-  window.scrollTo({top:0,behavior:'smooth'});
+  render('#qTitle', true);
+  irAlEscenario();
 }
 function siguiente(){ const n = visibles(S).find(i=>i>S.idx); return n; }
 function anterior(){ const v = visibles(S).filter(i=>i<S.idx); return v.length ? v[v.length-1] : undefined; }
@@ -1017,8 +1025,8 @@ async function finalizar(){
   };
   S = null; lsDel(KEYS.session);
   view = 'results'; filtro = 'todas';
-  render('#resTitle');
-  window.scrollTo({top:0,behavior:'smooth'});
+  render('#resTitle', true);
+  irAlEscenario();
 }
 
 /* ---------------- Renderizado ---------------- */
@@ -1317,7 +1325,7 @@ $('#stage').addEventListener('click', e=>{
   else if(a==='mark') marcar();
   else if(a==='finish') finalizar();
   else if(a==='again') nuevoExamen();
-  else if(a==='home'){ R=null; view='home'; resetTimer(); render(); window.scrollTo({top:0,behavior:'smooth'}); }
+  else if(a==='home'){ R=null; view='home'; resetTimer(); render(); irAlEscenario(); }
 });
 $('#tabs').addEventListener('click', e=>{
   const b = e.target.closest('[data-tab]'); if(b) elegirTema(b.dataset.tab);
