@@ -703,26 +703,38 @@ function renderBank(){
 function primeraLinea(texto){
   return texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/)[0].trim();
 }
+function tituloDe(linea){
+  return limpiar(String(linea||'').replace(/^#{1,6}\s*/,''));
+}
+const ICONOS = {estadoMayor:'📘',estrategia:'🎯',geografia:'🌎',historia:'📜'};
 function parseMateria(texto){
   const lines = texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/).slice(1)
-    .map(l=>l.trim()).filter(Boolean);
+    .map(l=>l.trim()).filter(l=>l && !/^([-*_])\1{2,}$/.test(l));
   const out=[];
   const marker = l=> /^(?:#{1,6}\s*)?PREGUNTA\s*$/i.test(l);
-  const cleanOption = l=>limpiar(l.replace(/^(?:[-*+]\s+|[A-D][.)]\s+)/i,''));
+  const esOpcion = l=> /^(?:[-*+]\s+|[A-H][.)]\s+)/i.test(l);
+  const cleanOption = l=>limpiar(l.replace(/^(?:[-*+]\s+|[A-H][.)]\s+)/i,''));
+  let omitidas=0;
   for(let i=0;i<lines.length;i++){
     if(!marker(lines[i])) continue;
     const block=[];
     while(i+1<lines.length && !marker(lines[i+1])) block.push(lines[++i]);
-    if(block.length!==6) throw new Error('Formato de pregunta inválido');
-    const match=block[5].match(/^RESPUESTA\s*:\s*(.+)$/i);
-    const opciones=block.slice(1,5).map(cleanOption);
-    const respuesta=match && limpiar(match[1]);
-    const correcta=opciones.find(o=>norm(o)===norm(respuesta||''));
-    if(!match || !correcta || opciones.some(o=>!o) || new Set(opciones.map(norm)).size!==4)
-      throw new Error('Respuesta u opciones inválidas');
-    out.push({pregunta:limpiar(block[0]),opciones,correcta});
+    const ri = block.findIndex(l=>/^RESPUESTA\s*:/i.test(l));
+    const match = ri>=0 && block[ri].match(/^RESPUESTA\s*:\s*(.+)$/i);
+    const cuerpo = ri>=0 ? block.slice(0,ri) : block;
+    const primeraOp = cuerpo.findIndex(esOpcion);
+    const enunciado = limpiar((primeraOp>=0?cuerpo.slice(0,primeraOp):cuerpo).join(' '));
+    const opciones = (primeraOp>=0?cuerpo.slice(primeraOp):[]).filter(esOpcion).map(cleanOption);
+    const respuesta = match && limpiar(match[1]);
+    let correcta = opciones.find(o=>norm(o)===norm(respuesta||''));
+    if(!correcta && respuesta && /^[A-H]$/i.test(respuesta)) correcta = opciones[LETRAS.indexOf(respuesta.toUpperCase())];
+    if(!enunciado || opciones.length<2 || opciones.some(o=>!o) || new Set(opciones.map(norm)).size!==opciones.length || !correcta){
+      omitidas++; console.warn('Pregunta omitida por formato:', enunciado||block[0]); continue;
+    }
+    out.push({pregunta:enunciado,opciones,correcta});
   }
   if(!out.length) throw new Error('Banco vacío');
+  if(omitidas) toast(`${omitidas} pregunta${omitidas>1?'s':''} omitida${omitidas>1?'s':''} por formato inválido.`);
   return out;
 }
 function activarEjemplos(){
@@ -806,11 +818,11 @@ async function leerTitulo(ruta){
       texto+=done?decoder.decode():decoder.decode(value,{stream:true});
       if(/[\r\n]/.test(texto) || done || texto.length>4096) break;
     }
-    const nombre=primeraLinea(texto);
+    const nombre=tituloDe(primeraLinea(texto));
     if(!nombre || nombre.length>500 || /[<>]/.test(nombre)) return null;
     const slug=new URL(ruta).pathname.split('/').pop().slice('esdegue_'.length,-3);
     const key=slug==='estado_mayor'?'estadoMayor':slug;
-    return {key,nombre,icono:'',ruta};
+    return {key,nombre,icono:ICONOS[key]||'📄',ruta};
   }catch(e){return null;}
   finally{
     if(reader) try{await reader.cancel();}catch(e){}
@@ -842,7 +854,7 @@ async function cargarMateria(key){
       const preguntas=parseMateria(texto);
       cacheMaterias.set(key,preguntas);
       bancosPreguntas[key]=preguntas;
-      materia.nombre=primeraLinea(texto);
+      materia.nombre=tituloDe(primeraLinea(texto));
       return preguntas;
     }finally{clearTimeout(timer);}
   })();
@@ -862,12 +874,12 @@ async function cargarArchivo(file){
         materia:{...MATERIAS_EJEMPLO.find(m=>m.key===key)},qs
       }));
     }else{
-      const nombre=primeraLinea(texto);
+      const nombre=tituloDe(primeraLinea(texto));
       if(!nombre) throw new Error('Título vacío');
       const ruta=rutaValida('/'+file.name);
       const slug=ruta?file.name.slice(8,-3):null;
       const key=slug?(slug==='estado_mayor'?'estadoMayor':slug):'local_'+norm(nombre).replace(/[^a-z0-9]+/g,'_');
-      entries=[{materia:{key,nombre,icono:''},qs:parseMateria(texto)}];
+      entries=[{materia:{key,nombre,icono:ICONOS[key]||'📄'},qs:parseMateria(texto)}];
     }
     if(view==='exam'){
       const ok=await confirmar('¿Cargar otro banco?','Se cerrará el examen actual. Las estadísticas se conservan.','Cargar','Cancelar');
@@ -878,7 +890,7 @@ async function cargarArchivo(file){
       MATERIAS=MATERIAS.filter(m=>m.key!==materia.key);MATERIAS.push(materia);
       bancosPreguntas[materia.key]=qs;cacheMaterias.set(materia.key,qs);
     });
-    R=null;bankSource='Archivo «'+file.name+'»';
+    R=null;view='home';bankSource='Archivo «'+file.name+'»';
     lsSet(KEYS.bank,{v:2,materias:MATERIAS.filter(m=>!m.ruta).map(m=>({...m,preguntas:cacheMaterias.get(m.key)}))});
     toast('Banco cargado.');render();
   }catch(e){toast('No se pudo cargar el archivo. Revise su formato.');}
@@ -1015,7 +1027,7 @@ function renderTabs(){
   $('#tabs').innerHTML = `<a class="tab-btn" href="${esc(urlApp('esdegue_linea_tiempo.html'))}" style="text-decoration:none;color:inherit"><span class="ico" aria-hidden="true">🕰️</span><span class="t">Línea de Tiempo</span></a>` + MATERIAS.map(m=>`
     <button type="button" class="tab-btn${m.key===activa?' active':''}" data-tab="${esc(m.key)}" aria-pressed="${m.key===activa}">
       <span class="ico" aria-hidden="true">${m.icono}</span>
-      <span><span class="t">${esc(m.nombre)}</span><span class="n">${cacheMaterias.has(m.key) ? cacheMaterias.get(m.key).length : 'Sin cargar'} preguntas</span></span>
+      <span><span class="t">${esc(m.nombre)}</span><span class="n">${cacheMaterias.has(m.key) ? cacheMaterias.get(m.key).length+' preguntas' : 'Se carga al elegir'}</span></span>
     </button>`).join('');
 }
 function renderModes(){
