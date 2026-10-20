@@ -185,6 +185,14 @@
 <div id="sidebar">
     <h2>CATÁLOGO TÉCNICO</h2>
     <div id="btn-resumen">📊 Cuadro Comparativo</div>
+    <div style="padding:10px">
+        <input
+            type="text"
+            id="txtFiltro"
+            placeholder="Buscar aeronave..."
+            onkeyup="filtrarMenu()"
+            style="width:100%;padding:8px;border-radius:4px;border:none;box-sizing:border-box;">
+    </div>
     <div class="menu-list" id="menu-list"></div>
 </div>
 
@@ -199,7 +207,7 @@
         <div class="footer-line"></div>
         <p><b>COMANDO AÉREO DE MANTENIMIENTO - CAMAN</b></p>
         <p class="footer-mission">"¡Volar, entrenar y combatir para vencer!"</p>
-        <p>© 2026 - Fuerza Aeroespacial Colombiana | Madrid, Cundinamarca</p>
+        <a href="https://novaelix.vercel.app/" target="_blank" style="color:#4fc3f7;">© 2026 NovaElix - Asistente IA</a>
     </footer>
 </div>
 
@@ -247,6 +255,11 @@ const data = [
     
     { nombre: "RQ-4 Global Hawk", año: 1998, valor: "140", autonomia: "34", crucero: 310, rango: 14150, peso: "14.6",
         motor: "Rolls-Royce AE3007H", arma: "Ninguno. Plataforma estratégica ISR equipada con radar SAR/MTI, sensores electroópticos e infrarrojos de largo alcance.", wiki: "Northrop_Grumman_RQ-4_Global_Hawk" },
+        
+    { nombre: "F EA-18G Growler", año: 2006, valor: "85", autonomia: "3.5", crucero: 490, rango: 1570, peso: "15", motor: "2x GE F414-GE-400", arma: "Sistema de ataque electrónico AN/ALQ-218 y pods ALQ-99/NGJ, misiles AGM-88 HARM/AARGM para supresión de defensas aéreas, AIM-120 AMRAAM y AIM-9X Sidewinder para autodefensa.", wiki: "Boeing_EA-18G_Growler" },
+    
+    { nombre: "F/A-18F Super Hornet", año: 1995, valor: "70", autonomia: "3.3", crucero: 570, rango: 2346, peso: "14.5", motor: "2x GE F414-GE-400", arma: "Cañón M61A2 de 20 mm, AIM-9X Sidewinder, AIM-120 AMRAAM, AGM-84 Harpoon, AGM-88 HARM, JDAM, Paveway, bombas guiadas y no guiadas.", wiki: "Boeing_F/A-18E/F_Super_Hornet" },
+
 ];
     data.sort((a, b) => a.nombre.toLowerCase().localeCompare(b.nombre.toLowerCase()));
 
@@ -276,6 +289,20 @@ const data = [
         });
         viewArea.innerHTML = tableHTML + `</table></div>`;
     };
+    
+    function filtrarMenu() {
+        const filtro = document
+            .getElementById('txtFiltro')
+            .value
+            .toLowerCase();
+    
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.style.display =
+                item.innerText.toLowerCase().includes(filtro)
+                    ? 'block'
+                    : 'none';
+        });
+    }
 
     async function showDetail(index, element) {
         document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
