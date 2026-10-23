@@ -153,6 +153,15 @@ aside{display:grid;gap:20px}
   transition:border-color .2s,background .2s,transform .15s,box-shadow .2s;
 }
 .tab-btn:hover{border-color:var(--primary-2);transform:translateY(-1px)}
+.tab-wrap{position:relative;display:flex}
+.tab-wrap .tab-btn{flex:1;min-width:0;padding-right:38px}
+.tab-x{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;line-height:1;
+  background:transparent;color:var(--muted);border:1px solid transparent;cursor:pointer}
+.tab-x:hover,.tab-x:focus-visible{background:var(--card);color:#c62828;border-color:#c62828}
+.modal input.m-input{width:100%;padding:10px 12px;margin:-8px 0 18px;border-radius:10px;
+  border:2px solid var(--border);background:var(--card);color:inherit;font:inherit}
+.modal input.m-input:focus{outline:3px solid var(--primary-2);outline-offset:1px}
 .tab-btn .ico{font-size:1.5rem}
 .tab-btn .t{font-weight:700;display:block;line-height:1.2}
 .tab-btn .n{font-size:.82rem;color:var(--muted)}
@@ -386,7 +395,7 @@ footer a:hover{text-decoration:underline}
         <div id="bankList"></div>
         <div class="side-actions">
           <button class="btn" type="button" data-global="loadFile">📂 Cargar Markdown</button>
-          <button class="btn" type="button" data-global="resetBank">↩ Restaurar preguntas de ejemplo</button>
+          <button class="btn" type="button" data-global="resetBank">↩ Restaurar preguntas</button>
           <input type="file" id="fileInput" accept=".md,.txt,text/markdown,text/plain" hidden>
         </div>
       </section>
@@ -470,7 +479,7 @@ const MATERIAS_EJEMPLO = [
   { key:'estadoMayor', nombre:'Estado Mayor Conjunto', icono:'📘' },
   { key:'estrategia',  nombre:'Estrategia',            icono:'🎯' },
   { key:'geografia',   nombre:'Geografía',             icono:'🌎' },
-  { key:'historia',    nombre:'Historia',              icono:'📜' }
+  { key:'historia',    nombre:'Historia',              icono:'👥' }
 ];
 let MATERIAS = [];
 const cacheMaterias = new Map();
@@ -480,7 +489,8 @@ const KEYS = {
   theme:'esdegue_theme',
   session:'esdegue_session',
   stats:'esdegue_stats',
-  bank:'esdegue_bank'          // importaciones manuales; caché pública solo en memoria
+  bank:'esdegue_bank',         // importaciones manuales; caché pública solo en memoria
+  removed:'esdegue_removed'    // exámenes eliminados de la lista por el usuario
 };
 
 /* ---------------- Utilidades ---------------- */
@@ -707,7 +717,14 @@ function primeraLinea(texto){
 function tituloDe(linea){
   return limpiar(String(linea||'').replace(/^#{1,6}\s*/,''));
 }
-const ICONOS = {estadoMayor:'📘',estrategia:'🎯',geografia:'🌎',historia:'📜'};
+const ICONOS = {estadoMayor:'📘',estrategia:'🎯',geografia:'🌎',historia:'👥',bienes:'📦',ia:'🤖',inteligencia_artificial:'🤖'};
+function iconoDe(key,nombre){
+  if(ICONOS[key]) return ICONOS[key];
+  const n = norm(String(key)+' '+String(nombre||''));
+  if(/bienes/.test(n)) return '📦';
+  if(/inteligencia|artificial|\bia\b/.test(n)) return '🤖';
+  return '📄';
+}
 function parseMateria(texto){
   const lines = texto.replace(/^\uFEFF/,'').split(/\r\n|\n|\r/).slice(1)
     .map(l=>l.trim()).filter(l=>l && !/^([-*_])\1{2,}$/.test(l));
@@ -823,7 +840,7 @@ async function leerTitulo(ruta){
     if(!nombre || nombre.length>500 || /[<>]/.test(nombre)) return null;
     const slug=new URL(ruta).pathname.split('/').pop().slice('esdegue_'.length,-3);
     const key=slug==='estado_mayor'?'estadoMayor':slug;
-    return {key,nombre,icono:ICONOS[key]||'📄',ruta};
+    return {key,nombre,icono:iconoDe(key,nombre),ruta};
   }catch(e){return null;}
   finally{
     if(reader) try{await reader.cancel();}catch(e){}
@@ -836,9 +853,9 @@ async function detectarMaterias(){
   const rutas=await descubrirRutas();
   const materias=(await Promise.all(rutas.map(leerTitulo))).filter(Boolean);
   if(materias.length){
-    MATERIAS=materias;
+    MATERIAS=quitarRemovidos(materias);
     bankSource='Archivos independientes en la raíz · carga al seleccionar';
-  }else activarEjemplos();
+  }else{ activarEjemplos(); MATERIAS=quitarRemovidos(MATERIAS); }
   render();
 }
 async function cargarMateria(key){
@@ -880,7 +897,7 @@ async function cargarArchivo(file){
       const ruta=rutaValida('/'+file.name);
       const slug=ruta?file.name.slice(8,-3):null;
       const key=slug?(slug==='estado_mayor'?'estadoMayor':slug):'local_'+norm(nombre).replace(/[^a-z0-9]+/g,'_');
-      entries=[{materia:{key,nombre,icono:ICONOS[key]||'📄'},qs:parseMateria(texto)}];
+      entries=[{materia:{key,nombre,icono:iconoDe(key,nombre)},qs:parseMateria(texto)}];
     }
     if(view==='exam'){
       const ok=await confirmar('¿Cargar otro banco?','Se cerrará el examen actual. Las estadísticas se conservan.','Cargar','Cancelar');
@@ -888,13 +905,96 @@ async function cargarArchivo(file){
       stopTimer();S=null;lsDel(KEYS.session);view='home';resetTimer();
     }
     entries.forEach(({materia,qs})=>{
+      setRemovidos(getRemovidos().filter(k=>k!==materia.key));
       MATERIAS=MATERIAS.filter(m=>m.key!==materia.key);MATERIAS.push(materia);
       bancosPreguntas[materia.key]=qs;cacheMaterias.set(materia.key,qs);
     });
     R=null;view='home';bankSource='Archivo «'+file.name+'»';
-    lsSet(KEYS.bank,{v:2,materias:MATERIAS.filter(m=>!m.ruta).map(m=>({...m,preguntas:cacheMaterias.get(m.key)}))});
+    guardarBancoLocal();
     toast('Banco cargado.');render();
   }catch(e){toast('No se pudo cargar el archivo. Revise su formato.');}
+}
+
+/* ---------------- Eliminar exámenes de la lista ---------------- */
+const getRemovidos = () => { const r = lsGet(KEYS.removed, []); return Array.isArray(r) ? r : []; };
+const setRemovidos = arr => { if(arr.length) lsSet(KEYS.removed, arr); else lsDel(KEYS.removed); };
+const quitarRemovidos = materias => { const r = new Set(getRemovidos()); return materias.filter(m=>!r.has(m.key)); };
+function guardarBancoLocal(){
+  const locales = MATERIAS.filter(m=>!m.ruta && cacheMaterias.has(m.key));
+  if(locales.length) lsSet(KEYS.bank,{v:2,materias:locales.map(m=>({...m,preguntas:cacheMaterias.get(m.key)}))});
+  else lsDel(KEYS.bank);
+}
+async function eliminarMateria(key){
+  if(seleccionando) return;
+  const m = MATERIAS.find(x=>x.key===key); if(!m) return;
+  const ok = await confirmar('¿Eliminar este examen?',
+    `«${m.nombre}» se quitará de la lista. Sus estadísticas no se tocan. Puede volver a cargarlo con «Restaurar preguntas» o «Cargar archivo».`,
+    'Eliminar','Cancelar');
+  if(!ok) return;
+  if((S && S.materia===key) || (R && R.materia===key)){
+    stopTimer(); S=null; R=null; lsDel(KEYS.session); view='home'; resetTimer();
+  }
+  MATERIAS = MATERIAS.filter(x=>x.key!==key);
+  cacheMaterias.delete(key); delete bancosPreguntas[key];
+  const r = new Set(getRemovidos()); r.add(key); setRemovidos([...r]);
+  guardarBancoLocal();
+  toast('Examen eliminado de la lista.'); render();
+}
+
+/* ---------------- Restaurar preguntas ---------------- */
+async function pedirTexto(titulo, texto, placeholder){
+  const input = document.createElement('input');
+  input.type='text'; input.className='m-input'; input.placeholder=placeholder||'';
+  input.autocomplete='off'; input.spellcheck=false; input.setAttribute('aria-label',titulo);
+  $('#mText').after(input);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); $('#mActions .primary').click(); }
+  });
+  const p = ask(titulo, texto, [{label:'Cancelar',value:false},{label:'Aceptar',value:true,primary:true}], false);
+  input.focus();
+  const ok = await p;
+  const v = input.value; input.remove();
+  return ok ? v.trim() : null;
+}
+async function restaurarPreguntas(){
+  if(seleccionando) return;
+  const entrada = await pedirTexto('Restaurar preguntas',
+    'Escriba el nombre del archivo .md de la raíz que desea cargar (solo letras y números). Déjelo en blanco para volver a las 3 preguntas por defecto.',
+    'Ej.: esdegue_bienes');
+  if(entrada===null) return;
+  if(entrada===''){
+    stopTimer(); S=null; R=null; view='home'; lsDel(KEYS.session); resetTimer();
+    activarEjemplos(); lsDel(KEYS.bank); setRemovidos([]);
+    toast('Se restauraron las 3 preguntas por defecto.'); render(); return;
+  }
+  const nombre = entrada.replace(/\.md$/i,'');
+  if(!/^[A-Za-z0-9_-]+$/.test(nombre)){
+    toast('Nombre no válido: use solo letras y números.'); return;
+  }
+  const archivo = nombre+'.md';
+  const controller = new AbortController(); const timer = setTimeout(()=>controller.abort(),15000);
+  try{
+    const r = await fetch(urlApp(archivo),{cache:'no-store',signal:controller.signal});
+    if(!r.ok || /text\/html/i.test(r.headers.get('content-type')||'')) throw new Error('404');
+    const texto = await r.text();
+    const titulo = tituloDe(primeraLinea(texto));
+    if(!titulo) throw new Error('Título vacío');
+    let preguntas;
+    try{ preguntas = parseMateria(texto); }
+    catch(e){ toast(`«${archivo}» se encontró, pero no tiene preguntas con formato válido.`); return; }
+    if(view==='exam'){ stopTimer(); S=null; lsDel(KEYS.session); resetTimer(); }
+    const slug = nombre.replace(/^esdegue_/i,'');
+    const key = slug==='estado_mayor' ? 'estadoMayor' : slug;
+    MATERIAS = MATERIAS.filter(m=>m.key!==key);
+    MATERIAS.push({key,nombre:titulo,icono:iconoDe(key,titulo)});
+    bancosPreguntas[key]=preguntas; cacheMaterias.set(key,preguntas);
+    setRemovidos(getRemovidos().filter(k=>k!==key));
+    guardarBancoLocal();
+    R=null; view='home'; bankSource='Archivo «'+archivo+'» de la raíz';
+    toast(`«${archivo}» cargado (${preguntas.length} preguntas).`); render();
+  }catch(e){
+    toast(`No se encontró el archivo «${archivo}» en la raíz.`);
+  }finally{ clearTimeout(timer); }
 }
 
 /* ---------------- Exámenes ---------------- */
@@ -1033,10 +1133,13 @@ async function finalizar(){
 function renderTabs(){
   const activa = S ? S.materia : (R ? R.materia : null);
   $('#tabs').innerHTML = `<a class="tab-btn" href="${esc(urlApp('esdegue_linea_tiempo.html'))}" style="text-decoration:none;color:inherit"><span class="ico" aria-hidden="true">🕰️</span><span class="t">Línea de Tiempo</span></a>` + MATERIAS.map(m=>`
+    <div class="tab-wrap">
     <button type="button" class="tab-btn${m.key===activa?' active':''}" data-tab="${esc(m.key)}" aria-pressed="${m.key===activa}">
       <span class="ico" aria-hidden="true">${m.icono}</span>
       <span><span class="t">${esc(m.nombre)}</span><span class="n">${cacheMaterias.has(m.key) ? cacheMaterias.get(m.key).length+' preguntas' : 'Se carga al elegir'}</span></span>
-    </button>`).join('');
+    </button>
+    <button type="button" class="tab-x" data-del="${esc(m.key)}" aria-label="Eliminar ${esc(m.nombre)} de la lista" title="Eliminar de la lista">✕</button>
+    </div>`).join('');
 }
 function renderModes(){
   document.querySelectorAll('input[name="modo"]').forEach(r=>{
@@ -1328,6 +1431,7 @@ $('#stage').addEventListener('click', e=>{
   else if(a==='home'){ R=null; view='home'; resetTimer(); render(); irAlEscenario(); }
 });
 $('#tabs').addEventListener('click', e=>{
+  const x = e.target.closest('[data-del]'); if(x){ eliminarMateria(x.dataset.del); return; }
   const b = e.target.closest('[data-tab]'); if(b) elegirTema(b.dataset.tab);
 });
 document.querySelectorAll('input[name="modo"]').forEach(r=>r.addEventListener('change',()=>{ if(r.checked) uiMode = r.value; }));
@@ -1337,14 +1441,7 @@ document.addEventListener('click', async e=>{
   const a = g.dataset.global;
   if(a==='newExam') nuevoExamen();
   else if(a==='loadFile') $('#fileInput').click();
-  else if(a==='resetBank'){
-    const ok = await confirmar('¿Restaurar preguntas de ejemplo?','Se cerrará el examen actual y se activarán las preguntas de ejemplo. Sus estadísticas no se tocan.','Restaurar','Cancelar');
-    if(!ok) return;
-    if(seleccionando) return;
-    stopTimer(); S=null; R=null; view='home'; lsDel(KEYS.session); resetTimer();
-    activarEjemplos(); lsDel(KEYS.bank);
-    toast('Banco de ejemplo restaurado.'); render();
-  }
+  else if(a==='resetBank') restaurarPreguntas();
   else if(a==='clearStats'){
     const ok = await ask('¿Borrar estadísticas?','Se eliminarán puntajes, récords e historial. El banco de preguntas no se modifica.',
       [{label:'Cancelar',value:false},{label:'Borrar estadísticas',value:true,danger:true,primary:true}], false);
@@ -1402,9 +1499,10 @@ async function init(){
   await detectarMaterias();
   // Solo restaura importaciones manuales cuando no hay bancos públicos.
   const guardado=lsGet(KEYS.bank,null);
-  if(!MATERIAS.some(m=>m.ruta) && guardado && guardado.v===2 && Array.isArray(guardado.materias)){
+  if(guardado && guardado.v===2 && Array.isArray(guardado.materias)){
     guardado.materias.forEach(m=>{
       if(!m.key || !m.nombre || !Array.isArray(m.preguntas) || !m.preguntas.length) return;
+      if(getRemovidos().includes(m.key) || MATERIAS.some(x=>x.key===m.key && x.ruta)) return;
       MATERIAS=MATERIAS.filter(x=>x.key!==m.key);
       MATERIAS.push({key:m.key,nombre:m.nombre,icono:m.icono||''});
       bancosPreguntas[m.key]=m.preguntas;cacheMaterias.set(m.key,m.preguntas);
