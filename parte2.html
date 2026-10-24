@@ -766,6 +766,28 @@
             .actions { grid-template-columns: 1fr; }
             button { font-size: 0.85rem; }
         }
+
+        /* ══ HISTORIAL: gráficas y resumen ══ */
+        .hx-card{background:var(--bg-card);border:1px solid var(--border);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+        .hx-title{font-family:var(--font-display);font-size:.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+        .hx-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .hx-small{font-family:var(--font-mono);font-size:.7rem;color:var(--text-secondary)}
+        .hx-select,.hx-input{background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-family:var(--font-body);font-size:.9rem;padding:8px 10px;outline:none}
+        .hx-select:focus,.hx-input:focus{border-color:var(--border-focus)}
+        .hx-input{width:100%}
+        .hx-chip{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);font-family:var(--font-display);font-weight:600;letter-spacing:1px;font-size:.8rem;padding:5px 12px;cursor:pointer;text-transform:uppercase}
+        .hx-chip.on{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+        .hx-legend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
+        .hx-leg{display:flex;align-items:center;gap:6px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);font-size:.78rem;padding:4px 10px;cursor:pointer;font-family:var(--font-body)}
+        .hx-leg i{width:14px;height:3px;display:inline-block}
+        .hx-leg.off{opacity:.4;text-decoration:line-through}
+        .hx-svg{width:100%;height:auto;display:block;touch-action:pan-y}
+        .hx-svg text{fill:var(--text-secondary);font-family:var(--font-mono);font-size:10px}
+        .hx-readout{font-family:var(--font-mono);font-size:.72rem;color:var(--text-secondary);min-height:2.4em;margin-top:4px}
+        .hx-res-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--border);font-size:.9rem}
+        .hx-res-row b{font-family:var(--font-display);font-size:1.05rem;color:var(--accent2);white-space:nowrap}
+        .hx-dates{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
+        .hx-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:10px 0 2px}
     </style>
 </head>
 <body>
@@ -826,6 +848,26 @@
 
     <!-- TAB: HISTORIAL -->
     <div id="historial" class="content">
+        <div class="hx-card">
+            <div class="hx-title"><span>Almacenamiento</span>
+                <span class="hx-small" id="hx-storage"></span></div>
+        </div>
+
+        <div class="hx-card">
+            <div class="hx-title"><span>Gráficas del historial</span></div>
+            <div class="hx-row" id="hx-cats"></div>
+            <div class="hx-legend" id="hx-legend"></div>
+            <div id="hx-chart"></div>
+            <div class="hx-readout" id="hx-readout">Toque o pase el cursor sobre la gráfica para ver valores.</div>
+        </div>
+
+        <div class="hx-card">
+            <div class="hx-title"><span>Resumen por persona</span></div>
+            <input id="hx-buscar" class="hx-input" list="hx-nombres" placeholder="Escriba un nombre…" oninput="renderResumen()" autocomplete="off">
+            <datalist id="hx-nombres"></datalist>
+            <div id="hx-resumen"></div>
+        </div>
+
         <div id="historial-lista"></div>
     </div>
 
@@ -858,19 +900,24 @@
     /* ══════════════════════════════════════
        LÓGICA ORIGINAL — sin cambios
     ══════════════════════════════════════ */
+    const HIST_MAX = 60;
     let state = {
         dataRaw: `##Sección Certificación SECAE\n#Oficiales\nNombre Oficial 1\nNombre Oficial 2\n\n#Suboficiales\nNombre Técnico\n\n#Civiles\nNombre Ingeniero`,
         novedades: ["FILA", "COMISIÓN", "COMISIÓN DE ESTUDIOS", "COMPENSANDO", "CURSO", "EXCUSA MEDICA", "PERMISO ESPECIAL", "SERVICIO", "TURNO DESCANSO", "VACACIONES", "VUELO", "OTRA"],
         asignaciones: {},
         tituloOficina: "",
         historial: [],
-        separarVinetas: false
+        separarVinetas: false,
+        chartHidden: {},
+        chartCat: "TODOS"
     };
 
     function init() {
         const saved = localStorage.getItem('parte_v9_full');
         if (saved) state = JSON.parse(saved);
         if (state.separarVinetas === undefined) {state.separarVinetas = false;}
+        if (!state.chartHidden) state.chartHidden = {};
+        if (!state.chartCat) state.chartCat = "TODOS";
         document.getElementById('config-personal').value = state.dataRaw;
         document.getElementById('config-novedades').value = state.novedades.join('\n');
         processData();
@@ -1003,9 +1050,13 @@
 
     function exportData(type) {
         const report = document.getElementById('report-editable').value;
-        const hoy = new Date().toLocaleString();
-        state.historial.unshift({ fecha: hoy, content: report, snap: JSON.parse(JSON.stringify(state.asignaciones)) });
-        if (state.historial.length > 15) state.historial.pop();
+        const now = new Date();
+        const hoy = now.toLocaleString();
+        const dayKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        // un solo registro por día: si ya hay uno de hoy, se reemplaza
+        state.historial = state.historial.filter(h => h.dayKey !== dayKey);
+        state.historial.unshift({ fecha: hoy, dayKey, ts: now.getTime(), content: report, snap: JSON.parse(JSON.stringify(state.asignaciones)) });
+        if (state.historial.length > HIST_MAX) state.historial.length = HIST_MAX;
         saveToLocal();
         if (type === 'copy') {
             navigator.clipboard.writeText(report);
@@ -1031,6 +1082,7 @@
     }
 
     function renderHistorial() {
+        renderHistExtras();
         const container = document.getElementById('historial-lista');
         if (state.historial.length === 0) {
             container.innerHTML = `<div class="hist-empty">— SIN REGISTROS EN HISTORIAL —</div>`;
@@ -1056,7 +1108,10 @@
         processData(); saveToLocal(); renderParte(); showTab('parte');
     }
 
-    function saveToLocal() { localStorage.setItem('parte_v9_full', JSON.stringify(state)); }
+    function saveToLocal() {
+        try { localStorage.setItem('parte_v9_full', JSON.stringify(state)); }
+        catch (e) { alert("No se pudo guardar: almacenamiento lleno. Reduzca las fechas del historial."); }
+    }
 
     function showTab(id) {
         document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -1064,6 +1119,175 @@
         document.getElementById(id).classList.add('active');
         event.currentTarget.classList.add('active');
         if(id === 'historial') renderHistorial();
+    }
+
+    /* ══════════════════════════════════════
+       HISTORIAL: configuración, gráficas y resumen
+    ══════════════════════════════════════ */
+    const GRUPOS = [
+        { k: 'total',    l: 'Parte total', c: 'var(--text-primary)', w: 2.5 },
+        { k: 'fila',     l: 'En fila',     c: '#00e676', w: 2 },
+        { k: 'vuelo',    l: 'Vuelo',       c: '#f0a500', w: 2 },
+        { k: 'comp',     l: 'Compensando', c: '#b388ff', w: 2 },
+        { k: 'curso',    l: 'Cursos',      c: '#ff7043', w: 2 },
+        { k: 'comision', l: 'Comisión',    c: '#29b6f6', w: 2 },
+        { k: 'otros',    l: 'Otros',       c: '#f06292', w: 2 }
+    ];
+    let hxData = null;
+
+    const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    function grupoNov(tipo) {
+        const n = norm(tipo);
+        if (n === 'fila') return 'fila';
+        if (n.startsWith('vuelo')) return 'vuelo';
+        if (n.startsWith('compensa')) return 'comp';
+        if (n.startsWith('curso')) return 'curso';
+        if (n.startsWith('comision')) return 'comision';
+        return 'otros';
+    }
+
+    function labelFecha(h) {
+        if (h.ts) { const d = new Date(h.ts); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`; }
+        return String(h.fecha).split(/[ ,]/)[0];
+    }
+
+    function renderHistExtras() {
+        const kb = (JSON.stringify(state).length / 1024);
+        const porFecha = state.historial.length ? kb / state.historial.length : 0;
+        document.getElementById('hx-storage').textContent =
+            `${state.historial.length}/${HIST_MAX} fechas · ${kb.toFixed(0)} KB usados (≈${porFecha.toFixed(1)} KB/fecha, límite navegador ≈5000 KB)`;
+        renderCats(); renderChart(); renderNombres(); renderResumen();
+    }
+
+    function categoriasHist() {
+        const set = new Set();
+        state.historial.forEach(h => Object.values(h.snap || {}).forEach(d => d.cat && set.add(d.cat)));
+        Object.values(state.asignaciones).forEach(d => d.cat && set.add(d.cat));
+        return ['TODOS', ...set];
+    }
+
+    function renderCats() {
+        const cats = categoriasHist();
+        if (!cats.includes(state.chartCat)) state.chartCat = 'TODOS';
+        document.getElementById('hx-cats').innerHTML = cats.map(c =>
+            `<button class="hx-chip ${c === state.chartCat ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+        document.querySelectorAll('#hx-cats .hx-chip').forEach(b => b.onclick = () => {
+            state.chartCat = b.dataset.c; saveToLocal(); renderCats(); renderChart();
+        });
+    }
+
+    function calcSeries() {
+        const entries = state.historial.slice().reverse(); // más antiguo → más reciente
+        return entries.map(h => {
+            const r = { label: labelFecha(h), total: 0, fila: 0, vuelo: 0, comp: 0, curso: 0, comision: 0, otros: 0 };
+            Object.values(h.snap || {}).forEach(d => {
+                if (state.chartCat !== 'TODOS' && d.cat !== state.chartCat) return;
+                r.total++; r[grupoNov(d.tipo)]++;
+            });
+            return r;
+        });
+    }
+
+    function toggleSerie(k) {
+        state.chartHidden[k] = !state.chartHidden[k];
+        saveToLocal(); renderChart();
+    }
+
+    function renderChart() {
+        const box = document.getElementById('hx-chart');
+        const leg = document.getElementById('hx-legend');
+        leg.innerHTML = GRUPOS.map(g =>
+            `<button class="hx-leg ${state.chartHidden[g.k] ? 'off' : ''}" onclick="toggleSerie('${g.k}')"><i style="background:${g.c}"></i>${g.l}</button>`).join('');
+        const data = calcSeries();
+        hxData = data;
+        if (!data.length) { box.innerHTML = '<div class="hist-empty">— Guarde un parte para ver gráficas —</div>'; return; }
+
+        const vis = GRUPOS.filter(g => !state.chartHidden[g.k]);
+        const W = 640, H = 260, L = 30, R = 12, T = 12, B = 28;
+        let max = 1;
+        data.forEach(r => vis.forEach(g => { if (r[g.k] > max) max = r[g.k]; }));
+        const step = max <= 6 ? 1 : Math.ceil(max / 6);
+        const top = Math.ceil(max / step) * step;
+        const X = i => data.length === 1 ? (L + (W - L - R) / 2) : L + i * (W - L - R) / (data.length - 1);
+        const Y = v => T + (H - T - B) * (1 - v / top);
+
+        let svg = `<svg class="hx-svg" id="hx-svg" viewBox="0 0 ${W} ${H}">`;
+        for (let v = 0; v <= top; v += step)
+            svg += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--border)" stroke-width="1"/><text x="${L - 5}" y="${Y(v) + 3}" text-anchor="end">${v}</text>`;
+        const every = Math.max(1, Math.ceil(data.length / 7));
+        data.forEach((r, i) => { if (i % every === 0 || i === data.length - 1)
+            svg += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">${esc(r.label)}</text>`; });
+        vis.forEach(g => {
+            const pts = data.map((r, i) => `${X(i).toFixed(1)},${Y(r[g.k]).toFixed(1)}`).join(' ');
+            if (data.length > 1) svg += `<polyline points="${pts}" fill="none" style="stroke:${g.c}" stroke-width="${g.w}" stroke-linejoin="round" stroke-linecap="round"/>`;
+            if (data.length <= 31) data.forEach((r, i) => svg += `<circle cx="${X(i).toFixed(1)}" cy="${Y(r[g.k]).toFixed(1)}" r="2.6" style="fill:${g.c}"/>`);
+        });
+        svg += `<line id="hx-guide" x1="0" x2="0" y1="${T}" y2="${H - B}" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/></svg>`;
+        box.innerHTML = svg;
+
+        const el = document.getElementById('hx-svg');
+        const show = ev => {
+            const rect = el.getBoundingClientRect();
+            const x = (ev.clientX - rect.left) / rect.width * W;
+            let i = data.length === 1 ? 0 : Math.round((x - L) / ((W - L - R) / (data.length - 1)));
+            i = Math.max(0, Math.min(data.length - 1, i));
+            const gd = document.getElementById('hx-guide');
+            gd.setAttribute('x1', X(i)); gd.setAttribute('x2', X(i)); gd.style.display = '';
+            document.getElementById('hx-readout').textContent =
+                `${data[i].label} · ` + vis.map(g => `${g.l}: ${data[i][g.k]}`).join(' · ');
+        };
+        el.addEventListener('pointermove', show);
+        el.addEventListener('pointerdown', show);
+    }
+
+    function nombresConocidos() {
+        const set = new Set(Object.keys(state.asignaciones));
+        state.historial.forEach(h => Object.keys(h.snap || {}).forEach(n => set.add(n)));
+        return [...set].sort((a, b) => a.localeCompare(b, 'es'));
+    }
+
+    function renderNombres() {
+        document.getElementById('hx-nombres').innerHTML = nombresConocidos().map(n => `<option value="${esc(n)}">`).join('');
+    }
+
+    function tipoEnRegistro(h, nombre) {
+        if (h.snap && h.snap[nombre]) return h.snap[nombre].tipo;
+        // respaldo: leer del texto del reporte ("- Nombre: TIPO (obs)")
+        const re = new RegExp('^- ' + nombre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\s*([^(\\n]+)', 'mi');
+        const m = (h.content || '').match(re);
+        return m ? m[1].trim() : null;
+    }
+
+    function renderResumen() {
+        const out = document.getElementById('hx-resumen');
+        const q = norm(document.getElementById('hx-buscar').value);
+        if (!q) { out.innerHTML = '<div class="hx-small" style="margin-top:10px">Escriba parte de un nombre para ver sus novedades en el historial guardado.</div>'; return; }
+        if (!state.historial.length) { out.innerHTML = '<div class="hx-small" style="margin-top:10px">Aún no hay historial.</div>'; return; }
+        const hallados = nombresConocidos().filter(n => norm(n).includes(q)).slice(0, 5);
+        if (!hallados.length) { out.innerHTML = '<div class="hx-small" style="margin-top:10px">Sin coincidencias.</div>'; return; }
+
+        out.innerHTML = hallados.map(nombre => {
+            const grupos = {}; let explicitFila = 0, sinRegistro = 0;
+            state.historial.forEach(h => {
+                const t = tipoEnRegistro(h, nombre);
+                const lab = labelFecha(h);
+                let key;
+                if (t === null) { key = 'FILA / SIN NOVEDAD'; sinRegistro++; }
+                else if (norm(t) === 'fila') { key = 'FILA / SIN NOVEDAD'; explicitFila++; }
+                else key = t;
+                (grupos[key] = grupos[key] || []).push(lab);
+            });
+            const filas = Object.entries(grupos).sort((a, b) => b[1].length - a[1].length).map(([k, ds]) => {
+                const extra = k === 'FILA / SIN NOVEDAD' ? '' : `<div class="hx-dates">${ds.map(esc).join(' · ')}</div>`;
+                const n = ds.length;
+                return `<div class="hx-res-row"><div>${esc(k.toLowerCase())}${extra}</div><b>${n} ${n === 1 ? 'día' : 'días'}</b></div>`;
+            }).join('');
+            const nota = (explicitFila || sinRegistro)
+                ? `<div class="hx-small" style="margin-top:6px">En fila / sin novedad: ${explicitFila} registrado(s) como FILA + ${sinRegistro} sin registro.</div>` : '';
+            return `<div class="hx-name">${esc(nombre)}</div><div class="hx-small">${state.historial.length} fechas analizadas</div>${filas}${nota}`;
+        }).join('');
     }
 
     init();
