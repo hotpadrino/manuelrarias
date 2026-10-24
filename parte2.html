@@ -1141,7 +1141,7 @@
     function grupoNov(tipo) {
         const n = norm(tipo);
         if (n === 'fila') return 'fila';
-        if (n.startsWith('vuelo')) return 'vuelo';
+        if (n.includes('vuelo')) return 'vuelo'; // incluye "DISPONIBLE DE VUELO"
         if (n.startsWith('compensa')) return 'comp';
         if (n.startsWith('curso')) return 'curso';
         if (n.startsWith('comision')) return 'comision';
@@ -1276,7 +1276,7 @@
                 let key;
                 if (t === null) { key = 'FILA / SIN NOVEDAD'; sinRegistro++; }
                 else if (norm(t) === 'fila') { key = 'FILA / SIN NOVEDAD'; explicitFila++; }
-                else key = t;
+                else key = grupoNov(t) === 'vuelo' ? 'VUELO' : t;
                 (grupos[key] = grupos[key] || []).push(lab);
             });
             const filas = Object.entries(grupos).sort((a, b) => b[1].length - a[1].length).map(([k, ds]) => {
