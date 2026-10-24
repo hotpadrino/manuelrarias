@@ -788,6 +788,15 @@
         .hx-res-row b{font-family:var(--font-display);font-size:1.05rem;color:var(--accent2);white-space:nowrap}
         .hx-dates{font-family:var(--font-mono);font-size:.65rem;color:var(--text-muted);margin-top:2px;line-height:1.4}
         .hx-name{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:10px 0 2px}
+        .btn-demo{background:transparent;border:1px dashed var(--accent2);color:var(--accent2);width:100%;margin-top:10px;font-size:.85rem;letter-spacing:2px}
+        .btn-demo:hover{background:rgba(240,165,0,.1)}
+        .demo-banner{display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:rgba(240,165,0,.12);border:1px solid var(--accent2);border-left:4px solid var(--accent2);color:var(--text-primary);font-family:var(--font-mono);font-size:.75rem;padding:10px 14px;margin-bottom:14px}
+        .demo-banner button{background:var(--accent2);color:#1a1000;border:none;font-family:var(--font-display);font-weight:700;letter-spacing:1px;padding:6px 12px;cursor:pointer}
+        .conteo-card{background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 14px;margin-bottom:14px;font-family:var(--font-mono);font-size:.85rem;box-shadow:var(--shadow)}
+        .conteo-row{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+        .conteo-row span:first-child{color:var(--text-secondary)}
+        .conteo-row b{color:var(--accent);letter-spacing:1px}
+        .conteo-cols{color:var(--text-muted);font-size:.65rem;text-align:right;letter-spacing:1px;margin-top:2px}
     </style>
 </head>
 <body>
@@ -814,6 +823,7 @@
 
 <!-- ══ CONTENIDO ══ -->
 <div class="container">
+    <div class="demo-banner" id="demo-banner"><span>🧪 MODO EJEMPLO — datos ficticios. Tus datos reales están guardados aparte.</span><button onclick="salirEjemplo()">SALIR Y RESTAURAR MIS DATOS</button></div>
     <div class="tabs">
         <div class="tab-btn active" onclick="showTab('parte')">▸ PARTE</div>
         <div class="tab-btn" onclick="showTab('historial')">▸ HISTORIAL</div>
@@ -822,6 +832,8 @@
 
     <!-- TAB: PARTE -->
     <div id="parte" class="content active">
+
+        <div class="conteo-card" id="conteo-card"></div>
 
         <div id="desktop-headers" style="display:none;">
             <div style="flex:1.5;">PERSONAL</div>
@@ -882,6 +894,8 @@
         <span class="config-label">Tipos de Novedad</span>
         <textarea id="config-novedades"></textarea>
         <button class="btn-save" onclick="saveConfig()">✦ Guardar y Aplicar</button>
+        <button class="btn-demo" id="btn-demo" onclick="cargarEjemplo()">🧪 Cargar datos de ejemplo</button>
+        <div class="hx-small" style="margin-top:6px">Carga ~3 semanas de historial ficticio para ver gráficas y resumen. Sus datos reales se respaldan y se restauran al salir.</div>
     </div>
 </div>
 
@@ -892,6 +906,7 @@
         <div class="contact-group">
             <a href="https://wa.me/573128816469" target="_blank" class="footer-link">📱 WhatsApp</a>
             <a href="mailto:alucard8@gmail.com" class="footer-link">📧 Correo</a>
+            <a href="https://novaelix.vercel.app/" target="_blank" rel="noopener" class="footer-link">🌐 Web</a>
         </div>
     </div>
 </footer>
@@ -912,6 +927,8 @@
         chartCat: "TODOS"
     };
 
+    const DEFAULT_STATE = JSON.parse(JSON.stringify(state));
+
     function init() {
         const saved = localStorage.getItem('parte_v9_full');
         if (saved) state = JSON.parse(saved);
@@ -922,6 +939,7 @@
         document.getElementById('config-novedades').value = state.novedades.join('\n');
         processData();
         renderParte();
+        updateDemoUI();
         // Aplicar tema guardado
         const savedTheme = localStorage.getItem('parte_theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -1007,44 +1025,71 @@
         saveToLocal();
     }
 
-    function generateReport() {
-        const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-        const hoy = new Date();
-        const f = `${String(hoy.getDate()).padStart(2,'0')}-${meses[hoy.getMonth()]}-${hoy.getFullYear()}`;
-    
-        let total = [0, 0, 0];
-        let fila = [0, 0, 0];
-        let detalles = "";
-    
-        const salto = state.separarVinetas ? "\n\n" : "\n";
-    
-        Object.keys(state.asignaciones).forEach(nombre => {
-            const d = state.asignaciones[nombre];
-            const c = d.cat.toLowerCase();
-            let i = 2;
-            if (c.includes("oficial") && !c.includes("suboficial")) i = 0;
-            else if (c.includes("suboficial")) i = 1;
+    // 0=Oficiales, 1=Suboficiales, 2=Soldados, 3=Civiles (y cualquier otra categoría)
+    function catIndex(cat) {
+        const c = String(cat || '').toLowerCase();
+        if (c.includes('suboficial')) return 1;
+        if (c.includes('oficial')) return 0;
+        if (c.includes('soldado')) return 2;
+        return 3;
+    }
+
+    const CAT_NOMBRES = ['OFICIALES', 'SUBOFICIALES', 'SOLDADOS', 'CIVILES'];
+
+    function conteos(asig) {
+        const total = [0, 0, 0, 0], fila = [0, 0, 0, 0];
+        Object.values(asig).forEach(d => {
+            const i = catIndex(d.cat);
             total[i]++;
-    
+            if (d.tipo === "FILA") fila[i]++;
+        });
+        // Soldados solo aparece si hay personal en esa categoría
+        const cols = total[2] > 0 ? [0, 1, 2, 3] : [0, 1, 3];
+        const fmt = arr => cols.map(k => String(arr[k]).padStart(2, '0')).join('-');
+        const nov = total.map((v, k) => v - fila[k]);
+        return { total: fmt(total), fila: fmt(fila), nov: fmt(nov), labels: cols.map(k => CAT_NOMBRES[k]).join(' - ') };
+    }
+
+    function renderConteo() {
+        const c = conteos(state.asignaciones);
+        document.getElementById('conteo-card').innerHTML =
+            `<div class="conteo-row"><span>Parte Oficina</span><b>${c.total}</b></div>` +
+            `<div class="conteo-row"><span>Fila</span><b>${c.fila}</b></div>` +
+            `<div class="conteo-row"><span>Novedades</span><b>${c.nov}</b></div>` +
+            `<div class="conteo-cols">${c.labels}</div>`;
+    }
+
+    function reportText(asig, f, titulo, separar) {
+        const c = conteos(asig);
+        let detalles = "";
+        const salto = separar ? "\n\n" : "\n";
+
+        Object.keys(asig).forEach(nombre => {
+            const d = asig[nombre];
             if (d.tipo === "FILA") {
-                fila[i]++;
-                if (d.obs) {
-                    detalles += `- ${nombre}: FILA (${d.obs})${salto}`;
-                }
+                if (d.obs) detalles += `- ${nombre}: FILA (${d.obs})${salto}`;
             } else {
                 detalles += `- ${nombre}: ${d.tipo}${d.obs ? ` (${d.obs})` : ""}${salto}`;
             }
         });
-    
-        const report = [
-            `✅ ${state.tituloOficina} del día`,
+
+        return [
+            `✅ ${titulo} del día`,
             `${f}`,
-            `*Parte Oficina:* ${total.map(v => String(v).padStart(2,'0')).join('-')}`,
-            `*Fila* ${fila.map(v => String(v).padStart(2,'0')).join('-')}`,
-            `*Novedades* ${total.map((v, idx) => String(v - fila[idx]).padStart(2,'0')).join('-')}`,
-            (detalles ? (state.separarVinetas ? '\n' : '') + detalles : detalles)
+            `*Parte Oficina:* ${c.total}`,
+            `*Fila* ${c.fila}`,
+            `*Novedades* ${c.nov}`,
+            (detalles ? (separar ? '\n' : '') + detalles : detalles)
         ].join('\n');
+    }
+
+    function generateReport() {
+        const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+        const hoy = new Date();
+        const f = `${String(hoy.getDate()).padStart(2,'0')}-${meses[hoy.getMonth()]}-${hoy.getFullYear()}`;
+        const report = reportText(state.asignaciones, f, state.tituloOficina, state.separarVinetas);
         document.getElementById('report-editable').value = report.trim();
+        renderConteo();
         return report;
     }
 
@@ -1288,6 +1333,97 @@
                 ? `<div class="hx-small" style="margin-top:6px">En fila / sin novedad: ${explicitFila} registrado(s) como FILA + ${sinRegistro} sin registro.</div>` : '';
             return `<div class="hx-name">${esc(nombre)}</div><div class="hx-small">${state.historial.length} fechas analizadas</div>${filas}${nota}`;
         }).join('');
+    }
+
+    /* ══════════════════════════════════════
+       MODO EJEMPLO
+    ══════════════════════════════════════ */
+    function updateDemoUI() {
+        document.getElementById('demo-banner').style.display = state.demo ? 'flex' : 'none';
+        const b = document.getElementById('btn-demo');
+        b.textContent = state.demo ? '↩ Salir del modo ejemplo y restaurar mis datos' : '🧪 Cargar datos de ejemplo';
+        b.onclick = state.demo ? salirEjemplo : cargarEjemplo;
+    }
+
+    function goTab(id) {
+        document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(b => { if ((b.getAttribute('onclick') || '').includes(`'${id}'`)) b.classList.add('active'); });
+        if (id === 'historial') renderHistorial();
+    }
+
+    function applyState() {
+        document.getElementById('config-personal').value = state.dataRaw;
+        document.getElementById('config-novedades').value = state.novedades.join('\n');
+        processData(); renderParte(); updateDemoUI();
+    }
+
+    function buildDemoState() {
+        let seed = 20260101;
+        const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+        const pick = a => a[Math.floor(rnd() * a.length)];
+        const gente = {
+            Oficiales: ['MY Ejemplo Alfa', 'CT Ejemplo Bravo', 'TE Ejemplo Charlie'],
+            Suboficiales: ['TJ Ejemplo Delta', 'T1 Ejemplo Echo', 'T2 Ejemplo Foxtrot'],
+            Soldados: ['SLP Ejemplo Golf', 'SLP Ejemplo Hotel', 'SLV Ejemplo India', 'SLV Ejemplo Juliett'],
+            Civiles: ['Ing. Ejemplo Kilo', 'Ing. Ejemplo Lima']
+        };
+        const novedades = ['FILA', 'VUELO', 'DISPONIBLE DE VUELO', 'COMPENSANDO', 'CURSO', 'COMISIÓN', 'COMISIÓN DE ESTUDIOS', 'EXCUSA MEDICA', 'PERMISO ESPECIAL', 'VACACIONES', 'TURNO DESCANSO', 'SERVICIO', 'OTRA'];
+        let dataRaw = '##Sección Ejemplo\n';
+        Object.entries(gente).forEach(([c, ns]) => { dataRaw += `#${c}\n${ns.join('\n')}\n\n`; });
+
+        // [tipo, duración mín, duración máx, prob. de inicio por día]
+        const bloques = {
+            Oficiales: [['VUELO', 1, 3, .12], ['DISPONIBLE DE VUELO', 1, 2, .06], ['COMPENSANDO', 1, 2, .06], ['CURSO', 3, 7, .03], ['COMISIÓN', 2, 5, .04]],
+            Suboficiales: [['VUELO', 1, 2, .08], ['COMPENSANDO', 1, 2, .07], ['CURSO', 3, 6, .03], ['COMISIÓN', 2, 4, .04], ['EXCUSA MEDICA', 1, 3, .03]],
+            Soldados: [['SERVICIO', 1, 1, .12], ['TURNO DESCANSO', 1, 2, .1], ['VACACIONES', 4, 8, .03], ['PERMISO ESPECIAL', 1, 2, .04]],
+            Civiles: [['COMISIÓN', 1, 3, .06], ['VACACIONES', 3, 6, .03], ['CURSO', 2, 4, .03]]
+        };
+        const DIAS = 21;
+        const estado = {};
+        const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        const z = v => String(v).padStart(2, '0');
+        const historial = []; // más reciente primero
+        for (let d = DIAS; d >= 1; d--) {
+            const fecha = new Date(); fecha.setHours(8, 0, 0, 0); fecha.setDate(fecha.getDate() - d);
+            const snap = {};
+            Object.entries(gente).forEach(([cat, ns]) => ns.forEach(n => {
+                const e = estado[n] || (estado[n] = { tipo: 'FILA', resta: 0 });
+                if (e.resta > 0) { e.resta--; } else {
+                    e.tipo = 'FILA';
+                    for (const [t, mn, mx, pr] of bloques[cat]) if (rnd() < pr) { e.tipo = t; e.resta = mn + Math.floor(rnd() * (mx - mn + 1)) - 1; break; }
+                }
+                const obs = e.tipo === 'CURSO' ? 'Curso de actualización' : e.tipo === 'COMISIÓN' ? pick(['Bogotá', 'Cali', 'Apiay']) : e.tipo === 'VUELO' ? pick(['Misión de entrenamiento', 'Traslado']) : '';
+                snap[n] = { tipo: e.tipo, obs, cat };
+            }));
+            const f = `${z(fecha.getDate())}-${meses[fecha.getMonth()]}-${fecha.getFullYear()}`;
+            const content = reportText(snap, f, 'Sección Ejemplo', false).trim();
+            const dayKey = `${fecha.getFullYear()}-${z(fecha.getMonth() + 1)}-${z(fecha.getDate())}`;
+            historial.unshift({ fecha: fecha.toLocaleString(), dayKey, ts: fecha.getTime(), content, snap });
+        }
+        return { dataRaw, novedades, asignaciones: {}, tituloOficina: 'Sección Ejemplo', historial,
+                 separarVinetas: false, chartHidden: {}, chartCat: 'TODOS', demo: true };
+    }
+
+    function cargarEjemplo() {
+        if (state.demo) return;
+        if (!confirm('Se cargarán datos ficticios (21 días de historial). Sus datos reales se respaldan y podrá restaurarlos con "Salir del modo ejemplo". ¿Continuar?')) return;
+        try { localStorage.setItem('parte_v9_backup', JSON.stringify(state)); }
+        catch (e) { alert('No se pudo respaldar sus datos; no se cargó el ejemplo.'); return; }
+        state = buildDemoState();
+        saveToLocal(); applyState(); goTab('historial');
+    }
+
+    function salirEjemplo() {
+        if (!confirm('¿Salir del modo ejemplo? Se descartan los datos ficticios y se restauran los suyos.')) return;
+        const raw = localStorage.getItem('parte_v9_backup');
+        state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_STATE));
+        if (!state.chartHidden) state.chartHidden = {};
+        if (!state.chartCat) state.chartCat = 'TODOS';
+        delete state.demo;
+        localStorage.removeItem('parte_v9_backup');
+        saveToLocal(); applyState(); goTab('parte');
     }
 
     init();
