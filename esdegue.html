@@ -769,20 +769,29 @@ function activarEjemplos(){
 const RAIZ_APP = new URL('.', location.href);
 const urlApp = nombre => new URL(nombre, RAIZ_APP).href;
 const ARCHIVOS_BASE = [
-  'esdegue_estado_mayor.md','esdegue_estrategia.md',
-  'esdegue_geografia.md','esdegue_historia.md','esdegue_bienes.md'
+  'esdegue/esdegue_estado_mayor.md','esdegue/esdegue_estrategia.md','esdegue/esdegue_digitales.md',
+  'esdegue/esdegue_geografia.md','esdegue/esdegue_historia.md','esdegue/esdegue_bienes.md'
 ].map(urlApp);
+
+// Buscar esta función y cambiar la validación:
 function rutaValida(valor){
   try{
     if(typeof valor!=='string') return null;
-    // El manifiesto admite nombres y /nombres relativos a la raíz de la app.
-    const entrada=/^\/esdegue_[a-z0-9_-]+\.md$/i.test(valor)?valor.slice(1):valor;
+    
+    // ANTES: const entrada=/^\/esdegue_[a-z0-9_-]+\.md$/i.test(valor)?valor.slice(1):valor;
+    // CAMBIAR POR:
+    const entrada = /^\/?esdegue\/esdegue_[a-z0-9_-]+\.md$/i.test(valor) ? (valor.startsWith('/') ? valor.slice(1) : valor) : 'esdegue/' + valor.replace(/^\//, '');
+
     const u=new URL(entrada,RAIZ_APP);
     const nombre=u.pathname.slice(RAIZ_APP.pathname.length);
+    
+    // ANTES: return u.origin===RAIZ_APP.origin && u.pathname.startsWith(RAIZ_APP.pathname) && /^esdegue_[a-z0-9_-]+\.md$/i.test(nombre)...
+    // CAMBIAR POR:
     return u.origin===RAIZ_APP.origin && u.pathname.startsWith(RAIZ_APP.pathname)
-      && /^esdegue_[a-z0-9_-]+\.md$/i.test(nombre) && !u.search && !u.hash ? u.href : null;
+      && /^esdegue\/esdegue_[a-z0-9_-]+\.md$/i.test(nombre) && !u.search && !u.hash ? u.href : null;
   }catch(e){return null;}
 }
+
 async function consultarIndice(url, procesar){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),5000);
@@ -811,7 +820,8 @@ async function descubrirRutas(){
     const segmentos=RAIZ_APP.pathname.split('/').filter(Boolean).map(decodeURIComponent);
     const repo=segmentos.shift() || usuario+'.github.io';
     const carpeta=segmentos.map(encodeURIComponent).join('/');
-    const endpoint='https://api.github.com/repos/'+encodeURIComponent(usuario)+'/'+encodeURIComponent(repo)+'/contents/'+carpeta;
+    const endpoint='https://api.github.com/repos/'+encodeURIComponent(usuario)+'/'+encodeURIComponent(repo)+'/contents/'+(carpeta ? carpeta + '/' : '')+'esdegue';
+    //const endpoint='https://api.github.com/repos/'+encodeURIComponent(usuario)+'/'+encodeURIComponent(repo)+'/contents/'+carpeta;
     tareas.push(consultarIndice(endpoint,async r=>{
       const files=await r.json();
       if(Array.isArray(files)) files.filter(f=>f.type==='file').forEach(f=>agregar(f.name));
@@ -974,7 +984,8 @@ async function restaurarPreguntas(){
   const archivo = nombre+'.md';
   const controller = new AbortController(); const timer = setTimeout(()=>controller.abort(),15000);
   try{
-    const r = await fetch(urlApp(archivo),{cache:'no-store',signal:controller.signal});
+    const r = await fetch(urlApp('esdegue/' + archivo),{cache:'no-store',signal:controller.signal});
+    //const r = await fetch(urlApp(archivo),{cache:'no-store',signal:controller.signal});
     if(!r.ok || /text\/html/i.test(r.headers.get('content-type')||'')) throw new Error('404');
     const texto = await r.text();
     const titulo = tituloDe(primeraLinea(texto));
