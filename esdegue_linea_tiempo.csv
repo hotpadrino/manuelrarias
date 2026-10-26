@@ -110,3 +110,87 @@ Fecha Inicio;Fecha Fin;Categoria;Colombia;Mundo;
 24/02/2022;Actualidad;Guerra y Conflicto;Impactos económicos y diplomáticos;Guerra Rusia-Ucrania;
 7/10/2023;Actualidad;Guerra y Conflicto;Seguimiento diplomático;Guerra Israel-Hamás;
 1/01/2024;Actualidad;Ciencia y Tecnología;Transformación digital;Expansión de la inteligencia artificial;
+07/12/1941;07/12/1941;Guerra y Conflicto;;Ataque a Pearl Harbor
+23/08/1942;02/02/1943;Guerra y Conflicto;;Batalla de Stalingrado
+06/06/1944;30/08/1944;Guerra y Conflicto;;Operación Overlord (Desembarco de Normandía)
+10/02/1948;12/05/1949;Relaciones Internacionales;;Puente Aéreo de Berlín
+15/09/1950;15/09/1950;Guerra y Conflicto;;Desembarco de Incheon
+01/11/1955;30/04/1975;Guerra y Conflicto;;Guerra de Vietnam
+06/02/1964;Actualidad;Relaciones Internacionales;;Misión de Paz de la ONU en Chipre (UNFICYP)
+27/03/1999;10/06/1999;Guerra y Conflicto;;Operaciones OTAN en Kosovo
+18/03/2011;31/10/2011;Guerra y Conflicto;;Intervención de la OTAN en Libia
+02/05/2011;02/05/2011;Guerra y Conflicto;;Operación Neptuno Spear
+23/06/2012;23/06/2012;Guerra y Conflicto;Operación Neptuno;
+01/01/2012;31/12/2014;Guerra y Conflicto;Campaña Espada de Honor;
+15/06/2014;23/03/2019;Guerra y Conflicto;;Operación Inherent Resolve
+01/01/2015;Actualidad;Ciencia y Tecnología;Fortalecimiento del Comando Conjunto Cibernético;
+01/07/1916;18/11/1918;Guerra y Conflicto;;Batalla del Somme y consolidación del mando aliado
+01/09/1939;31/12/1945;Guerra y Conflicto;;Blitzkrieg alemana en la Segunda Guerra Mundial
+01/01/1944;06/06/1944;Guerra y Conflicto;;Operación Fortitude
+01/01/2003;01/05/2003;Guerra y Conflicto;;Operación Libertad de Irak
+01/01/2014;31/12/2022;Guerra y Conflicto;;Guerra híbrida y operaciones de información en Ucrania
+01/01/2015;31/12/2015;Guerra y Conflicto;;Ciberataque a la red eléctrica de Ucrania
+15/06/1752;15/06/1752;Ciencia y Tecnología;;Experimento de Benjamin Franklin sobre la electricidad
+20/05/1873;20/05/1873;Ciencia y Tecnología;;Patente del telégrafo cuádruple de Thomas Edison
+10/03/1876;10/03/1876;Ciencia y Tecnología;;Invención del teléfono por Alexander Graham Bell
+01/12/1895;01/12/1895;Ciencia y Tecnología;;Demostración pública de la radio por Marconi
+17/12/1903;17/12/1903;Ciencia y Tecnología;;Primer vuelo controlado de los hermanos Wright
+16/07/1945;16/07/1945;Ciencia y Tecnología;;Prueba nuclear Trinity
+23/12/1947;23/12/1947;Ciencia y Tecnología;;Invención del transistor
+04/10/1957;04/10/1957;Ciencia y Tecnología;;Lanzamiento del Sputnik 1
+12/04/1961;12/04/1961;Ciencia y Tecnología;;Primer vuelo espacial tripulado (Yuri Gagarin)
+29/10/1969;29/10/1969;Ciencia y Tecnología;;Primer enlace de ARPANET
+15/11/1971;15/11/1971;Ciencia y Tecnología;;Introducción del microprocesador Intel 4004
+20/07/1969;20/07/1969;Ciencia y Tecnología;;Llegada del hombre a la Luna
+01/01/1983;01/01/1983;Ciencia y Tecnología;;Adopción de TCP/IP e inicio de Internet moderna
+06/08/1991;06/08/1991;Ciencia y Tecnología;;Publicación de la World Wide Web
+01/01/2007;09/01/2007;Ciencia y Tecnología;;Presentación del iPhone
+30/11/2022;30/11/2022;Ciencia y Tecnología;;Lanzamiento público de ChatGPT
+15/09/1954;15/09/1954;Ciencia y Tecnología;Inicio de la televisión en Colombia;
+19/04/1970;19/04/1970;Ciencia y Tecnología;Primer enlace satelital de telecomunicaciones en Colombia;
+20/07/1969;20/07/1969;Ciencia y Tecnología;Seguimiento desde Chocontá de la misión Apolo 11;
+01/01/1994;01/01/1994;Ciencia y Tecnología;Masificación de Internet académica en Colombia;
+13/12/1982;13/12/1982;Ciencia y Tecnología;Gabriel García Márquez recibe el Premio Nobel de Literatura;
+11/09/2001;11/09/2001;Guerra y Conflicto;;Atentados del 11 de septiembre
+24/10/1929;24/10/1929;Economía y sociedad;;Jueves Negro de Wall Street
+29/10/1929;29/10/1929;Economía y sociedad;;Crack de Wall Street e inicio de la Gran Depresión
+01/01/1930;31/12/1939;Economía y sociedad;;Gran Depresión
+01/03/1937;30/04/1942;Economía y sociedad;;Recesión de 1937-1938 por ajuste monetario de la Reserva Federal
+01/09/1939;02/09/1945;Economía y sociedad;;Impacto económico global de la Segunda Guerra Mundial
+01/01/1962;31/07/1962;Economía y sociedad;;Flash Crash de 1962
+01/11/1968;31/05/1970;Economía y sociedad;;Crack tecnológico de 1970
+17/10/1973;31/03/1974;Economía y sociedad;;Primera crisis del petróleo
+01/01/1979;31/12/1980;Economía y sociedad;;Segunda crisis del petróleo
+06/10/1979;31/12/1982;Economía y sociedad;;Ajuste Volcker y lucha contra la inflación
+19/10/1987;19/10/1987;Economía y sociedad;;Lunes Negro de Wall Street
+01/03/2000;31/10/2002;Economía y sociedad;;Estallido de la burbuja puntocom
+15/09/2008;31/12/2009;Economía y sociedad;;Crisis financiera global
+11/03/2020;31/12/2021;Economía y sociedad;;Impacto económico global de la pandemia COVID-19
+04/07/1944;22/07/1944;Economía y sociedad;;Conferencia de Bretton Woods
+27/12/1945;27/12/1945;Economía y sociedad;;Creación del Fondo Monetario Internacional
+01/01/1995;01/01/1995;Economía y sociedad;;Creación de la Organización Mundial del Comercio
+01/01/1999;01/01/1999;Economía y sociedad;;Nacimiento del euro
+15/02/1819;15/02/1819;Relaciones Internacionales;Congreso de Angostura;
+17/12/1819;17/12/1819;Relaciones Internacionales;Creación de la Gran Colombia;
+21/11/1821;21/11/1821;Relaciones Internacionales;Constitución de Cúcuta y consolidación de la Gran Colombia;
+21/11/1831;21/11/1831;Relaciones Internacionales;Disolución de la Gran Colombia;
+03/11/1903;03/11/1903;Relaciones Internacionales;Separación de Panamá;
+06/04/1914;06/04/1914;Relaciones Internacionales;Tratado Urrutia-Thomson con Estados Unidos;
+30/04/1948;30/04/1948;Relaciones Internacionales;Colombia participa en la creación de la OEA;
+24/10/1945;24/10/1945;Relaciones Internacionales;Ingreso de Colombia a las Naciones Unidas;
+15/06/1951;27/07/1953;Relaciones Internacionales;Participación del Batallón Colombia en la Guerra de Corea;
+09/01/1961;09/01/1961;Relaciones Internacionales;Ruptura de relaciones diplomáticas con Cuba;
+07/08/1969;07/08/1969;Relaciones Internacionales;Firma del Acuerdo de Cartagena y creación de la Comunidad Andina;
+17/03/1989;17/03/1989;Relaciones Internacionales;Ingreso al Foro de Cooperación Económica del Pacífico como observador;
+05/07/1991;05/07/1991;Relaciones Internacionales;Nueva Constitución y apertura internacional del Estado colombiano;
+01/01/1995;01/01/1995;Relaciones Internacionales;Ingreso de Colombia a la Organización Mundial del Comercio;
+15/07/2008;15/07/2008;Relaciones Internacionales;Crisis diplomática andina posterior a la Operación Fénix;
+30/10/2011;30/10/2011;Relaciones Internacionales;Creación de la Alianza del Pacífico;
+19/11/2012;19/11/2012;Relaciones Internacionales;Fallo de la Corte Internacional de Justicia sobre Nicaragua;
+25/09/2015;25/09/2015;Relaciones Internacionales;Adopción de los Objetivos de Desarrollo Sostenible por Colombia;
+31/05/2018;31/05/2018;Relaciones Internacionales;Colombia se convierte en socio global de la OTAN;
+28/04/2020;28/04/2020;Relaciones Internacionales;Ingreso de Colombia a la OCDE;
+20/07/1911;20/07/1911;Relaciones Internacionales;Tratado Muñoz Vernaza-Suárez con Ecuador;
+24/03/1922;24/03/1922;Relaciones Internacionales;Tratado Salomón-Lozano con Perú;
+24/05/1933;24/05/1933;Relaciones Internacionales;Protocolo de Río de Janeiro tras la Guerra Colombo-Peruana;
+19/11/2012;19/11/2012;Relaciones Internacionales;Fallo de La Haya sobre delimitación marítima con Nicaragua;
