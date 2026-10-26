@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fracciones Interactivas V3</title>
+
+<!-- ===== SEO y metadatos Open Graph ===== -->
+<meta name="description" content="Aprende fracciones jugando: explora círculos, rectángulos y polígonos, agrupa esferas con un imán, compara fracciones equivalentes y juega retos. Para primaria, funciona sin conexión.">
+<meta name="author" content="NovaElix">
+<meta name="theme-color" content="#0d47a1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="NovaElix">
+<meta property="og:title" content="Fracciones Interactivas V3 · Aprende fracciones jugando">
+<meta property="og:description" content="Herramienta educativa para primaria: explorador visual, agrupación con imán, equivalencias, comparador y juegos. Funciona sin conexión.">
+<meta property="og:locale" content="es_CO">
+<!-- Cuando publiques el archivo, añade aquí su URL real y una imagen (1200x630) alojada:
+<meta property="og:url" content="https://TU-DOMINIO/fracciones.html">
+<meta property="og:image" content="https://TU-DOMINIO/fracciones-og.png">
+<meta property="og:image:alt" content="Fracciones Interactivas V3">
+-->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fracciones Interactivas V3 · Aprende fracciones jugando">
+<meta name="twitter:description" content="Explorador visual, agrupación con imán, equivalencias, comparador y juegos de fracciones para primaria.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%95%3C/text%3E%3C/svg%3E">
+
+<style>
+:root{
+  --pink:#ff6fa8; --purple:#7c5cff; --teal:#2ec4b6; --blue:#38bdf8;
+  --ink:#2b2350; --muted:#6b6590; --card:#ffffffee; --empty:#eef0fb; --ok:#22c55e; --bad:#ef4444;
+  --radius:24px; --shadow:0 10px 30px rgba(124,92,255,.18);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{
+  font-family:"Baloo 2","Fredoka","Nunito","Trebuchet MS","Segoe UI Rounded",system-ui,sans-serif;
+  color:var(--ink); min-height:100vh; display:flex; flex-direction:column; overflow-x:hidden;
+  background:
+    radial-gradient(circle at 10% 10%,#ffe4f1 0,transparent 40%),
+    radial-gradient(circle at 90% 20%,#e0f7ff 0,transparent 40%),
+    radial-gradient(circle at 50% 100%,#fff3c4 0,transparent 45%),#f7f4ff;
+}
+header{padding:18px 16px 6px;text-align:center}
+h1{margin:0;font-size:clamp(1.6rem,5vw,2.6rem);background:linear-gradient(90deg,var(--pink),var(--purple),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px 12px}
+nav button{border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;background:#fff;color:var(--ink);box-shadow:0 4px 0 #d9d3f7;transition:transform .15s}
+nav button:hover{transform:translateY(-2px)}
+nav button[aria-selected=true]{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 4px 0 #5a3fd1}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:8px 14px 24px}
+.panel[hidden]{display:none}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 10px;font-size:1.25rem}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.9rem;color:var(--muted)}
+input[type=number],select{font:inherit;font-size:1.2rem;font-weight:700;width:96px;padding:8px 10px;border-radius:14px;border:3px solid #ddd6ff;background:#fff;color:var(--ink);outline:none;text-align:center}
+select{width:auto}
+input:focus,select:focus{border-color:var(--purple)}
+input.invalid{border-color:var(--bad);background:#fff1f1}
+.fi{display:inline-flex;flex-direction:column;align-items:stretch;gap:4px}
+.fi input{width:88px}
+.fi hr{width:100%;border:0;border-top:5px solid var(--ink);margin:0;border-radius:4px}
+.hint{font-size:.85rem;color:var(--muted);font-weight:700}
+.err{background:#fee2e2;color:#991b1b;border-radius:14px;padding:8px 12px;font-weight:700;margin-top:10px;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.seg{display:inline-flex;background:#ece8ff;border-radius:999px;padding:4px;gap:2px}
+.seg button{border:0;background:transparent;font:inherit;font-weight:700;padding:8px 14px;border-radius:999px;cursor:pointer;color:var(--ink)}
+.seg button[aria-pressed=true]{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.15);color:var(--purple)}
+.chk{flex-direction:row;align-items:center;gap:6px;background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer;color:var(--ink)}
+.chk input{width:18px;height:18px;accent-color:var(--purple)}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat{background:linear-gradient(135deg,#fff,#f3efff);border:2px solid #e6e0ff;border-radius:18px;padding:10px;text-align:center}
+.stat small{display:block;color:var(--muted);font-weight:700}
+.stat b{font-size:1.3rem;word-break:break-word}
+.figs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;transition:opacity .2s}
+.figs.dim{opacity:.35}
+.fig{flex:0 1 210px;min-width:90px;text-align:center}
+.figs.rect{flex-direction:column}
+.figs.rect .fig{width:min(100%,440px);flex:none}
+svg{width:100%;height:auto;display:block;overflow:visible}
+.cap{font-weight:800;margin-top:2px}
+.note{text-align:center;color:var(--muted);font-weight:700;margin-top:8px}
+.vf{display:inline-flex;flex-direction:column;align-items:center;font-weight:800;font-size:1.5rem;line-height:1.1;vertical-align:middle;margin:0 4px}
+.vf span:first-child{border-bottom:3px solid currentColor;padding:0 6px 2px}
+.vf span:last-child{padding:2px 6px 0}
+.eqrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:1.6rem;font-weight:800;margin:8px 0}
+.arrow{font-size:1.6rem;text-align:center;color:var(--purple);margin:2px 0}
+.steps{display:flex;flex-direction:column;align-items:center}
+.stepNote{font-size:.9rem;color:var(--muted);font-weight:700}
+.cmp{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:start;margin-top:12px}
+.cmp .vs{align-self:center;font-weight:800;font-size:1.4rem;color:var(--pink)}
+.cmpCol{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;border-radius:20px;padding:8px;border:4px solid transparent;transition:background .3s,border-color .3s}
+.cmp.same .cmpCol{background:#dcfce7;border-color:var(--ok);animation:pop .5s}
+.cmp.same .vs{color:var(--ok)}
+.result{margin-top:10px;text-align:center;font-size:1.5rem;font-weight:800;background:#fff8d6;border-radius:18px;padding:10px;transition:background .3s}
+.result.same{background:#bbf7d0;color:#166534;border:4px solid var(--ok);animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.08)}}
+.board{position:relative;width:100%;border-radius:20px;background:repeating-linear-gradient(45deg,#f6f3ff,#f6f3ff 14px,#fff 14px,#fff 28px);border:3px dashed #cfc6ff;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.halo{position:absolute;left:0;top:0;border-radius:50%;border:3px dashed #b7a8ff;background:#7c5cff14;pointer-events:none;z-index:1}
+.halo.done{border:3px solid var(--ok);background:#22c55e26}
+.ball{position:absolute;left:0;top:0;z-index:5;border-radius:50%;cursor:grab;touch-action:none;box-shadow:inset -4px -5px 8px rgba(0,0,0,.2),0 3px 6px rgba(0,0,0,.25);will-change:transform}
+.ball::after{content:"";position:absolute;left:22%;top:16%;width:30%;height:26%;border-radius:50%;background:#ffffffaa}
+.ball.drag{cursor:grabbing;box-shadow:inset -4px -5px 8px rgba(0,0,0,.2),0 10px 16px rgba(0,0,0,.3)}
+.ball.done{background:radial-gradient(circle at 35% 30%,#86efac,#16a34a)!important;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center}
+.chip{background:#fff;border:2px solid #e6e0ff;border-radius:999px;padding:6px 14px;font-weight:800}
+.goal{text-align:center;font-size:1.3rem;font-weight:800;margin:8px 0}
+.win{background:#dcfce7;color:#166534;border-radius:16px;padding:10px;text-align:center;font-weight:800;margin-top:10px}
+.score{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-top:14px}
+.opt{border:4px solid #ddd6ff;background:#fff;border-radius:20px;padding:12px 6px;cursor:pointer;color:var(--ink);transition:transform .15s,background .2s;font:inherit}
+.opt:hover:not(:disabled){transform:translateY(-3px);border-color:var(--purple)}
+.opt.ok{background:#bbf7d0;border-color:var(--ok);animation:pop .4s}
+.opt.bad{background:#fecaca;border-color:var(--bad);animation:shake .35s}
+.opt:disabled{cursor:default}
+.fb{min-height:52px;margin-top:12px;text-align:center;font-size:1.4rem;font-weight:800;border-radius:16px;padding:10px;visibility:hidden}
+.fb.show{visibility:visible}
+.fb.good{background:#dcfce7;color:#166534}
+.fb.wrong{background:#fee2e2;color:#991b1b}
+.btn{border:0;border-radius:999px;padding:10px 20px;font:inherit;font-weight:800;font-size:1rem;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--teal),var(--blue));box-shadow:0 4px 0 #168a9a}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #168a9a}
+.btn.alt{background:linear-gradient(135deg,var(--pink),var(--purple));box-shadow:0 4px 0 #5a3fd1}
+.btn.soft{background:#fff;color:var(--ink);box-shadow:0 3px 0 #d9d3f7;padding:8px 14px}
+.gameFig .fig{flex-basis:min(190px,40vw)}
+.gameFig{min-height:150px}
+footer{text-align:center;padding:14px;background:#0d47a1;color:#fff;font-weight:700;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+footer a{color:#90caf9;font-weight:800}
+@media(max-width:560px){.cmp{grid-template-columns:1fr 36px 1fr}.vf{font-size:1.2rem}nav button{padding:8px 12px;font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📘 Fracciones Interactivas V3</h1>
+  <p>¡Explora, agrupa, compara y juega con las fracciones!</p>
+</header>
+
+<nav role="tablist" aria-label="Secciones">
+  <button role="tab" aria-selected="true" data-tab="0">🔍 Explorador</button>
+  <button role="tab" aria-selected="false" data-tab="1">🧲 Agrupación</button>
+  <button role="tab" aria-selected="false" data-tab="2">➗ Operaciones</button>
+  <button role="tab" aria-selected="false" data-tab="3">🎮 Juegos</button>
+</nav>
+
+<main>
+<section class="panel" id="p0" role="tabpanel">
+  <div class="card">
+    <div class="row">
+      <div class="fi"><input type="number" id="eN" value="17" min="0" max="108" inputmode="numeric" aria-label="Numerador"><hr><input type="number" id="eD" value="5" min="1" max="36" inputmode="numeric" aria-label="Denominador"></div>
+      <div class="seg" id="eMode" role="group" aria-label="Modo">
+        <button data-mode="circle" aria-pressed="true">⭕ Círculo</button>
+        <button data-mode="rect" aria-pressed="false">▭ Rectángulo</button>
+        <button data-mode="poly" aria-pressed="false">⬡ Polígono</button>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:6px">Arriba: numerador (0–108) · Abajo: denominador (1–36)</div>
+    <div class="row" style="margin-top:10px">
+      <label class="chk"><input type="checkbox" id="eVals"> Valores</label>
+      <label class="chk" id="eAngWrap"><input type="checkbox" id="eAngs"> Ángulos</label>
+      <label class="chk"><input type="checkbox" id="eLbl" checked> Etiquetas</label>
+    </div>
+    <div class="err" id="eErr" hidden role="alert"></div>
+    <div class="info" id="eInfo"></div>
+  </div>
+  <div class="card">
+    <div class="figs" id="eFig"></div>
+    <div class="note" id="eNote"></div>
+  </div>
+  <div class="card" id="ePolyCard" hidden>
+    <h2>⬡ Datos del polígono</h2>
+    <div class="info" id="ePolyInfo"></div>
+    <div class="note" id="ePolyNote"></div>
+  </div>
+</section>
+
+<section class="panel" id="p1" role="tabpanel" hidden>
+  <div class="card">
+    <div class="row">
+      <div class="fi"><input type="number" id="mN" value="17" min="1" max="100" inputmode="numeric" aria-label="Numerador"><hr><input type="number" id="mD" value="5" min="1" max="18" inputmode="numeric" aria-label="Denominador"></div>
+      <button class="btn" id="mShuffle">🔀 Reiniciar</button>
+      <button class="btn alt" id="mChange" title="Genera otra división aleatoria: numerador de 10 a 100 y denominador de 2 a 18">🎲 Cambiar</button>
+    </div>
+    <div class="hint" style="margin-top:6px">Arriba: esferas (1–100) · Abajo: tamaño del grupo (1–18)</div>
+    <div class="err" id="mErr" hidden role="alert"></div>
+    <div class="goal" id="mGoal"></div>
+    <p class="note" style="margin-top:0">Arrastra una esfera: ¡funciona como imán y atrae a las que se acercan! Suéltala donde quieras 🧲</p>
+    <div class="board" id="mBoard"></div>
+    <div class="chips" id="mChips"></div>
+    <div id="mWin"></div>
+  </div>
+</section>
+
+<section class="panel" id="p2" role="tabpanel" hidden>
+  <div class="card">
+    <h2>🟰 Fracciones equivalentes</h2>
+    <div class="fi"><input type="number" id="qN" value="1" min="0" max="108" inputmode="numeric" aria-label="Numerador"><hr><input type="number" id="qD" value="2" min="1" max="36" inputmode="numeric" aria-label="Denominador"></div>
+    <div class="err" id="qErr" hidden role="alert"></div>
+    <div class="eqrow" id="qOut"></div>
+  </div>
+  <div class="card">
+    <h2>✂️ Simplificar paso a paso</h2>
+    <div class="fi"><input type="number" id="sN" value="12" min="0" max="108" inputmode="numeric" aria-label="Numerador"><hr><input type="number" id="sD" value="18" min="1" max="36" inputmode="numeric" aria-label="Denominador"></div>
+    <div class="err" id="sErr" hidden role="alert"></div>
+    <div class="steps" id="sOut"></div>
+    <div class="eqrow" id="sEq"></div>
+  </div>
+  <div class="card">
+    <h2>⚖️ Comparador</h2>
+    <div class="row" style="justify-content:center">
+      <div class="fi"><input type="number" id="cA" value="2" min="0" max="108" inputmode="numeric" aria-label="Numerador a"><hr><input type="number" id="cB" value="3" min="1" max="36" inputmode="numeric" aria-label="Denominador b"></div>
+      <span style="font-size:1.6rem;font-weight:800">VS</span>
+      <div class="fi"><input type="number" id="cC" value="3" min="0" max="108" inputmode="numeric" aria-label="Numerador c"><hr><input type="number" id="cDd" value="5" min="1" max="36" inputmode="numeric" aria-label="Denominador d"></div>
+    </div>
+    <div class="err" id="cErr" hidden role="alert"></div>
+    <div class="cmp" id="cOut"></div>
+    <div class="result" id="cRes"></div>
+  </div>
+</section>
+
+<section class="panel" id="p3" role="tabpanel" hidden>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <label>Nivel
+        <select id="gLevel"><option value="1">🌱 Fácil</option><option value="2">🌟 Medio</option><option value="3">🚀 Difícil</option></select></label>
+      <div class="score">
+        <span class="chip">⭐ Puntos: <b id="gScore">0</b></span>
+        <span class="chip">🎯 Aciertos: <b id="gHits">0</b>/<b id="gRounds">0</b></span>
+        <span class="chip">🔥 Racha: <b id="gStreak">0</b></span>
+        <button class="btn soft" id="gSound" aria-pressed="true" title="Activar o silenciar sonidos">🔊 Sonido</button>
+      </div>
+    </div>
+    <h2 style="text-align:center;margin-top:14px">¿Qué fracción representa la figura?</h2>
+    <div class="figs gameFig" id="gFig"></div>
+    <div class="options" id="gOpts"></div>
+    <div class="fb" id="gFb" role="status" aria-live="polite"></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn" id="gNext">➡️ Nuevo reto</button></div>
+  </div>
+</section>
+</main>
+
+<footer>Desarrollado por NovaElix | <a href="https://novaelix.vercel.app/" target="_blank" rel="noopener noreferrer">https://novaelix.vercel.app/</a></footer>
+
+<script>
+"use strict";
+/* ===================== UTILIDADES ===================== */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
+const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const shuffle = arr => { for (let i = arr.length - 1; i > 0; i--) { const j = rand(0, i); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+const fmt = (x, dec = 2) => String(parseFloat(x.toFixed(dec)));
+const rad = deg => deg * Math.PI / 180;
+const pt = (cx, cy, r, deg) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
+const vf = (n, d) => `<span class="vf"><span>${n}</span><span>${d}</span></span>`;
+const PALETTE = ['#ff6fa8', '#ffb02e', '#2ec4b6', '#7c5cff', '#38bdf8'];
+const EMPTY = '#eef0fb', STROKE = '#2b2350';
+let uid = 0;
+
+function readFrac(nEl, dEl, errEl, o) {
+  const n = nEl.value.trim(), d = dEl.value.trim();
+  let msg = '', badN = false, badD = false;
+  if (n === '' || d === '') { msg = 'Escribe el numerador y el denominador.'; badN = n === ''; badD = d === ''; }
+  else if (!/^\d+$/.test(n) || !/^\d+$/.test(d)) { msg = 'Usa solo números enteros positivos.'; badN = !/^\d+$/.test(n); badD = !/^\d+$/.test(d); }
+  else if (+d === 0) { msg = '¡El denominador no puede ser 0!'; badD = true; }
+  else if (+d > o.maxD) { msg = `El denominador debe estar entre 1 y ${o.maxD}.`; badD = true; }
+  else if (+n < o.minN || +n > o.maxN) { msg = `El numerador debe estar entre ${o.minN} y ${o.maxN}.`; badN = true; }
+  nEl.classList.toggle('invalid', badN); dEl.classList.toggle('invalid', badD);
+  if (msg) { errEl.textContent = '⚠️ ' + msg; errEl.hidden = false; return null; }
+  errEl.hidden = true; return { n: +n, d: +d };
+}
+
+/* ===================== SONIDOS (Web Audio, sin archivos) ===================== */
+const Sound = (() => {
+  let ctx = null, on = true, lastTic = 0;
+  function tone(freq, start, dur, type, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime + start;
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function play(fn) {
+    if (!on) return;
+    try {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+      fn();
+    } catch (e) { /* audio no disponible */ }
+  }
+  const unlock = () => play(() => {});
+  const good = () => play(() => [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.1, 0.25, 'triangle', 0.25)));
+  const bad = () => play(() => { tone(220, 0, 0.22, 'sawtooth', 0.15); tone(165, 0.2, 0.35, 'sawtooth', 0.15); });
+  const tic = () => {
+    const now = performance.now(); if (now - lastTic < 45) return; lastTic = now;
+    play(() => { tone(1900, 0, 0.05, 'square', 0.08); tone(1200, 0.025, 0.04, 'sine', 0.1); });
+  };
+  const toggle = () => { on = !on; return on; };
+  return { good, bad, tic, unlock, toggle };
+})();
+
+/* ===================== FORMAS SVG ===================== */
+const Shapes = {
+  circle(k, n, o = {}) {
+    const c = 100, r = 88, col = o.color || PALETTE[0], step = 360 / n;
+    let s = `<svg viewBox="0 0 200 200" role="img" aria-label="${k} de ${n} partes">`;
+    if (n === 1) s += `<circle cx="100" cy="100" r="${r}" fill="${k ? col : EMPTY}" stroke="${STROKE}" stroke-width="3"/>`;
+    else for (let i = 0; i < n; i++) {
+      const a0 = -90 + i * step, a1 = a0 + step, [x0, y0] = pt(c, c, r, a0), [x1, y1] = pt(c, c, r, a1);
+      s += `<path d="M${c} ${c}L${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${step > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${i < k ? col : EMPTY}" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>`;
+    }
+    s += `<circle cx="100" cy="100" r="${r}" fill="none" stroke="${STROKE}" stroke-width="3"/>`;
+    const fs = Math.min(14, (2 * Math.PI * r * 0.6 / n) * 0.6);
+    if ((o.vals || o.angs) && fs >= 5.5) for (let i = 0; i < n; i++) {
+      const am = -90 + (i + .5) * step, tc = i < k ? '#fff' : STROKE;
+      const [vx, vy] = n === 1 ? [c, c - 8] : pt(c, c, r * .55, am), [ax, ay] = n === 1 ? [c, c + 12] : pt(c, c, r * .8, am);
+      if (o.vals) s += `<text x="${vx.toFixed(1)}" y="${vy.toFixed(1)}" font-size="${fs}" font-weight="700" fill="${tc}" text-anchor="middle" dominant-baseline="middle">1/${n}</text>`;
+      if (o.angs) s += `<text x="${ax.toFixed(1)}" y="${ay.toFixed(1)}" font-size="${fs}" font-weight="700" fill="${tc}" text-anchor="middle" dominant-baseline="middle">${fmt(step)}°</text>`;
+    }
+    return s + '</svg>';
+  },
+  rect(k, n, o = {}) {
+    const W = 300, H = 56, col = o.color || PALETTE[0], w = W / n;
+    let s = `<svg viewBox="-2 -2 ${W + 4} ${H + 4}" role="img" aria-label="${k} de ${n} partes">`;
+    for (let i = 0; i < n; i++) {
+      s += `<rect x="${i * w}" y="0" width="${w}" height="${H}" fill="${i < k ? col : EMPTY}" stroke="#fff" stroke-width="2"/>`;
+      if (o.vals && n <= 16) s += `<text x="${i * w + w / 2}" y="${H / 2}" font-size="${Math.min(14, w * .5)}" font-weight="700" fill="${i < k ? '#fff' : STROKE}" text-anchor="middle" dominant-baseline="middle">1/${n}</text>`;
+    }
+    return s + `<rect x="0" y="0" width="${W}" height="${H}" rx="6" fill="none" stroke="${STROKE}" stroke-width="3"/></svg>`;
+  },
+  /** Polígono con tantos lados como el denominador (mínimo 3); sectores triangulares reales. */
+  poly(k, n, o = {}) {
+    const c = 120, R = 82, sides = Math.max(3, n), col = o.color || PALETTE[0], id = 'cp' + (++uid), step = 360 / n;
+    const vs = Array.from({ length: sides }, (_, j) => pt(c, c, R, -90 + j * 360 / sides));
+    const d = 'M' + vs.map(p => p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join('L') + 'Z';
+    let s = `<svg viewBox="0 0 240 240" role="img" aria-label="${k} de ${n} partes"><defs><clipPath id="${id}"><path d="${d}"/></clipPath></defs>`;
+    s += `<path d="${d}" fill="${EMPTY}"/><g clip-path="url(#${id})">`;
+    if (n === 1) { if (k) s += `<path d="${d}" fill="${col}"/>`; }
+    else for (let i = 0; i < k; i++) {
+      const a0 = -90 + i * step, steps = Math.ceil(step / 45);
+      let w = `M${c} ${c}`;
+      for (let t = 0; t <= steps; t++) { const [x, y] = pt(c, c, 170, a0 + step * t / steps); w += `L${x.toFixed(1)} ${y.toFixed(1)}`; }
+      s += `<path d="${w}Z" fill="${col}"/>`;
+    }
+    if (n > 1) for (let i = 0; i < n; i++) { const [x, y] = pt(c, c, 170, -90 + i * step); s += `<line x1="${c}" y1="${c}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#fff" stroke-width="2.5"/>`; }
+    s += `</g><path d="${d}" fill="none" stroke="${STROKE}" stroke-width="3" stroke-linejoin="round"/>`;
+    const fs = Math.min(14, (2 * Math.PI * R * 0.5 / n) * 0.6);
+    if (o.vals && fs >= 5.5) for (let i = 0; i < n; i++) {
+      const [x, y] = n === 1 ? [c, c] : pt(c, c, R * .5, -90 + (i + .5) * step);
+      s += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${fs}" font-weight="700" fill="${i < k ? '#fff' : STROKE}" text-anchor="middle" dominant-baseline="middle">1/${n}</text>`;
+    }
+    const vfs = sides > 24 ? 6 : sides > 16 ? 7.5 : 10;
+    vs.forEach((_, j) => {
+      const [x, y] = pt(c, c, R + 15, -90 + j * 360 / sides);
+      s += `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${vfs}" font-weight="800" fill="#7c5cff" text-anchor="middle" dominant-baseline="middle">${j + 1}</text>`;
+    });
+    return s + '</svg>';
+  }
+};
+
+function fracFigure(num, den, type, o = {}) {
+  const whole = Math.floor(num / den), rem = num % den, shown = Math.min(whole, 3), list = [];
+  for (let i = 0; i < shown; i++) list.push([den, den]);
+  if (rem > 0) list.push([rem, den]);
+  if (!list.length) list.push([0, den]);
+  const html = list.map(([k, n], i) => {
+    const so = { ...o, color: o.color || PALETTE[i % PALETTE.length] };
+    return `<div class="fig">${Shapes[type](k, n, so)}${o.lbl ? `<div class="cap">${k}/${n}</div>` : ''}</div>`;
+  }).join('');
+  return { html, hidden: whole - shown };
+}
+function paintFig(el, num, den, type, o) {
+  const f = fracFigure(num, den, type, o);
+  el.classList.toggle('rect', type === 'rect');
+  el.innerHTML = f.html; return f;
+}
+
+/* ===================== PESTAÑA 1 · EXPLORADOR ===================== */
+const Explorer = (() => {
+  let mode = 'circle';
+  const nEl = $('#eN'), dEl = $('#eD');
+  const stat = (t, v) => `<div class="stat"><small>${t}</small><b>${v}</b></div>`;
+  function update() {
+    const fig = $('#eFig');
+    $('#eAngWrap').hidden = mode !== 'circle'; $('#ePolyCard').hidden = true;
+    const f = readFrac(nEl, dEl, $('#eErr'), { minN: 0, maxN: 108, maxD: 36 });
+    if (!f) { fig.classList.add('dim'); return; }
+    fig.classList.remove('dim');
+    const { n, d } = f, whole = Math.floor(n / d), rem = n % d, val = n / d;
+    const approx = Math.abs(val * 1e4 - Math.round(val * 1e4)) > 1e-9 ? '≈ ' : '';
+    const mixed = rem === 0 ? String(whole) : whole === 0 ? 'Fracción propia' : `${whole} ${vf(rem, d)}`;
+    $('#eInfo').innerHTML = stat('Fracción', vf(n, d)) + stat('Fracción mixta', mixed) + stat('Decimal', approx + fmt(val, 4)) +
+      stat('Porcentaje', fmt(val * 100) + '%') + stat('Ángulo por sector', fmt(360 / d) + '°') + stat('Ángulo coloreado', fmt(n * 360 / d) + '°');
+    const r = paintFig(fig, n, d, mode, { vals: $('#eVals').checked, angs: $('#eAngs').checked, lbl: $('#eLbl').checked });
+    $('#eNote').textContent = r.hidden > 0 ? `Se muestran 3 enteros; hay ${r.hidden} entero(s) más que no caben en pantalla.` : '';
+    if (mode === 'poly') {
+      const sides = Math.max(3, d);
+      $('#ePolyCard').hidden = false;
+      $('#ePolyInfo').innerHTML = stat('Lados', sides) + stat('Vértices', `1 … ${sides}`) + stat('Ángulo central (360/lados)', fmt(360 / sides) + '°') +
+        stat('Ángulo interior', fmt((sides - 2) * 180 / sides) + '°') + stat('Fracción coloreada', vf(n, d));
+      $('#ePolyNote').textContent = d < 3 ? 'Un polígono necesita al menos 3 lados, por eso se dibuja un triángulo.' : '';
+    }
+  }
+  function init() {
+    ['#eN', '#eD', '#eVals', '#eAngs', '#eLbl'].forEach(s => $(s).addEventListener('input', update));
+    $$('#eMode button').forEach(b => b.addEventListener('click', () => {
+      mode = b.dataset.mode; $$('#eMode button').forEach(x => x.setAttribute('aria-pressed', x === b)); update();
+    }));
+    update();
+  }
+  return { init, update };
+})();
+
+/* =====================================================================
+   PESTAÑA 2 · AGRUPACIÓN LIBRE CON IMÁN
+   - La esfera arrastrada es el CENTRO del grupo; las demás se acomodan
+     alrededor en anillos concéntricos (grupo compacto, sin "dona" vacía).
+   - Radio de influencia del imán = 3 diámetros de bola (6·r).
+   - Denominador (tamaño del grupo) de 1 a 18.
+   ===================================================================== */
+const Manip = (() => {
+  const board = $('#mBoard'), nEl = $('#mN'), dEl = $('#mD');
+  const PAL = ['#ff6fa8', '#ffb02e', '#7c5cff', '#38bdf8', '#fb7185', '#a3e635'];
+  const MAG = 0.2, FOLLOW = 0.55, MAX_D = 18;
+  let balls = [], groups = [], offs = [], r = 16, groupR = 0, magR = 0, W = 0, H = 0, N = 0, D = 0, topZ = 10, raf = 0;
+
+  /** Posiciones relativas de D esferas: una en el centro y el resto en anillos concéntricos. */
+  function packOffsets(count, rr) {
+    const s = 2 * rr + 3, out = [[0, 0]];
+    let ring = 1;
+    while (out.length < count) {
+      const R = ring * s, cap = Math.max(1, Math.floor(2 * Math.PI * R / s)), n = Math.min(cap, count - out.length);
+      const phase = ring % 2 ? -90 : -90 + 180 / n;
+      for (let i = 0; i < n; i++) out.push([R * Math.cos(rad(phase + i * 360 / n)), R * Math.sin(rad(phase + i * 360 / n))]);
+      ring++;
+    }
+    return out;
+  }
+  const slotPos = (g, i) => [g.cx + offs[i][0], g.cy + offs[i][1]];
+  const draw = b => { b.el.style.transform = `translate(${b.x - r}px,${b.y - r}px)`; };
+  const local = e => { const bb = board.getBoundingClientRect(); return [e.clientX - bb.left, e.clientY - bb.top]; };
+
+  function build() {
+    const f = readFrac(nEl, dEl, $('#mErr'), { minN: 1, maxN: 100, maxD: MAX_D });
+    if (!f) return;
+    W = board.clientWidth; if (W < 60) return;
+    cancelAnimationFrame(raf); raf = 0;
+    N = f.n; D = f.d; board.innerHTML = ''; balls = []; groups = [];
+    r = W < 520 ? (D > 8 ? 11 : 12) : 17;
+    offs = packOffsets(D, r);
+    groupR = Math.max(...offs.map(o => Math.hypot(o[0], o[1]))) + r;
+    magR = 6 * r;
+    const needed = Math.ceil(N * (2 * r + 6) * (2 * r + 6) * 1.7 / W);
+    H = clamp(Math.max(Math.round(innerHeight * 0.6), needed, Math.ceil(2 * groupR + 40)), 380, 1100);
+    board.style.height = H + 'px';
+    const placed = [];
+    for (let i = 0; i < N; i++) {
+      let x = 0, y = 0;
+      for (let t = 0; t < 300; t++) {
+        x = rand(Math.ceil(r + 2), Math.floor(W - r - 2)); y = rand(Math.ceil(r + 2), Math.floor(H - r - 2));
+        if (placed.every(p => Math.hypot(p[0] - x, p[1] - y) > 2 * r + 4)) break;
+      }
+      placed.push([x, y]);
+      const el = document.createElement('div'); el.className = 'ball';
+      el.style.width = el.style.height = 2 * r + 'px';
+      el.style.background = `radial-gradient(circle at 35% 30%, #fff8, ${PAL[i % PAL.length]} 55%)`;
+      board.appendChild(el);
+      const b = { i, el, x, y, tx: x, ty: y, group: null, drag: false, locked: false, dx: 0, dy: 0 };
+      bind(b); balls.push(b); draw(b);
+    }
+    status();
+  }
+  /** Botón "Cambiar": nueva división aleatoria, numerador de 10 a 100 y denominador de 2 a 18. */
+  function change() {
+    nEl.value = rand(10, 100); dEl.value = rand(2, MAX_D); build();
+  }
+  function removeGroup(g) { if (g.halo) g.halo.remove(); groups.splice(groups.indexOf(g), 1); }
+  function detach(o) {
+    const g = o.group; if (!g) return;
+    g.members = g.members.filter(m => m !== o); o.group = null;
+    if (!g.members.length) removeGroup(g);
+  }
+  function capture(b, g) {
+    if (g.members.length >= D) return;
+    const near = balls.filter(o => o !== b && !o.locked && !o.drag && o.group !== g && Math.hypot(o.x - b.x, o.y - b.y) < magR)
+      .sort((p, q) => Math.hypot(p.x - b.x, p.y - b.y) - Math.hypot(q.x - b.x, q.y - b.y));
+    for (const o of near) {
+      if (g.members.length >= D) break;
+      detach(o); g.members.push(o); o.group = g; Sound.tic();
+    }
+  }
+  function separate(g) {
+    const minD = 2 * groupR + 6, mx = groupR + 2;
+    for (let it = 0; it < 40; it++) {
+      let moved = false;
+      for (const o of groups) {
+        if (o === g) continue;
+        let dx = g.cx - o.cx, dy = g.cy - o.cy, d = Math.hypot(dx, dy);
+        if (d < minD) { if (d < 0.01) { dx = 1; dy = 0; d = 1; } g.cx += dx / d * (minD - d); g.cy += dy / d * (minD - d); moved = true; }
+      }
+      g.cx = clamp(g.cx, Math.min(mx, W / 2), Math.max(W - mx, W / 2)); g.cy = clamp(g.cy, Math.min(mx, H / 2), Math.max(H - mx, H / 2));
+      if (!moved) break;
+    }
+  }
+  function bind(b) {
+    b.el.addEventListener('pointerdown', e => {
+      if (b.locked) return;
+      e.preventDefault(); b.el.setPointerCapture(e.pointerId);
+      Sound.unlock();
+      const [px, py] = local(e);
+      b.dx = b.x - px; b.dy = b.y - py; b.tx = b.x; b.ty = b.y;
+      detach(b);
+      const g = { members: [b], cx: b.x, cy: b.y, done: false, halo: null };
+      groups.push(g); b.group = g; b.drag = true;
+      b.el.classList.add('drag'); b.el.style.zIndex = ++topZ; kick();
+    });
+    b.el.addEventListener('pointermove', e => {
+      if (!b.drag) return;
+      const [px, py] = local(e), m = Math.min(groupR, W / 2, H / 2);
+      b.tx = clamp(px + b.dx, m, W - m); b.ty = clamp(py + b.dy, m, H - m);
+    });
+    const up = () => {
+      if (!b.drag) return;
+      b.drag = false; b.el.classList.remove('drag');
+      const g = b.group; g.cx = b.tx; g.cy = b.ty;
+      separate(g);
+      if (g.members.length === D) { g.done = true; g.members.forEach(m => { m.locked = true; m.el.classList.add('done'); }); }
+      kick();
+    };
+    b.el.addEventListener('pointerup', up);
+    b.el.addEventListener('pointercancel', up);
+  }
+  function tick() {
+    let active = false;
+    balls.forEach(b => { if (b.drag && b.group) { b.group.cx = b.tx; b.group.cy = b.ty; capture(b, b.group); } });
+    groups.slice().forEach(g => {
+      if (D > 1 && !g.done && g.members.length < 2 && !g.members.some(m => m.drag)) { g.members.forEach(m => m.group = null); removeGroup(g); }
+    });
+    for (const g of groups) {
+      g.members.forEach((m, i) => {
+        const [sx, sy] = slotPos(g, i);
+        if (m.drag) { m.x += (m.tx - m.x) * FOLLOW; m.y += (m.ty - m.y) * FOLLOW; active = true; }
+        else {
+          m.x += (sx - m.x) * MAG; m.y += (sy - m.y) * MAG;
+          if (Math.hypot(sx - m.x, sy - m.y) < 0.4) { m.x = sx; m.y = sy; } else active = true;
+        }
+        draw(m);
+      });
+      const show = D > 1 && (g.members.length > 1 || g.done), s = 2 * groupR + 8;
+      if (show && !g.halo) { g.halo = document.createElement('div'); g.halo.className = 'halo'; g.halo.style.width = g.halo.style.height = s + 'px'; board.appendChild(g.halo); }
+      if (g.halo) { g.halo.style.transform = `translate(${g.cx - s / 2}px,${g.cy - s / 2}px)`; g.halo.classList.toggle('done', g.done); g.halo.style.display = show ? '' : 'none'; }
+    }
+    raf = active ? requestAnimationFrame(tick) : 0;
+    if (!active) status();
+  }
+  const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+  function status() {
+    const q = Math.floor(N / D), rem = N % D;
+    const comp = groups.filter(g => g.done).length, loose = balls.filter(b => !(b.group && b.group.done)).length;
+    const eq = rem === 0 ? `${N}/${D} = ${q}` : q === 0 ? `${N}/${D} (fracción propia)` : `${N}/${D} = ${q} ${rem}/${D}`;
+    $('#mGoal').innerHTML = `${N} ÷ ${D} → cociente <b>${q}</b>, residuo <b>${rem}</b><br>${eq}`;
+    $('#mChips').innerHTML = `<span class="chip">✅ Grupos completos: ${comp} de ${q}</span><span class="chip">🧩 Residuo esperado: ${rem}</span><span class="chip">⚪ Sin grupo completo: ${loose}</span>`;
+    $('#mWin').innerHTML = (q > 0 && comp === q && loose === rem) ? `<div class="win">🎉 ¡Muy bien! ${comp} grupo(s) completo(s) y residuo ${rem}: ${eq}</div>` : '';
+  }
+  function init() {
+    [nEl, dEl].forEach(e => e.addEventListener('input', build));
+    $('#mShuffle').addEventListener('click', build);
+    $('#mChange').addEventListener('click', change);
+    let t; window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { if (!$('#p1').hidden && board.clientWidth !== W) build(); }, 200); });
+  }
+  return { init, build };
+})();
+
+/* ===================== PESTAÑA 3 · OPERACIONES ===================== */
+const Ops = (() => {
+  const L = { minN: 0, maxN: 108, maxD: 36 };
+  function equivalents() {
+    const f = readFrac($('#qN'), $('#qD'), $('#qErr'), L); if (!f) return;
+    const g = gcd(f.n, f.d), a = f.n / g, b = f.d / g;
+    $('#qOut').innerHTML = [1, 2, 3, 4, 5, 6].map(k => vf(a * k, b * k)).join(' = ') + ' = …';
+  }
+  function primes(x) { const p = []; for (let i = 2; i * i <= x; i++) while (x % i === 0) { p.push(i); x /= i; } if (x > 1) p.push(x); return p; }
+  function simplify() {
+    const f = readFrac($('#sN'), $('#sD'), $('#sErr'), L); if (!f) return;
+    const g = gcd(f.n, f.d); let n = f.n, d = f.d, html = `<div class="eqrow">${vf(n, d)}</div>`;
+    if (g === 1) html += `<div class="stepNote">🎉 ¡Esta fracción ya es irreducible!</div>`;
+    else primes(g).forEach(p => { n /= p; d /= p; html += `<div class="arrow">↓ <span class="stepNote">÷ ${p}</span></div><div class="eqrow">${vf(n, d)}</div>`; });
+    $('#sOut').innerHTML = html;
+    $('#sEq').innerHTML = '<b style="font-size:1rem">Equivalentes de la simplificada:</b> ' + [1, 2, 3, 4, 5].map(k => vf(n * k, d * k)).join(' = ') + ' = …';
+  }
+  function compare() {
+    const a = readFrac($('#cA'), $('#cB'), $('#cErr'), L); if (!a) return;
+    const c = readFrac($('#cC'), $('#cDd'), $('#cErr'), L); if (!c) return;
+    const col = (f, color) => {
+      const r = fracFigure(f.n, f.d, 'circle', { color });
+      return `<div class="cmpCol">${vf(f.n, f.d)}<div class="figs" style="width:100%">${r.html.replace(/class="fig"/g, 'class="fig" style="flex-basis:120px"')}</div>${r.hidden ? `<div class="stepNote">+${r.hidden} entero(s) más</div>` : ''}</div>`;
+    };
+    const l = a.n * c.d, rg = c.n * a.d, same = l === rg, sym = l > rg ? '>' : l < rg ? '<' : '=';
+    const cmp = $('#cOut'), res = $('#cRes');
+    cmp.classList.toggle('same', same); res.classList.toggle('same', same);
+    cmp.innerHTML = col(a, same ? '#22c55e' : PALETTE[0]) + '<div class="vs">' + (same ? '🟰' : 'VS') + '</div>' + col(c, same ? '#22c55e' : PALETTE[2]);
+    res.innerHTML = `${same ? '🎉 ¡Son equivalentes! ' : ''}${vf(a.n, a.d)} ${sym} ${vf(c.n, c.d)}<div class="stepNote">${fmt(a.n / a.d, 4)} ${sym} ${fmt(c.n / c.d, 4)} · ${a.n}×${c.d} = ${l} ${sym} ${rg} = ${c.n}×${a.d}</div>`;
+  }
+  const update = () => { equivalents(); simplify(); compare(); };
+  function init() {
+    ['#qN', '#qD'].forEach(s => $(s).addEventListener('input', equivalents));
+    ['#sN', '#sD'].forEach(s => $(s).addEventListener('input', simplify));
+    ['#cA', '#cB', '#cC', '#cDd'].forEach(s => $(s).addEventListener('input', compare));
+    update();
+  }
+  return { init, update };
+})();
+
+/* ===================== PESTAÑA 4 · JUEGOS ===================== */
+const Game = (() => {
+  let score = 0, hits = 0, rounds = 0, streak = 0, cur = null, answered = false, missed = false;
+  const key = (n, d) => { const g = gcd(n, d); return `${n / g}/${d / g}`; };
+  function generate() {
+    const lvl = +$('#gLevel').value, maxD = [0, 6, 10, 12][lvl], d = rand(2, maxD);
+    const improper = lvl === 3 && d > 2 && Math.random() < 0.35;
+    const n = rand(improper ? d + 1 : 1, improper ? 2 * d - 1 : d - 1), type = ['circle', 'rect', 'poly'][rand(0, 2)];
+    const opts = [{ n, d }], keys = new Set([key(n, d)]), shown = new Set([`${n}/${d}`]);
+    for (let t = 0; t < 600 && opts.length < 4; t++) {
+      const dd = Math.random() < 0.5 ? d : rand(2, maxD), c = { n: rand(1, improper ? 2 * dd - 1 : dd - 1), d: dd }, k = key(c.n, c.d);
+      if (keys.has(k) || shown.has(`${c.n}/${c.d}`)) continue;
+      keys.add(k); shown.add(`${c.n}/${c.d}`); opts.push(c);
+    }
+    cur = { n, d, opts: shuffle(opts), ck: key(n, d) }; answered = false; missed = false;
+    paintFig($('#gFig'), n, d, type, {});
+    $('#gOpts').innerHTML = cur.opts.map((o, i) => `<button class="opt" data-i="${i}" aria-label="${o.n} sobre ${o.d}">${vf(o.n, o.d)}</button>`).join('');
+    const fb = $('#gFb'); fb.className = 'fb'; fb.textContent = '';
+  }
+  function pick(btn) {
+    if (answered || btn.disabled) return;
+    const o = cur.opts[+btn.dataset.i], fb = $('#gFb');
+    if (key(o.n, o.d) === cur.ck) {
+      answered = true; rounds++; hits += missed ? 0 : 1; streak = missed ? 0 : streak + 1; score += missed ? 5 : 10;
+      btn.classList.add('ok'); $$('#gOpts .opt').forEach(b => b.disabled = true);
+      fb.className = 'fb show good'; fb.textContent = '✅ Correcto';
+      Sound.good();
+    } else {
+      missed = true; streak = 0; btn.classList.add('bad'); btn.disabled = true;
+      fb.className = 'fb show wrong'; fb.textContent = '❌ Intenta nuevamente';
+      Sound.bad();
+    }
+    $('#gScore').textContent = score; $('#gHits').textContent = hits; $('#gRounds').textContent = rounds; $('#gStreak').textContent = streak;
+  }
+  function init() {
+    $('#gOpts').addEventListener('click', e => { const b = e.target.closest('.opt'); if (b) pick(b); });
+    $('#gNext').addEventListener('click', generate); $('#gLevel').addEventListener('change', generate);
+    $('#gSound').addEventListener('click', e => {
+      const on = Sound.toggle(); e.currentTarget.setAttribute('aria-pressed', on); e.currentTarget.textContent = on ? '🔊 Sonido' : '🔇 Silencio';
+    });
+    generate();
+  }
+  return { init };
+})();
+
+/* ===================== APP ===================== */
+(function App() {
+  function show(i) {
+    $$('nav button').forEach(b => b.setAttribute('aria-selected', b.dataset.tab == i));
+    $$('.panel').forEach((p, k) => p.hidden = k != i);
+    if (i == 0) Explorer.update();
+    if (i == 1) Manip.build();
+    if (i == 2) Ops.update();
+  }
+  $$('nav button').forEach(b => b.addEventListener('click', () => show(+b.dataset.tab)));
+  Explorer.init(); Manip.init(); Ops.init(); Game.init();
+})();
+</script>
+</body>
+</html>
