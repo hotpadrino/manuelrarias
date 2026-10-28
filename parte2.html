@@ -797,6 +797,10 @@
         .conteo-row span:first-child{color:var(--text-secondary)}
         .conteo-row b{color:var(--accent);letter-spacing:1px}
         .conteo-cols{color:var(--text-muted);font-size:.65rem;text-align:right;letter-spacing:1px;margin-top:2px}
+        .juliano{position:relative;display:flex;justify-content:flex-start;align-items:center;gap:10px;font-family:var(--font-mono);font-size:.75rem;color:var(--text-secondary);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+        .juliano b{font-family:var(--font-display);font-size:1.3rem;color:var(--accent2);letter-spacing:2px}
+        .jul-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-primary);cursor:pointer;font-size:1rem;padding:3px 9px;margin-left:auto}
+        .jul-hoy{background:transparent;border:1px solid var(--accent2);color:var(--accent2);cursor:pointer;font-family:var(--font-mono);font-size:.7rem;padding:3px 8px;display:none}
     </style>
 </head>
 <body>
@@ -833,6 +837,12 @@
     <!-- TAB: PARTE -->
     <div id="parte" class="content active">
 
+        <div class="juliano">
+            <span>Día juliano</span><b id="jul-num"></b><span id="jul-fecha"></span>
+            <button class="jul-hoy" id="jul-hoy" onclick="julElegir(null)">HOY</button>
+            <button class="jul-btn" onclick="julAbrir()" title="Consultar otra fecha">📅</button>
+            <input type="date" id="jul-input" onchange="julElegir(this.value)" style="position:absolute;right:0;bottom:0;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1">
+        </div>
         <div class="conteo-card" id="conteo-card"></div>
 
         <div id="desktop-headers" style="display:none;">
@@ -918,7 +928,8 @@
     const HIST_MAX = 60;
     let state = {
         dataRaw: `##Sección Certificación SECAE\n#Oficiales\nNombre Oficial 1\nNombre Oficial 2\n\n#Suboficiales\nNombre Técnico\n\n#Civiles\nNombre Ingeniero`,
-        novedades: ["FILA", "COMISIÓN", "COMISIÓN DE ESTUDIOS", "COMPENSANDO", "CURSO", "EXCUSA MEDICA", "PERMISO ESPECIAL", "SERVICIO", "TURNO DESCANSO", "VACACIONES", "VUELO", "OTRA"],
+        novedades: ["FILA", "SERVICIO", "DISPONIBLE DE VUELO", "COMPENSANDO", "PERMISO ESPECIAL", "EXCUSA MEDICA", "TURNO DESCANSO", "CURSO", "COMISIÓN", "COMISIÓN DE ESTUDIOS", "VACACIONES", "OTRA"],
+        novVer: 2,
         asignaciones: {},
         tituloOficina: "",
         historial: [],
@@ -929,9 +940,18 @@
 
     const DEFAULT_STATE = JSON.parse(JSON.stringify(state));
 
+    // Migración única: lista de novedades v2 (se quita VUELO; queda DISPONIBLE DE VUELO)
+    function migrarNovedades(st) {
+        if ((st.novVer || 1) >= 2) return;
+        st.novedades = JSON.parse(JSON.stringify(DEFAULT_STATE.novedades));
+        Object.values(st.asignaciones || {}).forEach(d => { if (d.tipo === 'VUELO') d.tipo = 'DISPONIBLE DE VUELO'; });
+        st.novVer = 2;
+    }
+
     function init() {
         const saved = localStorage.getItem('parte_v9_full');
         if (saved) state = JSON.parse(saved);
+        migrarNovedades(state);
         if (state.separarVinetas === undefined) {state.separarVinetas = false;}
         if (!state.chartHidden) state.chartHidden = {};
         if (!state.chartCat) state.chartCat = "TODOS";
@@ -1050,7 +1070,31 @@
         return { total: fmt(total), fila: fmt(fila), nov: fmt(nov), labels: cols.map(k => CAT_NOMBRES[k]).join(' - ') };
     }
 
+    function diaJuliano(d = new Date()) {
+        return Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000);
+    }
+
+    let julSel = null; // null = hoy
+    function renderJuliano() {
+        const d = julSel || new Date();
+        const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        document.getElementById('jul-num').textContent = String(diaJuliano(d)).padStart(3, '0');
+        document.getElementById('jul-fecha').textContent = julSel
+            ? `${String(d.getDate()).padStart(2, '0')}-${meses[d.getMonth()]}-${d.getFullYear()}` : d.getFullYear();
+        document.getElementById('jul-hoy').style.display = julSel ? 'inline-block' : 'none';
+    }
+    function julAbrir() {
+        const i = document.getElementById('jul-input');
+        try { i.showPicker(); } catch (e) { i.style.pointerEvents = 'auto'; i.focus(); i.click(); }
+    }
+    function julElegir(v) {
+        if (v) { const [y, m, d] = v.split('-').map(Number); julSel = new Date(y, m - 1, d); }
+        else { julSel = null; document.getElementById('jul-input').value = ''; }
+        renderJuliano();
+    }
+
     function renderConteo() {
+        renderJuliano();
         const c = conteos(state.asignaciones);
         document.getElementById('conteo-card').innerHTML =
             `<div class="conteo-row"><span>Parte Oficina</span><b>${c.total}</b></div>` +
@@ -1369,14 +1413,14 @@
             Soldados: ['SLP Ejemplo Golf', 'SLP Ejemplo Hotel', 'SLV Ejemplo India', 'SLV Ejemplo Juliett'],
             Civiles: ['Ing. Ejemplo Kilo', 'Ing. Ejemplo Lima']
         };
-        const novedades = ['FILA', 'VUELO', 'DISPONIBLE DE VUELO', 'COMPENSANDO', 'CURSO', 'COMISIÓN', 'COMISIÓN DE ESTUDIOS', 'EXCUSA MEDICA', 'PERMISO ESPECIAL', 'VACACIONES', 'TURNO DESCANSO', 'SERVICIO', 'OTRA'];
+        const novedades = JSON.parse(JSON.stringify(DEFAULT_STATE.novedades));
         let dataRaw = '##Sección Ejemplo\n';
         Object.entries(gente).forEach(([c, ns]) => { dataRaw += `#${c}\n${ns.join('\n')}\n\n`; });
 
         // [tipo, duración mín, duración máx, prob. de inicio por día]
         const bloques = {
-            Oficiales: [['VUELO', 1, 3, .12], ['DISPONIBLE DE VUELO', 1, 2, .06], ['COMPENSANDO', 1, 2, .06], ['CURSO', 3, 7, .03], ['COMISIÓN', 2, 5, .04]],
-            Suboficiales: [['VUELO', 1, 2, .08], ['COMPENSANDO', 1, 2, .07], ['CURSO', 3, 6, .03], ['COMISIÓN', 2, 4, .04], ['EXCUSA MEDICA', 1, 3, .03]],
+            Oficiales: [['DISPONIBLE DE VUELO', 1, 3, .14], ['COMPENSANDO', 1, 2, .06], ['CURSO', 3, 7, .03], ['COMISIÓN', 2, 5, .04]],
+            Suboficiales: [['DISPONIBLE DE VUELO', 1, 2, .08], ['COMPENSANDO', 1, 2, .07], ['CURSO', 3, 6, .03], ['COMISIÓN', 2, 4, .04], ['EXCUSA MEDICA', 1, 3, .03]],
             Soldados: [['SERVICIO', 1, 1, .12], ['TURNO DESCANSO', 1, 2, .1], ['VACACIONES', 4, 8, .03], ['PERMISO ESPECIAL', 1, 2, .04]],
             Civiles: [['COMISIÓN', 1, 3, .06], ['VACACIONES', 3, 6, .03], ['CURSO', 2, 4, .03]]
         };
@@ -1394,7 +1438,7 @@
                     e.tipo = 'FILA';
                     for (const [t, mn, mx, pr] of bloques[cat]) if (rnd() < pr) { e.tipo = t; e.resta = mn + Math.floor(rnd() * (mx - mn + 1)) - 1; break; }
                 }
-                const obs = e.tipo === 'CURSO' ? 'Curso de actualización' : e.tipo === 'COMISIÓN' ? pick(['Bogotá', 'Cali', 'Apiay']) : e.tipo === 'VUELO' ? pick(['Misión de entrenamiento', 'Traslado']) : '';
+                const obs = e.tipo === 'CURSO' ? 'Curso de actualización' : e.tipo === 'COMISIÓN' ? pick(['Bogotá', 'Cali', 'Apiay']) : e.tipo === 'DISPONIBLE DE VUELO' ? pick(['Misión de entrenamiento', 'Traslado']) : '';
                 snap[n] = { tipo: e.tipo, obs, cat };
             }));
             const f = `${z(fecha.getDate())}-${meses[fecha.getMonth()]}-${fecha.getFullYear()}`;
@@ -1403,7 +1447,7 @@
             historial.unshift({ fecha: fecha.toLocaleString(), dayKey, ts: fecha.getTime(), content, snap });
         }
         return { dataRaw, novedades, asignaciones: {}, tituloOficina: 'Sección Ejemplo', historial,
-                 separarVinetas: false, chartHidden: {}, chartCat: 'TODOS', demo: true };
+                 separarVinetas: false, chartHidden: {}, chartCat: 'TODOS', novVer: 2, demo: true };
     }
 
     function cargarEjemplo() {
@@ -1419,6 +1463,7 @@
         if (!confirm('¿Salir del modo ejemplo? Se descartan los datos ficticios y se restauran los suyos.')) return;
         const raw = localStorage.getItem('parte_v9_backup');
         state = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_STATE));
+        migrarNovedades(state);
         if (!state.chartHidden) state.chartHidden = {};
         if (!state.chartCat) state.chartCat = 'TODOS';
         delete state.demo;
