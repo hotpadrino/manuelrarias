@@ -89,6 +89,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 
 <script>
 const MAXHP=100, FLASH_CD=2200, FAR=40, NEAR=6;
+let flashCd=FLASH_CD;
 let state={play:false,score:0,hp:MAXHP,max:3,rate:2000,last:0}, ghosts=[], readyAt=0, nextGhostId=0;
 const $=id=>document.getElementById(id);
 
@@ -331,8 +332,8 @@ const ray=new THREE.Raycaster(),mid=new THREE.Vector2(0,0);
 function shoot(){
   if(!state.play)return;
   const now=performance.now();if(now<readyAt)return;
-  readyAt=now+FLASH_CD;
-  sndFlash();sndCharge(FLASH_CD);
+  readyAt=now+flashCd;
+  sndFlash();sndCharge(flashCd);
   const w=$('wht');w.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>w.classList.remove('on')));
   ray.setFromCamera(mid,camera);
   const hit=ray.intersectObjects(ghosts);
@@ -360,6 +361,7 @@ function updateHUD(){$('hpf').style.width=state.hp+'%';$('hpt').textContent=stat
 function startGame(){
   initAudio();enableGyro();
   cfg.speed=+sl.speed.value;cfg.qty=+sl.qty.value;cfg.angle=+sl.ang.value;cfg.vert=+sl.vert.value;
+  flashCd=Math.min(FLASH_CD,Math.max(400,FLASH_CD-(cfg.speed-1)*1500));
   state={play:true,score:0,hp:MAXHP,max:cfg.qty,rate:Math.max(500,2400-cfg.qty*150),last:performance.now(),heading:0};
   readyAt=0;lon=0;lat=0;
   updateCam();camera.updateMatrixWorld();const cd=new THREE.Vector3();camera.getWorldDirection(cd);state.heading=Math.atan2(cd.z,cd.x);
@@ -467,7 +469,7 @@ function animate(){
       stGain.gain.setTargetAtTime(v*(.7+Math.random()*.3),ac.currentTime,.05);
     }
     // flash recharge UI
-    const rp=Math.min(1,1-(readyAt-now)/FLASH_CD);
+    const rp=Math.min(1,1-(readyAt-now)/flashCd);
     $('rfill').style.width=(rp<0||readyAt===0?100:rp*100)+'%';
     $('cross').className=now>=readyAt?'ready':'charging';
     // radar
