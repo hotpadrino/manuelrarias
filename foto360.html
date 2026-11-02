@@ -109,14 +109,14 @@ let targets=[], tiles=[], mode='idle', renderIdx=0;
 function buildTargets(){
   const aspect=W/H, hfov=2*Math.atan(Math.tan(VFOV*Math.PI/360)*aspect)*180/Math.PI;
   const step=Math.max(hfov*0.8,18);
-  [-75,-40,0,40,75].forEach(p=>{
+  [75,40,-75,-40,0].forEach((p,row)=>{
     const pr=p*Math.PI/180, n=Math.abs(p)>70?Math.max(3,Math.ceil(360*Math.cos(pr)/step)):Math.ceil(360*Math.cos(pr)/step);
     for(let i=0;i<n;i++){
       const y=(i/n)*2*Math.PI;
       const dir=new THREE.Vector3(Math.sin(y)*Math.cos(pr),Math.sin(pr),-Math.cos(y)*Math.cos(pr));
       const m=new THREE.Mesh(new THREE.CircleGeometry(.11,20),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthTest:false,depthWrite:false}));
       m.position.copy(dir).multiplyScalar(R-.01); m.lookAt(0,0,0); m.renderOrder=100000;
-      scene.add(m); targets.push({dir,m,done:false});
+      scene.add(m); targets.push({dir,m,done:false,row});
     }
   });
 }
@@ -150,7 +150,8 @@ function capture(q){
 }
 
 const qc=new THREE.Quaternion(), fPrev=new THREE.Vector3(0,0,-1), fNow=new THREE.Vector3();
-let hold=0, last=performance.now();
+let hold=0, last=performance.now(), lastRow=-2;
+const STEPS=['1/5 Cielo: apunta casi hacia arriba','2/5 Cielo: baja un poco y gira','3/5 Suelo: apunta casi hacia abajo','4/5 Suelo: sube un poco y gira','5/5 Horizonte: celular recto, gira despacio'];
 let yaw=0,pitch=0,useGyro=false,fov=75;
 
 function loop(now){
@@ -160,7 +161,9 @@ function loop(now){
     worldQuat(qc); cam.quaternion.copy(qc);
     fNow.set(0,0,-1).applyQuaternion(qc);
     let best=null,ba=9;
-    targets.forEach(t=>{if(t.done)return;const a=t.dir.angleTo(fNow);t.m.material.color.set(0xffffff);t.m.material.opacity=.55;if(a<ba){ba=a;best=t}});
+    const cur=targets.find(t=>!t.done), rc=cur?cur.row:-1;
+    if(rc!==lastRow){lastRow=rc;if(rc>=0)$('hint').textContent=STEPS[rc]}
+    targets.forEach(t=>{if(t.done)return;const act=t.row===rc;t.m.material.color.set(0xffffff);t.m.material.opacity=act?.55:.15;if(!act)return;const a=t.dir.angleTo(fNow);if(a<ba){ba=a;best=t}});
     if(best){best.m.material.color.set(0x6fe0cc);best.m.material.opacity=1}
     const speed=fNow.angleTo(fPrev)/Math.max(dt,.001); fPrev.copy(fNow);
     const lock=best&&ba<.1;
