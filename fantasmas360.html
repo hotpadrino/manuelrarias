@@ -12,7 +12,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 #ui{position:absolute;inset:0;z-index:10;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 .top{display:flex;justify-content:space-between;align-items:flex-start;padding:16px;gap:12px}
 #score{color:var(--c);font-size:1.6rem;font-weight:bold;text-shadow:0 0 10px var(--c)}
-#hp{display:flex;gap:3px;padding:3px;border:2px solid #555;background:#000a;width:min(46vw,260px)}
+#hpw{width:min(46vw,260px)}
+#hp{height:20px;padding:3px;border:2px solid #555;background:#000a}
+#hpf{height:100%;width:100%;background:var(--r);box-shadow:0 0 8px var(--r);transition:width .3s}
+#hpt{text-align:right;color:var(--r);font-weight:bold;text-shadow:0 0 8px var(--r);margin-top:2px}
 .seg{flex:1;height:18px;background:var(--r);box-shadow:0 0 8px var(--r);transition:all .25s}
 .seg.off{background:#2a0a10;box-shadow:none}
 #cross{position:absolute;top:50%;left:50%;width:44px;height:44px;margin:-22px 0 0 -22px;border:2px solid var(--c);border-radius:50%;transition:all .15s}
@@ -42,7 +45,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 <div id="dmg" class="fx"></div><div id="wht" class="fx"></div>
 <div id="radar"></div>
 <div id="ui" class="hidden">
-  <div class="top"><div id="score">PUNTOS: <span id="sv">0</span></div><div id="hp"></div></div>
+  <div class="top"><div id="score">PUNTOS: <span id="sv">0</span></div><div id="hpw"><div id="hp"><div id="hpf"></div></div><div id="hpt">100%</div></div></div>
   <div id="cross" class="ready"></div>
   <div id="rlabel">FLASH</div>
   <div id="rbar"><div id="rfill"></div></div>
@@ -59,11 +62,10 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 </div>
 
 <script>
-const MAXHP=10, FLASH_CD=2200, FAR=40, NEAR=6;
+const MAXHP=100, FLASH_CD=2200, FAR=40, NEAR=6;
 let state={play:false,score:0,hp:MAXHP,max:3,rate:2000,last:0}, ghosts=[], readyAt=0, nextGhostId=0;
 const $=id=>document.getElementById(id);
-const hpEl=$('hp');
-for(let i=0;i<MAXHP;i++){const s=document.createElement('div');s.className='seg';hpEl.appendChild(s)}
+
 
 // ---------- AUDIO ----------
 let ac,master,noiseBuf,stGain,stFilt;
@@ -78,6 +80,8 @@ function initAudio(){
   stGain=ac.createGain();stGain.gain.value=0;
   src.connect(stFilt);stFilt.connect(stGain);stGain.connect(master);src.start();
 }
+// Los navegadores bloquean el audio hasta el primer toque: se activa con cualquier interacción
+['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,()=>initAudio()));
 function noiseBurst(t,dur,vol,hp){
   const s=ac.createBufferSource();s.buffer=noiseBuf;
   const f=ac.createBiquadFilter();f.type='highpass';f.frequency.value=hp;
@@ -151,13 +155,14 @@ const ground=new THREE.Mesh(new THREE.CircleGeometry(150,32),new THREE.MeshLambe
 ground.rotation.x=-Math.PI/2;ground.position.y=-4;scene.add(ground);
 // 3D gravestones
 const stoneMat=new THREE.MeshLambertMaterial({color:0x4a525c});
+function bx(w,h,d,x,y){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),stoneMat);m.position.set(x,y,0);return m}
 for(let i=0;i<70;i++){
   const a=Math.random()*6.283,r=9+Math.random()*45,g=new THREE.Group();
   if(Math.random()<.3){
-    g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(.35,2.6,.35),stoneMat),{position:new THREE.Vector3(0,1.3,0)}));
-    g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(1.5,.35,.35),stoneMat),{position:new THREE.Vector3(0,1.9,0)}));
+    g.add(bx(.35,2.6,.35,0,1.3));
+    g.add(bx(1.5,.35,.35,0,1.9));
   }else{
-    g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(1.4,1.8,.35),stoneMat),{position:new THREE.Vector3(0,.9,0)}));
+    g.add(bx(1.4,1.8,.35,0,.9));
     const t=new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,.35,14),stoneMat);t.rotation.x=Math.PI/2;t.position.y=1.8;g.add(t);
   }
   g.position.set(Math.cos(a)*r,-4,Math.sin(a)*r);g.rotation.y=-a+Math.PI/2+(Math.random()-.5)*.6;g.rotation.z=(Math.random()-.5)*.15;
@@ -238,16 +243,16 @@ function killGhost(g){
 function spawnGhost(){
   if(ghosts.length>=state.max)return;
   const g=new THREE.Sprite(new THREE.SpriteMaterial({map:ghostTex[nextGhostId++%3],transparent:true,opacity:0,fog:false,depthWrite:false}));
-  g.userData={t0:performance.now(),life:5000,theta:Math.random()*6.283,cy:-5+Math.random()*3,angry:false,seed:Math.random()*10};
+  g.userData={t0:performance.now(),life:5000,theta:Math.random()*6.283,cy:-5+Math.random()*3,angry:false,seed:Math.random()*10,dmg:6+Math.floor(Math.random()*8)};
   g.scale.set(7,14,1);g.position.set(Math.cos(g.userData.theta)*FAR,g.userData.cy,Math.sin(g.userData.theta)*FAR);
   scene.add(g);ghosts.push(g);
 }
-function hurt(){
-  state.hp--;updateHUD();sndScream();
+function hurt(dmg){
+  state.hp=Math.max(0,state.hp-dmg);updateHUD();sndScream();
   const d=$('dmg');d.classList.add('on');setTimeout(()=>d.classList.remove('on'),200);
   if(state.hp<=0)gameOver();
 }
-function updateHUD(){[...hpEl.children].forEach((s,i)=>s.classList.toggle('off',i>=state.hp))}
+function updateHUD(){$('hpf').style.width=state.hp+'%';$('hpt').textContent=state.hp+'%'}
 function startGame(){
   initAudio();
   state={play:true,score:0,hp:MAXHP,max:3,rate:2000,last:performance.now()};
@@ -283,7 +288,7 @@ function animate(){
       const d=g.position.length();
       if(d<minD){minD=d;near=g}
       tmp.copy(g.position).normalize();aim=Math.max(aim,(camDir.dot(tmp)-.75)/.25);
-      if(age>u.life){removeGhost(g);hurt();if(!state.play)break}
+      if(age>u.life){removeGhost(g);hurt(u.dmg);if(!state.play)break}
     }
     // static: grows as the ghost approaches
     if(stGain){
@@ -305,6 +310,9 @@ function animate(){
       if(camDir.dot(tmp)>0&&Math.hypot(x,y)<.15)rad.style.opacity=0;
       else{rad.style.opacity=1;rad.style.transform=`rotate(${90-Math.atan2(y,x)*180/Math.PI}deg)`}
     }else rad.style.opacity=0;
+  }else if(stGain){
+    stFilt.frequency.setTargetAtTime(1500,ac.currentTime,.2);
+    stGain.gain.setTargetAtTime(.12*(.7+Math.random()*.3),ac.currentTime,.05);
   }
   const ph=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);
   camera.lookAt(Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th));
