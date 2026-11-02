@@ -28,6 +28,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Visor 360 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pannellum/2.5.6/pannellum.js"></script>
     <style>
         :root { --gold: #c5a059; --dark-bg: #0d0d0d; --card-bg: #141414; }
         html { scroll-behavior: smooth; }
@@ -48,6 +51,167 @@
         .nav-btn:hover { border-color: var(--gold); color: var(--gold); }
 
         .leaflet-control-zoom-in, .leaflet-control-zoom-out { background-color: #1a1a1a !important; color: var(--gold) !important; border: 1px solid #333 !important; }
+
+        /* --- FONDO ANIMADO: SKYLINE --- */
+        header {
+            position: relative;
+            overflow: hidden;
+        }
+        #city-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        #city-bg svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+        }
+        .skyline-layer-back {
+            animation: driftBack 140s linear infinite;
+            opacity: 0.4;
+        }
+        .skyline-layer-front {
+            animation: driftFront 90s linear infinite;
+            opacity: 0.6;
+        }
+        @keyframes driftBack {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        @keyframes driftFront {
+            from { transform: translateX(-50%); }
+            to { transform: translateX(0); }
+        }
+        .win {
+            fill: var(--gold);
+            animation: flicker 6s ease-in-out infinite;
+        }
+        @keyframes flicker {
+            0%, 100% { opacity: 0.05; }
+            45% { opacity: 0.05; }
+            50% { opacity: 0.5; }
+            55% { opacity: 0.05; }
+            80% { opacity: 0.05; }
+            85% { opacity: 0.35; }
+            90% { opacity: 0.05; }
+        }
+        #city-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, var(--dark-bg) 0%, rgba(13,13,13,0.3) 25%, rgba(13,13,13,0.1) 60%, rgba(13,13,13,0.5) 100%);
+        }
+
+        header > div { position: relative; z-index: 1; }
+
+        /* --- CARRUSEL DE FRASES --- */
+        #phrase-carousel {
+            position: relative;
+            height: 1.4em;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        #phrase-carousel .phrase {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            color: var(--gold);
+            font-family: 'Inter', sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        #phrase-carousel .phrase.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (min-width: 768px) {
+            #phrase-carousel { justify-content: flex-start; }
+            #phrase-carousel .phrase { justify-content: flex-start; }
+        }
+
+        /* --- MODAL E INTERACCIÓN --- */
+        #info-modal { backdrop-filter: blur(5px); }
+        
+        /* Plano autoajustable: el JS (fitPlan) calcula tamaño y giro (0° o 90°)
+           para que la imagen llene al máximo el rectángulo en cualquier pantalla */
+        #plan-wrap {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);   /* fitPlan añade rotate() */
+            --pin-rot: 0deg;                    /* fitPlan lo pone al ángulo contrario */
+            line-height: 0;
+        }
+        #modal-floorplan { display: block; width: 100%; height: 100%; max-width: none; max-height: none; user-select: none; -webkit-user-drag: none; }
+        #hotspots-container { position: absolute; inset: 0; }
+
+        .hotspot-point {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle at 35% 30%, #f3dc9c, var(--gold) 55%, #8a6a2b);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            /* contra-rotación: mantiene pin y texto siempre horizontales */
+            transform: translate(-50%, -50%) rotate(var(--pin-rot, 0deg));
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(197,160,89,.8), 0 2px 8px rgba(0,0,0,.7);
+            animation: pinPulse 2s infinite;
+            transition: transform .25s, background .25s;
+            z-index: 10;
+            padding: 0;
+        }
+        .hotspot-point::after {
+            content: attr(data-label);
+            position: absolute; 
+            bottom: 120%;
+            left: 50%;
+            /* Alineación visual de la etiqueta sobre el punto */
+            transform: translateX(-50%) scale(.9);
+            background: rgba(0,0,0,.85); color: var(--gold);
+            border: 1px solid var(--gold);
+            font: 500 10px/1 sans-serif; letter-spacing: .15em; text-transform: uppercase;
+            padding: 5px 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity .2s, transform .2s;
+        }
+        
+        .hotspot-point.tip-below::after { bottom: auto; top: 120%; }
+        .hotspot-point:hover::after, .hotspot-point.active::after { opacity: 1; transform: translateX(-50%) scale(1); }
+        .hotspot-point:hover, .hotspot-point.active {
+            transform: translate(-50%, -50%) rotate(var(--pin-rot)) scale(1.3);
+            background: #fff; border-color: var(--gold);
+        }
+        .hotspot-point.is-360 { border-style: dashed; }
+        @keyframes pinPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(197,160,89,.75), 0 2px 8px rgba(0,0,0,.7); }
+            70%  { box-shadow: 0 0 0 12px rgba(197,160,89,0), 0 2px 8px rgba(0,0,0,.7); }
+            100% { box-shadow: 0 0 0 0 rgba(197,160,89,0), 0 2px 8px rgba(0,0,0,.7); }
+        }
+
+        /* Visor grande */
+        #viewer-box:fullscreen { background: #000; }
+        #viewer-box:fullscreen #hotspot-viewer { object-fit: contain; }
+        #pano-viewer { position: absolute; inset: 0; }
+        #viewer-label { position: absolute; left: 12px; bottom: 12px; z-index: 5; pointer-events: none;
+            background: rgba(0,0,0,.7); border: 1px solid var(--gold); color: var(--gold);
+            font: 500 10px/1 sans-serif; letter-spacing: .2em; text-transform: uppercase; padding: 6px 10px; }
+        #btn-expand { position: absolute; top: 10px; right: 10px; z-index: 6; width: 36px; height: 36px;
+            background: rgba(0,0,0,.75); border: 1px solid var(--gold); color: var(--gold);
+            font-size: 18px; line-height: 1; cursor: pointer; transition: background .2s, color .2s; }
+        #btn-expand:hover { background: var(--gold); color: #000; }
+        #plan-toast { position: absolute; left: 8px; bottom: 8px; z-index: 20; background: rgba(0,0,0,.85); color: var(--gold);
+            border: 1px solid var(--gold); font: 11px/1.3 monospace; padding: 6px 8px; display: none; line-height: 1.3; }
     </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col min-h-screen">
@@ -55,41 +219,48 @@
     <div class="max-w-7xl mx-auto flex-grow w-full">
         
         <header class="mb-8 flex flex-col md:flex-row justify-between items-center border-b border-stone-800 pb-6">
+            <div id="city-bg" aria-hidden="true">
+                <!-- SVG Skyline Animado (Oculto por brevedad, el código SVG es idéntico) -->
+                <svg class="skyline-layer-back" viewBox="0 0 1600 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="#2b2b2b">
+                        <rect x="0" y="140" width="60" height="160"/><rect x="70" y="100" width="45" height="200"/><rect x="125" y="160" width="70" height="140"/><rect x="205" y="70" width="50" height="230"/><rect x="265" y="130" width="40" height="170"/><rect x="315" y="180" width="90" height="120"/><rect x="415" y="90" width="55" height="210"/><rect x="480" y="150" width="45" height="150"/><rect x="535" y="60" width="60" height="240"/><rect x="605" y="170" width="80" height="130"/><rect x="700" y="110" width="50" height="190"/><rect x="760" y="150" width="65" height="150"/><rect x="835" y="80" width="45" height="220"/><rect x="890" y="160" width="70" height="140"/><rect x="970" y="100" width="55" height="200"/><rect x="1035" y="170" width="90" height="130"/><rect x="1135" y="60" width="50" height="240"/><rect x="1195" y="140" width="60" height="160"/><rect x="1265" y="100" width="45" height="200"/><rect x="1320" y="180" width="80" height="120"/><rect x="1410" y="90" width="55" height="210"/><rect x="1475" y="150" width="45" height="150"/><rect x="1530" y="70" width="60" height="230"/>
+                    </g>
+                    <g class="win">
+                        <rect x="10" y="160" width="6" height="8"/><rect x="25" y="160" width="6" height="8"/><rect x="40" y="180" width="6" height="8"/><rect x="80" y="120" width="6" height="8"/><rect x="95" y="140" width="6" height="8"/><rect x="80" y="170" width="6" height="8"/><rect x="215" y="100" width="6" height="8"/><rect x="230" y="130" width="6" height="8"/><rect x="215" y="200" width="6" height="8"/><rect x="545" y="90" width="6" height="8"/><rect x="560" y="130" width="6" height="8"/><rect x="575" y="200" width="6" height="8"/><rect x="845" y="110" width="6" height="8"/><rect x="860" y="150" width="6" height="8"/><rect x="1145" y="90" width="6" height="8"/><rect x="1160" y="130" width="6" height="8"/><rect x="1145" y="200" width="6" height="8"/>
+                    </g>
+                </svg>
+                <svg class="skyline-layer-front" viewBox="0 0 1600 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="#3a3a3a">
+                        <rect x="30" y="190" width="55" height="110"/><rect x="95" y="220" width="40" height="80"/><rect x="150" y="160" width="65" height="140"/><rect x="230" y="200" width="45" height="100"/><rect x="290" y="230" width="35" height="70"/><rect x="340" y="170" width="75" height="130"/><rect x="440" y="210" width="50" height="90"/><rect x="510" y="150" width="55" height="150"/><rect x="590" y="220" width="40" height="80"/><rect x="650" y="190" width="60" height="110"/><rect x="730" y="230" width="45" height="70"/><rect x="800" y="170" width="70" height="130"/><rect x="900" y="210" width="50" height="90"/><rect x="980" y="150" width="55" height="150"/><rect x="1060" y="220" width="40" height="80"/><rect x="1120" y="190" width="60" height="110"/><rect x="1200" y="230" width="45" height="70"/><rect x="1270" y="170" width="70" height="130"/><rect x="1370" y="210" width="50" height="90"/><rect x="1450" y="150" width="55" height="150"/><rect x="1530" y="220" width="40" height="80"/>
+                    </g>
+                    <g class="win" style="animation-delay: 2s;">
+                        <rect x="45" y="210" width="5" height="7"/><rect x="60" y="230" width="5" height="7"/><rect x="165" y="180" width="5" height="7"/><rect x="180" y="220" width="5" height="7"/><rect x="195" y="260" width="5" height="7"/><rect x="355" y="190" width="5" height="7"/><rect x="370" y="230" width="5" height="7"/><rect x="525" y="170" width="5" height="7"/><rect x="540" y="210" width="5" height="7"/><rect x="525" y="250" width="5" height="7"/><rect x="815" y="190" width="5" height="7"/><rect x="830" y="230" width="5" height="7"/><rect x="995" y="170" width="5" height="7"/><rect x="1010" y="210" width="5" height="7"/><rect x="1285" y="190" width="5" height="7"/><rect x="1300" y="230" width="5" height="7"/>
+                    </g>
+                </svg>
+            </div>
             <div class="text-left">
                 <h1 class="text-4xl font-light tracking-[0.3em] text-white uppercase">CASA GLORIA</h1>
                 <p class="text-[var(--gold)] font-serif italic tracking-widest text-xs mt-1 text-center md:text-left">Apartamentos Amoblados en Bogotá y alrededores</p>
+                <div id="phrase-carousel"></div>
             </div>
             
             <div class="mt-4 md:mt-0 grid grid-cols-2 md:grid-cols-4 gap-2 text-[9px] tracking-widest uppercase">
-    
                 <div onclick="zoomToZone('regional')" class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
                     <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Regional
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
-                        Ricaurte • La Mesa
-                    </div>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">Ricaurte • La Mesa</div>
                 </div>
-            
                 <div onclick="zoomToZone('norte')" class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
                     <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Norte
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
-                        Urban Chicó • Unique Mine
-                    </div>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">Urban Chicó • Unique Mine</div>
                 </div>
-            
                 <div onclick="zoomToZone('occidente')" class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
                     <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Occidente
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
-                        Fontibón Galias • Ambrosia
-                    </div>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">Fontibón Galias • Ambrosia</div>
                 </div>
-            
                 <div onclick="zoomToZone('centro')" class="relative group px-4 py-2 border border-stone-800 text-center bg-stone-900/30 cursor-pointer hover:border-[var(--gold)] transition-colors duration-300">
                     <span class="text-white block font-bold text-sm group-hover:text-[var(--gold)] transition-colors">2</span> Centro
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">
-                        Candelaria • Campin
-                    </div>
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-4 py-2 bg-[#1a1a1a] border border-[var(--gold)] text-[var(--gold)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 shadow-2xl">Candelaria • Campin</div>
                 </div>
-            
             </div>
         </header>
 
@@ -115,7 +286,7 @@
                     </div>
 
                     <div class="p-6 flex-grow flex flex-col">
-                        <h2 id="prop-title" class="text-2xl font-light text-white tracking-wide mb-1 uppercase"></h2>
+                        <h2 id="prop-title" onclick="openModal()" class="text-2xl font-light text-white tracking-wide mb-1 uppercase cursor-pointer hover:text-[var(--gold)] transition-colors duration-300"></h2>
                         <p id="prop-address" class="text-[var(--gold)] text-[10px] tracking-[0.15em] mb-6 font-mono uppercase pb-4 border-b border-stone-800"></p>
                         
                         <div class="grid grid-cols-2 gap-y-6 mb-8">
@@ -127,13 +298,57 @@
 
                         <div class="space-y-3 mb-6">
                             <a id="btn-booking" href="#" target="_blank" class="block w-full py-3 border border-[var(--gold)] text-[var(--gold)] text-center text-[10px] tracking-[0.3em] font-bold hover:bg-[var(--gold)] hover:text-black transition-all duration-500 uppercase">Reservar Activo</a>
-                            <a id="btn-docs" href="#" target="_blank" class="block w-full py-3 border border-stone-800 text-stone-500 text-center text-[10px] tracking-[0.3em] hover:border-stone-400 transition-all duration-500 uppercase">Documentación Técnica</a>
+                            <button id="btn-docs" onclick="openModal()" class="block w-full py-3 border border-stone-800 text-stone-500 text-center text-[10px] tracking-[0.3em] hover:border-stone-400 transition-all duration-500 uppercase">Más información</button>
                         </div>
 
                         <div class="mt-auto pt-6 border-t border-stone-800 flex gap-2">
                             <button onclick="changeProperty(-1)" class="nav-btn flex-1 py-3 text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">← Anterior</button>
                             <button onclick="changeProperty(1)" class="nav-btn flex-1 py-3 text-[10px] tracking-[0.2em] uppercase font-bold text-stone-400">Siguiente →</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE MÁS INFORMACIÓN -->
+    <div id="info-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
+        <div class="bg-[var(--card-bg)] border border-[var(--gold)] w-full max-w-5xl max-h-[90vh] overflow-y-auto flex flex-col relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-stone-400 hover:text-[var(--gold)] text-3xl z-20">&times;</button>
+            
+            <div class="p-6 md:p-10 flex flex-col gap-8">
+                <h3 id="modal-title" class="text-2xl font-light text-white uppercase tracking-[0.2em] border-b border-stone-800 pb-4">Más información</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Columna Izquierda: Botones y Plano Interactivo -->
+                    <div class="lg:col-span-1 flex flex-col gap-4">
+                        
+                        <!-- GRID DE 4 BOTONES -->
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <a id="modal-tiktok" href="#" target="_blank" class="w-full py-3 bg-[#111] border border-stone-800 text-[var(--gold)] text-center text-[9px] tracking-[0.2em] hover:bg-[var(--gold)] hover:text-black transition uppercase">Video del apto</a>
+                            <a id="modal-zonas" href="#" target="_blank" class="w-full py-3 bg-[#111] border border-stone-800 text-[var(--gold)] text-center text-[9px] tracking-[0.2em] hover:bg-[var(--gold)] hover:text-black transition uppercase">Zonas Comunes</a>
+                            <a id="modal-plano3d" href="#" target="_blank" class="w-full py-3 bg-[#111] border border-stone-800 text-[var(--gold)] text-center text-[9px] tracking-[0.2em] hover:bg-[var(--gold)] hover:text-black transition uppercase">Plano 3D</a>
+                            <a id="modal-manual" href="#" target="_blank" class="w-full py-3 bg-[#111] border border-stone-800 text-[var(--gold)] text-center text-[9px] tracking-[0.2em] hover:bg-[var(--gold)] hover:text-black transition uppercase">Manual apto</a>
+                        </div>
+                        
+                        <!-- Contenedor del Plano Shrink-Wrap -->
+                        <div id="plan-box" class="flex-grow border border-stone-800 bg-black relative h-[300px] lg:h-auto lg:min-h-[250px] overflow-hidden">
+                            <div id="plan-wrap">
+                                <img id="modal-floorplan" src="" alt="Plano">
+                                <div id="hotspots-container"></div>
+                            </div>
+                            <span id="plan-empty" class="hidden absolute inset-0 flex items-center justify-center text-stone-600 text-xs text-center px-6">Plano interactivo no disponible para esta propiedad</span>
+                            <div id="plan-toast"></div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Visor Principal Interactivo -->
+                    <div id="viewer-box" class="lg:col-span-2 relative border border-stone-800 bg-black h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden">
+                        <span id="hotspot-msg" class="text-stone-600 text-xs text-center px-6">Selecciona un punto dorado en el plano para ver el área</span>
+                        <img id="hotspot-viewer" src="" alt="" class="hidden absolute inset-0 w-full h-full object-cover">
+                        <div id="pano-viewer" class="hidden"></div>
+                        <span id="viewer-label" class="hidden"></span>
+                        <button id="btn-expand" class="hidden" onclick="toggleExpand()" title="Pantalla completa" aria-label="Pantalla completa">&#x26F6;</button>
                     </div>
                 </div>
             </div>
@@ -169,7 +384,18 @@
                     "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/3324685f-23a0-43ef-942b-8a05f0f3440c.jpeg?im_w=720"
                 ],
                 link: "https://airbnb.com.co/h/chico-unique",
-                docs: "https://padlet.com/manuelrarias/aripar"
+                docs: "https://canva.link/qgk065q18ol0a3g",
+                tiktok: "https://www.tiktok.com/@hotpadrino/video/7554439875072625976",
+                zonas: "https://www.tiktok.com/@hotpadrino/video/7565510521307417877",
+                plano3d: "https://planner5d.onelink.me/stDT/9azvjma7",
+                floorplan: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/54f7c2dd-7ba5-41a9-a98c-bdd65018fb10.png?im_w=1200",
+                hotspots: [
+                    { top: "35%", left: "40%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/abc03430-996e-4185-8128-f5981583ead8.jpeg?im_w=1200", label: "Sala" },
+                    { top: "35%", left: "20%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/6b52e88f-59b1-432d-982d-289a65718eac.jpeg?im_w=1200", label: "Baño" },
+                    { top: "35%", left: "80%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/c1488b2b-c523-49e1-97a7-9bbc901fc2f2.jpeg?im_w=1200", label: "Habitación" },
+                    { top: "70%", left: "50%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/74ef025f-7f9b-4dd9-8826-9a55d981d066.jpeg?im_w=1200", label: "Cocina" },
+                    { top: "70%", left: "80%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-53810802/original/af2627c1-3f2e-422e-a58d-4149776e6199.jpeg?im_w=1200", label: "Estudio" },
+                ]
             },
             { 
                 name: "Urban Chicó", 
@@ -187,7 +413,19 @@
                     "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/f15cfdf5-3486-4e5e-9fcb-d5c3d75a352d.jpeg?im_w=720"
                 ],
                 link: "https://www.airbnb.com.co/h/uchico",
-                docs: "https://padlet.com/manuelrarias/aripar"
+                docs: "https://canva.link/2ctcytqygxnwjd3",
+                tiktok: "https://www.tiktok.com/@hotpadrino/video/7454299175510084870",
+                zonas: "https://www.tiktok.com/@hotpadrino/video/7456180358598462726",
+                plano3d: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/369f2b4c-b5dd-456b-b320-d57f074fe357.jpeg?im_w=1200",
+                floorplan: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/369f2b4c-b5dd-456b-b320-d57f074fe357.jpeg?im_w=1200", 
+                hotspots: [
+                    { top: "20%", left: "75%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/5e5fdc58-35ca-40b4-a16a-168f0ee3f547.jpeg?im_w=1200", label: "Baño" },
+                    { top: "15%", left: "60%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/5da561a6-3c2b-4784-9caf-36db705837fd.jpeg?im_w=1200", label: "Ropas" },
+                    { top: "35%", left: "40%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/45063c2e-e0eb-4f49-995f-d302bdeedac9.jpeg?im_w=1200", label: "Estudio" },
+                    { top: "35%", left: "80%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/b1fc5197-9f3a-424b-ae07-a171cb90bb09.jpeg?im_w=1200", label: "Cocina" },
+                    { top: "70%", left: "50%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/ea30a388-6916-4944-aa1b-f87a9ab6c3c8.jpeg?im_w=1200", label: "Habitación" },
+                    { top: "80%", left: "30%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-1151847582181133973/original/da6b2a84-424b-4b9b-8a5a-f0ff461d62ec.jpeg?im_w=1200", label: "Balcón" },
+                ]
             },
 
             // --- ZONA CENTRO (2) ---
@@ -207,7 +445,17 @@
                     "https://a0.muscache.com/im/pictures/6302f32c-ec0d-4b9a-b64b-d45cf0512ca0.jpg?im_w=960"
                 ],
                 link: "https://www.airbnb.com.co/h/campin",
-                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+                docs: "https://canva.link/6e1aokjcvl3yneq",
+                tiktok: "https://www.tiktok.com/@hotpadrino/video/7535251392747883832",
+                zonas: "https://www.tiktok.com/@hotpadrino/video/7587573776229895444",
+                plano3d: "https://a0.muscache.com/im/pictures/786d89a3-06f4-46a5-885d-66ef9cad7b1d.jpg?im_w=1200",
+                floorplan: "https://a0.muscache.com/im/pictures/786d89a3-06f4-46a5-885d-66ef9cad7b1d.jpg?im_w=1200", 
+                hotspots: [
+                    { top: "30%", left: "85%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-47234863/original/cb7a05c0-ee06-46b7-98f6-58f438d587f8.jpeg?im_w=1200", label: "Baño" },
+                    { top: "30%", left: "60%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NDcyMzQ4NjM=/original/84b23f30-67fe-4684-9dcd-5f45dd98cc2a.jpeg?im_w=1200", label: "Sala" },
+                    { top: "50%", left: "20%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NDcyMzQ4NjM=/original/4a598865-138e-4630-a9c4-d4252a16566f.jpeg?im_w=1200", label: "Dormitorio" },
+                    { top: "80%", left: "40%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NDcyMzQ4NjM=/original/da787547-4114-4a4a-84dc-4c435522dc14.jpeg?im_w=1200", label: "Cocina" },
+                ]
             },
             { 
                 name: "Candelaria Intaglio", 
@@ -225,7 +473,19 @@
                     "https://a0.muscache.com/im/pictures/miso/Hosting-38650037/original/99b1250e-8816-485f-8094-f1b06ff020c8.jpeg?im_w=720"
                 ],
                 link: "https://www.airbnb.com.co/h/intaglio",
-                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx",
+                tiktok: "https://www.tiktok.com/@hotpadrino/video/7585935432802749717",
+                zonas: "https://www.tiktok.com/@hotpadrino/video/7441386669565021495",
+                plano3d: "https://planner5d.onelink.me/stDT/x58aqphr",
+                floorplan: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/10f02a3c-71d4-4ff6-96c8-b00bf574cfe4.png?im_w=1200", 
+                hotspots: [
+                    { top: "30%", left: "85%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/2b0f3a48-4665-4e51-9309-2faaddbf533a.jpeg?im_w=1200", label: "Estudio" },
+                    { top: "75%", left: "50%", image: "https://a0.muscache.com/im/pictures/f5fce0cf-ac5e-40ca-9fed-273aa24262bd.jpg?im_w=1200", label: "Entrada" },
+                    { top: "30%", left: "60%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/c6ad8a05-e0e5-4222-adee-b1874b87c819.jpeg?im_w=1200", label: "Sala" },
+                    { top: "75%", left: "20%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/104c326d-5a3e-4038-a15e-0ee8d5a38bba.jpeg?im_w=1200", label: "Baño" },
+                    { top: "20%", left: "20%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/9f7b7003-9bdf-4f52-8936-0351d56fc055.jpeg?im_w=1200", label: "Dormitorio" },
+                    { top: "75%", left: "80%", image: "https://a0.muscache.com/im/pictures/hosting/Hosting-38650037/original/3196b639-0b52-4bde-b2e7-9c7fa95ecfef.jpeg?im_w=1200", label: "Cocina" },
+                ]
             },
 
             // --- ZONA OCCIDENTE (2) ---
@@ -245,7 +505,12 @@
                     "https://a0.muscache.com/im/pictures/miso/Hosting-51859230/original/904d0eed-463e-4794-8ad9-572c43c41630.jpeg?im_w=720"
                 ],
                 link: "http://airbnb.com.co/h/eambrosia",
-                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx",
+                tiktok: "",
+                zonas: "",
+                plano3d: "",
+                floorplan: "", 
+                hotspots: []
             },
             { 
                 name: "Fontibón Parque Central 1", 
@@ -263,7 +528,12 @@
                     "https://a0.muscache.com/im/pictures/hosting/Hosting-U3RheVN1cHBseUxpc3Rpbmc6NTc3Mzk5NTk2MzExMjc5MjAy/original/8f2309a3-7f32-498f-a835-2cad8b6e0f02.jpeg?im_w=960"
                 ],
                 link: "https://www.airbnb.com.co/h/galiaspc",
-                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx"
+                docs: "https://padlet.com/manuelrarias/alojamientos-aripar-cel-312-881-6469-20n77saolxc8fgcx",
+                tiktok: "",
+                zonas: "",
+                plano3d: "",
+                floorplan: "", 
+                hotspots: []
             },
 
             // --- ZONA REGIONAL (2) ---
@@ -283,7 +553,12 @@
                     "https://a0.muscache.com/im/pictures/hosting/Hosting-1647931265036549130/original/198088c4-65e8-466f-b28e-4f79afcce58b.jpeg?im_w=720"
                 ],
                 link: "https://www.airbnb.com.co/h/marucha",
-                docs: "https://www.canva.com/design/DAGmyT2fJak/pj7Vn4CkzUUDG9MLa6t-yQ/view?utm_content=DAGmyT2fJak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h600bf572fb#6"
+                docs: "https://www.canva.com/design/DAGmyT2fJak/pj7Vn4CkzUUDG9MLa6t-yQ/view?utm_content=DAGmyT2fJak&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h600bf572fb#6",
+                tiktok: "",
+                zonas: "",
+                plano3d: "",
+                floorplan: "", 
+                hotspots: []
             },
             { 
                 name: "Ricaurte - Cabo Verde Praia", 
@@ -301,7 +576,12 @@
                     "https://a0.muscache.com/im/pictures/hosting/Hosting-1413100124256267333/original/d580e3ad-6d21-4f41-9651-f41b42d47694.jpeg?im_w=720"
                 ],
                 link: "https://www.airbnb.com.co/h/caboverdepraia",
-                docs: "https://www.canva.com/design/DAGlNHAzN1c/ewSjtp4l1iYq4R7SRVFDGg/view?utm_content=DAGlNHAzN1c&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h67ff549647"
+                docs: "https://www.canva.com/design/DAGlNHAzN1c/ewSjtp4l1iYq4R7SRVFDGg/view?utm_content=DAGlNHAzN1c&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h67ff549647",
+                tiktok: "",
+                zonas: "",
+                plano3d: "",
+                floorplan: "", 
+                hotspots: []
             }
         ];
 
@@ -310,25 +590,17 @@
         let autoPlayTimer;
 
         const map = L.map('map', { zoomControl: false }).setView([4.66, -74.08], 12);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=cb1_4zvo_1_c145a193564347c3b37ee75c').addTo(map);
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-        // --- LÓGICA DE ZOOM POR ZONAS ---
-        // Definimos los límites (Bounding Boxes) basados en las coordenadas de tus propiedades
         const zoneBounds = {
             'norte': [[4.68610, -74.04718], [4.68264, -74.05428]],
             'occidente': [[4.67089, -74.14836], [4.67132, -74.13949]],
             'centro': [[4.59807, -74.06880], [4.6512, -74.0754]],
-            
-            // Regional (Zoom General): Desde el punto más al sur/occidente (Ricaurte) 
-            // hasta el punto más al norte/oriente (Chicó) para que todos los 8 pines queden en pantalla
             'regional': [[4.29576, -74.77879], [4.68610, -74.04718]] 
         };
 
         function zoomToZone(zone) {
-            // fitBounds ajusta el mapa automáticamente para que los puntos entren en la pantalla.
-            // maxZoom: 14 evita que se acerque demasiado si los puntos están muy juntos.
-            // padding añade un margen visual para que los pines no queden pegados al borde.
             map.fitBounds(zoneBounds[zone], { padding: [50, 50], maxZoom: 18, duration: 1.5 });
         }
         
@@ -368,7 +640,10 @@
             if (index >= propiedades.length) index = 0;
             currentPropIndex = index;
             currentImgIndex = 0;
-            
+
+            const url = new URL(window.location);
+            url.searchParams.set('a', index);
+            window.history.pushState({}, '', url);
             const p = propiedades[currentPropIndex];
 
             document.getElementById('placeholder').classList.add('hidden');
@@ -384,7 +659,6 @@
             document.getElementById('feat-park').innerText = p.park;
             document.getElementById('feat-common').innerText = p.common;
             document.getElementById('btn-booking').href = p.link;
-            document.getElementById('btn-docs').href = p.docs; 
 
             map.flyTo(p.coords, 15, { duration: 1.5 });
 
@@ -407,6 +681,227 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === "ArrowRight") changeProperty(1);
             if (e.key === "ArrowLeft") changeProperty(-1);
+        });
+
+        // --- LÓGICA DEL MODAL ---
+        let panoViewer = null;
+
+        function resetViewer() {
+            if (panoViewer) { try { panoViewer.destroy(); } catch (e) {} panoViewer = null; }
+            const img = document.getElementById('hotspot-viewer');
+            img.classList.add('hidden'); img.removeAttribute('src');
+            document.getElementById('pano-viewer').classList.add('hidden');
+            document.getElementById('viewer-label').classList.add('hidden');
+            document.getElementById('btn-expand').classList.add('hidden');
+            document.getElementById('hotspot-msg').classList.remove('hidden');
+            if (document.fullscreenElement) document.exitFullscreen();
+        }
+
+        function showSpot(spot) {
+            const msg = document.getElementById('hotspot-msg');
+            const img = document.getElementById('hotspot-viewer');
+            const pano = document.getElementById('pano-viewer');
+            const label = document.getElementById('viewer-label');
+
+            if (panoViewer) { try { panoViewer.destroy(); } catch (e) {} panoViewer = null; }
+            msg.classList.add('hidden');
+
+            if (spot.type === '360') {
+                img.classList.add('hidden');
+                pano.classList.remove('hidden');
+                panoViewer = pannellum.viewer('pano-viewer', {
+                    type: 'equirectangular',
+                    panorama: spot.image,
+                    autoLoad: true,
+                    showControls: true,
+                    showFullscreenCtrl: false,
+                    hfov: 100
+                });
+            } else {
+                pano.classList.add('hidden');
+                img.src = spot.image;
+                img.classList.remove('hidden');
+            }
+            label.textContent = (spot.type === '360' ? '360° · ' : '') + (spot.label || '');
+            label.classList.toggle('hidden', !spot.label);
+            document.getElementById('btn-expand').classList.remove('hidden');
+        }
+
+        function toggleExpand() {
+            const box = document.getElementById('viewer-box');
+            if (document.fullscreenElement) document.exitFullscreen();
+            else if (box.requestFullscreen) box.requestFullscreen();
+        }
+        document.addEventListener('fullscreenchange', () => {
+            if (panoViewer) setTimeout(() => panoViewer.resize(), 100);
+        });
+
+        function openModal() {
+            if (currentPropIndex === -1) return;
+            const p = propiedades[currentPropIndex];
+
+            document.getElementById('info-modal').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = "Info: " + p.name;
+            
+            // Asignación de los 4 botones
+            document.getElementById('modal-tiktok').href = p.tiktok || "#";
+            document.getElementById('modal-zonas').href = p.zonas || "#";
+            document.getElementById('modal-plano3d').href = p.plano3d || "#";
+            document.getElementById('modal-manual').href = p.docs || "#";
+
+            const plan = document.getElementById('modal-floorplan');
+            const wrap = document.getElementById('plan-wrap');
+            const empty = document.getElementById('plan-empty');
+            const container = document.getElementById('hotspots-container');
+            container.innerHTML = '';
+            resetViewer();
+
+            if (p.floorplan) {
+                wrap.classList.remove('hidden');
+                empty.classList.add('hidden');
+                wrap.style.visibility = 'hidden';      // se muestra al calcular el ajuste
+                plan.onload = fitPlan;
+                plan.src = p.floorplan;
+                if (plan.complete && plan.naturalWidth) fitPlan();
+            } else {
+                wrap.classList.add('hidden');
+                empty.classList.remove('hidden');
+                plan.removeAttribute('src');
+            }
+
+            // Pines dorados sobre el plano
+            if (p.floorplan && p.hotspots) {
+                p.hotspots.forEach((spot) => {
+                    const point = document.createElement('button');
+                    point.type = 'button';
+                    point.className = 'hotspot-point' + (spot.type === '360' ? ' is-360' : '');
+                    point.style.top = spot.top;
+                    point.style.left = spot.left;
+                    point.dataset.label = spot.label || '';
+                    point.setAttribute('aria-label', spot.label || 'Ver área');
+
+                    point.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        container.querySelectorAll('.hotspot-point').forEach(pt => pt.classList.remove('active'));
+                        point.classList.add('active');
+                        showSpot(spot);
+                    });
+                    container.appendChild(point);
+                });
+                fitPlan();
+            }
+        }
+
+        // --- AJUSTE AUTOMÁTICO DEL PLANO ---
+        // Elige 0° o 90° según con cuál la imagen queda más grande dentro del rectángulo.
+        // Los pines se contra-rotan, así el texto siempre queda horizontal.
+        const PLAN_PAD = 8;       // margen interior en px
+        let planRot = 0;
+
+        function fitPlan() {
+            const box  = document.getElementById('plan-box');
+            const wrap = document.getElementById('plan-wrap');
+            const img  = document.getElementById('modal-floorplan');
+            if (!box || wrap.classList.contains('hidden')) return;
+            const iw = img.naturalWidth, ih = img.naturalHeight;
+            const W = box.clientWidth - PLAN_PAD * 2, H = box.clientHeight - PLAN_PAD * 2;
+            if (!iw || !ih || W <= 0 || H <= 0) return;     // modal aún oculto
+
+            const s0  = Math.min(W / iw, H / ih);           // sin girar
+            const s90 = Math.min(W / ih, H / iw);           // girado 90°
+            planRot = s90 > s0 * 1.001 ? 90 : 0;
+            const sc = Math.max(s0, s90);
+
+            wrap.style.width  = (iw * sc) + 'px';
+            wrap.style.height = (ih * sc) + 'px';
+            wrap.style.transform = `translate(-50%, -50%) rotate(${planRot}deg)`;
+            wrap.style.setProperty('--pin-rot', `${-planRot}deg`);
+            wrap.style.visibility = 'visible';
+
+            // Si un pin queda pegado al borde superior, su etiqueta se muestra debajo
+            const bt = box.getBoundingClientRect().top;
+            wrap.querySelectorAll('.hotspot-point').forEach(pt => {
+                pt.classList.toggle('tip-below', pt.getBoundingClientRect().top - bt < 40);
+            });
+        }
+        new ResizeObserver(fitPlan).observe(document.getElementById('plan-box'));
+        window.addEventListener('resize', fitPlan);
+        window.addEventListener('orientationchange', () => setTimeout(fitPlan, 150));
+
+        // Ayuda para ubicar pines: Shift + clic sobre el plano muestra el top/left en %
+        document.getElementById('plan-wrap').addEventListener('click', function (e) {
+            if (!e.shiftKey) return;
+            // Convierte el clic en pantalla a coordenadas de la imagen sin girar
+            const r = this.getBoundingClientRect();
+            const dx = e.clientX - (r.left + r.width / 2);
+            const dy = e.clientY - (r.top + r.height / 2);
+            const lx = planRot === 90 ? dy : dx;
+            const ly = planRot === 90 ? -dx : dy;
+            const w = this.offsetWidth, h = this.offsetHeight;
+            const left = ((lx + w / 2) / w * 100).toFixed(1) + '%';
+            const top  = ((ly + h / 2) / h * 100).toFixed(1) + '%';
+            const t = document.getElementById('plan-toast');
+            t.textContent = `top: "${top}", left: "${left}"`;
+            t.style.display = 'block';
+            console.log(t.textContent);
+            clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 4000);
+        });
+
+        function closeModal() {
+            resetViewer();
+            document.getElementById('info-modal').classList.add('hidden');
+        }
+
+        // Cerrar modal al hacer clic fuera del contenido
+        document.getElementById('info-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // --- CARRUSEL DE FRASES ---
+        const frases = [
+            "• Apartaestudios Amoblados •",
+            "• Ubicación Privilegiada •",
+            "• Para Disfrutar con tu Pareja •",
+            "• Rentas Cortas de Alto Nivel •",
+            "• Rentas Largas Premium •",
+            "• Zonas Comunes Exclusivas •",
+            "• Reserva Inmediata Disponible •",
+            "• Bogotá - Sabana - Cundinamarca •"
+        ];
+
+        (function initPhraseCarousel() {
+            const container = document.getElementById('phrase-carousel');
+            if (!container) return;
+
+            frases.forEach((f, i) => {
+                const span = document.createElement('span');
+                span.className = 'phrase' + (i === 0 ? ' active' : '');
+                span.textContent = f;
+                container.appendChild(span);
+            });
+
+            let idx = 0;
+            const spans = container.querySelectorAll('.phrase');
+            setInterval(() => {
+                spans[idx].classList.remove('active');
+                idx = (idx + 1) % spans.length;
+                spans[idx].classList.add('active');
+            }, 3200);
+        })();
+
+        // --- Leer parámetro URL al cargar la página ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const a = params.get('a');
+            
+            if (a !== null) {
+                const index = parseInt(a, 10);
+                // Validamos que sea un número y exista en el arreglo
+                if (!isNaN(index) && index >= 0 && index < propiedades.length) {
+                    // Un pequeño retardo para asegurar que el mapa se inicializó correctamente
+                    setTimeout(() => showProperty(index), 500);
+                }
+            }
         });
     </script>
 </body>
