@@ -52,7 +52,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 </div>
 <div id="start" class="menu">
   <h1>CEMENTERIO<br>EMBRUJADO 360°</h1>
-  <p>Arrastra la pantalla para mirar alrededor. Centra al fantasma en la mira y toca para disparar el flash de la cámara. El flash tarda en recargar. Si un fantasma te alcanza, pierdes un golpe de tu barra de 10. Sube el volumen: la estática te avisa cuando se acercan.</p>
+  <p>Párate y gira con tu celular, o arrastra la pantalla para mirar. Centra al fantasma en la mira y toca para disparar el flash de la cámara. Sube el volumen para detectar su presencia.</p>
   <button id="startBtn" class="btn">Entrar</button>
 </div>
 <div id="over" class="menu hidden">
@@ -178,50 +178,46 @@ function limb(g,x0,y0,cx,cy,x1,y1,w,col){
 function makeGhost(v){
   const c=document.createElement('canvas');c.width=256;c.height=512;const g=c.getContext('2d');
   g.shadowColor='rgba(190,180,255,.8)';g.shadowBlur=18;
-  // torso / lower body: tapered, fading
   const gr=g.createLinearGradient(0,110,0,512);
   gr.addColorStop(0,'rgba(222,218,235,.97)');gr.addColorStop(.45,'rgba(150,142,172,.85)');gr.addColorStop(1,'rgba(110,100,140,0)');
   g.fillStyle=gr;g.beginPath();g.moveTo(74,120);g.quadraticCurveTo(128,100,182,120);
   g.quadraticCurveTo(168,200,162,300);g.quadraticCurveTo(152,430,134,512);g.lineTo(114,512);
   g.quadraticCurveTo(102,430,94,300);g.quadraticCurveTo(88,200,74,120);g.fill();
-  // arms
   if(v===1){limb(g,80,124,20,130,10,250,13,'196,190,212');limb(g,176,124,236,130,246,250,13,'196,190,212')}
   else{limb(g,78,124,26,200,34,440,13,'200,194,216');limb(g,178,124,230,200,222,440,13,'200,194,216')}
   g.shadowBlur=0;
-  // vertical streaks
   for(let i=0;i<90;i++){const x=96+Math.random()*64,y=150+Math.random()*250;
     g.strokeStyle=Math.random()<.5?'rgba(40,30,70,.22)':'rgba(255,255,255,.18)';g.lineWidth=1+Math.random()*3;
     g.beginPath();g.moveTo(x,y);g.lineTo(x+(Math.random()-.5)*8,y+60+Math.random()*120);g.stroke()}
-  // ribcage
   g.strokeStyle='rgba(40,30,70,.55)';g.lineWidth=3;
   for(let i=0;i<6;i++){const y=140+i*10;g.beginPath();g.moveTo(98,y-6);g.quadraticCurveTo(128,y+10,158,y-6);g.stroke()}
   g.strokeStyle='rgba(240,238,250,.35)';g.lineWidth=2;g.beginPath();g.moveTo(128,125);g.lineTo(128,198);g.stroke();
-  // neck + head
   g.fillStyle='rgba(120,112,145,.9)';g.fillRect(118,95,20,35);
   const hg=g.createRadialGradient(124,62,4,128,72,44);hg.addColorStop(0,'#eeeaf5');hg.addColorStop(1,'#9d95b3');
   g.fillStyle=hg;g.beginPath();g.ellipse(128,72,25,36,0,0,7);g.fill();
-  // hair
   g.strokeStyle='rgba(22,16,34,.85)';g.lineWidth=2;
   for(let i=0;i<34;i++){const sx=104+Math.random()*48,s=Math.random()<.5?-1:1;
     g.beginPath();g.moveTo(sx,42+Math.random()*10);g.quadraticCurveTo(sx+s*(20+Math.random()*25),80,sx+s*(10+Math.random()*30),150+Math.random()*80);g.stroke()}
-  // face
   g.fillStyle='rgba(18,8,28,.95)';
   g.beginPath();g.ellipse(116,66,7,10,-.15,0,7);g.fill();g.beginPath();g.ellipse(140,66,7,10,.15,0,7);g.fill();
   g.strokeStyle='rgba(60,50,85,.6)';g.lineWidth=2;g.beginPath();g.moveTo(128,72);g.lineTo(126,84);g.stroke();
   if(v===1){g.fillStyle='rgba(20,10,30,.9)';g.beginPath();g.ellipse(128,98,7,3.5,0,0,7);g.fill()}
   else{g.fillStyle='rgba(8,2,12,.98)';g.beginPath();g.ellipse(128,100,10,17,0,0,7);g.fill()}
-  // cheek hollows
   g.fillStyle='rgba(70,60,100,.3)';g.beginPath();g.ellipse(112,88,6,10,0,0,7);g.fill();g.beginPath();g.ellipse(144,88,6,10,0,0,7);g.fill();
   return new THREE.CanvasTexture(c);
 }
 const ghostTex=[makeGhost(0),makeGhost(1),makeGhost(0)];
 
-// ---------- CONTROLS ----------
+// ---------- CONTROLS & GYRO ----------
 let drag=false,px=0,py=0,sx=0,sy=0,lon=0,lat=0;
 addEventListener('pointerdown',e=>{if(!state.play||e.target.closest('button'))return;drag=true;px=sx=e.clientX;py=sy=e.clientY});
 addEventListener('pointermove',e=>{if(!drag)return;lon-=(e.clientX-px)*.2;lat=Math.max(-85,Math.min(85,lat+(e.clientY-py)*.2));px=e.clientX;py=e.clientY});
 addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(Math.hypot(e.clientX-sx,e.clientY-sy)<10)shoot()});
 addEventListener('pointercancel',()=>drag=false);
+
+const ori={a:0,b:0,g:0,ok:false};
+addEventListener('deviceorientation',e=>{if(e.alpha!=null){ori.a=e.alpha;ori.b=e.beta;ori.g=e.gamma||0;ori.ok=true;}});
+const eu=new THREE.Euler(), q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)), q0=new THREE.Quaternion(), zee=new THREE.Vector3(0,0,1);
 
 // ---------- GAME ----------
 const ray=new THREE.Raycaster(),mid=new THREE.Vector2(0,0);
@@ -265,7 +261,15 @@ function gameOver(){
   state.play=false;$('fs').textContent=state.score;$('ui').classList.add('hidden');$('over').classList.remove('hidden');
   $('radar').style.opacity=0;if(stGain)stGain.gain.setTargetAtTime(0,ac.currentTime,.1);
 }
-$('startBtn').onclick=startGame;$('again').onclick=startGame;
+
+// Request Gyro Permissions on mobile devices
+$('startBtn').onclick=async()=>{
+  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+    try{await DeviceOrientationEvent.requestPermission()}catch(e){console.warn('Permiso giroscopio denegado o cancelado');}
+  }
+  startGame();
+};
+$('again').onclick=startGame;
 
 const camDir=new THREE.Vector3(),tmp=new THREE.Vector3();
 function animate(){
@@ -290,18 +294,18 @@ function animate(){
       tmp.copy(g.position).normalize();aim=Math.max(aim,(camDir.dot(tmp)-.75)/.25);
       if(age>u.life){removeGhost(g);hurt(u.dmg);if(!state.play)break}
     }
-    // static: grows as the ghost approaches
+    
     if(stGain){
       let v=0;
       if(near&&state.play){const c=Math.min(1,Math.max(0,(FAR-minD)/(FAR-NEAR)));v=(.03+.55*c*c)*(.65+.35*Math.max(0,aim));
         stFilt.frequency.setTargetAtTime(900+c*3500,ac.currentTime,.1)}
       stGain.gain.setTargetAtTime(v*(.7+Math.random()*.3),ac.currentTime,.05);
     }
-    // flash recharge UI
+    
     const rp=Math.min(1,1-(readyAt-now)/FLASH_CD);
     $('rfill').style.width=(rp<0||readyAt===0?100:rp*100)+'%';
     $('cross').className=now>=readyAt?'ready':'charging';
-    // radar
+    
     const rad=$('radar');
     if(near){
       tmp.copy(near.position).normalize();
@@ -314,8 +318,23 @@ function animate(){
     stFilt.frequency.setTargetAtTime(1500,ac.currentTime,.2);
     stGain.gain.setTargetAtTime(.12*(.7+Math.random()*.3),ac.currentTime,.05);
   }
-  const ph=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);
-  camera.lookAt(Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th));
+  
+  // HYBRID CAMERA CONTROLS: GYRO + DRAG
+  if(ori.ok){
+    const d=Math.PI/180, o=(screen.orientation?screen.orientation.angle:(window.orientation||0))*d;
+    eu.set(ori.b*d, ori.a*d, -ori.g*d, 'YXZ');
+    camera.quaternion.setFromEuler(eu);
+    camera.quaternion.multiply(q1);
+    camera.quaternion.multiply(q0.setFromAxisAngle(zee,-o));
+    // Apply manual drag as a secondary rotation offset over the gyro's coordinates
+    const dragQuat=new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.degToRad(lat), THREE.MathUtils.degToRad(lon), 0, 'YXZ'));
+    camera.quaternion.premultiply(dragQuat);
+  } else {
+    // Pure drag fallback
+    const ph=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);
+    camera.lookAt(Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th));
+  }
+  
   renderer.render(scene,camera);
 }
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
