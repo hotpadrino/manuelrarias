@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>360° Cementerio Embrujado</title>
+<meta name="description" content="Juego de terror en 360°: caza fantasmas con el flash de tu cámara en un cementerio embrujado. Mueve el celular o arrastra para mirar alrededor.">
+<meta name="theme-color" content="#02030a">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cementerio Embrujado 360°">
+<meta property="og:locale" content="es_ES">
+<meta property="og:title" content="360° Cementerio Embrujado">
+<meta property="og:description" content="Atrapa a los fantasmas con tu cámara antes de que te alcancen. Usa auriculares: la estática te avisa cuando se acercan.">
+<meta property="og:image" content="https://www.quartertothree.com/fp/wp-content/uploads/2012/04/FatalFrame3.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.quartertothree.com/fp/wp-content/uploads/2012/04/FatalFrame3.jpg">
+<meta name="twitter:title" content="360° Cementerio Embrujado">
+<meta name="twitter:description" content="Atrapa a los fantasmas con tu cámara antes de que te alcancen. Usa auriculares: la estática te avisa cuando se acercan.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{--c:#8fe9ff;--r:#ff2a4d}
@@ -52,7 +64,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-
 </div>
 <div id="start" class="menu">
   <h1>CEMENTERIO<br>EMBRUJADO 360°</h1>
-  <p>Párate y gira con tu celular, o arrastra la pantalla para mirar. Centra al fantasma en la mira y toca para disparar el flash de la cámara. Sube el volumen para detectar su presencia.</p>
+  <p>Mira alrededor moviendo el celular (giroscopio) o arrastrando con el dedo o el mouse. Centra al fantasma en la mira y toca para disparar el flash de la cámara. El flash tarda en recargar. Si un fantasma te alcanza, pierdes un golpe de tu barra de 10. Sube el volumen: la estática te avisa cuando se acercan.</p>
   <button id="startBtn" class="btn">Entrar</button>
 </div>
 <div id="over" class="menu hidden">
@@ -68,56 +80,122 @@ const $=id=>document.getElementById(id);
 
 
 // ---------- AUDIO ----------
-let ac,master,noiseBuf,stGain,stFilt;
+let ac,master,fx,noiseBuf,stGain,stFilt,tension=0;
 function initAudio(){
   if(ac){ac.resume();return}
   ac=new (window.AudioContext||window.webkitAudioContext)();
-  master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
+  master=ac.createGain();master.gain.value=.9;
+  const comp=ac.createDynamicsCompressor();master.connect(comp);comp.connect(ac.destination);
+  // bus de efectos con reverb de caverna (eco largo y oscuro)
+  fx=ac.createGain();fx.connect(master);
+  const rl=ac.sampleRate*3,ir=ac.createBuffer(2,rl,ac.sampleRate);
+  for(let ch=0;ch<2;ch++){const dd=ir.getChannelData(ch);for(let i=0;i<rl;i++)dd[i]=(Math.random()*2-1)*Math.pow(1-i/rl,2.5)}
+  const cv=ac.createConvolver();cv.buffer=ir;const wet=ac.createGain();wet.gain.value=.45;fx.connect(cv);cv.connect(wet);wet.connect(master);
   noiseBuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
   const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   const src=ac.createBufferSource();src.buffer=noiseBuf;src.loop=true;
   stFilt=ac.createBiquadFilter();stFilt.type='bandpass';stFilt.frequency.value=1500;stFilt.Q.value=.4;
   stGain=ac.createGain();stGain.gain.value=0;
   src.connect(stFilt);stFilt.connect(stGain);stGain.connect(master);src.start();
+  startAmbience();
 }
 // Los navegadores bloquean el audio hasta el primer toque: se activa con cualquier interacción
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,()=>initAudio()));
+// ambiente permanente: zumbido grave disonante, viento y latido que se acelera con el peligro
+function startAmbience(){
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=140;
+  const dg=ac.createGain();dg.gain.value=.16;
+  [41.2,43.6,58.3].forEach(f=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=f;o.connect(lp);o.start()});
+  const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=.07;lg.gain.value=60;l.connect(lg);lg.connect(lp.frequency);l.start();
+  lp.connect(dg);dg.connect(master);
+  const w=ac.createBufferSource();w.buffer=noiseBuf;w.loop=true;
+  const wb=ac.createBiquadFilter();wb.type='bandpass';wb.frequency.value=500;wb.Q.value=2;
+  const wg=ac.createGain();wg.gain.value=.05;
+  const wl=ac.createOscillator(),wlg=ac.createGain();wl.frequency.value=.13;wlg.gain.value=.04;wl.connect(wlg);wlg.connect(wg.gain);wl.start();
+  const wf=ac.createOscillator(),wfg=ac.createGain();wf.frequency.value=.1;wfg.gain.value=250;wf.connect(wfg);wfg.connect(wb.frequency);wf.start();
+  w.connect(wb);wb.connect(wg);wg.connect(master);w.start();
+  (function beat(){
+    if(state.play&&tension>.05){
+      const t=ac.currentTime,v=.2+.6*tension;
+      [0,.22].forEach((o,i)=>{const s=ac.createOscillator(),g=ac.createGain();s.type='sine';
+        s.frequency.setValueAtTime(70,t+o);s.frequency.exponentialRampToValueAtTime(30,t+o+.15);
+        g.gain.setValueAtTime(v*(i?.7:1),t+o);g.gain.exponentialRampToValueAtTime(.001,t+o+.2);
+        s.connect(g);g.connect(master);s.start(t+o);s.stop(t+o+.25)});
+    }
+    setTimeout(beat,1200-700*tension);
+  })();
+}
 function noiseBurst(t,dur,vol,hp){
   const s=ac.createBufferSource();s.buffer=noiseBuf;
   const f=ac.createBiquadFilter();f.type='highpass';f.frequency.value=hp;
   const g=ac.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
-  s.connect(f);f.connect(g);g.connect(master);s.start(t,Math.random());s.stop(t+dur);
+  s.connect(f);f.connect(g);g.connect(fx);s.start(t,Math.random());s.stop(t+dur);
 }
 function sndScream(){
-  if(!ac)return;const t=ac.currentTime,d=1.2;
-  const g=ac.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.55,t+.04);g.gain.setValueAtTime(.5,t+.6);g.gain.exponentialRampToValueAtTime(.001,t+d);
-  const ws=ac.createWaveShaper(),c=new Float32Array(256);
-  for(let i=0;i<256;i++){const x=i/128-1;c[i]=Math.tanh(x*4)}ws.curve=c;
-  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1900;bp.Q.value=.8;
-  const lfo=ac.createOscillator();lfo.frequency.value=11;const lg=ac.createGain();lg.gain.value=70;lfo.connect(lg);
-  [1,1.51,2.02].forEach((m,i)=>{
+  if(!ac)return;const t=ac.currentTime,d=1.7;
+  const out=ac.createGain();out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.7,t+.02);out.gain.setValueAtTime(.6,t+.9);out.gain.exponentialRampToValueAtTime(.001,t+d);
+  const ws=ac.createWaveShaper(),c=new Float32Array(512);
+  for(let i=0;i<512;i++){const x=i/256-1;c[i]=Math.tanh(x*6)}ws.curve=c;ws.oversample='4x';
+  const mix=ac.createGain();mix.gain.value=1.2;
+  const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=6.5;lg.gain.value=45;lfo.connect(lg);
+  const lfo2=ac.createOscillator(),lg2=ac.createGain();lfo2.frequency.value=23;lg2.gain.value=25;lfo2.connect(lg2);
+  // voz humana rota: gargantas desafinadas pasando por formantes (como una "aaah")
+  [[520,1300],[545,1380],[260,640]].forEach(([f0,f1])=>{
     const o=ac.createOscillator();o.type='sawtooth';
-    o.frequency.setValueAtTime(600*m,t);o.frequency.exponentialRampToValueAtTime(1500*m,t+.25);o.frequency.exponentialRampToValueAtTime(850*m,t+d);
-    lg.connect(o.frequency);o.connect(ws);o.start(t);o.stop(t+d);
+    o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+.35);o.frequency.exponentialRampToValueAtTime(f0*.7,t+d);
+    lg.connect(o.frequency);lg2.connect(o.frequency);
+    [[850,1],[1450,.7],[2900,.4]].forEach(([ff,gn])=>{
+      const b=ac.createBiquadFilter();b.type='bandpass';b.Q.value=7;
+      b.frequency.setValueAtTime(ff*.8,t);b.frequency.linearRampToValueAtTime(ff*1.15,t+.4);
+      const gg=ac.createGain();gg.gain.value=gn;o.connect(b);b.connect(gg);gg.connect(mix)});
+    o.start(t);o.stop(t+d);
   });
-  lfo.start(t);lfo.stop(t+d);
-  ws.connect(bp);bp.connect(g);g.connect(master);
-  noiseBurst(t,d*.8,.25,2500);
+  lfo.start(t);lfo2.start(t);lfo.stop(t+d);lfo2.stop(t+d);
+  mix.connect(ws);ws.connect(out);out.connect(fx);
+  // voz demoníaca sub-grave
+  const sub=ac.createOscillator(),sg=ac.createGain(),sl=ac.createBiquadFilter();sub.type='sawtooth';sl.type='lowpass';sl.frequency.value=300;
+  sub.frequency.setValueAtTime(90,t);sub.frequency.exponentialRampToValueAtTime(38,t+d);
+  sg.gain.setValueAtTime(.35,t);sg.gain.exponentialRampToValueAtTime(.001,t+d);
+  sub.connect(sl);sl.connect(sg);sg.connect(fx);sub.start(t);sub.stop(t+d);
+  noiseBurst(t,.6,.5,2500);noiseBurst(t+.1,d*.8,.18,4500);
 }
 function sndFlash(){
   if(!ac)return;const t=ac.currentTime;
-  noiseBurst(t,.35,.7,600);
-  const o=ac.createOscillator(),g=ac.createGain();o.type='square';
-  o.frequency.setValueAtTime(2400,t);o.frequency.exponentialRampToValueAtTime(120,t+.12);
-  g.gain.setValueAtTime(.35,t);g.gain.exponentialRampToValueAtTime(.001,t+.15);
-  o.connect(g);g.connect(master);o.start(t);o.stop(t+.16);
+  // estruendo sub-grave con cola de eco
+  const o=ac.createOscillator(),g=ac.createGain();o.type='sine';
+  o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(26,t+.5);
+  g.gain.setValueAtTime(1,t);g.gain.exponentialRampToValueAtTime(.001,t+.7);
+  o.connect(g);g.connect(fx);o.start(t);o.stop(t+.75);
+  const s=ac.createBufferSource();s.buffer=noiseBuf;
+  const lf=ac.createBiquadFilter();lf.type='lowpass';lf.frequency.setValueAtTime(1200,t);lf.frequency.exponentialRampToValueAtTime(60,t+.4);
+  const ng=ac.createGain();ng.gain.setValueAtTime(.9,t);ng.gain.exponentialRampToValueAtTime(.001,t+.5);
+  s.connect(lf);lf.connect(ng);ng.connect(fx);s.start(t);s.stop(t+.55);
+  // obturador metálico
+  const m=ac.createBufferSource();m.buffer=noiseBuf;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=3200;bp.Q.value=9;
+  const mg=ac.createGain();mg.gain.setValueAtTime(.8,t);mg.gain.exponentialRampToValueAtTime(.001,t+.09);
+  m.connect(bp);bp.connect(mg);mg.connect(fx);m.start(t,Math.random());m.stop(t+.1);
+  // zumbido agudo en los oídos
+  const z=ac.createOscillator(),zg=ac.createGain();z.type='sine';z.frequency.value=7200;
+  zg.gain.setValueAtTime(.05,t+.05);zg.gain.exponentialRampToValueAtTime(.001,t+1.4);
+  z.connect(zg);zg.connect(fx);z.start(t);z.stop(t+1.5);
 }
 function sndCharge(dur){
-  if(!ac)return;const t=ac.currentTime+.12,e=t+dur/1000;
-  const o=ac.createOscillator(),g=ac.createGain();o.type='sine';
-  o.frequency.setValueAtTime(1400,t);o.frequency.exponentialRampToValueAtTime(4600,e);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+.1);g.gain.setValueAtTime(.06,e-.08);g.gain.linearRampToValueAtTime(0,e);
-  o.connect(g);g.connect(master);o.start(t);o.stop(e+.02);
+  if(!ac)return;const t=ac.currentTime+.1,e=t+dur/1000;
+  // zumbido grave en tritono que sube lentamente + aliento, pulsando como algo vivo
+  const env=ac.createGain();env.gain.setValueAtTime(0,t);env.gain.linearRampToValueAtTime(.5,e-.1);env.gain.linearRampToValueAtTime(0,e);
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.Q.value=6;lp.frequency.setValueAtTime(150,t);lp.frequency.exponentialRampToValueAtTime(900,e);
+  [55,77.8,82.4].forEach((f,i)=>{
+    const o=ac.createOscillator();o.type='sawtooth';o.detune.value=i*7;
+    o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*1.35,e);
+    const og=ac.createGain();og.gain.value=.25;o.connect(og);og.connect(lp);o.start(t);o.stop(e);
+  });
+  const s=ac.createBufferSource();s.buffer=noiseBuf;s.loop=true;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=600;bp.Q.value=1.5;
+  const sg=ac.createGain();sg.gain.value=.5;s.connect(bp);bp.connect(sg);sg.connect(lp);s.start(t);s.stop(e);
+  const br=ac.createGain();br.gain.value=.6;
+  const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=.8;lg.gain.value=.4;lfo.connect(lg);lg.connect(br.gain);lfo.start(t);lfo.stop(e);
+  lp.connect(env);env.connect(br);br.connect(fx);
 }
 
 // ---------- THREE ----------
@@ -178,46 +256,61 @@ function limb(g,x0,y0,cx,cy,x1,y1,w,col){
 function makeGhost(v){
   const c=document.createElement('canvas');c.width=256;c.height=512;const g=c.getContext('2d');
   g.shadowColor='rgba(190,180,255,.8)';g.shadowBlur=18;
+  // torso / lower body: tapered, fading
   const gr=g.createLinearGradient(0,110,0,512);
   gr.addColorStop(0,'rgba(222,218,235,.97)');gr.addColorStop(.45,'rgba(150,142,172,.85)');gr.addColorStop(1,'rgba(110,100,140,0)');
   g.fillStyle=gr;g.beginPath();g.moveTo(74,120);g.quadraticCurveTo(128,100,182,120);
   g.quadraticCurveTo(168,200,162,300);g.quadraticCurveTo(152,430,134,512);g.lineTo(114,512);
   g.quadraticCurveTo(102,430,94,300);g.quadraticCurveTo(88,200,74,120);g.fill();
+  // arms
   if(v===1){limb(g,80,124,20,130,10,250,13,'196,190,212');limb(g,176,124,236,130,246,250,13,'196,190,212')}
   else{limb(g,78,124,26,200,34,440,13,'200,194,216');limb(g,178,124,230,200,222,440,13,'200,194,216')}
   g.shadowBlur=0;
+  // vertical streaks
   for(let i=0;i<90;i++){const x=96+Math.random()*64,y=150+Math.random()*250;
     g.strokeStyle=Math.random()<.5?'rgba(40,30,70,.22)':'rgba(255,255,255,.18)';g.lineWidth=1+Math.random()*3;
     g.beginPath();g.moveTo(x,y);g.lineTo(x+(Math.random()-.5)*8,y+60+Math.random()*120);g.stroke()}
+  // ribcage
   g.strokeStyle='rgba(40,30,70,.55)';g.lineWidth=3;
   for(let i=0;i<6;i++){const y=140+i*10;g.beginPath();g.moveTo(98,y-6);g.quadraticCurveTo(128,y+10,158,y-6);g.stroke()}
   g.strokeStyle='rgba(240,238,250,.35)';g.lineWidth=2;g.beginPath();g.moveTo(128,125);g.lineTo(128,198);g.stroke();
+  // neck + head
   g.fillStyle='rgba(120,112,145,.9)';g.fillRect(118,95,20,35);
   const hg=g.createRadialGradient(124,62,4,128,72,44);hg.addColorStop(0,'#eeeaf5');hg.addColorStop(1,'#9d95b3');
   g.fillStyle=hg;g.beginPath();g.ellipse(128,72,25,36,0,0,7);g.fill();
+  // hair
   g.strokeStyle='rgba(22,16,34,.85)';g.lineWidth=2;
   for(let i=0;i<34;i++){const sx=104+Math.random()*48,s=Math.random()<.5?-1:1;
     g.beginPath();g.moveTo(sx,42+Math.random()*10);g.quadraticCurveTo(sx+s*(20+Math.random()*25),80,sx+s*(10+Math.random()*30),150+Math.random()*80);g.stroke()}
+  // face
   g.fillStyle='rgba(18,8,28,.95)';
   g.beginPath();g.ellipse(116,66,7,10,-.15,0,7);g.fill();g.beginPath();g.ellipse(140,66,7,10,.15,0,7);g.fill();
   g.strokeStyle='rgba(60,50,85,.6)';g.lineWidth=2;g.beginPath();g.moveTo(128,72);g.lineTo(126,84);g.stroke();
   if(v===1){g.fillStyle='rgba(20,10,30,.9)';g.beginPath();g.ellipse(128,98,7,3.5,0,0,7);g.fill()}
   else{g.fillStyle='rgba(8,2,12,.98)';g.beginPath();g.ellipse(128,100,10,17,0,0,7);g.fill()}
+  // cheek hollows
   g.fillStyle='rgba(70,60,100,.3)';g.beginPath();g.ellipse(112,88,6,10,0,0,7);g.fill();g.beginPath();g.ellipse(144,88,6,10,0,0,7);g.fill();
   return new THREE.CanvasTexture(c);
 }
 const ghostTex=[makeGhost(0),makeGhost(1),makeGhost(0)];
 
-// ---------- CONTROLS & GYRO ----------
+// ---------- CONTROLS ----------
 let drag=false,px=0,py=0,sx=0,sy=0,lon=0,lat=0;
 addEventListener('pointerdown',e=>{if(!state.play||e.target.closest('button'))return;drag=true;px=sx=e.clientX;py=sy=e.clientY});
 addEventListener('pointermove',e=>{if(!drag)return;lon-=(e.clientX-px)*.2;lat=Math.max(-85,Math.min(85,lat+(e.clientY-py)*.2));px=e.clientX;py=e.clientY});
 addEventListener('pointerup',e=>{if(!drag)return;drag=false;if(Math.hypot(e.clientX-sx,e.clientY-sy)<10)shoot()});
 addEventListener('pointercancel',()=>drag=false);
 
-const ori={a:0,b:0,g:0,ok:false};
-addEventListener('deviceorientation',e=>{if(e.alpha!=null){ori.a=e.alpha;ori.b=e.beta;ori.g=e.gamma||0;ori.ok=true;}});
-const eu=new THREE.Euler(), q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)), q0=new THREE.Quaternion(), zee=new THREE.Vector3(0,0,1);
+// ---------- GIROSCOPIO ----------
+const gyro={on:false,a:0,b:0,g:0};let gyroInit=false;
+const zee=new THREE.Vector3(0,0,1),yAxis=new THREE.Vector3(0,1,0),q0=new THREE.Quaternion(),q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)),yawQ=new THREE.Quaternion(),eul=new THREE.Euler();
+function onOri(e){if(e.alpha==null||e.beta==null||e.gamma==null)return;gyro.on=true;gyro.a=e.alpha;gyro.b=e.beta;gyro.g=e.gamma}
+function enableGyro(){
+  if(gyroInit||!window.DeviceOrientationEvent)return;gyroInit=true;
+  if(typeof DeviceOrientationEvent.requestPermission==='function')
+    DeviceOrientationEvent.requestPermission().then(r=>{if(r==='granted')addEventListener('deviceorientation',onOri);else gyroInit=false}).catch(()=>{gyroInit=false});
+  else addEventListener('deviceorientation',onOri);
+}
 
 // ---------- GAME ----------
 const ray=new THREE.Raycaster(),mid=new THREE.Vector2(0,0);
@@ -250,7 +343,7 @@ function hurt(dmg){
 }
 function updateHUD(){$('hpf').style.width=state.hp+'%';$('hpt').textContent=state.hp+'%'}
 function startGame(){
-  initAudio();
+  initAudio();enableGyro();
   state={play:true,score:0,hp:MAXHP,max:3,rate:2000,last:performance.now()};
   readyAt=0;lon=0;lat=0;
   ghosts.forEach(g=>{scene.remove(g);g.material.dispose()});ghosts=[];
@@ -261,15 +354,7 @@ function gameOver(){
   state.play=false;$('fs').textContent=state.score;$('ui').classList.add('hidden');$('over').classList.remove('hidden');
   $('radar').style.opacity=0;if(stGain)stGain.gain.setTargetAtTime(0,ac.currentTime,.1);
 }
-
-// Request Gyro Permissions on mobile devices
-$('startBtn').onclick=async()=>{
-  if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
-    try{await DeviceOrientationEvent.requestPermission()}catch(e){console.warn('Permiso giroscopio denegado o cancelado');}
-  }
-  startGame();
-};
-$('again').onclick=startGame;
+$('startBtn').onclick=startGame;$('again').onclick=startGame;
 
 const camDir=new THREE.Vector3(),tmp=new THREE.Vector3();
 function animate(){
@@ -294,18 +379,18 @@ function animate(){
       tmp.copy(g.position).normalize();aim=Math.max(aim,(camDir.dot(tmp)-.75)/.25);
       if(age>u.life){removeGhost(g);hurt(u.dmg);if(!state.play)break}
     }
-    
+    // static: grows as the ghost approaches
     if(stGain){
-      let v=0;
-      if(near&&state.play){const c=Math.min(1,Math.max(0,(FAR-minD)/(FAR-NEAR)));v=(.03+.55*c*c)*(.65+.35*Math.max(0,aim));
+      let v=0;tension=0;
+      if(near&&state.play){const c=Math.min(1,Math.max(0,(FAR-minD)/(FAR-NEAR)));tension=c;v=(.03+.55*c*c)*(.65+.35*Math.max(0,aim));
         stFilt.frequency.setTargetAtTime(900+c*3500,ac.currentTime,.1)}
       stGain.gain.setTargetAtTime(v*(.7+Math.random()*.3),ac.currentTime,.05);
     }
-    
+    // flash recharge UI
     const rp=Math.min(1,1-(readyAt-now)/FLASH_CD);
     $('rfill').style.width=(rp<0||readyAt===0?100:rp*100)+'%';
     $('cross').className=now>=readyAt?'ready':'charging';
-    
+    // radar
     const rad=$('radar');
     if(near){
       tmp.copy(near.position).normalize();
@@ -318,23 +403,15 @@ function animate(){
     stFilt.frequency.setTargetAtTime(1500,ac.currentTime,.2);
     stGain.gain.setTargetAtTime(.12*(.7+Math.random()*.3),ac.currentTime,.05);
   }
-  
-  // HYBRID CAMERA CONTROLS: GYRO + DRAG
-  if(ori.ok){
-    const d=Math.PI/180, o=(screen.orientation?screen.orientation.angle:(window.orientation||0))*d;
-    eu.set(ori.b*d, ori.a*d, -ori.g*d, 'YXZ');
-    camera.quaternion.setFromEuler(eu);
-    camera.quaternion.multiply(q1);
-    camera.quaternion.multiply(q0.setFromAxisAngle(zee,-o));
-    // Apply manual drag as a secondary rotation offset over the gyro's coordinates
-    const dragQuat=new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.degToRad(lat), THREE.MathUtils.degToRad(lon), 0, 'YXZ'));
-    camera.quaternion.premultiply(dragQuat);
-  } else {
-    // Pure drag fallback
+  if(gyro.on){
+    const D=THREE.MathUtils.degToRad,ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+    eul.set(D(gyro.b),D(gyro.a),-D(gyro.g),'YXZ');
+    camera.quaternion.setFromEuler(eul);camera.quaternion.multiply(q1);camera.quaternion.multiply(q0.setFromAxisAngle(zee,-D(ang)));
+    camera.quaternion.premultiply(yawQ.setFromAxisAngle(yAxis,D(lon)));
+  }else{
     const ph=THREE.MathUtils.degToRad(90-lat),th=THREE.MathUtils.degToRad(lon);
     camera.lookAt(Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th));
   }
-  
   renderer.render(scene,camera);
 }
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
