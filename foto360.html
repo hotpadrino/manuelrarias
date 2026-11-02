@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Esfera 360° con la cámara</title>
+<style>
+:root{--bg:#0b1216;--ink:#eef3f2;--dim:#9fb3b0;--acc:#6fe0cc;--panel:rgba(11,18,22,.72);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+video,canvas#c{position:fixed;inset:0;width:100%;height:100%}
+video{object-fit:cover}
+.hud{position:fixed;left:0;right:0;padding:12px 16px;display:flex;align-items:center;gap:12px;pointer-events:none}
+#top{top:env(safe-area-inset-top,0px);flex-direction:column;align-items:stretch}
+#top .row{display:flex;justify-content:space-between;font-size:15px;font-weight:600}
+#bar{height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden}
+#bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+#hint{align-self:center;background:var(--panel);padding:8px 14px;border-radius:20px;font-size:14px;color:var(--ink);text-align:center}
+#bottom{bottom:env(safe-area-inset-bottom,0px);justify-content:center;flex-wrap:wrap;pointer-events:auto}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid rgba(255,255,255,.22);border-radius:24px;padding:12px 20px;min-height:48px;cursor:pointer}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button:disabled{opacity:.4}
+#shutter{width:72px;height:72px;border-radius:50%;padding:0;border:4px solid #fff;background:rgba(255,255,255,.18)}
+#cross{position:fixed;left:50%;top:50%;width:34px;height:34px;margin:-17px;border:2px solid var(--acc);border-radius:50%;pointer-events:none;transition:transform .15s,background .15s}
+#cross.lock{transform:scale(1.5);background:rgba(111,224,204,.3)}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+#start{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:28px 28px 76px;max-width:520px;margin:0 auto}
+#start h1{margin:0;font-size:30px;line-height:1.15}
+#start p{margin:0;color:var(--dim);line-height:1.5;max-width:46ch}
+.btns{display:flex;gap:12px;flex-wrap:wrap}
+#go{background:var(--acc);color:#05231d;border:0;font-weight:700;align-self:flex-start;padding:14px 28px}
+#err{color:#ffb4a8;min-height:1.4em}
+.hide{display:none!important}
+#foot{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);z-index:5;display:flex;justify-content:space-between;align-items:center;gap:4px 16px;flex-wrap:wrap;padding:8px 16px;font-size:13px;color:var(--dim);background:var(--panel);border-top:1px solid rgba(255,255,255,.12)}
+#foot a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+#foot .fl{display:flex;gap:16px}
+body.view #bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 52px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<video id="v" playsinline muted autoplay></video>
+<canvas id="c"></canvas>
+<div id="cross" class="hide"></div>
+<div id="flash"></div>
+
+<div id="top" class="hud hide">
+  <div class="row"><span id="count">0 de 0</span><span id="mode">Capturando</span></div>
+  <div id="bar"><i></i></div>
+  <div id="hint">Apunta el círculo a los puntos blancos</div>
+</div>
+<div id="bottom" class="hud hide">
+  <button id="finish" disabled>Ver esfera</button>
+  <button id="shutter" aria-label="Tomar foto"></button>
+  <button id="save" class="hide">Guardar imagen</button>
+  <button id="load" class="hide">Cargar imagen</button>
+  <button id="again">Reiniciar</button>
+  <input type="file" id="file" accept="image/*" class="hide">
+</div>
+
+<div id="start">
+  <h1>Esfera 360° con tu cámara</h1>
+  <p>Párate en un punto fijo y gira sobre tu eje. La cámara tomará fotos sola cuando apuntes a cada punto blanco. Al terminar, podrás mirar alrededor dentro de la esfera.</p>
+  <p>Usa el celular en vertical, sin moverte del sitio, y gira despacio.</p>
+  <div class="btns"><button id="go">Empezar</button><button id="load0">Cargar imagen 360°</button></div>
+  <div id="err" role="alert"></div>
+</div>
+
+<footer id="foot">
+  <span>© 2026 <a href="https://novaelix.vercel.app/" target="_blank" rel="noopener">NOVAELIX</a> · by Inversiones Aripar</span>
+  <span class="fl"><a href="https://wa.me/573128816469?text=Hola%20NOVAELIX%2C%20quiero%20un%20micrositio%20pro" target="_blank" rel="noopener">WhatsApp</a><a href="mailto:alucard8@gmail.com">Correo</a></span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const R=5, VFOV=60, TILE_W=400;
+const video=$('v'), canvas=$('c');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+renderer.setClearColor(0x000000,0);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(VFOV,1,0.1,100);
+let W=0,H=0;
+function resize(){W=innerWidth;H=innerHeight;renderer.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+
+const ori={a:0,b:0,g:0,ok:false};
+addEventListener('deviceorientation',e=>{if(e.alpha==null||e.beta==null)return;ori.a=e.alpha;ori.b=e.beta;ori.g=e.gamma||0;ori.ok=true;});
+const eu=new THREE.Euler(), q1=new THREE.Quaternion(-Math.sqrt(.5),0,0,Math.sqrt(.5)), q0=new THREE.Quaternion(), zee=new THREE.Vector3(0,0,1), up=new THREE.Vector3(0,1,0);
+const offset=new THREE.Quaternion(); let offsetSet=false;
+function deviceQuat(out){
+  const d=Math.PI/180, o=(screen.orientation?screen.orientation.angle:(window.orientation||0))*d;
+  eu.set(ori.b*d,ori.a*d,-ori.g*d,'YXZ');
+  out.setFromEuler(eu); out.multiply(q1); out.multiply(q0.setFromAxisAngle(zee,-o));
+  return out;
+}
+function worldQuat(out){
+  deviceQuat(out);
+  if(!offsetSet){
+    const f=new THREE.Vector3(0,0,-1).applyQuaternion(out);
+    offset.setFromAxisAngle(up,Math.atan2(f.x,-f.z)); offsetSet=true;
+  }
+  return out.premultiply(offset);
+}
+
+let targets=[], tiles=[], mode='idle', renderIdx=0;
+function buildTargets(){
+  const aspect=W/H, hfov=2*Math.atan(Math.tan(VFOV*Math.PI/360)*aspect)*180/Math.PI;
+  const step=Math.max(hfov*0.8,18);
+  [-75,-40,0,40,75].forEach(p=>{
+    const pr=p*Math.PI/180, n=Math.abs(p)>70?Math.max(3,Math.ceil(360*Math.cos(pr)/step)):Math.ceil(360*Math.cos(pr)/step);
+    for(let i=0;i<n;i++){
+      const y=(i/n)*2*Math.PI;
+      const dir=new THREE.Vector3(Math.sin(y)*Math.cos(pr),Math.sin(pr),-Math.cos(y)*Math.cos(pr));
+      const m=new THREE.Mesh(new THREE.CircleGeometry(.11,20),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthTest:false,depthWrite:false}));
+      m.position.copy(dir).multiplyScalar(R-.01); m.lookAt(0,0,0); m.renderOrder=100000;
+      scene.add(m); targets.push({dir,m,done:false});
+    }
+  });
+}
+function updateHud(){
+  const d=targets.filter(t=>t.done).length;
+  $('count').textContent=d+' de '+targets.length;
+  $('bar').firstElementChild.style.width=(targets.length?d/targets.length*100:0)+'%';
+  $('finish').disabled=tiles.length===0;
+}
+
+function capture(q){
+  const vw=video.videoWidth, vh=video.videoHeight; if(!vw)return;
+  const aspect=W/H, cw=TILE_W, ch=Math.round(TILE_W/aspect);
+  const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+  const x=cv.getContext('2d');
+  let sw,sh,sx,sy;
+  if(vw/vh>aspect){sh=vh;sw=vh*aspect;sx=(vw-sw)/2;sy=0}else{sw=vw;sh=vw/aspect;sx=0;sy=(vh-sh)/2}
+  x.drawImage(video,sx,sy,sw,sh,0,0,cw,ch);
+  const g=x.createRadialGradient(cw/2,ch/2,0,cw/2,ch/2,Math.hypot(cw,ch)/2);
+  g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.8,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,.2)');
+  x.globalCompositeOperation='destination-in'; x.fillStyle=g; x.fillRect(0,0,cw,ch);
+  const tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false;
+  const h=2*R*Math.tan(VFOV*Math.PI/360), mesh=new THREE.Mesh(new THREE.PlaneGeometry(h*aspect,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false,side:THREE.DoubleSide}));
+  mesh.position.set(0,0,-R).applyQuaternion(q); mesh.quaternion.copy(q); mesh.renderOrder=++renderIdx;
+  mesh.userData={cv,q:q.clone(),aspect}; scene.add(mesh); tiles.push(mesh);
+  const f=new THREE.Vector3(0,0,-1).applyQuaternion(q);
+  targets.forEach(t=>{if(!t.done&&t.dir.angleTo(f)<.13){t.done=true;t.m.visible=false}});
+  const fl=$('flash'); fl.style.opacity=.55; setTimeout(()=>fl.style.opacity=0,60);
+  updateHud();
+  if(targets.every(t=>t.done)) finish();
+}
+
+const qc=new THREE.Quaternion(), fPrev=new THREE.Vector3(0,0,-1), fNow=new THREE.Vector3();
+let hold=0, last=performance.now();
+let yaw=0,pitch=0,useGyro=false,fov=75;
+
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt=Math.min((now-last)/1000,.1); last=now;
+  if(mode==='capture'&&ori.ok){
+    worldQuat(qc); cam.quaternion.copy(qc);
+    fNow.set(0,0,-1).applyQuaternion(qc);
+    let best=null,ba=9;
+    targets.forEach(t=>{if(t.done)return;const a=t.dir.angleTo(fNow);t.m.material.color.set(0xffffff);t.m.material.opacity=.55;if(a<ba){ba=a;best=t}});
+    if(best){best.m.material.color.set(0x6fe0cc);best.m.material.opacity=1}
+    const speed=fNow.angleTo(fPrev)/Math.max(dt,.001); fPrev.copy(fNow);
+    const lock=best&&ba<.1;
+    $('cross').classList.toggle('lock',!!lock);
+    if(lock&&speed<.4){hold+=dt;if(hold>.35){hold=0;capture(qc.clone())}}else hold=0;
+  } else if(mode==='view'){
+    if(useGyro&&ori.ok){worldQuat(qc);cam.quaternion.copy(qc)}
+    else cam.rotation.set(pitch,yaw,0,'YXZ');
+  }
+  renderer.render(scene,cam);
+}
+requestAnimationFrame(loop);
+
+function finish(){
+  if(mode==='view')return;
+  mode='view';
+  if(video.srcObject)video.srcObject.getTracks().forEach(t=>t.stop());
+  video.classList.add('hide');
+  targets.forEach(t=>t.m.visible=false);
+  const e=new THREE.Euler().setFromQuaternion(cam.quaternion,'YXZ'); pitch=e.x; yaw=e.y;
+  cam.fov=fov; cam.updateProjectionMatrix();
+  $('cross').classList.add('hide');
+  $('mode').textContent='Mirando la esfera';
+  $('hint').textContent='Arrastra para mirar alrededor';
+  $('finish').textContent='Usar giroscopio'; $('finish').disabled=false;
+  $('shutter').classList.add('hide'); $('save').classList.remove('hide'); $('load').classList.remove('hide');
+  $('foot').classList.remove('hide'); document.body.classList.add('view');
+}
+
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointermove',e=>{
+  if(!drag||mode!=='view'||useGyro)return;
+  const k=cam.fov/H*Math.PI/180;
+  yaw+=(e.clientX-drag.x)*k; pitch+=(e.clientY-drag.y)*k;
+  pitch=Math.max(-1.55,Math.min(1.55,pitch)); drag={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('pointerup',()=>drag=null);
+canvas.addEventListener('wheel',e=>{if(mode!=='view')return;fov=Math.max(35,Math.min(100,fov+e.deltaY*.05));cam.fov=fov;cam.updateProjectionMatrix()},{passive:true});
+
+$('shutter').onclick=()=>{if(mode==='capture'&&ori.ok)capture(worldQuat(new THREE.Quaternion()))};
+$('again').onclick=()=>location.reload();
+$('finish').onclick=async()=>{
+  if(mode==='capture'){finish();return}
+  if(!useGyro){
+    if(!ori.ok&&typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){try{await DeviceOrientationEvent.requestPermission()}catch(e){}}
+    if(!ori.ok)await new Promise(r=>setTimeout(r,500));
+    if(!ori.ok){$('hint').textContent='Este dispositivo no tiene giroscopio';return}
+  }
+  useGyro=!useGyro;
+  if(useGyro){$('finish').textContent='Usar el dedo';$('hint').textContent='Mueve el celular para mirar'}
+  else{const e=new THREE.Euler().setFromQuaternion(cam.quaternion,'YXZ');pitch=e.x;yaw=e.y;$('finish').textContent='Usar giroscopio';$('hint').textContent='Arrastra para mirar alrededor'}
+};
+
+$('go').onclick=async()=>{
+  const err=$('err'); err.textContent='';
+  try{
+    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+      const r=await DeviceOrientationEvent.requestPermission();
+      if(r!=='granted'){err.textContent='Necesito permiso para el giroscopio. Actívalo en los ajustes del navegador.';return}
+    }
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){err.textContent='Este navegador no permite usar la cámara. Abre la página con HTTPS en Chrome o Safari.';return}
+    const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
+    video.srcObject=s; await video.play();
+  }catch(e){
+    err.textContent=(e&&e.name==='NotAllowedError')?'Permiso de cámara denegado. Permítelo en el navegador y vuelve a intentar.':'No se pudo abrir la cámara. Si estás viendo esto dentro de otra página, abre el enlace directamente en el navegador.';
+    return;
+  }
+  $('start').classList.add('hide');
+  await new Promise(r=>setTimeout(r,700));
+  if(!ori.ok){
+    $('start').classList.remove('hide');
+    err.textContent='No detecto giroscopio. Abre esta página en un celular.';
+    if(video.srcObject)video.srcObject.getTracks().forEach(t=>t.stop());
+    return;
+  }
+  resize(); offsetSet=false; buildTargets(); updateHud();
+  $('top').classList.remove('hide'); $('bottom').classList.remove('hide'); $('cross').classList.remove('hide'); $('foot').classList.add('hide');
+  mode='capture';
+};
+
+/* ---- Guardar y cargar ---- */
+const BG=[11,18,22];
+let sphere=null, loaded=false;
+function viewHint(){$('hint').textContent=useGyro?'Mueve el celular para mirar':'Arrastra para mirar alrededor'}
+function say(t){if(!$('start').classList.contains('hide'))$('err').textContent=t;else $('hint').textContent=t}
+
+async function saveFile(name,blob){
+  let dl=null;
+  try{dl=window.claude&&await window.claude.use('downloads')}catch(e){}
+  if(dl){
+    try{await dl.save({filename:name,data:blob});say('Imagen guardada')}
+    catch(e){say(e&&e.code==='declined'?'Guardado cancelado':'No se pudo guardar la imagen')}
+    return;
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  say('Descarga iniciada');
+}
+
+async function exportPano(){
+  if(!tiles.length||loaded)return;
+  const btn=$('save'); btn.disabled=true;
+  try{
+    const OW=2048,OH=1024,N=OW*OH;
+    const out=new Uint8ClampedArray(N*4);
+    for(let i=0;i<N;i++){const o=i*4;out[o]=BG[0];out[o+1]=BG[1];out[o+2]=BG[2];out[o+3]=255}
+    const dx=new Float32Array(N),dy=new Float32Array(N),dz=new Float32Array(N);
+    for(let j=0;j<OH;j++){
+      const p=Math.PI/2-(j+.5)/OH*Math.PI,cp=Math.cos(p),sp=Math.sin(p);
+      for(let i=0;i<OW;i++){const y=(i+.5)/OW*2*Math.PI-Math.PI,k=j*OW+i;dx[k]=Math.sin(y)*cp;dy[k]=sp;dz[k]=-Math.cos(y)*cp}
+    }
+    const t=Math.tan(VFOV*Math.PI/360);
+    for(let n=0;n<tiles.length;n++){
+      say('Generando imagen… '+Math.round(n/tiles.length*100)+'%');
+      await new Promise(r=>setTimeout(r,0));
+      const {cv,q,aspect}=tiles[n].userData,w=cv.width,h=cv.height;
+      const px=cv.getContext('2d').getImageData(0,0,w,h).data;
+      const m=new THREE.Matrix4().makeRotationFromQuaternion(q.clone().invert()).elements;
+      const f=new THREE.Vector3(0,0,-1).applyQuaternion(q);
+      const cosMax=Math.cos(Math.atan(Math.hypot(t*aspect,t))+.02);
+      for(let k=0;k<N;k++){
+        const x=dx[k],y=dy[k],z=dz[k];
+        if(x*f.x+y*f.y+z*f.z<cosMax)continue;
+        const lz=m[2]*x+m[6]*y+m[10]*z; if(lz>=0)continue;
+        const u=(m[0]*x+m[4]*y+m[8]*z)/(-lz)/(t*aspect), v=(m[1]*x+m[5]*y+m[9]*z)/(-lz)/t;
+        if(u<-1||u>1||v<-1||v>1)continue;
+        const sx=Math.min(w-1,Math.floor((u+1)/2*w)),sy=Math.min(h-1,Math.floor((1-v)/2*h));
+        const s=(sy*w+sx)*4,a=px[s+3]/255,o=k*4;
+        out[o]=out[o]+(px[s]-out[o])*a; out[o+1]=out[o+1]+(px[s+1]-out[o+1])*a; out[o+2]=out[o+2]+(px[s+2]-out[o+2])*a;
+      }
+    }
+    const oc=document.createElement('canvas');oc.width=OW;oc.height=OH;
+    oc.getContext('2d').putImageData(new ImageData(out,OW,OH),0,0);
+    const blob=await new Promise(r=>oc.toBlob(r,'image/jpeg',.92));
+    if(!blob){say('No se pudo generar la imagen');return}
+    await saveFile('panorama360.jpg',blob);
+  }catch(e){say('No se pudo generar la imagen')}
+  finally{btn.disabled=false;setTimeout(viewHint,3000)}
+}
+$('save').onclick=exportPano;
+
+function showPano(img){
+  const mw=Math.min(4096,renderer.capabilities.maxTextureSize), s=Math.min(1,mw/img.width);
+  const cv=document.createElement('canvas');cv.width=Math.round(img.width*s);cv.height=Math.round(img.height*s);
+  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+  const tex=new THREE.CanvasTexture(cv);tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;
+  const SW=64,SH=32,pos=[],uv=[],idx=[];
+  for(let j=0;j<=SH;j++){const p=Math.PI/2-j/SH*Math.PI;for(let i=0;i<=SW;i++){const y=i/SW*2*Math.PI-Math.PI;pos.push(Math.sin(y)*Math.cos(p)*50,Math.sin(p)*50,-Math.cos(y)*Math.cos(p)*50);uv.push(i/SW,1-j/SH)}}
+  for(let j=0;j<SH;j++)for(let i=0;i<SW;i++){const a=j*(SW+1)+i,b=a+1,c=a+SW+1,d=c+1;idx.push(a,c,b,b,c,d)}
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));
+  g.setIndex(idx);
+  if(sphere)scene.remove(sphere);
+  sphere=new THREE.Mesh(g,new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
+  scene.add(sphere);
+  tiles.forEach(m=>scene.remove(m)); tiles=[];
+  targets.forEach(t=>scene.remove(t.m)); targets=[];
+  if(video.srcObject)video.srcObject.getTracks().forEach(tr=>tr.stop());
+  video.classList.add('hide');
+  loaded=true; mode='view'; useGyro=false; offsetSet=false; yaw=0; pitch=0;
+  cam.fov=fov; cam.updateProjectionMatrix();
+  $('start').classList.add('hide');
+  $('top').classList.remove('hide'); $('bottom').classList.remove('hide');
+  $('cross').classList.add('hide'); $('shutter').classList.add('hide'); $('save').classList.add('hide'); $('load').classList.remove('hide');
+  $('bar').classList.add('hide'); $('foot').classList.remove('hide'); document.body.classList.add('view');
+  $('count').textContent='Imagen cargada'; $('mode').textContent='Mirando la esfera';
+  $('finish').textContent='Usar giroscopio'; $('finish').disabled=false;
+  viewHint();
+}
+
+$('file').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>showPano(im);im.onerror=()=>say('No se pudo leer esa imagen');im.src=r.result};
+  r.onerror=()=>say('No se pudo leer ese archivo');
+  r.readAsDataURL(f); e.target.value='';
+};
+$('load0').onclick=$('load').onclick=()=>$('file').click();
+})();
+</script>
+</body>
+</html>
